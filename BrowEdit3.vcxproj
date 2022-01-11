@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="browedit\BrowEdit.cpp" />
+    <ClCompile Include="browedit\BrowEdit.glfw.cpp" />
+    <ClCompile Include="browedit\BrowEdit.imgui.cpp" />
+    <ClCompile Include="browedit\components\Component.cpp" />
+    <ClCompile Include="browedit\components\Gnd.cpp" />
+    <ClCompile Include="browedit\components\GndRenderer.cpp" />
+    <ClCompile Include="browedit\components\Rsm.cpp" />
+    <ClCompile Include="browedit\components\RsmRenderer.cpp" />
+    <ClCompile Include="browedit\components\Rsw.cpp" />
+    <ClCompile Include="browedit\components\Transform.cpp" />
+    <ClCompile Include="browedit\Config.cpp" />
+    <ClCompile Include="browedit\gl\FBO.cpp" />
+    <ClCompile Include="browedit\gl\Shader.cpp" />
+    <ClCompile Include="browedit\gl\Texture.cpp" />
+    <ClCompile Include="browedit\Map.cpp" />
+    <ClCompile Include="browedit\MapView.cpp" />
+    <ClCompile Include="browedit\math\AABB.cpp" />
+    <ClCompile Include="browedit\math\Plane.cpp" />
+    <ClCompile Include="browedit\math\Ray.cpp" />
+    <ClCompile Include="browedit\Node.cpp" />
+    <ClCompile Include="browedit\NodeRenderer.cpp" />
+    <ClCompile Include="browedit\util\FileIO.cpp" />
+    <ClCompile Include="browedit\util\Util.cpp" />
+    <ClCompile Include="lib\glad\src\glad.c" />
+    <ClCompile Include="lib\grflib\grf.c" />
+    <ClCompile Include="lib\grflib\grfcrypt.c" />
+    <ClCompile Include="lib\grflib\grfsupport.c" />
+    <ClCompile Include="lib\grflib\rgz.c" />
+    <ClCompile Include="lib\imgui\backends\imgui_impl_glfw.cpp" />
+    <ClCompile Include="lib\imgui\backends\imgui_impl_opengl3.cpp" />
+    <ClCompile Include="lib\imgui\imgui.cpp" />
+    <ClCompile Include="lib\imgui\imgui_draw.cpp" />
+    <ClCompile Include="lib\imgui\imgui_tables.cpp" />
+    <ClCompile Include="lib\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="lib\imgui\misc\cpp\imgui_stdlib.cpp" />
+    <ClCompile Include="lib\sfl\stb\stb_image.cpp" />
+    <ClCompile Include="lib\sfl\stb\stb_image_write.cpp" />
+    <ClCompile Include="lib\zlib\adler32.c" />
+    <ClCompile Include="lib\zlib\compress.c" />
+    <ClCompile Include="lib\zlib\crc32.c" />
+    <ClCompile Include="lib\zlib\deflate.c" />
+    <ClCompile Include="lib\zlib\gzclose.c" />
+    <ClCompile Include="lib\zlib\gzlib.c" />
+    <ClCompile Include="lib\zlib\gzread.c" />
+    <ClCompile Include="lib\zlib\gzwrite.c" />
+    <ClCompile Include="lib\zlib\infback.c" />
+    <ClCompile Include="lib\zlib\inffast.c" />
+    <ClCompile Include="lib\zlib\inflate.c" />
+    <ClCompile Include="lib\zlib\inftrees.c" />
+    <ClCompile Include="lib\zlib\trees.c" />
+    <ClCompile Include="lib\zlib\uncompr.c" />
+    <ClCompile Include="lib\zlib\zutil.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="browedit\BrowEdit.h" />
+    <ClInclude Include="browedit\components\Component.h" />
+    <ClInclude Include="browedit\components\Gnd.h" />
+    <ClInclude Include="browedit\components\GndRenderer.h" />
+    <ClInclude Include="browedit\components\Renderer.h" />
+    <ClInclude Include="browedit\components\Rsm.h" />
+    <ClInclude Include="browedit\components\RsmRenderer.h" />
+    <ClInclude Include="browedit\components\Rsw.h" />
+    <ClInclude Include="browedit\components\Transform.h" />
+    <ClInclude Include="browedit\Config.h" />
+    <ClInclude Include="browedit\gl\FBO.h" />
+    <ClInclude Include="browedit\gl\Shader.h" />
+    <ClInclude Include="browedit\gl\Texture.h" />
+    <ClInclude Include="browedit\gl\VAO.h" />
+    <ClInclude Include="browedit\gl\VBO.h" />
+    <ClInclude Include="browedit\gl\Vertex.h" />
+    <ClInclude Include="browedit\gl\VIO.h" />
+    <ClInclude Include="browedit\Map.h" />
+    <ClInclude Include="browedit\MapView.h" />
+    <ClInclude Include="browedit\math\AABB.h" />
+    <ClInclude Include="browedit\math\Plane.h" />
+    <ClInclude Include="browedit\math\Ray.h" />
+    <ClInclude Include="browedit\Node.h" />
+    <ClInclude Include="browedit\NodeRenderer.h" />
+    <ClInclude Include="browedit\util\FileIO.h" />
+    <ClInclude Include="browedit\util\ResourceManager.h" />
+    <ClInclude Include="browedit\util\Tree.h" />
+    <ClInclude Include="browedit\util\Util.h" />
+    <ClInclude Include="lib\grflib\grf.h" />
+    <ClInclude Include="lib\grflib\grfcrypt.h" />
+    <ClInclude Include="lib\grflib\grfsupport.h" />
+    <ClInclude Include="lib\grflib\grftypes.h" />
+    <ClInclude Include="lib\grflib\rgz.h" />
+    <ClInclude Include="lib\imgui\imconfig.h" />
+    <ClInclude Include="lib\imgui\imgui.h" />
+    <ClInclude Include="lib\imgui\imgui_internal.h" />
+    <ClInclude Include="lib\imgui\imstb_rectpack.h" />
+    <ClInclude Include="lib\imgui\imstb_textedit.h" />
+    <ClInclude Include="lib\imgui\imstb_truetype.h" />
+    <ClInclude Include="lib\imgui\misc\cpp\imgui_stdlib.h" />
+    <ClInclude Include="lib\zlib\crc32.h" />
+    <ClInclude Include="lib\zlib\deflate.h" />
+    <ClInclude Include="lib\zlib\gzguts.h" />
+    <ClInclude Include="lib\zlib\inffast.h" />
+    <ClInclude Include="lib\zlib\inffixed.h" />
+    <ClInclude Include="lib\zlib\inflate.h" />
+    <ClInclude Include="lib\zlib\inftrees.h" />
+    <ClInclude Include="lib\zlib\trees.h" />
+    <ClInclude Include="lib\zlib\zconf.h" />
+    <ClInclude Include="lib\zlib\zlib.h" />
+    <ClInclude Include="lib\zlib\zutil.h" />
+    <ClInclude Include="resource.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="BrowEdit3.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="icon.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="data\shaders\gnd.fs" />
+    <None Include="data\shaders\gnd.vs" />
+    <None Include="data\shaders\simple.fs" />
+    <None Include="data\shaders\simple.vs" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{68a641c3-1e4b-4e70-a7d1-73dfa91441ba}</ProjectGuid>
+    <RootNamespace>BrowEdit3</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>NotSet</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>NotSet</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NOMINMAX;GRF_STATIC;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>lib/imgui/;lib/glfw-3.3.6/include;lib/grflib;lib/zlib;lib/sfl;lib/glm;lib/glad/include;$(SolutionDir)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>lib/glfw-3.3.6/lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>opengl32.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <IgnoreSpecificDefaultLibraries>MSVCRT</IgnoreSpecificDefaultLibraries>
+    </Link>
+    <PostBuildEvent>
+      <Command>
+      </Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NOMINMAX;GRF_STATIC;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>lib/imgui/;lib/glfw-3.3.6/include;lib/grflib;lib/zlib;lib/sfl;lib/glm;lib/glad/include;$(SolutionDir)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>lib/glfw-3.3.6/lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>opengl32.lib;glfw3_mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <IgnoreSpecificDefaultLibraries>MSVCRT</IgnoreSpecificDefaultLibraries>
+    </Link>
+    <PostBuildEvent>
+      <Command>xcopy /y $(TargetPath) $(SolutionDir)</Command>
+    </PostBuildEvent>
+    <PostBuildEvent>
+      <Message>Copying to solution dir</Message>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

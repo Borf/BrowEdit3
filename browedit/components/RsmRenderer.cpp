@@ -1,0 +1,169 @@
+#include "RsmRenderer.h"
+#include "Rsm.h"
+#include "Rsw.h"
+#include "Gnd.h"
+#include <browedit/Node.h>
+#include <browedit/util/ResourceManager.h>
+#include <browedit/gl/Texture.h>
+#include <glm/glm.hpp>
+
+RsmRenderer::RsmRenderer()
+{
+	renderContext = RsmRenderContext::getInstance();
+}
+
+void RsmRenderer::render()
+{
+	if (!this->rsm)
+	{
+		this->rsm = node->getComponent<Rsm>();
+		if (this->rsm)
+		{//init
+			for (const auto& textureFilename : rsm->textures)
+				textures.push_back(util::ResourceManager<gl::Texture>::load("data\\texture\\" + textureFilename));
+
+			renderInfo.resize(rsm->meshCount);
+			initMeshInfo(rsm->rootMesh);
+		}
+	}
+	if (!this->rswModel)
+		this->rswModel = node->getComponent<RswModel>();
+	if (!this->rswObject)
+		this->rswObject = node->getComponent<RswObject>();
+	if (!this->gnd)
+		this->gnd = node->parent->getComponent<Gnd>();
+	if (!this->rsw)
+		this->rsw = node->parent->getComponent<Rsw>();
+	if (!this->rsm || !this->rswModel || !this->gnd || !this->rsw)
+		return;
+
+	if (!matrixCached)
+	{
+		matrixCache = glm::mat4(1.0f);
+		matrixCache = glm::scale(matrixCache, glm::vec3(1, 1, -1));
+		matrixCache = glm::translate(matrixCache, glm::vec3(5 * gnd->width + rswObject->position.x, -rswObject->position.y, -10 - 5 * gnd->height + rswObject->position.z));
+		matrixCache = glm::rotate(matrixCache, -glm::radians(rswObject->rotation.z), glm::vec3(0, 0, 1));
+		matrixCache = glm::rotate(matrixCache, -glm::radians(rswObject->rotation.x), glm::vec3(1, 0, 0));
+		matrixCache = glm::rotate(matrixCache, glm::radians(rswObject->rotation.y), glm::vec3(0, 1, 0));
+		if (rswModel)
+		{
+			matrixCache = glm::scale(matrixCache, glm::vec3(rswObject->scale.x, -rswObject->scale.y, rswObject->scale.z));
+			matrixCache = glm::translate(matrixCache, glm::vec3(-rsm->realbbrange.x, rsm->realbbmin.y, -rsm->realbbrange.z));
+		}
+		matrixCached = true;
+
+		/*if (rswModel)
+		{
+			std::vector<blib::VertexP3> verts = blib::Shapes::box(rswModel->realbbmin, rswModel->realbbmax);
+			for (size_t i = 0; i < verts.size(); i++)
+				verts[i].position = glm::vec3(model->matrixCache * glm::vec4(glm::vec3(1, -1, 1) * verts[i].position, 1.0f));
+			model->aabb.min = glm::vec3(99999999, 99999999, 99999999);
+			model->aabb.max = glm::vec3(-99999999, -99999999, -99999999);
+			for (size_t i = 0; i < verts.size(); i++)
+			{
+				model->aabb.min = glm::min(model->aabb.min, verts[i].position);
+				model->aabb.max = glm::max(model->aabb.max, verts[i].position);
+			}
+		}*/
+	}
+	auto shader = dynamic_cast<RsmRenderContext*>(renderContext)->shader;
+	shader->setUniform(RsmShader::Uniforms::shadeType, (int)rsm->shadeType);
+	shader->setUniform(RsmShader::Uniforms::modelMatrix2, matrixCache);
+	//move to preframe
+	glm::vec3 lightDirection;
+	lightDirection[0] = -glm::cos(glm::radians((float)rsw->light.longitude)) * glm::sin(glm::radians((float)rsw->light.latitude));
+	lightDirection[1] = glm::cos(glm::radians((float)rsw->light.latitude));
+	lightDirection[2] = glm::sin(glm::radians((float)rsw->light.longitude)) * glm::sin(glm::radians((float)rsw->light.latitude));
+	shader->setUniform(RsmShader::Uniforms::lightAmbient, rsw->light.ambient);
+	shader->setUniform(RsmShader::Uniforms::lightDiffuse, rsw->light.diffuse);
+	shader->setUniform(RsmShader::Uniforms::lightDirection, lightDirection);
+	shader->setUniform(RsmShader::Uniforms::lightIntensity, rsw->light.intensity);
+
+
+	renderMesh(rsm->rootMesh, glm::mat4(1.0f));
+}
+
+
+void RsmRenderer::initMeshInfo(Rsm::Mesh* mesh, const glm::mat4 &matrix)
+{
+	std::map<int, std::vector<VertexP3T2N3> > verts;
+	for (size_t i = 0; i < mesh->faces.size(); i++)
+	{
+		glm::vec3 normal = glm::normalize(glm::cross(mesh->vertices[mesh->faces[i]->vertexIds[1]] - mesh->vertices[mesh->faces[i]->vertexIds[0]], mesh->vertices[mesh->faces[i]->vertexIds[2]] - mesh->vertices[mesh->faces[i]->vertexIds[0]]));
+		for (int ii = 0; ii < 3; ii++)
+			verts[mesh->faces[i]->texId].push_back(VertexP3T2N3(mesh->vertices[mesh->faces[i]->vertexIds[ii]], mesh->texCoords[mesh->faces[i]->texCoordIds[ii]], normal));
+	}
+
+	std::vector<VertexP3T2N3> allVerts;
+	for (std::map<int, std::vector<VertexP3T2N3> >::iterator it2 = verts.begin(); it2 != verts.end(); it2++)
+	{
+		renderInfo[mesh->index].indices.push_back(VboIndex(it2->first, (int)allVerts.size(), (int)it2->second.size()));
+		allVerts.insert(allVerts.end(), it2->second.begin(), it2->second.end());
+	}
+	if (!allVerts.empty())
+	{
+		renderInfo[mesh->index].vbo = new gl::VBO<VertexP3T2N3>();
+		renderInfo[mesh->index].vbo->setData(allVerts, GL_STATIC_DRAW);
+	}
+	renderInfo[mesh->index].matrix = matrix * mesh->matrix1 * mesh->matrix2;
+	renderInfo[mesh->index].matrixSub = matrix * mesh->matrix1;
+	
+	for (size_t i = 0; i < mesh->children.size(); i++)
+		initMeshInfo(mesh->children[i], renderInfo[mesh->children[i]->index].matrixSub);
+}
+
+void RsmRenderer::renderMesh(Rsm::Mesh* mesh, const glm::mat4& matrix)
+{
+	//TODO: animation
+	//if (rsmMesh && (!rsmMesh->frames.empty() || rsmMesh->matrixDirty))
+	//{
+	//	rsmMesh->matrixDirty = false;
+	//	rsmMesh->calcMatrix1();
+	//	rsmMesh->renderer->matrix = matrix * rsmMesh->matrix1 * rsmMesh->matrix2;
+	//	rsmMesh->renderer->matrixSub = matrix * rsmMesh->matrix1;
+	//}
+
+	auto shader = dynamic_cast<RsmRenderContext*>(renderContext)->shader;
+
+	RenderInfo& ri = renderInfo[mesh->index];
+	if (ri.vbo != nullptr)
+	{
+		ri.vbo->bind();
+		shader->setUniform(RsmShader::Uniforms::modelMatrix, ri.matrix);
+		glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexP3T2N3), (void*)(0 * sizeof(float)));
+		glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexP3T2N3), (void*)(3 * sizeof(float)));
+		glVertexAttribPointer(2, 3, GL_FLOAT, false, sizeof(VertexP3T2N3), (void*)(5 * sizeof(float)));
+
+		for (const VboIndex& it : ri.indices)
+		{
+			textures[mesh->textures[it.texture]]->bind();
+			glDrawArrays(GL_TRIANGLES, (int)it.begin, (int)it.count);
+		}
+	}
+
+
+	for (size_t i = 0; i < mesh->children.size(); i++)
+		renderMesh(mesh->children[i], renderInfo[mesh->children[i]->index].matrixSub);
+}
+
+
+
+
+RsmRenderer::RsmRenderContext::RsmRenderContext() : shader(util::ResourceManager<gl::Shader>::load<RsmShader>())
+{
+	shader->use();
+	shader->setUniform(RsmShader::Uniforms::s_texture, 0);
+}
+
+void RsmRenderer::RsmRenderContext::preFrame(const glm::mat4& projectionMatrix, const glm::mat4& viewMatrix)
+{
+	shader->use();
+	shader->setUniform(RsmShader::Uniforms::projectionMatrix, projectionMatrix);
+	shader->setUniform(RsmShader::Uniforms::cameraMatrix, viewMatrix);
+
+	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(1);
+	glEnableVertexAttribArray(2);
+	glDisableVertexAttribArray(3);
+	glDisableVertexAttribArray(4); //TODO: vao
+}

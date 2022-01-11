@@ -1,0 +1,380 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="browedit">
+      <UniqueIdentifier>{1b4dc4ea-a61b-467e-855c-a032436dfb40}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib">
+      <UniqueIdentifier>{452da480-0dd2-4112-87f2-67499909f19d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\imgui">
+      <UniqueIdentifier>{e82a5463-6bc8-4e76-8692-618bb2808a49}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\grflib">
+      <UniqueIdentifier>{7cd222ed-4481-4ff8-8437-9b1b80551da0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\zlib">
+      <UniqueIdentifier>{3c254da2-2548-4e35-947f-96754d36784f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="browedit\components">
+      <UniqueIdentifier>{3cc694e6-ac97-4cca-a862-6d0fdfa2a658}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="browedit\math">
+      <UniqueIdentifier>{41e5bf9f-c9c1-4212-9c11-ae6c1d107e63}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="browedit\util">
+      <UniqueIdentifier>{d1892397-df25-4ca8-9a2c-2e31e207640e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="browedit\gl">
+      <UniqueIdentifier>{8855fab8-31b7-4861-90d3-4552231af5a6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="data">
+      <UniqueIdentifier>{51fa371d-303e-403d-980e-8125b5ece6ff}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="data\shaders">
+      <UniqueIdentifier>{2ade0801-bc59-46dd-8653-fe2ea04d90f7}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="lib\imgui\imgui.cpp">
+      <Filter>lib\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\imgui\imgui_draw.cpp">
+      <Filter>lib\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\imgui\imgui_tables.cpp">
+      <Filter>lib\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\imgui\imgui_widgets.cpp">
+      <Filter>lib\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\imgui\backends\imgui_impl_glfw.cpp">
+      <Filter>lib\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\imgui\backends\imgui_impl_opengl3.cpp">
+      <Filter>lib\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\grflib\grfsupport.c">
+      <Filter>lib\grflib</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\grflib\rgz.c">
+      <Filter>lib\grflib</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\grflib\grf.c">
+      <Filter>lib\grflib</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\grflib\grfcrypt.c">
+      <Filter>lib\grflib</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\zlib\gzclose.c">
+      <Filter>lib\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\zlib\gzlib.c">
+      <Filter>lib\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\zlib\gzread.c">
+      <Filter>lib\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\zlib\gzwrite.c">
+      <Filter>lib\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\zlib\infback.c">
+      <Filter>lib\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\zlib\inffast.c">
+      <Filter>lib\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\zlib\inflate.c">
+      <Filter>lib\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\zlib\inftrees.c">
+      <Filter>lib\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\zlib\trees.c">
+      <Filter>lib\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\zlib\uncompr.c">
+      <Filter>lib\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\zlib\zutil.c">
+      <Filter>lib\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\zlib\adler32.c">
+      <Filter>lib\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\zlib\compress.c">
+      <Filter>lib\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\zlib\crc32.c">
+      <Filter>lib\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\zlib\deflate.c">
+      <Filter>lib\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\imgui\misc\cpp\imgui_stdlib.cpp">
+      <Filter>lib\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="browedit\BrowEdit.imgui.cpp">
+      <Filter>browedit</Filter>
+    </ClCompile>
+    <ClCompile Include="browedit\Config.cpp">
+      <Filter>browedit</Filter>
+    </ClCompile>
+    <ClCompile Include="browedit\Map.cpp">
+      <Filter>browedit</Filter>
+    </ClCompile>
+    <ClCompile Include="browedit\Node.cpp">
+      <Filter>browedit</Filter>
+    </ClCompile>
+    <ClCompile Include="browedit\BrowEdit.cpp">
+      <Filter>browedit</Filter>
+    </ClCompile>
+    <ClCompile Include="browedit\BrowEdit.glfw.cpp">
+      <Filter>browedit</Filter>
+    </ClCompile>
+    <ClCompile Include="browedit\util\FileIO.cpp">
+      <Filter>browedit\util</Filter>
+    </ClCompile>
+    <ClCompile Include="browedit\components\Rsm.cpp">
+      <Filter>browedit\components</Filter>
+    </ClCompile>
+    <ClCompile Include="browedit\components\RsmRenderer.cpp">
+      <Filter>browedit\components</Filter>
+    </ClCompile>
+    <ClCompile Include="browedit\components\Rsw.cpp">
+      <Filter>browedit\components</Filter>
+    </ClCompile>
+    <ClCompile Include="browedit\components\Transform.cpp">
+      <Filter>browedit\components</Filter>
+    </ClCompile>
+    <ClCompile Include="browedit\components\Component.cpp">
+      <Filter>browedit\components</Filter>
+    </ClCompile>
+    <ClCompile Include="browedit\components\Gnd.cpp">
+      <Filter>browedit\components</Filter>
+    </ClCompile>
+    <ClCompile Include="browedit\components\GndRenderer.cpp">
+      <Filter>browedit\components</Filter>
+    </ClCompile>
+    <ClCompile Include="browedit\math\AABB.cpp">
+      <Filter>browedit\math</Filter>
+    </ClCompile>
+    <ClCompile Include="browedit\math\Ray.cpp">
+      <Filter>browedit\math</Filter>
+    </ClCompile>
+    <ClCompile Include="browedit\math\Plane.cpp">
+      <Filter>browedit\math</Filter>
+    </ClCompile>
+    <ClCompile Include="browedit\util\Util.cpp">
+      <Filter>browedit\util</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\sfl\stb\stb_image.cpp">
+      <Filter>lib</Filter>
+    </ClCompile>
+    <ClCompile Include="browedit\gl\Texture.cpp">
+      <Filter>browedit\gl</Filter>
+    </ClCompile>
+    <ClCompile Include="browedit\gl\Shader.cpp">
+      <Filter>browedit\gl</Filter>
+    </ClCompile>
+    <ClCompile Include="browedit\gl\FBO.cpp">
+      <Filter>browedit\gl</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\glad\src\glad.c">
+      <Filter>lib</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\sfl\stb\stb_image_write.cpp">
+      <Filter>lib</Filter>
+    </ClCompile>
+    <ClCompile Include="browedit\MapView.cpp">
+      <Filter>browedit</Filter>
+    </ClCompile>
+    <ClCompile Include="browedit\NodeRenderer.cpp">
+      <Filter>browedit</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="lib\imgui\imgui.h">
+      <Filter>lib\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\imgui\imgui_internal.h">
+      <Filter>lib\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\imgui\imstb_rectpack.h">
+      <Filter>lib\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\imgui\imstb_textedit.h">
+      <Filter>lib\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\imgui\imstb_truetype.h">
+      <Filter>lib\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\imgui\imconfig.h">
+      <Filter>lib\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\grflib\grfcrypt.h">
+      <Filter>lib\grflib</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\grflib\grfsupport.h">
+      <Filter>lib\grflib</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\grflib\grftypes.h">
+      <Filter>lib\grflib</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\grflib\rgz.h">
+      <Filter>lib\grflib</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\grflib\grf.h">
+      <Filter>lib\grflib</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\zlib\gzguts.h">
+      <Filter>lib\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\zlib\inffast.h">
+      <Filter>lib\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\zlib\inffixed.h">
+      <Filter>lib\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\zlib\inflate.h">
+      <Filter>lib\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\zlib\inftrees.h">
+      <Filter>lib\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\zlib\trees.h">
+      <Filter>lib\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\zlib\zconf.h">
+      <Filter>lib\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\zlib\zlib.h">
+      <Filter>lib\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\zlib\zutil.h">
+      <Filter>lib\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\zlib\crc32.h">
+      <Filter>lib\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\zlib\deflate.h">
+      <Filter>lib\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\imgui\misc\cpp\imgui_stdlib.h">
+      <Filter>lib\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="browedit\BrowEdit.h">
+      <Filter>browedit</Filter>
+    </ClInclude>
+    <ClInclude Include="browedit\Config.h">
+      <Filter>browedit</Filter>
+    </ClInclude>
+    <ClInclude Include="browedit\Map.h">
+      <Filter>browedit</Filter>
+    </ClInclude>
+    <ClInclude Include="browedit\Node.h">
+      <Filter>browedit</Filter>
+    </ClInclude>
+    <ClInclude Include="browedit\util\FileIO.h">
+      <Filter>browedit\util</Filter>
+    </ClInclude>
+    <ClInclude Include="browedit\components\Rsm.h">
+      <Filter>browedit\components</Filter>
+    </ClInclude>
+    <ClInclude Include="browedit\components\RsmRenderer.h">
+      <Filter>browedit\components</Filter>
+    </ClInclude>
+    <ClInclude Include="browedit\components\Rsw.h">
+      <Filter>browedit\components</Filter>
+    </ClInclude>
+    <ClInclude Include="browedit\components\Transform.h">
+      <Filter>browedit\components</Filter>
+    </ClInclude>
+    <ClInclude Include="browedit\components\Component.h">
+      <Filter>browedit\components</Filter>
+    </ClInclude>
+    <ClInclude Include="browedit\components\Gnd.h">
+      <Filter>browedit\components</Filter>
+    </ClInclude>
+    <ClInclude Include="browedit\components\GndRenderer.h">
+      <Filter>browedit\components</Filter>
+    </ClInclude>
+    <ClInclude Include="browedit\components\Renderer.h">
+      <Filter>browedit\components</Filter>
+    </ClInclude>
+    <ClInclude Include="browedit\util\Tree.h">
+      <Filter>browedit\util</Filter>
+    </ClInclude>
+    <ClInclude Include="browedit\math\AABB.h">
+      <Filter>browedit\math</Filter>
+    </ClInclude>
+    <ClInclude Include="browedit\math\Ray.h">
+      <Filter>browedit\math</Filter>
+    </ClInclude>
+    <ClInclude Include="browedit\math\Plane.h">
+      <Filter>browedit\math</Filter>
+    </ClInclude>
+    <ClInclude Include="browedit\util\Util.h">
+      <Filter>browedit\util</Filter>
+    </ClInclude>
+    <ClInclude Include="browedit\gl\Texture.h">
+      <Filter>browedit\gl</Filter>
+    </ClInclude>
+    <ClInclude Include="browedit\gl\Shader.h">
+      <Filter>browedit\gl</Filter>
+    </ClInclude>
+    <ClInclude Include="browedit\gl\VAO.h">
+      <Filter>browedit\gl</Filter>
+    </ClInclude>
+    <ClInclude Include="browedit\gl\VBO.h">
+      <Filter>browedit\gl</Filter>
+    </ClInclude>
+    <ClInclude Include="browedit\gl\Vertex.h">
+      <Filter>browedit\gl</Filter>
+    </ClInclude>
+    <ClInclude Include="browedit\gl\VIO.h">
+      <Filter>browedit\gl</Filter>
+    </ClInclude>
+    <ClInclude Include="browedit\gl\FBO.h">
+      <Filter>browedit\gl</Filter>
+    </ClInclude>
+    <ClInclude Include="browedit\MapView.h">
+      <Filter>browedit</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="browedit\NodeRenderer.h">
+      <Filter>browedit</Filter>
+    </ClInclude>
+    <ClInclude Include="browedit\util\ResourceManager.h">
+      <Filter>browedit\util</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="BrowEdit3.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="icon.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="data\shaders\simple.fs">
+      <Filter>data\shaders</Filter>
+    </None>
+    <None Include="data\shaders\simple.vs">
+      <Filter>data\shaders</Filter>
+    </None>
+    <None Include="data\shaders\gnd.fs">
+      <Filter>data\shaders</Filter>
+    </None>
+    <None Include="data\shaders\gnd.vs">
+      <Filter>data\shaders</Filter>
+    </None>
+  </ItemGroup>
+</Project>
