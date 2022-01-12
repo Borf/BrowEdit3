@@ -37,6 +37,14 @@ class BrowEdit
 	} windowData;
 
 public:
+	enum class EditMode
+	{
+		Texture,
+		Object,
+		Wall
+	} editMode = EditMode::Object;
+
+
 	GLFWwindow* window;
 	double scrollDelta = 0;
 	Config config;
@@ -64,7 +72,13 @@ public:
 	void toolbar();
 
 	void openWindow();
+	void showObjectTree();
+	void buildObjectTree(Node* node);
+	void showObjectProperties();
+
+	std::vector<Node*> selectedNodes;
 
 
-	bool toolBarToggleButton(const char* name, int icon, bool &status);
+	bool toolBarToggleButton(const char* name, int icon, bool* status);
+	bool toolBarToggleButton(const char* name, int icon, bool status);
 };

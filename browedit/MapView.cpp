@@ -3,6 +3,7 @@
 #include "BrowEdit.h"
 #include "Node.h"
 #include "components/GndRenderer.h"
+#include "components/RsmRenderer.h"
 
 #include <browedit/gl/FBO.h>
 #include <browedit/gl/Vertex.h>
@@ -61,6 +62,15 @@ void MapView::update(BrowEdit* browEdit)
 		(ImGui::IsMouseDown(1) ? 0x02 : 0x00) |
 		(ImGui::IsMouseDown(2) ? 0x04 : 0x00);
 
+	//TODO: move this to the select action
+	map->rootNode->traverse([&browEdit](Node* n)
+	{
+			auto rsmRenderer = n->getComponent<RsmRenderer>();
+			if (rsmRenderer)
+				rsmRenderer->selected = std::find(browEdit->selectedNodes.begin(), browEdit->selectedNodes.end(), n) != browEdit->selectedNodes.end();
+	});
+
+
 	if (ImGui::IsWindowHovered())
 	{
 		if ((mouseState.buttons&4) != 0)
@@ -69,6 +79,7 @@ void MapView::update(BrowEdit* browEdit)
 			{
 				cameraRotX += (mouseState.position.y - prevMouseState.position.y) * 0.25f * browEdit->config.cameraMouseSpeed;
 				cameraRotY += (mouseState.position.x - prevMouseState.position.x) * 0.25f * browEdit->config.cameraMouseSpeed;
+				cameraRotX = glm::clamp(cameraRotX, 0.0f, 90.0f);
 			}
 			else
 			{

@@ -34,6 +34,7 @@ class RsmRenderer : public Renderer
 				lightAmbient,
 				lightIntensity,
 				lightDirection,
+				selection,
 				shadeType,
 				End
 			};
@@ -49,6 +50,7 @@ class RsmRenderer : public Renderer
 			bindUniform(Uniforms::lightDiffuse, "lightDiffuse");
 			bindUniform(Uniforms::lightIntensity, "lightIntensity");
 			bindUniform(Uniforms::lightDirection, "lightDirection");
+			bindUniform(Uniforms::selection, "selection");
 			bindUniform(Uniforms::shadeType, "shadeType");
 		}
 	};
@@ -100,4 +102,8 @@ public:
 	virtual void render();
 	void initMeshInfo(Rsm::Mesh* mesh, const glm::mat4& matrix = glm::mat4(1.0f));
 	void renderMesh(Rsm::Mesh* mesh, const glm::mat4& matrix);
+	
+
+	void setDirty() { this->matrixCached = false; }
+	bool selected = false;
 };

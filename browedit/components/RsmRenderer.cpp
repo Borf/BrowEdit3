@@ -10,6 +10,7 @@
 RsmRenderer::RsmRenderer()
 {
 	renderContext = RsmRenderContext::getInstance();
+	selected = (rand() % 1000) < 10;
 }
 
 void RsmRenderer::render()
@@ -79,8 +80,22 @@ void RsmRenderer::render()
 	shader->setUniform(RsmShader::Uniforms::lightDirection, lightDirection);
 	shader->setUniform(RsmShader::Uniforms::lightIntensity, rsw->light.intensity);
 
+	if (selected)
+	{
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		glLineWidth(20.0f);
+		glDepthMask(GL_FALSE);
+		shader->setUniform(RsmShader::Uniforms::selection, 1.0f);
+		renderMesh(rsm->rootMesh, glm::mat4(1.0f));
 
-	renderMesh(rsm->rootMesh, glm::mat4(1.0f));
+		glDepthMask(GL_TRUE);
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		shader->setUniform(RsmShader::Uniforms::selection, 0.25f);
+		renderMesh(rsm->rootMesh, glm::mat4(1.0f));
+		shader->setUniform(RsmShader::Uniforms::selection, 0.0f);
+	}
+	else
+		renderMesh(rsm->rootMesh, glm::mat4(1.0f));
 }
 
 

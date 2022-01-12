@@ -352,6 +352,9 @@
     <ClInclude Include="browedit\util\ResourceManager.h">
       <Filter>browedit\util</Filter>
     </ClInclude>
+    <ClInclude Include="browedit\components\ImguiProps.h">
+      <Filter>browedit\components</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="BrowEdit3.rc">

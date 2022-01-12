@@ -5,6 +5,8 @@
 #include "GndRenderer.h"
 #include "RsmRenderer.h"
 
+#include <imgui.h>
+#include <misc/cpp/imgui_stdlib.h>
 #include <browedit/util/ResourceManager.h>
 #include <browedit/util/FileIO.h>
 #include <iostream>
@@ -258,4 +260,66 @@ Rsw::QuadTreeNode::~QuadTreeNode()
 	for (int i = 0; i < 4; i++)
 		if (children[i])
 			delete children[i];
+}
+
+
+
+void Rsw::buildImGui()
+{
+	ImGui::Text("RSW");
+	if (ImGui::CollapsingHeader("Lighting", ImGuiTreeNodeFlags_DefaultOpen))
+	{
+		ImGui::DragInt("Longitude", &light.longitude, 1, 0, 360);
+		ImGui::DragInt("Latitude", &light.latitude, 1, 0, 360);
+		ImGui::DragFloat("Intensity", &light.intensity, 0.01f, 0, 1);
+		ImGui::ColorEdit3("Diffuse", glm::value_ptr(light.diffuse));
+		ImGui::ColorEdit3("Ambient", glm::value_ptr(light.ambient));
+	}
+	if (ImGui::CollapsingHeader("Water", ImGuiTreeNodeFlags_DefaultOpen))
+	{
+		ImGui::DragInt("Type", &water.type, 1, 0, 1000);
+		ImGui::DragFloat("Height", &water.height, 0.1f, -100, 100);
+		ImGui::DragFloat("Amplitude", &water.amplitude, 0.1f, -100, 100);
+		ImGui::DragInt("Animation Speed", &water.animSpeed, 1, 0, 1000);
+		ImGui::DragFloat("Phase", &water.phase, 0.1f, -100, 100);
+		ImGui::DragFloat("Surface Curve", &water.surfaceCurve, 0.1f, -100, 100);
+	}
+}
+
+void RswObject::buildImGui()
+{
+	auto renderer = node->getComponent<RsmRenderer>();
+	ImGui::Text("Object");
+	if (ImGui::DragFloat3("Position", glm::value_ptr(position)) && renderer)
+		renderer->setDirty();
+	if (ImGui::DragFloat3("Scale", glm::value_ptr(scale), 0.01f) && renderer)
+		renderer->setDirty();
+	if (ImGui::DragFloat3("Rotation", glm::value_ptr(rotation)) && renderer)
+		renderer->setDirty();
+}
+
+void RswModel::buildImGui()
+{
+	ImGui::Text("Model");
+	ImGui::DragInt("Animation Type", &animType, 1, 0, 100);
+	ImGui::DragFloat("Animation Speed", &animSpeed, 0.01f, 0.0f, 100.0f);
+	ImGui::DragInt("Block Type", &blockType, 1, 0, 100);
+	ImGui::InputText("Filename", &fileName, ImGuiInputTextFlags_ReadOnly);
+}
+
+void RswEffect::buildImGui()
+{
+	ImGui::Text("Effect");
+
+}
+void RswSound::buildImGui()
+{
+	ImGui::Text("Sound");
+
+}
+
+void RswLight::buildImGui()
+{
+	ImGui::Text("Light");
+
 }

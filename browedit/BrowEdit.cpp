@@ -11,6 +11,8 @@
 #include <browedit/gl/Texture.h>
 #include <GLFW/glfw3.h>
 #include "NodeRenderer.h"
+#include "Node.h"
+#include "components/ImguiProps.h"
 
 
 int main()
@@ -79,6 +81,12 @@ void BrowEdit::run()
 		if (windowData.openVisible)
 			openWindow();
 
+		if (editMode == EditMode::Object)
+		{
+			showObjectTree();
+			showObjectProperties();
+		}
+
 		for (std::size_t i = 0; i < mapViews.size(); i++)
 		{
 			showMapWindow(mapViews[i]);
@@ -102,32 +110,43 @@ void BrowEdit::run()
 
 
 
-bool BrowEdit::toolBarToggleButton(const char* name, int icon, bool &status)
+bool BrowEdit::toolBarToggleButton(const char* name, int icon, bool* status)
 {
 	ImVec2 v1((1.0f / iconsTexture->width) * (36 * (icon%4) + 1.5f), //TODO: remove these hardcoded numbers
 		(1.0f / iconsTexture->height) * (36 * (icon/4) + 1.5f));
 	ImVec2 v2(v1.x + (1.0f / iconsTexture->width) * 34, v1.y + (1.0f / iconsTexture->height) * 34);
 	ImGui::PushID(name);
 
-	bool clicked = ImGui::ImageButton((ImTextureID)(long long)iconsTexture->id, ImVec2(32, 32), v1, v2, 0, ImVec4(144 / 255.0f, 193 / 255.0f, 249 / 255.0f, status ? 1.0f : 0.0f));
+	bool clicked = ImGui::ImageButton((ImTextureID)(long long)iconsTexture->id, ImVec2(32, 32), v1, v2, 0, ImVec4(144 / 255.0f, 193 / 255.0f, 249 / 255.0f, *status ? 1.0f : 0.0f));
 	if(clicked)
-		status = !status;
+		*status = !*status;
 	ImGui::PopID();
 	return clicked;
 }
 
+bool BrowEdit::toolBarToggleButton(const char* name, int icon, bool status)
+{
+	ImVec2 v1((1.0f / iconsTexture->width) * (36 * (icon % 4) + 1.5f), //TODO: remove these hardcoded numbers
+		(1.0f / iconsTexture->height) * (36 * (icon / 4) + 1.5f));
+	ImVec2 v2(v1.x + (1.0f / iconsTexture->width) * 34, v1.y + (1.0f / iconsTexture->height) * 34);
+	ImGui::PushID(name);
+
+	bool clicked = ImGui::ImageButton((ImTextureID)(long long)iconsTexture->id, ImVec2(32, 32), v1, v2, 0, ImVec4(144 / 255.0f, 193 / 255.0f, 249 / 255.0f, status ? 1.0f : 0.0f));
+	ImGui::PopID();
+	return clicked;
+}
 void BrowEdit::showMapWindow(MapView& mapView)
 {
 	ImGui::SetNextWindowSizeConstraints(ImVec2(300, 300), ImVec2(2048, 2048));
 	if (ImGui::Begin(mapView.viewName.c_str(), &mapView.opened))
 	{
-		toolBarToggleButton("viewLightMapShadow", 0, mapView.viewLightmapShadow);
+		toolBarToggleButton("viewLightMapShadow", 0, &mapView.viewLightmapShadow);
 		ImGui::SameLine();
-		toolBarToggleButton("viewLightmapColor", 1, mapView.viewLightmapColor);
+		toolBarToggleButton("viewLightmapColor", 1, &mapView.viewLightmapColor);
 		ImGui::SameLine();
-		toolBarToggleButton("viewColors", 2, mapView.viewColors);
+		toolBarToggleButton("viewColors", 2, &mapView.viewColors);
 		ImGui::SameLine();
-		toolBarToggleButton("viewLighting", 3, mapView.viewLighting);
+		toolBarToggleButton("viewLighting", 3, &mapView.viewLighting);
 
 
 		auto size = ImGui::GetContentRegionAvail();
@@ -191,34 +210,23 @@ void BrowEdit::toolbar()
 		| ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoMove;
 	ImGui::Begin("Toolbar", 0, toolbarFlags);
 
-	ImGui::Text("Texture");
+	if(editMode == EditMode::Texture)
+		ImGui::Text("Texture");
+	else if (editMode == EditMode::Object)
+		ImGui::Text("Object");
+	else if (editMode == EditMode::Wall)
+		ImGui::Text("Wall");
 	ImGui::SameLine();
 
-	ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor::HSV(0, 0.6f, 0.6f));
-	ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)ImColor::HSV(0, 0.7f, 0.7f));
-	ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)ImColor::HSV(0, 0.8f, 0.8f));
-	if (ImGui::Button("Texture"))
-	{
-
-	}
-	ImGui::PopStyleColor(3);
+	if (toolBarToggleButton("texturemode", 4, editMode == EditMode::Texture))
+		editMode = EditMode::Texture;
 	ImGui::SameLine();
-
-
-	ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor::HSV(0.5f, 0.6f, 0.6f));
-	ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)ImColor::HSV(0.5f, 0.7f, 0.7f));
-	ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)ImColor::HSV(0.5f, 0.8f, 0.8f));
-	if (ImGui::Button("Model"))
-	{
-
-	}
-	ImGui::PopStyleColor(3);
+	if (toolBarToggleButton("objectmode", 5, editMode == EditMode::Object))
+		editMode = EditMode::Object;
 	ImGui::SameLine();
+	if (toolBarToggleButton("wallmode", 6, editMode == EditMode::Wall))
+		editMode = EditMode::Wall;
 
-	ImGui::Separator();
-
-	float f = 0;
-	char s[1024] = "test";
 	ImGui::End();
 }
 
@@ -275,3 +283,66 @@ void BrowEdit::loadMap(const std::string& file)
 	mapViews.push_back(MapView(map, file + "##" + std::to_string(viewCount)));
 }
 
+
+
+void BrowEdit::showObjectTree()
+{
+	ImGui::Begin("Objects");
+	for (auto m : maps)
+	{
+		buildObjectTree(m->rootNode);
+	}
+	ImGui::End();
+}
+
+
+void BrowEdit::buildObjectTree(Node* node)
+{
+	if (node->children.size() > 0)
+	{
+		int flags = ImGuiTreeNodeFlags_DefaultOpen;
+		if (std::find(selectedNodes.begin(), selectedNodes.end(), node) != selectedNodes.end())
+			flags |= ImGuiTreeNodeFlags_Selected;
+		bool opened = ImGui::TreeNodeEx(node->name.c_str(), flags);
+		if (ImGui::IsItemClicked())
+		{
+			selectedNodes.clear();
+			selectedNodes.push_back(node);
+		}
+		if(opened)
+		{
+			for (auto n : node->children)
+				buildObjectTree(n);
+			ImGui::TreePop();
+		}
+	}
+	else
+	{
+		int flags = ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen | ImGuiTreeNodeFlags_Bullet;
+		if (std::find(selectedNodes.begin(), selectedNodes.end(), node) != selectedNodes.end())
+			flags |= ImGuiTreeNodeFlags_Selected;
+		bool opened = ImGui::TreeNodeEx(node->name.c_str(), flags);
+		if (ImGui::IsItemClicked())
+		{
+			selectedNodes.clear();
+			selectedNodes.push_back(node);
+		}
+	}
+}
+
+
+void BrowEdit::showObjectProperties()
+{
+	ImGui::Begin("Properties");
+	if (selectedNodes.size() == 1)
+	{
+		ImGui::InputText("Name", &selectedNodes[0]->name);
+		for (auto c : selectedNodes[0]->components)
+		{
+			auto props = dynamic_cast<ImguiProps*>(c);
+			if (props)
+				props->buildImGui();
+		}
+	}
+	ImGui::End();
+}

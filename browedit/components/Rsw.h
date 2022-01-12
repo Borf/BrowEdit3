@@ -1,12 +1,13 @@
 #pragma once
 
 #include "Component.h"
+#include "ImguiProps.h"
 #include <string>
 #include <glm/glm.hpp>
 #include <browedit/util/tree.h>
 #include <browedit/math/AABB.h>
 
-class Rsw : public Component
+class Rsw : public Component, public ImguiProps
 {
 public:
 	short version;
@@ -53,11 +54,13 @@ public:
 
 	void load(const std::string& fileName);
 	void save(const std::string& fileName);
+
+	void buildImGui();
 };
 
 
 
-class RswObject : public Component
+class RswObject : public Component, public ImguiProps
 {
 public:
 	glm::vec3 position; //TODO: put in transform
@@ -65,9 +68,10 @@ public:
 	glm::vec3 scale;
 
 	void load(std::istream* is, int version);
+	void buildImGui();
 };
 
-class RswModel : public Component
+class RswModel : public Component, public ImguiProps
 {
 public:
 	math::AABB aabb;
@@ -78,10 +82,11 @@ public:
 
 	RswModel() : aabb(glm::vec3(), glm::vec3()) {}
 	void load(std::istream* is, int version);
+	void buildImGui();
 };
 
 
-class RswLight : public Component
+class RswLight : public Component, public ImguiProps
 {
 public:
 	float todo[10];
@@ -90,9 +95,10 @@ public:
 
 	RswLight() {}
 	void load(std::istream* is);
+	void buildImGui();
 };
 
-class RswEffect : public Component
+class RswEffect : public Component, public ImguiProps
 {
 public:
 	int	id;
@@ -104,9 +110,10 @@ public:
 
 	RswEffect() {}
 	void load(std::istream* is);
+	void buildImGui();
 };
 
-class RswSound : public Component
+class RswSound : public Component, public ImguiProps
 {
 public:
 	std::string fileName;
@@ -124,4 +131,5 @@ public:
 
 	RswSound() {}
 	void load(std::istream* is, int version);
+	void buildImGui();
 };

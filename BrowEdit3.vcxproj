@@ -69,6 +69,7 @@
     <ClInclude Include="browedit\components\Component.h" />
     <ClInclude Include="browedit\components\Gnd.h" />
     <ClInclude Include="browedit\components\GndRenderer.h" />
+    <ClInclude Include="browedit\components\ImguiProps.h" />
     <ClInclude Include="browedit\components\Renderer.h" />
     <ClInclude Include="browedit\components\Rsm.h" />
     <ClInclude Include="browedit\components\RsmRenderer.h" />

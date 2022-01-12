@@ -7,6 +7,7 @@ uniform vec3 lightDirection;
 uniform float lightIntensity;
 
 uniform int shadeType;
+uniform float selection;
 
 
 varying vec2 texCoord;
@@ -26,7 +27,7 @@ void main()
 
 	if(shadeType == 4) // only for editor
 		color.rgb *= lightDiffuse;
-
-	gl_FragData[0] = color;
+	
+	gl_FragData[0] = mix(color, vec4(1,0,0,1), min(1.0,selection));
 	//gl_FragData[1] = highlightColor;
 }
