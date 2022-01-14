@@ -1,14 +1,15 @@
 #include "Node.h"
 #include "components/Component.h"
-#include "components/Transform.h"
 #include "components/Renderer.h"
 
 
 Node::Node(const std::string& name, Node* parent) : name(name), parent(parent)
 {
-	addComponent(new Transform());
-	if(parent)
+	if (parent)
+	{
 		parent->children.push_back(this);
+		this->root = parent->root;
+	}
 }
 
 void Node::addComponent(Component* component)
@@ -16,12 +17,18 @@ void Node::addComponent(Component* component)
 	component->node = this;
 	components.push_back(component);
 
-
-	Transform* transform = dynamic_cast<Transform*>(component);
-	if (transform)
-		this->transform = transform;
+}
 
 
+void Node::setParent(Node* newParent)
+{
+	if (parent)
+	{
+		//TODO: remove from old parent
+	}
+	parent = newParent;
+	parent->children.push_back(this);
+	this->root = parent->root;
 }
 
 void Node::traverse(const std::function<void(Node*)>& callBack)

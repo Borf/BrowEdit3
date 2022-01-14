@@ -12,6 +12,8 @@
 #include <GLFW/glfw3.h>
 #include "NodeRenderer.h"
 #include "Node.h"
+#include "components/Rsw.h"
+#include "components/Gnd.h"
 #include "components/ImguiProps.h"
 
 
@@ -98,6 +100,9 @@ void BrowEdit::run()
 				//TODO: check if there are still mapviews for map
 			}
 		}
+		
+
+		ImGui::ShowMetricsWindow();
 
 		imguiLoopEnd();
 		glfwLoopEnd();
@@ -288,15 +293,18 @@ void BrowEdit::loadMap(const std::string& file)
 void BrowEdit::showObjectTree()
 {
 	ImGui::Begin("Objects");
+	ImGui::PushFont(font);
 	for (auto m : maps)
 	{
-		buildObjectTree(m->rootNode);
+		buildObjectTree(m->rootNode, m);
 	}
+	ImGui::PopFont();
+
 	ImGui::End();
 }
 
 
-void BrowEdit::buildObjectTree(Node* node)
+void BrowEdit::buildObjectTree(Node* node, Map* map)
 {
 	if (node->children.size() > 0)
 	{
@@ -312,7 +320,7 @@ void BrowEdit::buildObjectTree(Node* node)
 		if(opened)
 		{
 			for (auto n : node->children)
-				buildObjectTree(n);
+				buildObjectTree(n, map);
 			ImGui::TreePop();
 		}
 	}
@@ -322,6 +330,22 @@ void BrowEdit::buildObjectTree(Node* node)
 		if (std::find(selectedNodes.begin(), selectedNodes.end(), node) != selectedNodes.end())
 			flags |= ImGuiTreeNodeFlags_Selected;
 		bool opened = ImGui::TreeNodeEx(node->name.c_str(), flags);
+		if (ImGui::IsItemClicked() && ImGui::IsMouseDoubleClicked(0))
+		{
+			auto rswObject = node->getComponent<RswObject>();
+			if (rswObject)
+			{
+				auto gnd = map->rootNode->getComponent<Gnd>();
+				for (auto& m : mapViews)
+				{
+					if (m.map->rootNode == node->root)
+					{
+						m.cameraCenter.x = 5 * gnd->width + rswObject->position.x;
+						m.cameraCenter.y = -1 * (-10 - 5 * gnd->height + rswObject->position.z);
+					}
+				}
+			}
+		}
 		if (ImGui::IsItemClicked())
 		{
 			selectedNodes.clear();
@@ -334,6 +358,7 @@ void BrowEdit::buildObjectTree(Node* node)
 void BrowEdit::showObjectProperties()
 {
 	ImGui::Begin("Properties");
+	ImGui::PushFont(font);
 	if (selectedNodes.size() == 1)
 	{
 		ImGui::InputText("Name", &selectedNodes[0]->name);
@@ -344,5 +369,6 @@ void BrowEdit::showObjectProperties()
 				props->buildImGui();
 		}
 	}
+	ImGui::PopFont();
 	ImGui::End();
 }

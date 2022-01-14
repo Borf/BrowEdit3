@@ -37,6 +37,7 @@ class BrowEdit
 	} windowData;
 
 public:
+	ImFont* font;
 	enum class EditMode
 	{
 		Texture,
@@ -73,7 +74,7 @@ public:
 
 	void openWindow();
 	void showObjectTree();
-	void buildObjectTree(Node* node);
+	void buildObjectTree(Node* node, Map* map);
 	void showObjectProperties();
 
 	std::vector<Node*> selectedNodes;

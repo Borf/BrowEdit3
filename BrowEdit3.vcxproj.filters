@@ -148,9 +148,6 @@
     <ClCompile Include="browedit\components\Rsw.cpp">
       <Filter>browedit\components</Filter>
     </ClCompile>
-    <ClCompile Include="browedit\components\Transform.cpp">
-      <Filter>browedit\components</Filter>
-    </ClCompile>
     <ClCompile Include="browedit\components\Component.cpp">
       <Filter>browedit\components</Filter>
     </ClCompile>
@@ -289,9 +286,6 @@
       <Filter>browedit\components</Filter>
     </ClInclude>
     <ClInclude Include="browedit\components\Rsw.h">
-      <Filter>browedit\components</Filter>
-    </ClInclude>
-    <ClInclude Include="browedit\components\Transform.h">
       <Filter>browedit\components</Filter>
     </ClInclude>
     <ClInclude Include="browedit\components\Component.h">

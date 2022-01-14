@@ -9,16 +9,8 @@ namespace gl { class FBO; }
 class Map
 {
 public:
-	
-	
-
-
 	std::string name;
-
 	Node* rootNode = nullptr;
-	Rsw* rsw = nullptr;
-	Node* gndNode = nullptr;
 
 	Map(const std::string& name);
-
 };

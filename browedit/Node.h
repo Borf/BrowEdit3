@@ -5,19 +5,19 @@
 #include <functional>
 
 class Component;
-class Transform;
 
 class Node
 {
 public:
 	std::vector<Component*> components;
 	std::vector<Node*> children;
-	Transform* transform = nullptr;
 	Node* parent = nullptr;
+	Node* root = this;
 	std::string name;
 
 	Node(const std::string& name = "", Node* parent = nullptr);
 	void addComponent(Component* component);
+	void setParent(Node* newParent);
 	
 	template<class T>
 	T* getComponent()

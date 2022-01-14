@@ -42,7 +42,12 @@ bool BrowEdit::imguiBegin()
     // - Read 'docs/FONTS.md' for more instructions and details.
     //io.Fonts->AddFontDefault();
     //io.Fonts->AddFontFromFileTTF("../../misc/fonts/Roboto-Medium.ttf", 16.0f);
-    io.Fonts->AddFontFromFileTTF("data/segoeui.ttf", 20.0f);
+//    io.Fonts->AddFontFromFileTTF("data/segoeui.ttf", 20.0f, nullptr, io.Fonts->GetGlyphRangesKorean());
+    font = io.Fonts->AddFontFromFileTTF("data/segoeui.ttf", 20.0f, nullptr, io.Fonts->GetGlyphRangesKorean());
+    io.Fonts->Build();
+
+    //    io.Fonts->AddFontFromFileTTF("myfontfile.ttf", size_in_pixels, NULL, io.Fonts->GetGlyphRangesJapanese());  // Load Japanese characters
+
     //io.Fonts->AddFontFromFileTTF("../../misc/fonts/DroidSans.ttf", 16.0f);
     //io.Fonts->AddFontFromFileTTF("../../misc/fonts/ProggyTiny.ttf", 10.0f);
     //ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18.0f, NULL, io.Fonts->GetGlyphRangesJapanese());

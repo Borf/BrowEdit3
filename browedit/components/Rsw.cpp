@@ -109,12 +109,27 @@ void Rsw::load(const std::string& fileName)
 	int objectCount;
 	file->read(reinterpret_cast<char*>(&objectCount), sizeof(int));
 	std::cout << "RSW: Loading " << objectCount << " objects" << std::endl;
+
+	Node* models = new Node("Models", node);
+	Node* lights = new Node("Lights", node);
+	Node* effects = new Node("Effects", node);
+	Node* sounds = new Node("Sounds", node);
+
 	for (int i = 0; i < objectCount; i++)
 	{
-		Node* object = new Node("", node);
+		Node* object = new Node("");
 		auto rswObject = new RswObject();
 		object->addComponent(rswObject);
 		rswObject->load(file, version);
+
+		if (object->getComponent<RswModel>())
+			object->setParent(models);
+		if (object->getComponent<RswEffect>())
+			object->setParent(effects);
+		if (object->getComponent<RswSound>())
+			object->setParent(sounds);
+		if (object->getComponent<RswLight>())
+			object->setParent(lights);
 	}
 
 
@@ -310,16 +325,42 @@ void RswModel::buildImGui()
 void RswEffect::buildImGui()
 {
 	ImGui::Text("Effect");
-
+	ImGui::DragInt("Type", &id, 1, 0, 500); //TODO: change this to a combobox
+	ImGui::DragFloat("Loop", &loop, 0.01f, 0.0f, 100.0f);
+	ImGui::DragFloat("Param 1", &param1, 0.01f, 0.0f, 100.0f);
+	ImGui::DragFloat("Param 2", &param2, 0.01f, 0.0f, 100.0f);
+	ImGui::DragFloat("Param 3", &param3, 0.01f, 0.0f, 100.0f);
+	ImGui::DragFloat("Param 4", &param4, 0.01f, 0.0f, 100.0f);
 }
+
 void RswSound::buildImGui()
 {
 	ImGui::Text("Sound");
+	ImGui::InputText("Filename", &fileName);
+	ImGui::DragFloat("Volume", &vol, 0.01f, 0.0f, 100.0f);
 
+	ImGui::DragInt("Width", (int*)&width, 1, 0, 10000); //TODO: remove cast
+	ImGui::DragInt("Height", (int*)&height, 1, 0, 10000); //TODO: remove cast
+	ImGui::DragFloat("Range", &range, 0.01f, 0.0f, 100.0f);
+	ImGui::DragFloat("Cycle", &cycle, 0.01f, 0.0f, 100.0f);
+
+	ImGui::InputText("unknown6", unknown6, 8, ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_CharsUppercase);
+
+	ImGui::DragFloat("Unknown7", &unknown7, 0.01f, 0.0f, 100.0f);
+	ImGui::DragFloat("Unknown8", &unknown8, 0.01f, 0.0f, 100.0f);
 }
 
 void RswLight::buildImGui()
 {
 	ImGui::Text("Light");
 
+	for (int i = 0; i < 10; i++)
+	{
+		ImGui::PushID(i);
+		ImGui::DragFloat("Unknown", &todo[i], 0.01f, -100.0f, 100.0f);
+		ImGui::PopID();
+	}
+
+	ImGui::ColorEdit3("Color", glm::value_ptr(color));
+	ImGui::DragFloat("Todo2", &todo2, 0.01f, -100.0f, 100.0f);
 }
