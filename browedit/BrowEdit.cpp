@@ -56,7 +56,12 @@ void BrowEdit::run()
 			config.setupFileIO();
 	}
 	else
+	{
 		windowData.configVisible = true;
+		util::FileIO::begin();
+		util::FileIO::addDirectory(".\\");
+		util::FileIO::end();
+	}
 
 	backgroundTexture = new gl::Texture("data\\background.png", false);
 	iconsTexture = new gl::Texture("data\\icons.png", false);
