@@ -115,12 +115,12 @@ void BrowEdit::run()
 
 
 
-bool BrowEdit::toolBarToggleButton(const char* name, int icon, bool* status)
+bool BrowEdit::toolBarToggleButton(const std::string_view &name, int icon, bool* status)
 {
 	ImVec2 v1((1.0f / iconsTexture->width) * (36 * (icon%4) + 1.5f), //TODO: remove these hardcoded numbers
 		(1.0f / iconsTexture->height) * (36 * (icon/4) + 1.5f));
 	ImVec2 v2(v1.x + (1.0f / iconsTexture->width) * 34, v1.y + (1.0f / iconsTexture->height) * 34);
-	ImGui::PushID(name);
+	ImGui::PushID(name.data());
 
 	bool clicked = ImGui::ImageButton((ImTextureID)(long long)iconsTexture->id, ImVec2(32, 32), v1, v2, 0, ImVec4(144 / 255.0f, 193 / 255.0f, 249 / 255.0f, *status ? 1.0f : 0.0f));
 	if(clicked)
@@ -129,12 +129,12 @@ bool BrowEdit::toolBarToggleButton(const char* name, int icon, bool* status)
 	return clicked;
 }
 
-bool BrowEdit::toolBarToggleButton(const char* name, int icon, bool status)
+bool BrowEdit::toolBarToggleButton(const std::string_view& name, int icon, bool status)
 {
 	ImVec2 v1((1.0f / iconsTexture->width) * (36 * (icon % 4) + 1.5f), //TODO: remove these hardcoded numbers
 		(1.0f / iconsTexture->height) * (36 * (icon / 4) + 1.5f));
 	ImVec2 v2(v1.x + (1.0f / iconsTexture->width) * 34, v1.y + (1.0f / iconsTexture->height) * 34);
-	ImGui::PushID(name);
+	ImGui::PushID(name.data());
 
 	bool clicked = ImGui::ImageButton((ImTextureID)(long long)iconsTexture->id, ImVec2(32, 32), v1, v2, 0, ImVec4(144 / 255.0f, 193 / 255.0f, 249 / 255.0f, status ? 1.0f : 0.0f));
 	ImGui::PopID();

@@ -4,6 +4,7 @@
 #include "MapView.h"
 #include <json.hpp>
 #include <imgui.h>
+#include <string_view>
 using json = nlohmann::json;
 
 class Map;
@@ -80,6 +81,6 @@ public:
 	std::vector<Node*> selectedNodes;
 
 
-	bool toolBarToggleButton(const char* name, int icon, bool* status);
-	bool toolBarToggleButton(const char* name, int icon, bool status);
+	bool toolBarToggleButton(const std::string_view &name, int icon, bool* status);
+	bool toolBarToggleButton(const std::string_view &name, int icon, bool status);
 };
