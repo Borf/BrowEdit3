@@ -65,6 +65,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="browedit\BrowEdit.h" />
+    <ClInclude Include="browedit\components\Collider.h" />
     <ClInclude Include="browedit\components\Component.h" />
     <ClInclude Include="browedit\components\Gnd.h" />
     <ClInclude Include="browedit\components\GndRenderer.h" />

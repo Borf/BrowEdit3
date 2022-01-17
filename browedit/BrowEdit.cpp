@@ -35,33 +35,8 @@ void BrowEdit::run()
 		std::cerr << "Error initializing imgui" << std::endl;
 		return;
 	}
-	json configJson;
-	std::ifstream configFile("config.json");
-	if (configFile.is_open())
-	{
-		configFile >> configJson;
-		configFile.close();
-		try {
-			config = configJson.get<Config>();
-		}
-		catch (...) {}
-		if (config.isValid() != "")
-		{
-			windowData.configVisible = true;
-			util::FileIO::begin();
-			util::FileIO::addDirectory(".\\");
-			util::FileIO::end();
-		}
-		else
-			config.setupFileIO();
-	}
-	else
-	{
-		windowData.configVisible = true;
-		util::FileIO::begin();
-		util::FileIO::addDirectory(".\\");
-		util::FileIO::end();
-	}
+	configBegin();
+
 
 	backgroundTexture = new gl::Texture("data\\background.png", false);
 	iconsTexture = new gl::Texture("data\\icons.png", false);
@@ -118,7 +93,36 @@ void BrowEdit::run()
 	glfwEnd();
 }
 
-
+void BrowEdit::configBegin()
+{
+	json configJson;
+	std::ifstream configFile("config.json");
+	if (configFile.is_open())
+	{
+		configFile >> configJson;
+		configFile.close();
+		try {
+			config = configJson.get<Config>();
+		}
+		catch (...) {}
+		if (config.isValid() != "")
+		{
+			windowData.configVisible = true;
+			util::FileIO::begin();
+			util::FileIO::addDirectory(".\\");
+			util::FileIO::end();
+		}
+		else
+			config.setupFileIO();
+	}
+	else
+	{
+		windowData.configVisible = true;
+		util::FileIO::begin();
+		util::FileIO::addDirectory(".\\");
+		util::FileIO::end();
+	}
+}
 
 bool BrowEdit::toolBarToggleButton(const std::string_view &name, int icon, bool* status)
 {
@@ -160,7 +164,7 @@ void BrowEdit::showMapWindow(MapView& mapView)
 
 
 		auto size = ImGui::GetContentRegionAvail();
-		mapView.update(this);
+		mapView.update(this, size);
 		mapView.render(size.x / (float)size.y, config.fov);
 		ImTextureID id = (ImTextureID)((long long)mapView.fbo->texid[0]); //TODO: remove cast for 32bit
 		ImGui::Image(id, size, ImVec2(0,1), ImVec2(1,0));

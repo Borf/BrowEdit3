@@ -36,6 +36,7 @@ class RsmRenderer : public Renderer
 				lightDirection,
 				selection,
 				shadeType,
+				lightToggle,
 				End
 			};
 		};
@@ -52,13 +53,16 @@ class RsmRenderer : public Renderer
 			bindUniform(Uniforms::lightDirection, "lightDirection");
 			bindUniform(Uniforms::selection, "selection");
 			bindUniform(Uniforms::shadeType, "shadeType");
+			bindUniform(Uniforms::lightToggle, "lightToggle");
 		}
 	};
+public:
 	class RsmRenderContext : public Renderer::RenderContext, public util::Singleton<RsmRenderContext>
 	{
 	public:
 		RsmShader* shader = nullptr;
 		glm::mat4 viewMatrix = glm::mat4(1.0f);
+		bool viewLighting = true;
 
 		RsmRenderContext();
 		virtual void preFrame(const glm::mat4& projectionMatrix, const glm::mat4& viewMatrix) override;
@@ -95,8 +99,6 @@ class RsmRenderer : public Renderer
 
 	std::vector<gl::Texture*> textures; //should this be shared over all RsmRenderers with the same Rsm? static map<Rsm, std::vector<Texture*> ???
 	bool matrixCached = false;
-	glm::mat4 matrixCache;
-
 public:
 	RsmRenderer();
 	virtual void render();
@@ -104,6 +106,8 @@ public:
 	void renderMesh(Rsm::Mesh* mesh, const glm::mat4& matrix);
 	
 
+
 	void setDirty() { this->matrixCached = false; }
 	bool selected = false;
+	glm::mat4 matrixCache;
 };

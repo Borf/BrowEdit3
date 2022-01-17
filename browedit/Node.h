@@ -3,7 +3,9 @@
 #include <vector>
 #include <string>
 #include <functional>
+#include <glm/glm.hpp>
 
+namespace math { class Ray; }
 class Component;
 
 class Node
@@ -31,4 +33,7 @@ public:
 		return nullptr;
 	}
 	void traverse(const std::function<void(Node*)>& callBack);
+
+	//TODO: move this somewhere else?
+	std::vector<std::pair<Node*, std::vector<glm::vec3>>> getCollisions(const math::Ray& ray);
 };

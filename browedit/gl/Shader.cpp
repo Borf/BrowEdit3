@@ -79,6 +79,10 @@ namespace gl
 		glAttachShader(programId, shaderId);
 	}
 
+	void Shader::setUniform(int name, bool value)
+	{
+		glUniform1i(uniforms[name], value ? 1 : 0);
+	}
 
 	void Shader::setUniform(int name, int value)
 	{

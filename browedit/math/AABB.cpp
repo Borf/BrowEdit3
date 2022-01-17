@@ -45,3 +45,63 @@ bool math::AABB::hasRayCollision(const Ray& r, float minDistance, float maxDista
 
 	return ((tmin < maxDistance) && (tmax > minDistance));
 }
+
+
+std::vector<glm::vec3> math::AABB::box(const glm::vec3& tl, const glm::vec3& br)
+{
+	std::vector<glm::vec3> ret;
+	//front
+	ret.push_back(glm::vec3(tl.x, br.y, tl.z));
+	ret.push_back(glm::vec3(br.x, tl.y, tl.z));
+	ret.push_back(glm::vec3(tl.x, tl.y, tl.z));
+
+	ret.push_back(glm::vec3(br.x, br.y, tl.z));
+	ret.push_back(glm::vec3(br.x, tl.y, tl.z));
+	ret.push_back(glm::vec3(tl.x, br.y, tl.z));
+	//back
+	ret.push_back(glm::vec3(tl.x, tl.y, br.z));
+	ret.push_back(glm::vec3(br.x, tl.y, br.z));
+	ret.push_back(glm::vec3(tl.x, br.y, br.z));
+
+	ret.push_back(glm::vec3(tl.x, br.y, br.z));
+	ret.push_back(glm::vec3(br.x, tl.y, br.z));
+	ret.push_back(glm::vec3(br.x, br.y, br.z));
+
+	//top
+	ret.push_back(glm::vec3(tl.x, tl.y, tl.z));
+	ret.push_back(glm::vec3(br.x, tl.y, tl.z));
+	ret.push_back(glm::vec3(tl.x, tl.y, br.z));
+
+	ret.push_back(glm::vec3(br.x, tl.y, br.z));
+	ret.push_back(glm::vec3(br.x, tl.y, tl.z));
+	ret.push_back(glm::vec3(tl.x, tl.y, br.z));
+
+
+	//bottom
+	ret.push_back(glm::vec3(tl.x, br.y, br.z));
+	ret.push_back(glm::vec3(br.x, br.y, tl.z));
+	ret.push_back(glm::vec3(tl.x, br.y, tl.z));
+
+	ret.push_back(glm::vec3(br.x, br.y, br.z));
+	ret.push_back(glm::vec3(br.x, br.y, tl.z));
+	ret.push_back(glm::vec3(tl.x, br.y, br.z));
+
+	//left
+	ret.push_back(glm::vec3(tl.x, tl.y, br.z));
+	ret.push_back(glm::vec3(tl.x, br.y, tl.z));
+	ret.push_back(glm::vec3(tl.x, tl.y, tl.z));
+
+	ret.push_back(glm::vec3(tl.x, br.y, br.z));
+	ret.push_back(glm::vec3(tl.x, br.y, tl.z));
+	ret.push_back(glm::vec3(tl.x, tl.y, br.z));
+	//right
+	ret.push_back(glm::vec3(br.x, tl.y, tl.z));
+	ret.push_back(glm::vec3(br.x, br.y, tl.z));
+	ret.push_back(glm::vec3(br.x, tl.y, br.z));
+
+	ret.push_back(glm::vec3(br.x, tl.y, br.z));
+	ret.push_back(glm::vec3(br.x, br.y, tl.z));
+	ret.push_back(glm::vec3(br.x, br.y, br.z));
+
+	return ret;
+}

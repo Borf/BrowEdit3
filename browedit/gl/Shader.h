@@ -14,6 +14,7 @@ namespace gl
 	public:
 		Shader(const std::string& file, int end);
 		~Shader();
+		void setUniform(int name, bool value);
 		void setUniform(int name, int value);
 		void setUniform(int name, float value);
 		void setUniform(int name, const glm::mat3& value);

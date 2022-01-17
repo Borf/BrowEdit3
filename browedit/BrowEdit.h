@@ -51,6 +51,7 @@ public:
 	double scrollDelta = 0;
 	Config config;
 
+	void configBegin();
 
 	bool glfwBegin();
 	void glfwEnd();

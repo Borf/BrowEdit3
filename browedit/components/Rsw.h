@@ -1,11 +1,15 @@
 #pragma once
 
 #include "Component.h"
+#include "Collider.h"
+#include "Rsm.h"
 #include "ImguiProps.h"
 #include <string>
 #include <glm/glm.hpp>
 #include <browedit/util/tree.h>
 #include <browedit/math/AABB.h>
+
+class RsmRenderer;
 
 class Rsw : public Component, public ImguiProps
 {
@@ -132,4 +136,14 @@ public:
 	RswSound() {}
 	void load(std::istream* is, int version);
 	void buildImGui();
+};
+
+class RswModelCollider : public Collider
+{
+	RswModel* rswModel = nullptr;
+	Rsm* rsm = nullptr;
+	RsmRenderer* rsmRenderer = nullptr;
+public:
+	std::vector<glm::vec3> getCollisions(const math::Ray& ray);
+	std::vector<glm::vec3> getCollisions(Rsm::Mesh* mesh, const math::Ray& ray, const glm::mat4 &matrix);
 };

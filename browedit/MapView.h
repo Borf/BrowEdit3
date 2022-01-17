@@ -4,6 +4,7 @@
 #include <browedit/NodeRenderer.h>
 class BrowEdit;
 class Map;
+struct ImVec2;
 
 namespace gl 
 { 
@@ -47,7 +48,7 @@ public:
 	MapView() = delete;
 
 
-	void update(BrowEdit* browEdit);
+	void update(BrowEdit* browEdit, const ImVec2& size);
 	void render(float ratio, float fov);
 
 

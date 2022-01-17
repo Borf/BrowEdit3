@@ -9,9 +9,10 @@
 #include <misc/cpp/imgui_stdlib.h>
 #include <browedit/util/ResourceManager.h>
 #include <browedit/util/FileIO.h>
+#include <browedit/util/Util.h>
+#include <browedit/math/Ray.h>
 #include <iostream>
 #include <glm/gtc/type_ptr.hpp>
-#include <browedit/util/Util.h>
 #include <browedit/Node.h>
 
 Rsw::Rsw()
@@ -152,6 +153,7 @@ void RswObject::load(std::istream* is, int version)
 	if (type == 1)
 	{
 		node->addComponent(new RswModel());
+		node->addComponent(new RswModelCollider());
 		node->getComponent<RswModel>()->load(is, version);
 	}
 	else if (type == 2)
@@ -171,6 +173,8 @@ void RswObject::load(std::istream* is, int version)
 	}
 	else
 		std::cerr << "RSW: Error loading object in RSW, objectType=" << type << std::endl;
+
+
 }
 
 
@@ -363,4 +367,54 @@ void RswLight::buildImGui()
 
 	ImGui::ColorEdit3("Color", glm::value_ptr(color));
 	ImGui::DragFloat("Todo2", &todo2, 0.01f, -100.0f, 100.0f);
+}
+
+
+
+
+std::vector<glm::vec3> RswModelCollider::getCollisions(const math::Ray& ray)
+{
+	std::vector<glm::vec3> ret;
+
+	if (!rswModel)
+		rswModel = node->getComponent<RswModel>();
+	if (!rsm)
+		rsm = node->getComponent<Rsm>();
+	if (!rsmRenderer)
+		rsmRenderer = node->getComponent<RsmRenderer>();
+	if (!rswModel || !rsm || !rsmRenderer)
+		return std::vector<glm::vec3>();
+
+	if (!rswModel->aabb.hasRayCollision(ray, 0, 10000000))
+		return std::vector<glm::vec3>();
+	return getCollisions(rsm->rootMesh, ray, rsmRenderer->matrixCache);
+}
+
+std::vector<glm::vec3> RswModelCollider::getCollisions(Rsm::Mesh* mesh, const math::Ray& ray, const glm::mat4& matrix)
+{
+	std::vector<glm::vec3> ret;
+
+	glm::mat4 newMatrix = matrix * rsmRenderer->renderInfo[mesh->index].matrix;
+	newMatrix = glm::inverse(newMatrix);
+	math::Ray newRay(ray * newMatrix);
+
+	std::vector<glm::vec3> verts;
+	verts.resize(3);
+	float t;
+	for (size_t i = 0; i < mesh->faces.size(); i++)
+	{
+		for (size_t ii = 0; ii < 3; ii++)
+			verts[ii] = mesh->vertices[mesh->faces[i]->vertexIds[ii]];
+
+		if (newRay.LineIntersectPolygon(verts, t))
+			ret.push_back(glm::vec3(matrix * rsmRenderer->renderInfo[mesh->index].matrix * glm::vec4(newRay.origin + t * newRay.dir, 1)));
+	}
+
+	for (size_t i = 0; i < mesh->children.size(); i++)
+	{
+		std::vector<glm::vec3> other = getCollisions(mesh->children[i], ray, matrix);
+		if (!other.empty())
+			ret.insert(ret.end(), other.begin(), other.end());
+	}
+	return ret;
 }

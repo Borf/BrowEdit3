@@ -349,6 +349,9 @@
     <ClInclude Include="browedit\components\ImguiProps.h">
       <Filter>browedit\components</Filter>
     </ClInclude>
+    <ClInclude Include="browedit\components\Collider.h">
+      <Filter>browedit\components</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="BrowEdit3.rc">

@@ -8,6 +8,7 @@ uniform float lightIntensity;
 
 uniform int shadeType;
 uniform float selection;
+uniform bool lightToggle;
 
 
 varying vec2 texCoord;
@@ -22,10 +23,10 @@ void main()
 	if(color.a < 0.1)
 		discard;
 
-	if(shadeType == 1 || shadeType == 2)
+	if(shadeType == 1 || shadeType == 2 && lightToggle)
 		color.rgb *= lightIntensity * clamp(dot(normalize(normal), lightDirection),0.0,1.0) * lightDiffuse + lightAmbient;
 
-	if(shadeType == 4) // only for editor
+	if(shadeType == 4 && lightToggle) // only for editor
 		color.rgb *= lightDiffuse;
 	
 	gl_FragData[0] = mix(color, vec4(1,0,0,1), min(1.0,selection));

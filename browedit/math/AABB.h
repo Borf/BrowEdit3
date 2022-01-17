@@ -1,6 +1,7 @@
 #pragma once
 
 #include <glm/glm.hpp>
+#include <vector>
 
 namespace math
 {
@@ -14,5 +15,7 @@ namespace math
 
 		AABB(const glm::vec3 &min, const glm::vec3 &max);
 		bool hasRayCollision(const Ray& r, float minDistance, float maxDistance) const;
+
+		static std::vector<glm::vec3> box(const glm::vec3& tl, const glm::vec3& br);
 	};
 }

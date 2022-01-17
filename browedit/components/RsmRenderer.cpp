@@ -53,19 +53,19 @@ void RsmRenderer::render()
 		}
 		matrixCached = true;
 
-		/*if (rswModel)
+		if (rswModel)
 		{
-			std::vector<blib::VertexP3> verts = blib::Shapes::box(rswModel->realbbmin, rswModel->realbbmax);
+			std::vector<glm::vec3> verts = math::AABB::box(rsm->realbbmin, rsm->realbbmax);
 			for (size_t i = 0; i < verts.size(); i++)
-				verts[i].position = glm::vec3(model->matrixCache * glm::vec4(glm::vec3(1, -1, 1) * verts[i].position, 1.0f));
-			model->aabb.min = glm::vec3(99999999, 99999999, 99999999);
-			model->aabb.max = glm::vec3(-99999999, -99999999, -99999999);
+				verts[i] = glm::vec3(matrixCache * glm::vec4(glm::vec3(1, -1, 1) * verts[i], 1.0f));
+			rswModel->aabb.min = glm::vec3(99999999, 99999999, 99999999);
+			rswModel->aabb.max = glm::vec3(-99999999, -99999999, -99999999);
 			for (size_t i = 0; i < verts.size(); i++)
 			{
-				model->aabb.min = glm::min(model->aabb.min, verts[i].position);
-				model->aabb.max = glm::max(model->aabb.max, verts[i].position);
+				rswModel->aabb.min = glm::min(rswModel->aabb.min, verts[i]);
+				rswModel->aabb.max = glm::max(rswModel->aabb.max, verts[i]);
 			}
-		}*/
+		}
 	}
 	auto shader = dynamic_cast<RsmRenderContext*>(renderContext)->shader;
 	shader->setUniform(RsmShader::Uniforms::shadeType, (int)rsm->shadeType);
@@ -175,6 +175,7 @@ void RsmRenderer::RsmRenderContext::preFrame(const glm::mat4& projectionMatrix, 
 	shader->use();
 	shader->setUniform(RsmShader::Uniforms::projectionMatrix, projectionMatrix);
 	shader->setUniform(RsmShader::Uniforms::cameraMatrix, viewMatrix);
+	shader->setUniform(RsmShader::Uniforms::lightToggle, viewLighting);
 
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);

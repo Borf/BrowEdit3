@@ -31,9 +31,7 @@ void NodeRenderer::render(Node* rootNode, NodeRenderContext& context)
 	{
 		r.first->preFrame(context.projectionMatrix, context.viewMatrix);
 		for (auto renderer : r.second)
-		{
 			renderer->render();
-		}
 	}
 
 
