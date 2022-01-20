@@ -46,10 +46,13 @@ bool BrowEdit::glfwBegin()
         return false;
     }
 
-#ifdef _DEBUG
+//#ifdef _DEBUG
     glDebugMessageCallback(&onDebug, NULL);
     glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
     glEnable(GL_DEBUG_OUTPUT);
+//#endif
+#ifdef _DEBUG
+    glfwSwapInterval(0); //disable swap
 #endif
 
     return true;

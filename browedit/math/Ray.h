@@ -1,7 +1,7 @@
 #pragma once
 
 #include <glm/glm.hpp>
-#include <vector>
+#include <span>
 
 namespace math
 {
@@ -22,7 +22,7 @@ namespace math
 
 
 		bool planeIntersection(const Plane &plane, float &t) const;
-		bool LineIntersectPolygon(const std::vector<glm::vec3> &vertices, float &t) const;
+		bool LineIntersectPolygon(const std::span<glm::vec3> &vertices, float &t) const;
 
 		Ray operator *(const glm::mat4 &matrix) const;
 

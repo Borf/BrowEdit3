@@ -55,7 +55,7 @@ void RsmRenderer::render()
 
 		if (rswModel)
 		{
-			std::vector<glm::vec3> verts = math::AABB::box(rsm->realbbmin, rsm->realbbmax);
+			std::vector<glm::vec3> verts = math::AABB::boxVerts(rsm->realbbmin, rsm->realbbmax);
 			for (size_t i = 0; i < verts.size(); i++)
 				verts[i] = glm::vec3(matrixCache * glm::vec4(glm::vec3(1, -1, 1) * verts[i], 1.0f));
 			rswModel->aabb.min = glm::vec3(99999999, 99999999, 99999999);

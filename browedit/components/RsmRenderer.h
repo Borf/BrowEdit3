@@ -89,7 +89,7 @@ public:
 		glm::mat4 matrixSub = glm::mat4(1.0f);
 	};
 
-	std::vector<RenderInfo> renderInfo;
+	std::vector<RenderInfo> renderInfo; //TODO: not happy about this one
 
 	Rsm* rsm;
 	RswModel* rswModel;
@@ -109,5 +109,5 @@ public:
 
 	void setDirty() { this->matrixCached = false; }
 	bool selected = false;
-	glm::mat4 matrixCache;
+	glm::mat4 matrixCache; //TODO: move this to RswObject ?
 };

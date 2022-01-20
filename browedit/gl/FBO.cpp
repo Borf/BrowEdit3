@@ -41,11 +41,7 @@ namespace gl
 		{
 			glGenRenderbuffers(1, &depthBuffer);
 			glBindRenderbuffer(GL_RENDERBUFFER, depthBuffer);
-#ifdef ANDROID
-			glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, width, height);
-#else
 			glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width, height);
-#endif
 			glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthBuffer);
 		}
 
@@ -239,6 +235,33 @@ namespace gl
 	int FBO::getWidth()
 	{
 		return width;
+	}
+
+	void FBO::resize(int w, int h)
+	{
+		width = w;
+		height = h;
+		unbind();
+		for (int i = 0; i < textureCount; i++)
+		{
+			glBindTexture(GL_TEXTURE_2D, texid[i]);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+		}
+
+		if (depthBuffer != 0)
+		{
+			glBindRenderbuffer(GL_RENDERBUFFER, depthBuffer);
+			glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width, height);
+			glBindRenderbuffer(GL_RENDERBUFFER, 0);
+		}
+		if (depthTexture != 0)
+		{
+			glBindTexture(GL_TEXTURE_2D, depthTexture);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+
+		}
+		glBindTexture(GL_TEXTURE_2D, 0);
+
 	}
 
 	void FBO::saveAsFile(const std::string& fileName)

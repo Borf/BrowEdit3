@@ -38,6 +38,9 @@
     <Filter Include="data\shaders">
       <UniqueIdentifier>{2ade0801-bc59-46dd-8653-fe2ea04d90f7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="browedit\actions">
+      <UniqueIdentifier>{c40c6d15-bf7f-46c1-8a00-7f81367cfa99}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="lib\imgui\imgui.cpp">
@@ -193,6 +196,12 @@
     <ClCompile Include="browedit\NodeRenderer.cpp">
       <Filter>browedit</Filter>
     </ClCompile>
+    <ClCompile Include="browedit\Gadget.cpp">
+      <Filter>browedit</Filter>
+    </ClCompile>
+    <ClCompile Include="browedit\Mesh.cpp">
+      <Filter>browedit</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="lib\imgui\imgui.h">
@@ -339,7 +348,6 @@
     <ClInclude Include="browedit\MapView.h">
       <Filter>browedit</Filter>
     </ClInclude>
-    <ClInclude Include="resource.h" />
     <ClInclude Include="browedit\NodeRenderer.h">
       <Filter>browedit</Filter>
     </ClInclude>
@@ -351,6 +359,18 @@
     </ClInclude>
     <ClInclude Include="browedit\components\Collider.h">
       <Filter>browedit\components</Filter>
+    </ClInclude>
+    <ClInclude Include="browedit\actions\Action.h">
+      <Filter>browedit\actions</Filter>
+    </ClInclude>
+    <ClInclude Include="browedit\Gadget.h">
+      <Filter>browedit</Filter>
+    </ClInclude>
+    <ClInclude Include="browedit\Mesh.h">
+      <Filter>browedit</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Resource Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

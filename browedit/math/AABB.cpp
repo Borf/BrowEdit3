@@ -105,3 +105,20 @@ std::vector<glm::vec3> math::AABB::box(const glm::vec3& tl, const glm::vec3& br)
 
 	return ret;
 }
+
+
+
+std::vector<glm::vec3> math::AABB::boxVerts(const glm::vec3& tl, const glm::vec3& br)
+{
+	std::vector<glm::vec3> ret;
+	ret.push_back(glm::vec3(tl.x, tl.y, tl.z));
+	ret.push_back(glm::vec3(tl.x, tl.y, br.z));
+	ret.push_back(glm::vec3(tl.x, br.y, br.z));
+	ret.push_back(glm::vec3(tl.x, br.y, tl.z));
+
+	ret.push_back(glm::vec3(br.x, tl.y, tl.z));
+	ret.push_back(glm::vec3(br.x, tl.y, br.z));
+	ret.push_back(glm::vec3(br.x, br.y, br.z));
+	ret.push_back(glm::vec3(br.x, br.y, tl.z));
+	return ret;
+}

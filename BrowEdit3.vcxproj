@@ -21,6 +21,7 @@
     <ClCompile Include="browedit\components\RsmRenderer.cpp" />
     <ClCompile Include="browedit\components\Rsw.cpp" />
     <ClCompile Include="browedit\Config.cpp" />
+    <ClCompile Include="browedit\Gadget.cpp" />
     <ClCompile Include="browedit\gl\FBO.cpp" />
     <ClCompile Include="browedit\gl\Shader.cpp" />
     <ClCompile Include="browedit\gl\Texture.cpp" />
@@ -29,6 +30,7 @@
     <ClCompile Include="browedit\math\AABB.cpp" />
     <ClCompile Include="browedit\math\Plane.cpp" />
     <ClCompile Include="browedit\math\Ray.cpp" />
+    <ClCompile Include="browedit\Mesh.cpp" />
     <ClCompile Include="browedit\Node.cpp" />
     <ClCompile Include="browedit\NodeRenderer.cpp" />
     <ClCompile Include="browedit\util\FileIO.cpp" />
@@ -64,6 +66,7 @@
     <ClCompile Include="lib\zlib\zutil.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="browedit\actions\Action.h" />
     <ClInclude Include="browedit\BrowEdit.h" />
     <ClInclude Include="browedit\components\Collider.h" />
     <ClInclude Include="browedit\components\Component.h" />
@@ -75,6 +78,7 @@
     <ClInclude Include="browedit\components\RsmRenderer.h" />
     <ClInclude Include="browedit\components\Rsw.h" />
     <ClInclude Include="browedit\Config.h" />
+    <ClInclude Include="browedit\Gadget.h" />
     <ClInclude Include="browedit\gl\FBO.h" />
     <ClInclude Include="browedit\gl\Shader.h" />
     <ClInclude Include="browedit\gl\Texture.h" />
@@ -87,6 +91,7 @@
     <ClInclude Include="browedit\math\AABB.h" />
     <ClInclude Include="browedit\math\Plane.h" />
     <ClInclude Include="browedit\math\Ray.h" />
+    <ClInclude Include="browedit\Mesh.h" />
     <ClInclude Include="browedit\Node.h" />
     <ClInclude Include="browedit\NodeRenderer.h" />
     <ClInclude Include="browedit\util\FileIO.h" />

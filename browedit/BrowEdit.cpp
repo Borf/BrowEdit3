@@ -12,6 +12,7 @@
 #include <GLFW/glfw3.h>
 #include "NodeRenderer.h"
 #include "Node.h"
+#include "Gadget.h"
 #include "components/Rsw.h"
 #include "components/Gnd.h"
 #include "components/ImguiProps.h"
@@ -41,6 +42,7 @@ void BrowEdit::run()
 	backgroundTexture = new gl::Texture("data\\background.png", false);
 	iconsTexture = new gl::Texture("data\\icons.png", false);
 	NodeRenderer::begin();
+	Gadget::init();
 
 #ifdef _DEBUG
 	if(config.isValid() == "")
@@ -166,6 +168,8 @@ void BrowEdit::showMapWindow(MapView& mapView)
 		auto size = ImGui::GetContentRegionAvail();
 		mapView.update(this, size);
 		mapView.render(size.x / (float)size.y, config.fov);
+		if(editMode == EditMode::Object)
+			mapView.postRenderObjectMode(this);
 		ImTextureID id = (ImTextureID)((long long)mapView.fbo->texid[0]); //TODO: remove cast for 32bit
 		ImGui::Image(id, size, ImVec2(0,1), ImVec2(1,0));
 	}

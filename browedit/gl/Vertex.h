@@ -101,5 +101,12 @@
 			set(t, index);
 			set(n, index);
 		}
+		VertexP3T2N3(const glm::vec3& pos, const glm::vec3& n)
+		{
+			int index = 0;
+			set(pos, index);
+			index += 2;
+			set(n, index);
+		}
 		ATTR(p, 3, 0);
 	};

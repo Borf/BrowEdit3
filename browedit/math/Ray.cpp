@@ -37,7 +37,7 @@ namespace math
 		return true;
 	}
 
-	bool Ray::LineIntersectPolygon(const std::vector<glm::vec3> &vertices, float &t) const
+	bool Ray::LineIntersectPolygon(const std::span<glm::vec3> &vertices, float &t) const
 	{
 		Plane plane;
 		plane.normal = glm::cross(vertices[1] - vertices[0], vertices[2] - vertices[0]);

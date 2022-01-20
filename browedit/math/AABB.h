@@ -17,5 +17,6 @@ namespace math
 		bool hasRayCollision(const Ray& r, float minDistance, float maxDistance) const;
 
 		static std::vector<glm::vec3> box(const glm::vec3& tl, const glm::vec3& br);
+		static std::vector<glm::vec3> boxVerts(const glm::vec3& tl, const glm::vec3& br);
 	};
 }

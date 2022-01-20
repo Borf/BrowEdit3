@@ -2,6 +2,8 @@
 
 #include <browedit/gl/Shader.h>
 #include <browedit/NodeRenderer.h>
+#include <browedit/math/Ray.h>
+#include <browedit/math/Plane.h>
 class BrowEdit;
 class Map;
 struct ImVec2;
@@ -40,6 +42,12 @@ public:
 	float cameraRotY = 0.0f;
 	float cameraDistance = 500;
 
+	math::Ray mouseRay;
+
+	math::Plane mouseDragPlane;
+	glm::vec3 mouseDragStart;
+
+
 	MouseState mouseState;
 	MouseState prevMouseState;
 
@@ -49,7 +57,9 @@ public:
 
 
 	void update(BrowEdit* browEdit, const ImVec2& size);
+	void updateObjectMode(BrowEdit* browEdit);
 	void render(float ratio, float fov);
+	void postRenderObjectMode(BrowEdit* browEdit);
 
 
 	bool viewLightmapShadow = true;

@@ -44,6 +44,7 @@ namespace gl
 
 		int getHeight();
 		int getWidth();
+		void resize(int w, int h);
 
 		void saveAsFile(const std::string& fileName);
 		void saveAsFileBackground(const std::string& fileName, std::function<void()> callback);
