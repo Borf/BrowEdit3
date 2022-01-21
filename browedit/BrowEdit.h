@@ -18,7 +18,6 @@ namespace gl
 class BrowEdit
 {
 	const float toolbarHeight = 40.0f;
-	float menubarHeight;
 	
 
 	gl::Texture* backgroundTexture;

@@ -17,9 +17,50 @@
 #include "components/Gnd.h"
 #include "components/ImguiProps.h"
 
+#ifdef _WIN32
+extern "C" __declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;
+extern "C" __declspec(dllexport) DWORD AmdPowerXpressRequestHighPerformance = 0x00000001;
+#endif
 
 int main()
 {
+	std::cout << R"V0G0N(                                  ';cllllllc:,                                  
+                                ,lodddddddddddoc,                               
+                               cdddddddddddoddddo:                              
+                              :dddddddddodxOO0000x:                             
+       ;:looooolc;'        '',:oddddddodxOXNNNNNNXd'                            
+     :odddddddddddoc' ,;:clooooddddddlcc:o0NNNNNNXo                             
+   'ldddddddddddddddlclodddddddddddddooc:lxKXNNNKd'                             
+  'lddddddddddddddddooddddddddddddddddddddodxO0k:                               
+  :ddddodxxxxxdoodOK0kdddddddddddddddddddddddo:                       ';:'      
+  ldddkOKXXXXOddOXWMMWX0kxdddddddddddddddolllol'                 ';coxO0d,      
+  cod0XNNNNNNKOkXMMMMMMMWNX0Oxddddddddo;'','  ,:'              ':dk0KKkc        
+  ,lOXNNNNNNNNKKWMMMMMMMMMMMMWXK0Okxxd;,cxXKd  ';'          ',;;::o0Ol'         
+    l0NNNNNNNX0NMMMMMMWNKKXWMMMMMMWWNXocxKMMXc;odd:      ',;;;:;;;:c,           
+     ,lxO000OxOWMMMMW0l,;cooxXMMMMMMMMXd:coo; 'xXN0l  ',;;;:::;;,               
+          '' 'xWMMMWk  :KWWKllXMMMMMMMMWN0oc:co0XOdl:;;;;:;;;,'                 
+              xMMMMXl  xMMMWd,OMMMMWXXNMMMMMMWXOdc;;;:::;;,'                    
+              dWMMMXl;:cokxl ;KMMMMN0KWMMMWXOdl:;;;::::,'                       
+              lNMMMWKXX:    cKMMMMMMMMMMMMWOc:c::cloo:                          
+              :XWWWWWWXOxxOXWMMMMMMMMN0OOkxl:cc::dOOx,                          
+               xXXXXXXXNMMMMMMMWNNWX0dc::::cc::cdOOx;                           
+               ,OWMWNXKXXXNNMWNOooolc:::::::cokKWNk,                            
+                'lkOKXX0kOOkkxlc::::::;::cokKNMMMWKl'                           
+                ;dOKWMNOOOxl;;:::::;;:lxk0NWMMMMMMMW0l                          
+               c0NWMMNOool:;;:::;;:cd0NWMMMMMMMMMMMMMWO:                        
+           ';:xNMMN0xo:;;;:::;;;cdOXWMMMMMMMMMMMMMMMMMWOdo;                     
+          'dOO0X0xo:;;;:::;;;:okKWMMMMMMMMMMMMMMMMMMMWKOKO:                     
+           ckxlooc;;::::;;:okKNMMMMMMMMMMMMMMMMMMMMMMXOOx;                      
+           'll::c::::;;;:oxO0OOkkkkkkkxxxxddddxxkOOkxl:;                        
+         ,:clc::::;;;,   ''                                                     
+      ',;c:::::;;;,'                                                            
+   ;llc;;:::;;;,'                                                               
+  l0Okko:;;;,'                                                                  
+  :xlcOk:,'                                  Borf's Browedit  
+   ,clo:                                                                        
+
+
+)V0G0N" << std::endl;
 	BrowEdit().run();
 }
 
@@ -156,6 +197,9 @@ void BrowEdit::showMapWindow(MapView& mapView)
 	ImGui::SetNextWindowSizeConstraints(ImVec2(300, 300), ImVec2(2048, 2048));
 	if (ImGui::Begin(mapView.viewName.c_str(), &mapView.opened))
 	{
+		toolBarToggleButton("ortho", 11, &mapView.ortho);
+		ImGui::SameLine();
+
 		toolBarToggleButton("viewLightMapShadow", 0, &mapView.viewLightmapShadow);
 		ImGui::SameLine();
 		toolBarToggleButton("viewLightmapColor", 1, &mapView.viewLightmapColor);
@@ -163,6 +207,41 @@ void BrowEdit::showMapWindow(MapView& mapView)
 		toolBarToggleButton("viewColors", 2, &mapView.viewColors);
 		ImGui::SameLine();
 		toolBarToggleButton("viewLighting", 3, &mapView.viewLighting);
+		ImGui::SameLine();
+		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+		ImGui::SameLine();
+
+		bool snapping = mapView.snapToGrid;
+		if (ImGui::GetIO().KeyShift)
+			snapping = !snapping;
+		bool ret = toolBarToggleButton("snapToGrid", 7, snapping);
+		if (!ImGui::GetIO().KeyShift && ret)
+			mapView.snapToGrid = !mapView.snapToGrid;
+		if (snapping || mapView.snapToGrid)
+		{
+			ImGui::SameLine();
+			ImGui::SetNextItemWidth(50);
+			ImGui::DragInt("##gridSize", &mapView.gridSize, 1, 100);
+			ImGui::SameLine();
+			ImGui::Checkbox("##gridLocal", &mapView.gridLocal);
+		}
+
+		ImGui::SameLine();
+		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+		ImGui::SameLine();
+
+		if (BrowEdit::editMode == EditMode::Object)
+		{
+			if (toolBarToggleButton("translate", 8, mapView.gadget.mode == Gadget::Mode::Translate))
+				mapView.gadget.mode = Gadget::Mode::Translate;
+			ImGui::SameLine();
+			if (toolBarToggleButton("rotate", 9, mapView.gadget.mode == Gadget::Mode::Rotate))
+				mapView.gadget.mode = Gadget::Mode::Rotate;
+			ImGui::SameLine();
+			if (toolBarToggleButton("scale", 10, mapView.gadget.mode == Gadget::Mode::Scale))
+				mapView.gadget.mode = Gadget::Mode::Scale;
+		}
+
 
 
 		auto size = ImGui::GetContentRegionAvail();
@@ -172,6 +251,7 @@ void BrowEdit::showMapWindow(MapView& mapView)
 			mapView.postRenderObjectMode(this);
 		ImTextureID id = (ImTextureID)((long long)mapView.fbo->texid[0]); //TODO: remove cast for 32bit
 		ImGui::Image(id, size, ImVec2(0,1), ImVec2(1,0));
+		mapView.hovered = ImGui::IsItemHovered();
 	}
 	ImGui::End();
 }
@@ -181,7 +261,6 @@ void BrowEdit::showMapWindow(MapView& mapView)
 void BrowEdit::menuBar()
 {
 	ImGui::BeginMainMenuBar();
-	menubarHeight = ImGui::GetWindowSize().y;
 	if (ImGui::BeginMenu("File"))
 	{
 		ImGui::MenuItem("New");
@@ -222,8 +301,8 @@ void BrowEdit::toolbar()
 {
 	auto viewport = ImGui::GetMainViewport();
 
-	ImGui::SetNextWindowPos(ImVec2(viewport->Pos.x, viewport->Pos.y + menubarHeight));
-	ImGui::SetNextWindowSize(ImVec2(viewport->Size.x, toolbarHeight));
+	ImGui::SetNextWindowPos(ImVec2(viewport->WorkPos.x, viewport->WorkPos.y));
+	ImGui::SetNextWindowSize(ImVec2(viewport->WorkSize.x, toolbarHeight));
 	ImGuiWindowFlags toolbarFlags = 0
 		| ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoMove;
 	ImGui::Begin("Toolbar", 0, toolbarFlags);
@@ -245,6 +324,15 @@ void BrowEdit::toolbar()
 	if (toolBarToggleButton("wallmode", 6, editMode == EditMode::Wall))
 		editMode = EditMode::Wall;
 
+	ImGui::End();
+
+	ImGui::SetNextWindowPos(ImVec2(viewport->WorkPos.x, viewport->WorkPos.y + viewport->WorkSize.y - toolbarHeight));
+	ImGui::SetNextWindowSize(ImVec2(viewport->WorkSize.x, toolbarHeight));
+	toolbarFlags = 0
+		| ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoMove;
+	ImGui::Begin("Statusbar", 0, toolbarFlags);
+	ImGui::Text("Browedit!");
+	ImGui::SameLine();
 	ImGui::End();
 }
 

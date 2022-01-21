@@ -19,6 +19,13 @@ namespace math
 			this->D = d;
 		}
 
+		Plane(const glm::vec3& normal, const glm::vec3 &positionOnPlane)
+		{
+			this->normal = normal;
+			this->D = -glm::dot(positionOnPlane, normal);
+		}
+
+
 		glm::vec3 normal;
 		float D;
 	};

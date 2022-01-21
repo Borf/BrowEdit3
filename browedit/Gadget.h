@@ -56,7 +56,7 @@ public:
 		Translate,
 		Rotate,
 		Scale
-	};
+	} mode = Mode::Translate;
 	enum Axis
 	{
 		X = 1,
@@ -65,10 +65,11 @@ public:
 	};
 	static void setMode(Mode mode);
 	
-	static inline bool axisClicked = false;
-	static inline bool axisReleased = false;
-	static inline bool axisDragged = false;
-	static inline int selectedAxis = 0;
+	bool axisClicked = false;
+	bool axisReleased = false;
+	bool axisDragged = false;
+	int selectedAxis = 0;
+	int selectedAxisIndex();
 
-	static void draw(const math::Ray& mouseRay, const glm::mat4& modelMatrix);
+	void draw(const math::Ray& mouseRay, const glm::mat4& modelMatrix);
 };

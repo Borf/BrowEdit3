@@ -40,7 +40,10 @@ void MapView::render(float ratio, float fov)
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	nodeRenderContext.projectionMatrix = glm::perspective(glm::radians(fov), ratio, 0.1f, 5000.0f);
+	if (ortho)
+		nodeRenderContext.projectionMatrix = glm::ortho(-cameraDistance/2*ratio, cameraDistance/2 * ratio, -cameraDistance/2, cameraDistance/2, -5000.0f, 5000.0f);
+	else
+		nodeRenderContext.projectionMatrix = glm::perspective(glm::radians(fov), ratio, 0.1f, 5000.0f);
 	nodeRenderContext.viewMatrix = glm::mat4(1.0f);
 	nodeRenderContext.viewMatrix = glm::translate(nodeRenderContext.viewMatrix, glm::vec3(0, 0, -cameraDistance));
 	nodeRenderContext.viewMatrix = glm::rotate(nodeRenderContext.viewMatrix, glm::radians(cameraRotX), glm::vec3(1, 0, 0));
@@ -129,6 +132,13 @@ void MapView::updateObjectMode(BrowEdit* browEdit)
 
 void MapView::postRenderObjectMode(BrowEdit* browEdit)
 {
+	glUseProgram(0);
+	glMatrixMode(GL_PROJECTION);
+	glLoadMatrixf(glm::value_ptr(nodeRenderContext.projectionMatrix));
+	glMatrixMode(GL_MODELVIEW);
+	glLoadMatrixf(glm::value_ptr(nodeRenderContext.viewMatrix));
+	glColor3f(1, 0, 0);
+
 	fbo->bind();
 
 	bool canSelectObject = true;
@@ -149,55 +159,67 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 			Gnd* gnd = map->rootNode->getComponent<Gnd>();
 			Gadget::setMatrices(nodeRenderContext.projectionMatrix, nodeRenderContext.viewMatrix);
 			glDisable(GL_DEPTH_TEST);
-			Gadget::draw(mouseRay, glm::translate(glm::mat4(1.0f), glm::vec3(5 * gnd->width + avgPos.x, -avgPos.y, -(- 10 - 5 * gnd->height + avgPos.z))));
+			gadget.draw(mouseRay, glm::translate(glm::mat4(1.0f), glm::vec3(5 * gnd->width + avgPos.x, -avgPos.y, -(- 10 - 5 * gnd->height + avgPos.z))));
 			glEnable(GL_DEPTH_TEST);
+			static std::map<Node*, glm::vec3> originalPositions; //TODO: move to action
 
-			static std::map<Node*, glm::vec3> originalPositions;
-
-			if (Gadget::axisClicked)
+			if (gadget.axisClicked)
 			{
-				mouseDragPlane.normal = glm::vec3(0, 1, 0);
-				mouseDragPlane.D = avgPos.y;
-				
+				mouseDragPlane.normal = glm::normalize(glm::vec3(nodeRenderContext.viewMatrix * glm::vec4(0, 0, 1, 1)) - glm::vec3(nodeRenderContext.viewMatrix * glm::vec4(0, 0, 0, 1))) * glm::vec3(1, 1, -1);
+				if (gadget.selectedAxis == Gadget::Axis::X)
+					mouseDragPlane.normal.x = 0;
+				if (gadget.selectedAxis == Gadget::Axis::Y)
+					mouseDragPlane.normal.y = 0;
+				if (gadget.selectedAxis == Gadget::Axis::Z)
+					mouseDragPlane.normal.z = 0;
+				mouseDragPlane.normal = glm::normalize(mouseDragPlane.normal);
+				mouseDragPlane.D = -glm::dot(glm::vec3(5 * gnd->width + avgPos.x, -avgPos.y, -(-10 - 5 * gnd->height + avgPos.z)), mouseDragPlane.normal);
+
 				float f;
 				mouseRay.planeIntersection(mouseDragPlane, f);
 				mouseDragStart = mouseRay.origin + f * mouseRay.dir;
-
-				std::cout << "Starting to drag axis" << std::endl;
 
 				originalPositions.clear();
 				for (auto n : browEdit->selectedNodes)
 					originalPositions[n] = n->getComponent<RswObject>()->position;
 				canSelectObject = false;
 			}
-			else if (Gadget::axisReleased)
+			else if (gadget.axisReleased)
 			{
 				std::cout << "Released axis" << std::endl;
 			}
 
-			if (Gadget::axisDragged)
+			if (gadget.axisDragged)
 			{
 				float f;
 				mouseRay.planeIntersection(mouseDragPlane, f);
 				glm::vec3 mouseOffset = (mouseRay.origin + f * mouseRay.dir) - mouseDragStart;
 
-				if ((Gadget::selectedAxis & Gadget::X) == 0)
+				if ((gadget.selectedAxis & Gadget::X) == 0)
 					mouseOffset.x = 0;
-				if ((Gadget::selectedAxis & Gadget::Y) == 0)
+				if ((gadget.selectedAxis & Gadget::Y) == 0)
 					mouseOffset.y = 0;
-				if ((Gadget::selectedAxis & Gadget::Z) == 0)
+				if ((gadget.selectedAxis & Gadget::Z) == 0)
 					mouseOffset.z = 0;
 
+				bool snap = snapToGrid;
 				if (ImGui::GetIO().KeyShift)
-					mouseOffset = glm::round(mouseOffset/5.0f)*5.0f; //TODO: gridsize
+					snap = !snap;
+				if (snap && gridLocal)
+					mouseOffset = glm::round(mouseOffset/(float)gridSize)*(float)gridSize;
 
-				ImGui::Begin("Debug");
-				ImGui::InputFloat3("mouseDrag", glm::value_ptr(mouseOffset));
+				ImGui::Begin("Statusbar");
+				ImGui::SetNextItemWidth(200.0f);
+				ImGui::InputFloat3("Drag Offset", glm::value_ptr(mouseOffset));
+				ImGui::SameLine();
 				ImGui::End();
 
 				for (auto n : originalPositions)
 				{
-					n.first->getComponent<RswObject>()->position = n.second + mouseOffset * glm::vec3(1,1,-1);
+					n.first->getComponent<RswObject>()->position = n.second + mouseOffset * glm::vec3(1,-1,-1);
+					if (snap && !gridLocal)
+						n.first->getComponent<RswObject>()->position[gadget.selectedAxisIndex()] = glm::round(n.first->getComponent<RswObject>()->position[gadget.selectedAxisIndex()] / (float)gridSize) * (float)gridSize;
+
 					n.first->getComponent<RsmRenderer>()->setDirty();
 				}
 				canSelectObject = false;
@@ -207,7 +229,7 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 		}
 	}
 
-	if (canSelectObject)
+	if (canSelectObject && hovered)
 	{
 		if (ImGui::IsMouseClicked(0))
 		{
@@ -221,12 +243,6 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 		}
 	}
 
-	//glUseProgram(0);
-	//glMatrixMode(GL_PROJECTION);
-	//glLoadMatrixf(glm::value_ptr(nodeRenderContext.projectionMatrix));
-	//glMatrixMode(GL_MODELVIEW);
-	//glLoadMatrixf(glm::value_ptr(nodeRenderContext.viewMatrix));
-	//glColor3f(1, 0, 0);
 	//glBegin(GL_LINES);
 	//glVertex3f(0, 0, 0);
 	//glVertex3f(100, 0, 0);

@@ -46,6 +46,8 @@ bool BrowEdit::glfwBegin()
         return false;
     }
 
+    std::cout<<"Using renderer "<<glGetString(GL_RENDERER)<<std::endl;
+
 //#ifdef _DEBUG
     glDebugMessageCallback(&onDebug, NULL);
     glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);

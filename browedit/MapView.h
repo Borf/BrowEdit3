@@ -4,6 +4,7 @@
 #include <browedit/NodeRenderer.h>
 #include <browedit/math/Ray.h>
 #include <browedit/math/Plane.h>
+#include <browedit/Gadget.h>
 class BrowEdit;
 class Map;
 struct ImVec2;
@@ -32,6 +33,7 @@ public:
 	std::string viewName;
 
 	NodeRenderContext nodeRenderContext;
+	Gadget gadget;
 
 	bool opened = true;
 	gl::FBO* fbo;
@@ -41,6 +43,12 @@ public:
 	float cameraRotX = 45.0f;
 	float cameraRotY = 0.0f;
 	float cameraDistance = 500;
+	bool hovered = false;
+
+	bool snapToGrid = false;
+	int gridSize = 5;
+	bool gridLocal = true;
+
 
 	math::Ray mouseRay;
 

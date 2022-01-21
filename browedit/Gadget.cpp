@@ -70,7 +70,17 @@ void Gadget::draw(const math::Ray& mouseRay, const glm::mat4& modelMatrix)
 
 
 
+int Gadget::selectedAxisIndex()
+{
+	if (selectedAxis == Axis::X)
+		return 0;
+	if (selectedAxis == Axis::Y)
+		return 1;
+	if (selectedAxis == Axis::Z)
+		return 2;
 
+	return 0;
+}
 
 
 
