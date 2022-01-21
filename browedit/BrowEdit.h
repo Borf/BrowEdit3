@@ -34,6 +34,9 @@ class BrowEdit
 		std::size_t openFileSelected = 0;
 		std::string openFilter;
 
+
+		bool undoVisible = false;
+
 	} windowData;
 
 public:
@@ -77,6 +80,7 @@ public:
 	void showObjectTree();
 	void buildObjectTree(Node* node, Map* map);
 	void showObjectProperties();
+	void showUndoWindow();
 
 	std::vector<Node*> selectedNodes;
 

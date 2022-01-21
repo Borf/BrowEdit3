@@ -105,6 +105,8 @@ void BrowEdit::run()
 			windowData.configVisible = !config.showWindow(this);
 		if (windowData.openVisible)
 			openWindow();
+		if (windowData.undoVisible)
+			showUndoWindow();
 
 		if (editMode == EditMode::Object)
 		{
@@ -263,21 +265,27 @@ void BrowEdit::menuBar()
 	ImGui::BeginMainMenuBar();
 	if (ImGui::BeginMenu("File"))
 	{
-		ImGui::MenuItem("New");
-		if (ImGui::MenuItem("Open"))
+		ImGui::MenuItem("New", "Ctrl+n");
+		if (ImGui::MenuItem("Open", "Ctrl+o"))
 		{
 			windowData.openFiles = util::FileIO::listFiles("data");
 			windowData.openFiles.erase(std::remove_if(windowData.openFiles.begin(), windowData.openFiles.end(), [](const std::string& map) { return map.substr(map.size()-4, 4) != ".rsw"; }), windowData.openFiles.end());
 			windowData.openVisible = true;
 			
 		}
-		ImGui::MenuItem("Save As");
+		ImGui::MenuItem("Save As", "Ctrl+s");
 		if(ImGui::MenuItem("Quit"))
 			glfwSetWindowShouldClose(window, 1);
 		ImGui::EndMenu();
 	}
 	if (ImGui::BeginMenu("Edit"))
 	{
+		if (ImGui::MenuItem("Undo", "Ctrl+z"))
+			;
+		if (ImGui::MenuItem("Redo", "Ctrl+shift+z"))
+			;
+		if (ImGui::MenuItem("Undo Window", nullptr, windowData.undoVisible))
+			windowData.undoVisible = !windowData.undoVisible;
 		if (ImGui::MenuItem("Configure"))
 			windowData.configVisible = true;
 		ImGui::EndMenu();
@@ -471,5 +479,20 @@ void BrowEdit::showObjectProperties()
 		}
 	}
 	ImGui::PopFont();
+	ImGui::End();
+}
+
+
+void BrowEdit::showUndoWindow()
+{
+	ImGui::Begin("Undo stack", &windowData.undoVisible);
+	if (ImGui::BeginListBox("##stack", ImGui::GetContentRegionAvail()))
+	{
+		ImGui::Selectable("Move Object");
+		ImGui::Selectable("Move Object");
+		ImGui::Selectable("Scale Object");
+		ImGui::EndListBox();
+	}
+
 	ImGui::End();
 }

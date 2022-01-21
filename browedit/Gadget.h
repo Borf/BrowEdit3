@@ -42,9 +42,21 @@ class Gadget
 	public:
 		virtual std::vector<glm::vec3> buildVertices() override;
 	};
+	class ScaleMesh : public Mesh
+	{
+	public:
+		virtual std::vector<glm::vec3> buildVertices() override;
+	};
+	class RotateMesh : public Mesh
+	{
+	public:
+		virtual std::vector<glm::vec3> buildVertices() override;
+	};
 
 	static inline SimpleShader* shader;
 	static inline ArrowMesh arrowMesh;
+	static inline RotateMesh rotateMesh;
+	static inline ScaleMesh scaleMesh;
 
 	static inline glm::mat4 viewMatrix;
 	static inline glm::mat4 projectionMatrix;

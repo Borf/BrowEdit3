@@ -4,4 +4,5 @@ config.json
 BrowEdit3.zip
 BrowEdit3.exe
 .vs
+*.rar
 BrowEdit3.vcxproj.user
