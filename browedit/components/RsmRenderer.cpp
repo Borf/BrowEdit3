@@ -10,7 +10,7 @@
 RsmRenderer::RsmRenderer()
 {
 	renderContext = RsmRenderContext::getInstance();
-	selected = (rand() % 1000) < 10;
+	selected = false;
 }
 
 void RsmRenderer::render()

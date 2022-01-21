@@ -5,6 +5,7 @@
 #include <json.hpp>
 #include <imgui.h>
 #include <string_view>
+class Action;
 using json = nlohmann::json;
 
 class Map;
@@ -35,9 +36,12 @@ class BrowEdit
 		std::string openFilter;
 
 
-		bool undoVisible = false;
+		bool undoVisible = true;
 
 	} windowData;
+	std::vector<Action*> undoStack;
+	std::vector<Action*> redoStack;
+
 
 public:
 	ImFont* font;
@@ -84,6 +88,10 @@ public:
 
 	std::vector<Node*> selectedNodes;
 
+	
+	void doAction(Action* action);
+	void undo();
+	void redo();
 
 	bool toolBarToggleButton(const std::string_view &name, int icon, bool* status);
 	bool toolBarToggleButton(const std::string_view &name, int icon, bool status);

@@ -59,7 +59,7 @@ public:
 	void load(const std::string& fileName);
 	void save(const std::string& fileName);
 
-	void buildImGui();
+	void buildImGui(BrowEdit* browEdit) override;
 };
 
 
@@ -72,7 +72,7 @@ public:
 	glm::vec3 scale;
 
 	void load(std::istream* is, int version);
-	void buildImGui();
+	void buildImGui(BrowEdit* browEdit) override;
 };
 
 class RswModel : public Component, public ImguiProps
@@ -86,7 +86,7 @@ public:
 
 	RswModel() : aabb(glm::vec3(), glm::vec3()) {}
 	void load(std::istream* is, int version);
-	void buildImGui();
+	void buildImGui(BrowEdit* browEdit) override;
 };
 
 
@@ -99,7 +99,7 @@ public:
 
 	RswLight() {}
 	void load(std::istream* is);
-	void buildImGui();
+	void buildImGui(BrowEdit* browEdit) override;
 };
 
 class RswEffect : public Component, public ImguiProps
@@ -114,7 +114,7 @@ public:
 
 	RswEffect() {}
 	void load(std::istream* is);
-	void buildImGui();
+	void buildImGui(BrowEdit* browEdit) override;
 };
 
 class RswSound : public Component, public ImguiProps
@@ -135,7 +135,7 @@ public:
 
 	RswSound() {}
 	void load(std::istream* is, int version);
-	void buildImGui();
+	void buildImGui(BrowEdit* browEdit) override;
 };
 
 class RswModelCollider : public Collider

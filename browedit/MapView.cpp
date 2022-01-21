@@ -8,6 +8,8 @@
 #include "components/GndRenderer.h"
 #include "components/RsmRenderer.h"
 
+#include <browedit/actions/ObjectChangeAction.h>
+#include <browedit/actions/SelectAction.h>
 #include <browedit/gl/FBO.h>
 #include <browedit/gl/Vertex.h>
 #include <browedit/math/Ray.h>
@@ -76,15 +78,6 @@ void MapView::update(BrowEdit* browEdit, const ImVec2 &size)
 	mouseState.buttons = (ImGui::IsMouseDown(0) ? 0x01 : 0x00) | 
 		(ImGui::IsMouseDown(1) ? 0x02 : 0x00) |
 		(ImGui::IsMouseDown(2) ? 0x04 : 0x00);
-
-	//TODO: move this to the select action
-	map->rootNode->traverse([&browEdit](Node* n)
-	{
-			auto rsmRenderer = n->getComponent<RsmRenderer>();
-			if (rsmRenderer)
-				rsmRenderer->selected = std::find(browEdit->selectedNodes.begin(), browEdit->selectedNodes.end(), n) != browEdit->selectedNodes.end();
-	});
-
 
 	if (ImGui::IsWindowHovered())
 	{
@@ -186,7 +179,10 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 			}
 			else if (gadget.axisReleased)
 			{
-				std::cout << "Released axis" << std::endl;
+				for (auto n : browEdit->selectedNodes)
+				{
+					browEdit->doAction(new ObjectChangeAction(n, &n->getComponent<RswObject>()->position, originalPositions[n], "Moving"));
+				}
 			}
 
 			if (gadget.axisDragged)
@@ -219,7 +215,6 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 					n.first->getComponent<RswObject>()->position = n.second + mouseOffset * glm::vec3(1,-1,-1);
 					if (snap && !gridLocal)
 						n.first->getComponent<RswObject>()->position[gadget.selectedAxisIndex()] = glm::round(n.first->getComponent<RswObject>()->position[gadget.selectedAxisIndex()] / (float)gridSize) * (float)gridSize;
-
 					n.first->getComponent<RsmRenderer>()->setDirty();
 				}
 				canSelectObject = false;
@@ -236,9 +231,17 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 			auto collisions = map->rootNode->getCollisions(mouseRay);
 
 			if (collisions.size() > 0)
-			{ //TODO: ctrl+click and stuff
-				browEdit->selectedNodes.clear();
-				browEdit->selectedNodes.push_back(collisions[0].first);
+			{
+				std::size_t closest = 0;
+				float closestDistance = 999999;
+				for(std::size_t i = 0; i < collisions.size(); i++)
+					for(const auto &pos : collisions[i].second)
+						if (glm::distance(mouseRay.origin, pos) < closestDistance)
+						{
+							closest = i;
+							closestDistance = glm::distance(mouseRay.origin, pos) < closestDistance;
+						}
+				browEdit->doAction(new SelectAction(browEdit, collisions[closest].first, ImGui::GetIO().KeyShift, std::find(browEdit->selectedNodes.begin(), browEdit->selectedNodes.end(), collisions[closest].first) != browEdit->selectedNodes.end() && ImGui::GetIO().KeyShift));
 			}
 		}
 	}

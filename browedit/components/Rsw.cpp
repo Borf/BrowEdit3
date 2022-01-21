@@ -299,7 +299,7 @@ Rsw::QuadTreeNode::~QuadTreeNode()
 
 
 
-void Rsw::buildImGui()
+void Rsw::buildImGui(BrowEdit* browEdit)
 {
 	ImGui::Text("RSW");
 	if (ImGui::CollapsingHeader("Lighting", ImGuiTreeNodeFlags_DefaultOpen))
@@ -321,11 +321,13 @@ void Rsw::buildImGui()
 	}
 }
 
-void RswObject::buildImGui()
+
+void RswObject::buildImGui(BrowEdit* browEdit)
 {
 	auto renderer = node->getComponent<RsmRenderer>();
 	ImGui::Text("Object");
-	if (ImGui::DragFloat3("Position", glm::value_ptr(position)) && renderer)
+
+	if (util::DragFloat3(browEdit, node, "Position", &position, 1.0f, 0.0f, 0.0f, "Moving") && renderer)
 		renderer->setDirty();
 	if (ImGui::DragFloat3("Scale", glm::value_ptr(scale), 0.01f) && renderer)
 		renderer->setDirty();
@@ -333,7 +335,7 @@ void RswObject::buildImGui()
 		renderer->setDirty();
 }
 
-void RswModel::buildImGui()
+void RswModel::buildImGui(BrowEdit* browEdit)
 {
 	ImGui::Text("Model");
 	ImGui::DragInt("Animation Type", &animType, 1, 0, 100);
@@ -342,7 +344,7 @@ void RswModel::buildImGui()
 	ImGui::InputText("Filename", &fileName, ImGuiInputTextFlags_ReadOnly);
 }
 
-void RswEffect::buildImGui()
+void RswEffect::buildImGui(BrowEdit* browEdit)
 {
 	ImGui::Text("Effect");
 	ImGui::DragInt("Type", &id, 1, 0, 500); //TODO: change this to a combobox
@@ -353,7 +355,7 @@ void RswEffect::buildImGui()
 	ImGui::DragFloat("Param 4", &param4, 0.01f, 0.0f, 100.0f);
 }
 
-void RswSound::buildImGui()
+void RswSound::buildImGui(BrowEdit* browEdit)
 {
 	ImGui::Text("Sound");
 	ImGui::InputText("Filename", &fileName);
@@ -370,7 +372,7 @@ void RswSound::buildImGui()
 	ImGui::DragFloat("Unknown8", &unknown8, 0.01f, 0.0f, 100.0f);
 }
 
-void RswLight::buildImGui()
+void RswLight::buildImGui(BrowEdit* browEdit)
 {
 	ImGui::Text("Light");
 

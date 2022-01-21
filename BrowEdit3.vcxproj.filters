@@ -202,6 +202,12 @@
     <ClCompile Include="browedit\Mesh.cpp">
       <Filter>browedit</Filter>
     </ClCompile>
+    <ClCompile Include="browedit\actions\SelectAction.cpp">
+      <Filter>browedit\actions</Filter>
+    </ClCompile>
+    <ClCompile Include="browedit\actions\ObjectChangeAction.cpp">
+      <Filter>browedit\actions</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="lib\imgui\imgui.h">
@@ -371,6 +377,12 @@
     </ClInclude>
     <ClInclude Include="resource.h">
       <Filter>Resource Files</Filter>
+    </ClInclude>
+    <ClInclude Include="browedit\actions\SelectAction.h">
+      <Filter>browedit\actions</Filter>
+    </ClInclude>
+    <ClInclude Include="browedit\actions\ObjectChangeAction.h">
+      <Filter>browedit\actions</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

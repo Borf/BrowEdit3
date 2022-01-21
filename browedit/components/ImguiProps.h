@@ -2,8 +2,10 @@
 
 #include "Component.h"
 
+class BrowEdit;
+
 class ImguiProps
 {
 public:
-	virtual void buildImGui() = 0;
+	virtual void buildImGui(BrowEdit* browEdit) = 0;
 };

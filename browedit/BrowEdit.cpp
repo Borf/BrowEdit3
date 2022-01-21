@@ -13,9 +13,13 @@
 #include "NodeRenderer.h"
 #include "Node.h"
 #include "Gadget.h"
+#include <browedit/actions/Action.h>
 #include "components/Rsw.h"
 #include "components/Gnd.h"
+#include "components/RsmRenderer.h"
 #include "components/ImguiProps.h"
+
+#include "actions/SelectAction.h"
 
 #ifdef _WIN32
 extern "C" __declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;
@@ -125,9 +129,24 @@ void BrowEdit::run()
 				//TODO: check if there are still mapviews for map
 			}
 		}
-		
 
 		ImGui::ShowMetricsWindow();
+
+
+		if (!ImGui::GetIO().WantTextInput)
+		{
+			if (ImGui::GetIO().KeyCtrl)
+			{
+				if (ImGui::IsKeyPressed('Z'))
+					if (ImGui::GetIO().KeyShift)
+						redo();
+					else
+						undo();
+
+
+			}
+		}
+
 
 		imguiLoopEnd();
 		glfwLoopEnd();
@@ -166,6 +185,35 @@ void BrowEdit::configBegin()
 		util::FileIO::begin();
 		util::FileIO::addDirectory(".\\");
 		util::FileIO::end();
+	}
+}
+
+void BrowEdit::doAction(Action* action)
+{
+	action->perform(nullptr, this);
+	undoStack.push_back(action);
+
+	for (auto a : redoStack)
+		delete a;
+	redoStack.clear();
+}
+
+void BrowEdit::redo()
+{
+	if (redoStack.size() > 0)
+	{
+		redoStack.front()->perform(nullptr, this);
+		undoStack.push_back(redoStack.front());
+		redoStack.erase(redoStack.begin());
+	}
+}
+void BrowEdit::undo()
+{
+	if (undoStack.size() > 0)
+	{
+		undoStack.back()->undo(nullptr, this);
+		redoStack.insert(redoStack.begin(), undoStack.back());
+		undoStack.pop_back();
 	}
 }
 
@@ -281,9 +329,9 @@ void BrowEdit::menuBar()
 	if (ImGui::BeginMenu("Edit"))
 	{
 		if (ImGui::MenuItem("Undo", "Ctrl+z"))
-			;
+			undo();
 		if (ImGui::MenuItem("Redo", "Ctrl+shift+z"))
-			;
+			redo();
 		if (ImGui::MenuItem("Undo Window", nullptr, windowData.undoVisible))
 			windowData.undoVisible = !windowData.undoVisible;
 		if (ImGui::MenuItem("Configure"))
@@ -475,7 +523,7 @@ void BrowEdit::showObjectProperties()
 		{
 			auto props = dynamic_cast<ImguiProps*>(c);
 			if (props)
-				props->buildImGui();
+				props->buildImGui(this);
 		}
 	}
 	ImGui::PopFont();
@@ -488,9 +536,16 @@ void BrowEdit::showUndoWindow()
 	ImGui::Begin("Undo stack", &windowData.undoVisible);
 	if (ImGui::BeginListBox("##stack", ImGui::GetContentRegionAvail()))
 	{
-		ImGui::Selectable("Move Object");
-		ImGui::Selectable("Move Object");
-		ImGui::Selectable("Scale Object");
+		for (auto action : undoStack)
+		{
+			ImGui::Selectable(action->str().c_str());
+		}
+		ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.9f, 0.1f, 0.1f, 1.0f));
+		for (auto action : redoStack)
+		{
+			ImGui::Selectable(action->str().c_str());
+		}
+		ImGui::PopStyleColor();
 		ImGui::EndListBox();
 	}
 

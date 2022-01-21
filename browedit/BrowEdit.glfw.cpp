@@ -49,9 +49,12 @@ bool BrowEdit::glfwBegin()
     std::cout<<"Using renderer "<<glGetString(GL_RENDERER)<<std::endl;
 
 //#ifdef _DEBUG
-    glDebugMessageCallback(&onDebug, NULL);
-    glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-    glEnable(GL_DEBUG_OUTPUT);
+    if (glDebugMessageCallback)
+    {
+        glDebugMessageCallback(&onDebug, NULL);
+        glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+        glEnable(GL_DEBUG_OUTPUT);
+    }
 //#endif
 #ifdef _DEBUG
     glfwSwapInterval(0); //disable swap
