@@ -152,7 +152,7 @@ namespace util
 
 	std::istream* FileIO::DirSource::open(const std::string& fileName)
 	{
-		return new std::ifstream(fileName, std::ios_base::in | std::ios_base::binary);
+		return new std::ifstream(directory + fileName, std::ios_base::in | std::ios_base::binary);
 	}
 
 	bool FileIO::DirSource::exists(const std::string& fileName)

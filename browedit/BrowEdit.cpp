@@ -321,7 +321,6 @@ void BrowEdit::menuBar()
 			windowData.openVisible = true;
 			
 		}
-		ImGui::MenuItem("Save As", "Ctrl+s");
 		if(ImGui::MenuItem("Quit"))
 			glfwSetWindowShouldClose(window, 1);
 		ImGui::EndMenu();
@@ -342,9 +341,19 @@ void BrowEdit::menuBar()
 	{
 		for (auto map : maps)
 		{
-			if (ImGui::MenuItem(map->name.c_str()))
+			if (ImGui::BeginMenu(map->name.c_str()))
 			{
-				loadMap(map->name);
+				if (ImGui::MenuItem("Save as"))
+				{
+					saveMap(map);
+				}
+				if (ImGui::MenuItem("Open new view"))
+					loadMap(map->name);
+				for (auto mv : mapViews)
+				{
+					if (mv.map == map)
+						ImGui::MenuItem(mv.viewName.c_str());
+				}
 			}
 		}
 		ImGui::EndMenu();
@@ -426,6 +435,10 @@ void BrowEdit::openWindow()
 }
 
 
+void BrowEdit::saveMap(Map* map)
+{
+
+}
 
 void BrowEdit::loadMap(const std::string& file)
 {
