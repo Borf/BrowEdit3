@@ -130,8 +130,6 @@ void BrowEdit::run()
 			}
 		}
 
-		ImGui::ShowMetricsWindow();
-
 
 		if (!ImGui::GetIO().WantTextInput)
 		{
@@ -142,6 +140,8 @@ void BrowEdit::run()
 						redo();
 					else
 						undo();
+				if (ImGui::IsKeyPressed('Y'))
+					redo();
 
 
 			}

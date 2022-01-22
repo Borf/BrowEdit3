@@ -8,6 +8,7 @@
 #include "components/GndRenderer.h"
 #include "components/RsmRenderer.h"
 
+#include <browedit/actions/GroupAction.h>
 #include <browedit/actions/ObjectChangeAction.h>
 #include <browedit/actions/SelectAction.h>
 #include <browedit/gl/FBO.h>
@@ -179,10 +180,16 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 			}
 			else if (gadget.axisReleased)
 			{
-				for (auto n : browEdit->selectedNodes)
+				if(browEdit->selectedNodes.size() > 1)
 				{
-					browEdit->doAction(new ObjectChangeAction(n, &n->getComponent<RswObject>()->position, originalPositions[n], "Moving"));
+					GroupAction* ga = new GroupAction();
+					for (auto n : browEdit->selectedNodes)
+						ga->addAction(new ObjectChangeAction(n, &n->getComponent<RswObject>()->position, originalPositions[n], "Moving"));
+					browEdit->doAction(ga);
 				}
+				else
+					for (auto n : browEdit->selectedNodes)
+						browEdit->doAction(new ObjectChangeAction(n, &n->getComponent<RswObject>()->position, originalPositions[n], "Moving"));
 			}
 
 			if (gadget.axisDragged)

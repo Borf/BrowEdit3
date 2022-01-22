@@ -329,9 +329,9 @@ void RswObject::buildImGui(BrowEdit* browEdit)
 
 	if (util::DragFloat3(browEdit, node, "Position", &position, 1.0f, 0.0f, 0.0f, "Moving") && renderer)
 		renderer->setDirty();
-	if (ImGui::DragFloat3("Scale", glm::value_ptr(scale), 0.01f) && renderer)
+	if (util::DragFloat3(browEdit, node, "Scale", &scale, 1.0f, 0.0f, 0.0f, "Resizing") && renderer)
 		renderer->setDirty();
-	if (ImGui::DragFloat3("Rotation", glm::value_ptr(rotation)) && renderer)
+	if (util::DragFloat3(browEdit, node, "Rotation", &scale, 1.0f, 0.0f, 0.0f, "Rotating") && renderer)
 		renderer->setDirty();
 }
 

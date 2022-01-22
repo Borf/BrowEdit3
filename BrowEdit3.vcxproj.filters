@@ -208,6 +208,7 @@
     <ClCompile Include="browedit\actions\ObjectChangeAction.cpp">
       <Filter>browedit\actions</Filter>
     </ClCompile>
+    <ClCompile Include="browedit\actions\GroupAction.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="lib\imgui\imgui.h">
@@ -382,6 +383,9 @@
       <Filter>browedit\actions</Filter>
     </ClInclude>
     <ClInclude Include="browedit\actions\ObjectChangeAction.h">
+      <Filter>browedit\actions</Filter>
+    </ClInclude>
+    <ClInclude Include="browedit\actions\GroupAction.h">
       <Filter>browedit\actions</Filter>
     </ClInclude>
   </ItemGroup>

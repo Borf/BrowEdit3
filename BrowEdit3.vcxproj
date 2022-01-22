@@ -11,6 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="browedit\actions\GroupAction.cpp" />
     <ClCompile Include="browedit\actions\ObjectChangeAction.cpp" />
     <ClCompile Include="browedit\actions\SelectAction.cpp" />
     <ClCompile Include="browedit\BrowEdit.cpp" />
@@ -69,6 +70,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="browedit\actions\Action.h" />
+    <ClInclude Include="browedit\actions\GroupAction.h" />
     <ClInclude Include="browedit\actions\ObjectChangeAction.h" />
     <ClInclude Include="browedit\actions\SelectAction.h" />
     <ClInclude Include="browedit\BrowEdit.h" />
