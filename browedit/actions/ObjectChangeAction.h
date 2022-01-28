@@ -28,6 +28,8 @@ public:
 		auto rsmRenderer = node->getComponent<RsmRenderer>();
 		if (rsmRenderer)
 			rsmRenderer->setDirty();
+		if ((std::string*)ptr == &(node->name))
+			node->onRename();
 	}
 	virtual void undo(Map* map, BrowEdit* browEdit)
 	{
@@ -35,6 +37,8 @@ public:
 		auto rsmRenderer = node->getComponent<RsmRenderer>();
 		if (rsmRenderer)
 			rsmRenderer->setDirty();
+		if ((std::string*)ptr == &(node->name))
+			node->onRename();
 	}
 	virtual std::string str()
 	{

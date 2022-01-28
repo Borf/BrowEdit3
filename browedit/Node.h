@@ -20,6 +20,11 @@ public:
 	Node(const std::string& name = "", Node* parent = nullptr);
 	void addComponent(Component* component);
 	void setParent(Node* newParent);
+	void removeChild(Node* child);
+
+
+
+	void onRename();
 	
 	template<class T>
 	T* getComponent()

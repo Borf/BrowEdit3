@@ -209,6 +209,9 @@
       <Filter>browedit\actions</Filter>
     </ClCompile>
     <ClCompile Include="browedit\actions\GroupAction.cpp" />
+    <ClCompile Include="lib\imgui\imgui_demo.cpp">
+      <Filter>lib\imgui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="lib\imgui\imgui.h">

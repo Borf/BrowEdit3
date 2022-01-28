@@ -4,6 +4,7 @@
 #include <vector>
 #include <map>
 #include <list>
+#include <set>
 #include <sstream>
 #include <grf.h>
 
@@ -18,6 +19,7 @@ namespace util
 			virtual std::istream* open(const std::string& file) = 0;
 			virtual void close() = 0;
 			virtual void listFiles(const std::string& directory, std::vector<std::string>&) = 0;
+			virtual void listAllFiles(std::vector<std::string>&) = 0;
 		};
 		class GrfSource : public Source
 		{
@@ -31,6 +33,7 @@ namespace util
 			std::istream* open(const std::string& file) override;
 			void close() override;
 			void listFiles(const std::string& directory, std::vector<std::string>&) override;
+			void listAllFiles(std::vector<std::string>&) override;
 		private:
 			std::string sanitizeFileName(std::string fileName);
 		};
@@ -44,6 +47,7 @@ namespace util
 			std::istream* open(const std::string& file) override;
 			void close() override;
 			void listFiles(const std::string& directory, std::vector<std::string>&) override;
+			void listAllFiles(std::vector<std::string>&) override;
 		};
 
 		static std::vector<Source*> sources;
@@ -58,10 +62,24 @@ namespace util
 		static std::istream* open(const std::string& fileName);
 		static bool exists(const std::string& fileName);
 		static std::vector<std::string> listFiles(const std::string& directory);
+		static std::vector<std::string> listAllFiles();
 
 		//helper methods
 		static std::string readString(std::istream* is, int maxLength, int length = -1);
-
+		
+		class Node
+		{
+		public:
+			Node* parent = nullptr;
+			std::string name;							//name is in utf8
+			std::map<std::string, Node*> directories;	//map is in kr
+			std::set<std::string> files;				//files are in utf8
+			Node(const std::string& name, Node* parent) : name(name), parent(parent) {}
+			Node* addFile(const std::string& fileName);
+			Node* getDirectory(const std::string& directory);
+		};
+		static inline Node* rootNode = nullptr;
+		static Node* directoryNode(const std::string& directory);
 	};
 
 

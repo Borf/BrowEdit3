@@ -35,8 +35,12 @@ class BrowEdit
 		std::size_t openFileSelected = 0;
 		std::string openFilter;
 
-
 		bool undoVisible = true;
+
+
+		bool objectWindowVisible = false;
+
+		bool demoWindowVisible = false;
 
 	} windowData;
 	std::vector<Action*> undoStack;
@@ -86,6 +90,7 @@ public:
 	void buildObjectTree(Node* node, Map* map);
 	void showObjectProperties();
 	void showUndoWindow();
+	void showObjectWindow();
 
 	std::vector<Node*> selectedNodes;
 
@@ -94,6 +99,6 @@ public:
 	void undo();
 	void redo();
 
-	bool toolBarToggleButton(const std::string_view &name, int icon, bool* status);
-	bool toolBarToggleButton(const std::string_view &name, int icon, bool status);
+	bool toolBarToggleButton(const std::string_view &name, int icon, bool* status, const char* tooltip);
+	bool toolBarToggleButton(const std::string_view &name, int icon, bool status, const char* tooltip);
 };

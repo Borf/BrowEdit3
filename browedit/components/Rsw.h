@@ -72,6 +72,7 @@ public:
 	glm::vec3 scale;
 
 	void load(std::istream* is, int version);
+	void save(std::ofstream& file, int version);
 	void buildImGui(BrowEdit* browEdit) override;
 };
 
@@ -86,6 +87,7 @@ public:
 
 	RswModel() : aabb(glm::vec3(), glm::vec3()) {}
 	void load(std::istream* is, int version);
+	void save(std::ofstream &file, int version);
 	void buildImGui(BrowEdit* browEdit) override;
 };
 
@@ -99,6 +101,7 @@ public:
 
 	RswLight() {}
 	void load(std::istream* is);
+	void save(std::ofstream& file);
 	void buildImGui(BrowEdit* browEdit) override;
 };
 
@@ -114,6 +117,7 @@ public:
 
 	RswEffect() {}
 	void load(std::istream* is);
+	void save(std::ofstream& file);
 	void buildImGui(BrowEdit* browEdit) override;
 };
 
@@ -135,6 +139,7 @@ public:
 
 	RswSound() {}
 	void load(std::istream* is, int version);
+	void save(std::ofstream& file, int version);
 	void buildImGui(BrowEdit* browEdit) override;
 };
 

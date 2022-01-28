@@ -10,7 +10,7 @@
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <glfw/glfw3.h>
 #include <glfw/glfw3native.h>
-
+#include <glm/gtc/type_ptr.hpp>
 #include <ShlObj_core.h>
 
 using json = nlohmann::json;
@@ -55,6 +55,7 @@ int CALLBACK BrowseCallBackProc(HWND hwnd, UINT uMsg, LPARAM lParam, LPARAM lpDa
 bool Config::showWindow(BrowEdit* browEdit)
 {
 	bool close = false;
+	static bool showStyleEditor = false;
 	if (ImGui::Begin("Configuration", 0, ImGuiWindowFlags_NoCollapse))
 	{
 		std::string error = isValid();
@@ -174,6 +175,20 @@ bool Config::showWindow(BrowEdit* browEdit)
 		ImGui::DragFloat("Field of View", &fov, 0.1f, 1.0f, 180.0f);
 		ImGui::DragFloat("Camera Mouse Speed", &cameraMouseSpeed, 0.05f, 0.01f, 3.0f);
 
+		if (ImGui::Combo("Skin", &style, "Dark\0Light\0Classic\0"))
+		{
+			switch (style)
+			{
+			case 0: ImGui::StyleColorsDark(); break;
+			case 1: ImGui::StyleColorsLight(); break;
+			case 2: ImGui::StyleColorsClassic(); break;
+			}
+		}
+		if (ImGui::Button("Style editor"))
+			showStyleEditor = !showStyleEditor;
+
+		ImGui::ColorEdit3("Background Color", glm::value_ptr(backgroundColor));
+
 
 		if (ImGui::Button("Save"))
 		{
@@ -191,6 +206,9 @@ bool Config::showWindow(BrowEdit* browEdit)
 	}
 	ImGui::End();
 
+	if(showStyleEditor)
+		ImGui::ShowStyleEditor();
+
 	return close;
 }
 
@@ -202,4 +220,11 @@ void Config::setupFileIO()
 	for (const auto& grf : grfs)
 		util::FileIO::addGrf(grf);
 	util::FileIO::end();
+
+	switch (style)
+	{
+	case 0: ImGui::StyleColorsDark(); break;
+	case 1: ImGui::StyleColorsLight(); break;
+	case 2: ImGui::StyleColorsClassic(); break;
+	}
 }

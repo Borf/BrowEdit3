@@ -32,9 +32,9 @@ void RsmRenderer::render()
 	if (!this->rswObject)
 		this->rswObject = node->getComponent<RswObject>();
 	if (!this->gnd)
-		this->gnd = node->parent->parent->getComponent<Gnd>(); //TODO: remove parent->parent
+		this->gnd = node->root->getComponent<Gnd>(); //TODO: remove parent->parent
 	if (!this->rsw)
-		this->rsw = node->parent->parent->getComponent<Rsw>();
+		this->rsw = node->root->getComponent<Rsw>();
 	if (!this->rsm || !this->rswModel || !this->gnd || !this->rsw)
 		return;
 

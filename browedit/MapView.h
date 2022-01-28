@@ -54,6 +54,7 @@ public:
 
 	math::Plane mouseDragPlane;
 	glm::vec3 mouseDragStart;
+	glm::vec2 mouseDragStart2D;
 
 
 	MouseState mouseState;
@@ -66,7 +67,7 @@ public:
 
 	void update(BrowEdit* browEdit, const ImVec2& size);
 	void updateObjectMode(BrowEdit* browEdit);
-	void render(float ratio, float fov);
+	void render(BrowEdit* browEdit);
 	void postRenderObjectMode(BrowEdit* browEdit);
 
 

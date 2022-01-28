@@ -1,25 +1,28 @@
 #include <Windows.h> //to remove ugly warning :(
 #include "BrowEdit.h"
-#include <browedit/util/FileIO.h>
+#include <GLFW/glfw3.h>
+
 #include <iostream>
 #include <fstream>
+
 #include <imgui.h>
 #include <imgui_internal.h>
 #include <misc/cpp/imgui_stdlib.h>
 #include "Map.h"
 #include <browedit/gl/FBO.h>
 #include <browedit/gl/Texture.h>
-#include <GLFW/glfw3.h>
 #include "NodeRenderer.h"
 #include "Node.h"
 #include "Gadget.h"
 #include <browedit/actions/Action.h>
+#include <browedit/actions/SelectAction.h>
 #include "components/Rsw.h"
 #include "components/Gnd.h"
 #include "components/RsmRenderer.h"
 #include "components/ImguiProps.h"
+#include <browedit/util/FileIO.h>
+#include <browedit/util/Util.h>
 
-#include "actions/SelectAction.h"
 
 #ifdef _WIN32
 extern "C" __declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;
@@ -111,6 +114,10 @@ void BrowEdit::run()
 			openWindow();
 		if (windowData.undoVisible)
 			showUndoWindow();
+		if (windowData.objectWindowVisible)
+			showObjectWindow();
+		if (windowData.demoWindowVisible)
+			ImGui::ShowDemoWindow(&windowData.demoWindowVisible);
 
 		if (editMode == EditMode::Object)
 		{
@@ -130,7 +137,6 @@ void BrowEdit::run()
 			}
 		}
 
-
 		if (!ImGui::GetIO().WantTextInput)
 		{
 			if (ImGui::GetIO().KeyCtrl)
@@ -142,7 +148,9 @@ void BrowEdit::run()
 						undo();
 				if (ImGui::IsKeyPressed('Y'))
 					redo();
-
+				if (ImGui::IsKeyPressed('S'))
+					for (auto m : maps)
+						saveMap(m);
 
 			}
 		}
@@ -217,7 +225,7 @@ void BrowEdit::undo()
 	}
 }
 
-bool BrowEdit::toolBarToggleButton(const std::string_view &name, int icon, bool* status)
+bool BrowEdit::toolBarToggleButton(const std::string_view &name, int icon, bool* status, const char* tooltip)
 {
 	ImVec2 v1((1.0f / iconsTexture->width) * (36 * (icon%4) + 1.5f), //TODO: remove these hardcoded numbers
 		(1.0f / iconsTexture->height) * (36 * (icon/4) + 1.5f));
@@ -225,13 +233,15 @@ bool BrowEdit::toolBarToggleButton(const std::string_view &name, int icon, bool*
 	ImGui::PushID(name.data());
 
 	bool clicked = ImGui::ImageButton((ImTextureID)(long long)iconsTexture->id, ImVec2(32, 32), v1, v2, 0, ImVec4(144 / 255.0f, 193 / 255.0f, 249 / 255.0f, *status ? 1.0f : 0.0f));
+	if (ImGui::IsItemHovered())
+		ImGui::SetTooltip(tooltip);
 	if(clicked)
 		*status = !*status;
 	ImGui::PopID();
 	return clicked;
 }
 
-bool BrowEdit::toolBarToggleButton(const std::string_view& name, int icon, bool status)
+bool BrowEdit::toolBarToggleButton(const std::string_view& name, int icon, bool status, const char* tooltip)
 {
 	ImVec2 v1((1.0f / iconsTexture->width) * (36 * (icon % 4) + 1.5f), //TODO: remove these hardcoded numbers
 		(1.0f / iconsTexture->height) * (36 * (icon / 4) + 1.5f));
@@ -239,6 +249,8 @@ bool BrowEdit::toolBarToggleButton(const std::string_view& name, int icon, bool 
 	ImGui::PushID(name.data());
 
 	bool clicked = ImGui::ImageButton((ImTextureID)(long long)iconsTexture->id, ImVec2(32, 32), v1, v2, 0, ImVec4(144 / 255.0f, 193 / 255.0f, 249 / 255.0f, status ? 1.0f : 0.0f));
+	if (ImGui::IsItemHovered())
+		ImGui::SetTooltip(tooltip);
 	ImGui::PopID();
 	return clicked;
 }
@@ -247,16 +259,16 @@ void BrowEdit::showMapWindow(MapView& mapView)
 	ImGui::SetNextWindowSizeConstraints(ImVec2(300, 300), ImVec2(2048, 2048));
 	if (ImGui::Begin(mapView.viewName.c_str(), &mapView.opened))
 	{
-		toolBarToggleButton("ortho", 11, &mapView.ortho);
+		toolBarToggleButton("ortho", 11, &mapView.ortho, "Toggle between ortho and perspective camera");
 		ImGui::SameLine();
 
-		toolBarToggleButton("viewLightMapShadow", 0, &mapView.viewLightmapShadow);
+		toolBarToggleButton("viewLightMapShadow", 0, &mapView.viewLightmapShadow, "Toggle shadowmap");
 		ImGui::SameLine();
-		toolBarToggleButton("viewLightmapColor", 1, &mapView.viewLightmapColor);
+		toolBarToggleButton("viewLightmapColor", 1, &mapView.viewLightmapColor, "Toggle colormap");
 		ImGui::SameLine();
-		toolBarToggleButton("viewColors", 2, &mapView.viewColors);
+		toolBarToggleButton("viewColors", 2, &mapView.viewColors, "Toggle tile colors");
 		ImGui::SameLine();
-		toolBarToggleButton("viewLighting", 3, &mapView.viewLighting);
+		toolBarToggleButton("viewLighting", 3, &mapView.viewLighting, "Toggle lighting");
 		ImGui::SameLine();
 		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 		ImGui::SameLine();
@@ -264,7 +276,7 @@ void BrowEdit::showMapWindow(MapView& mapView)
 		bool snapping = mapView.snapToGrid;
 		if (ImGui::GetIO().KeyShift)
 			snapping = !snapping;
-		bool ret = toolBarToggleButton("snapToGrid", 7, snapping);
+		bool ret = toolBarToggleButton("snapToGrid", 7, snapping, "Snap to grid");
 		if (!ImGui::GetIO().KeyShift && ret)
 			mapView.snapToGrid = !mapView.snapToGrid;
 		if (snapping || mapView.snapToGrid)
@@ -282,13 +294,13 @@ void BrowEdit::showMapWindow(MapView& mapView)
 
 		if (BrowEdit::editMode == EditMode::Object)
 		{
-			if (toolBarToggleButton("translate", 8, mapView.gadget.mode == Gadget::Mode::Translate))
+			if (toolBarToggleButton("translate", 8, mapView.gadget.mode == Gadget::Mode::Translate, "Move"))
 				mapView.gadget.mode = Gadget::Mode::Translate;
 			ImGui::SameLine();
-			if (toolBarToggleButton("rotate", 9, mapView.gadget.mode == Gadget::Mode::Rotate))
+			if (toolBarToggleButton("rotate", 9, mapView.gadget.mode == Gadget::Mode::Rotate, "Rotate"))
 				mapView.gadget.mode = Gadget::Mode::Rotate;
 			ImGui::SameLine();
-			if (toolBarToggleButton("scale", 10, mapView.gadget.mode == Gadget::Mode::Scale))
+			if (toolBarToggleButton("scale", 10, mapView.gadget.mode == Gadget::Mode::Scale, "Scale"))
 				mapView.gadget.mode = Gadget::Mode::Scale;
 		}
 
@@ -296,9 +308,11 @@ void BrowEdit::showMapWindow(MapView& mapView)
 
 		auto size = ImGui::GetContentRegionAvail();
 		mapView.update(this, size);
-		mapView.render(size.x / (float)size.y, config.fov);
+		mapView.render(this);
 		if(editMode == EditMode::Object)
 			mapView.postRenderObjectMode(this);
+		mapView.prevMouseState = mapView.mouseState; //meh
+
 		ImTextureID id = (ImTextureID)((long long)mapView.fbo->texid[0]); //TODO: remove cast for 32bit
 		ImGui::Image(id, size, ImVec2(0,1), ImVec2(1,0));
 		mapView.hovered = ImGui::IsItemHovered();
@@ -321,6 +335,11 @@ void BrowEdit::menuBar()
 			windowData.openVisible = true;
 			
 		}
+		if (ImGui::MenuItem("Save all", "Ctrl+s"))
+		{
+			for (auto m : maps)
+				saveMap(m);
+		}
 		if(ImGui::MenuItem("Quit"))
 			glfwSetWindowShouldClose(window, 1);
 		ImGui::EndMenu();
@@ -335,6 +354,8 @@ void BrowEdit::menuBar()
 			windowData.undoVisible = !windowData.undoVisible;
 		if (ImGui::MenuItem("Configure"))
 			windowData.configVisible = true;
+		if (ImGui::MenuItem("Demo Window", nullptr, windowData.demoWindowVisible))
+			windowData.demoWindowVisible = !windowData.demoWindowVisible;
 		ImGui::EndMenu();
 	}
 	if (ImGui::BeginMenu("Maps"))
@@ -344,16 +365,36 @@ void BrowEdit::menuBar()
 			if (ImGui::BeginMenu(map->name.c_str()))
 			{
 				if (ImGui::MenuItem("Save as"))
-				{
 					saveMap(map);
-				}
 				if (ImGui::MenuItem("Open new view"))
 					loadMap(map->name);
 				for (auto mv : mapViews)
 				{
 					if (mv.map == map)
-						ImGui::MenuItem(mv.viewName.c_str());
+					{
+						if (ImGui::BeginMenu(mv.viewName.c_str()))
+						{
+							if (ImGui::BeginMenu("High Res Screenshot"))
+							{
+								static int size[2] = { 2048, 2048 };
+								ImGui::DragInt2("Size", size);
+								if (ImGui::MenuItem("Save"))
+								{
+									std::string filename = util::SaveAsDialog("screenshot.png", "All\0*.*\0Png\0*.png");
+									if (filename != "")
+									{
+										mv.fbo->resize(size[0], size[1]);
+										mv.render(this);
+										mv.fbo->saveAsFile(filename);
+									}
+								}
+								ImGui::EndMenu();
+							}
+							ImGui::EndMenu();
+						}
+					}
 				}
+				ImGui::EndMenu();
 			}
 		}
 		ImGui::EndMenu();
@@ -380,14 +421,18 @@ void BrowEdit::toolbar()
 		ImGui::Text("Wall");
 	ImGui::SameLine();
 
-	if (toolBarToggleButton("texturemode", 4, editMode == EditMode::Texture))
+	if (toolBarToggleButton("texturemode", 4, editMode == EditMode::Texture, "Texture edit mode"))
 		editMode = EditMode::Texture;
 	ImGui::SameLine();
-	if (toolBarToggleButton("objectmode", 5, editMode == EditMode::Object))
+	if (toolBarToggleButton("objectmode", 5, editMode == EditMode::Object, "Object edit mode"))
 		editMode = EditMode::Object;
 	ImGui::SameLine();
-	if (toolBarToggleButton("wallmode", 6, editMode == EditMode::Wall))
+	if (toolBarToggleButton("wallmode", 6, editMode == EditMode::Wall, "Wall edit mode"))
 		editMode = EditMode::Wall;
+	ImGui::SameLine();
+
+	if(editMode == EditMode::Object)
+		toolBarToggleButton("showObjectWindow", 5, &windowData.objectWindowVisible, "Toggle object window");
 
 	ImGui::End();
 
@@ -405,10 +450,14 @@ void BrowEdit::toolbar()
 
 void BrowEdit::openWindow()
 {
-	if (ImGui::Begin("Open Map", 0, ImGuiWindowFlags_NoDocking))
+	ImGui::OpenPopup("Open Map");
+
+	ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+	ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+
+	if (ImGui::BeginPopupModal("Open Map", 0, ImGuiWindowFlags_NoDocking))
 	{
 		ImGui::Button("Browse for file");
-
 
 		ImGui::Text("Filter");
 		ImGui::InputText("##filter", &windowData.openFilter);
@@ -429,15 +478,14 @@ void BrowEdit::openWindow()
 			loadMap(windowData.openFiles[windowData.openFileSelected]);
 			windowData.openVisible = false;
 		}
-
+		ImGui::EndPopup();
 	}
-	ImGui::End();
 }
 
 
 void BrowEdit::saveMap(Map* map)
 {
-
+	map->rootNode->getComponent<Rsw>()->save("out\\" + map->name);
 }
 
 void BrowEdit::loadMap(const std::string& file)
@@ -453,9 +501,9 @@ void BrowEdit::loadMap(const std::string& file)
 	}
 	int viewCount = 0;
 	for (const auto& mv : mapViews)
-		if (mv.map == map && mv.viewName == file + "##" + std::to_string(viewCount))
+		if (mv.map == map && mv.viewName == file + "#" + std::to_string(viewCount))
 			viewCount++;
-	mapViews.push_back(MapView(map, file + "##" + std::to_string(viewCount)));
+	mapViews.push_back(MapView(map, file + "#" + std::to_string(viewCount)));
 }
 
 
@@ -478,7 +526,7 @@ void BrowEdit::buildObjectTree(Node* node, Map* map)
 {
 	if (node->children.size() > 0)
 	{
-		int flags = ImGuiTreeNodeFlags_DefaultOpen;
+		int flags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_OpenOnDoubleClick;
 		if (std::find(selectedNodes.begin(), selectedNodes.end(), node) != selectedNodes.end())
 			flags |= ImGuiTreeNodeFlags_Selected;
 		bool opened = ImGui::TreeNodeEx(node->name.c_str(), flags);
@@ -496,10 +544,24 @@ void BrowEdit::buildObjectTree(Node* node, Map* map)
 	}
 	else
 	{
-		int flags = ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen | ImGuiTreeNodeFlags_Bullet;
+		int flags = ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
 		if (std::find(selectedNodes.begin(), selectedNodes.end(), node) != selectedNodes.end())
 			flags |= ImGuiTreeNodeFlags_Selected;
+
+
+		ImVec4 textColor = ImGui::GetStyleColorVec4(ImGuiCol_Text);
+		float h, s, v;
+		ImGui::ColorConvertRGBtoHSV(textColor.x, textColor.y, textColor.z, h,s,v);
+		if (node->getComponent<RswModel>())		{	h = 0;		s = glm::min(1.0f, s + 0.5f);	v = glm::min(1.0f, v + 0.5f);}
+		if (node->getComponent<RswEffect>())	{	h = 0.25f;	s = glm::min(1.0f, s + 0.5f);	v = glm::min(1.0f, v + 0.5f);}
+		if (node->getComponent<RswSound>())		{	h = 0.5f;	s = glm::min(1.0f, s + 0.5f);	v = glm::min(1.0f, v + 0.5f);}
+		if (node->getComponent<RswLight>())		{	h = 0.75f;	s = glm::min(1.0f, s + 0.5f);	v = glm::min(1.0f, v + 0.5f);}
+		ImGui::ColorConvertHSVtoRGB(h, s, v, textColor.x, textColor.y, textColor.z);
+
+		ImGui::PushStyleColor(ImGuiCol_Text, textColor);
 		bool opened = ImGui::TreeNodeEx(node->name.c_str(), flags);
+		ImGui::PopStyleColor();
+
 		if (ImGui::IsItemClicked() && ImGui::IsMouseDoubleClicked(0))
 		{
 			auto rswObject = node->getComponent<RswObject>();
@@ -531,7 +593,10 @@ void BrowEdit::showObjectProperties()
 	ImGui::PushFont(font);
 	if (selectedNodes.size() == 1)
 	{
-		ImGui::InputText("Name", &selectedNodes[0]->name);
+		if (util::InputText(this, selectedNodes[0], "Name", &selectedNodes[0]->name, 0, "Renaming"))
+		{
+			selectedNodes[0]->onRename();
+		}
 		for (auto c : selectedNodes[0]->components)
 		{
 			auto props = dynamic_cast<ImguiProps*>(c);
@@ -562,5 +627,75 @@ void BrowEdit::showUndoWindow()
 		ImGui::EndListBox();
 	}
 
+	ImGui::End();
+}
+
+
+
+void BrowEdit::showObjectWindow()
+{
+	ImGui::Begin("Object Picker", &windowData.objectWindowVisible);
+	static std::string filter;
+	ImGui::InputText("Filter", &filter);
+
+	static util::FileIO::Node* selectedNode = nullptr;
+
+	std::function<void(util::FileIO::Node*)> buildTreeNodes;
+	buildTreeNodes = [&](util::FileIO::Node* node)
+	{
+		for (auto f : node->directories)
+		{
+			int flags = ImGuiTreeNodeFlags_OpenOnDoubleClick;
+			if (f.second->directories.size() == 0)
+				flags |= ImGuiTreeNodeFlags_Bullet;
+			if (f.second == selectedNode)
+				flags |= ImGuiTreeNodeFlags_Selected;
+
+			if (ImGui::TreeNodeEx(f.second->name.c_str(), flags))
+			{
+				buildTreeNodes(f.second);
+				ImGui::TreePop();
+			}
+			if (ImGui::IsItemClicked())
+				selectedNode = f.second;
+		}
+	};
+
+	ImGui::BeginChild("left pane", ImVec2(250, 0), true);
+	if (ImGui::TreeNodeEx("Models", ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_OpenOnDoubleClick))
+	{
+		auto root = util::FileIO::directoryNode("data\\model\\");
+		buildTreeNodes(root);
+		ImGui::TreePop();
+	}
+	ImGui::EndChild();
+	ImGui::SameLine();
+	if (ImGui::BeginChild("right pane", ImVec2(ImGui::GetContentRegionAvail().x, 0), true))
+	{
+		if (selectedNode != nullptr)
+		{
+			ImGuiStyle& style = ImGui::GetStyle();
+			float window_visible_x2 = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
+			for (auto file : selectedNode->files)
+			{
+				if (ImGui::BeginChild(file.c_str(), ImVec2(200, 250), true, ImGuiWindowFlags_NoScrollbar))
+				{
+					if (ImGui::ImageButton(0, ImVec2(200, 200), ImVec2(0, 0), ImVec2(1, 1), 0))
+					{
+						std::cout << "Click on " << file << std::endl;
+					}
+					ImGui::Text(file.c_str());
+				}
+				ImGui::EndChild();
+
+				float last_button_x2 = ImGui::GetItemRectMax().x;
+				float next_button_x2 = last_button_x2 + style.ItemSpacing.x + 200; // Expected position if next button was on same line
+				if (next_button_x2 < window_visible_x2)
+					ImGui::SameLine();
+
+			}
+		}
+	}
+	ImGui::EndChild();
 	ImGui::End();
 }

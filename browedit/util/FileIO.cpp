@@ -1,10 +1,12 @@
 #include "FileIO.h"
+#include "Util.h"
 
 #include <iostream>
 #include <fstream>
 #include <sstream>
 #include <filesystem>
 #include <algorithm>
+
 
 namespace util
 {
@@ -42,10 +44,15 @@ namespace util
 	{
 		std::vector<std::string> files;
 		for (auto& source : sources)
-		{
 			source->listFiles(directory, files);
-		}
+		return files;
+	}
 
+	std::vector<std::string> FileIO::listAllFiles()
+	{
+		std::vector<std::string> files;
+		for (auto& source : sources)
+			source->listAllFiles(files);
 		return files;
 	}
 
@@ -63,9 +70,70 @@ namespace util
 
 	void FileIO::end()
 	{
+		if (rootNode)
+			delete rootNode;
+		std::cout << "FileIO: building tree" << std::endl;
+		rootNode = new Node("", nullptr);
+		std::vector<std::string> files = FileIO::listAllFiles();
 
+		std::map<std::string, Node*> cache;
+		for (const auto& file : files)
+		{
+			auto isDir = file.rfind("\\");
+			if(isDir == std::string::npos)
+				rootNode->addFile(file);
+			else
+			{
+				std::string dir = file.substr(0, isDir);
+				auto cacheHit = cache.find(dir);
+				if (cacheHit == cache.end())
+					cache[dir] = rootNode->addFile(file);
+				else
+					cacheHit->second->addFile(file.substr(isDir+1));
+			}
+		}
+		std::cout << "FileIO: done building tree" << std::endl;
 	}
 
+	FileIO::Node* FileIO::Node::addFile(const std::string& fileName)
+	{
+		if (fileName.find("\\") == std::string::npos)
+		{
+			files.insert(iso_8859_1_to_utf8(fileName));
+			return this;
+		}
+		else
+		{
+			std::string dir = fileName.substr(0, fileName.find("\\"));
+			std::string rest = fileName.substr(fileName.find("\\")+1);
+			auto dirNode = directories.find(dir);
+			if (dirNode == directories.end())
+			{
+				directories[dir] = new Node(iso_8859_1_to_utf8(dir), this);
+				dirNode = directories.find(dir);
+			}
+			return dirNode->second->addFile(rest);
+		}
+	}
+
+	FileIO::Node* FileIO::Node::getDirectory(const std::string& directory)
+	{
+		if (directory == "")
+			return this;
+		std::string dir = directory;
+		std::string rest = "";
+		if (dir.find("\\") != std::string::npos)
+		{
+			dir = directory.substr(0, directory.find("\\"));
+			rest = directory.substr(directory.find("\\") + 1);
+		}
+		return directories[dir]->getDirectory(rest);
+	}
+
+	FileIO::Node* FileIO::directoryNode(const std::string& directory)
+	{
+		return rootNode->getDirectory(directory);
+	}
 
 	////////GRF
 	std::string FileIO::GrfSource::sanitizeFileName(std::string fileName)
@@ -139,7 +207,11 @@ namespace util
 		}
 	}
 
-
+	void FileIO::GrfSource::listAllFiles(std::vector<std::string>& files)
+	{
+		for (auto kv : lookup)
+			files.push_back(kv.first);
+	}
 
 	///////////////////////File
 	FileIO::DirSource::DirSource(const std::string& dir) : directory(dir)
@@ -165,6 +237,9 @@ namespace util
 	}
 
 
+	void FileIO::DirSource::listAllFiles(std::vector<std::string>& files)
+	{
+	}
 
 	std::string FileIO::readString(std::istream* is, int maxLength, int length)
 	{

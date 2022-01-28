@@ -10,8 +10,9 @@ void Gadget::init()
 	shader->setUniform(SimpleShader::Uniforms::s_texture, 0);
 
 	arrowMesh.init();
-	scaleMesh.init();
 	rotateMesh.init();
+	scaleMesh.init();
+	scaleCubeMesh.init();
 }
 
 void Gadget::setMatrices(const glm::mat4& projectionMatrix, const glm::mat4& viewMatrix)
@@ -24,6 +25,9 @@ void Gadget::draw(const math::Ray& mouseRay, const glm::mat4& modelMatrix)
 {
 	axisClicked = false;
 	axisReleased = false;
+	static bool axisHovered;
+	axisHovered = false;
+	static bool isMouseJustPressed = true;
 
 	shader->use();
 	shader->setUniform(SimpleShader::Uniforms::projectionMatrix, projectionMatrix);
@@ -38,20 +42,22 @@ void Gadget::draw(const math::Ray& mouseRay, const glm::mat4& modelMatrix)
 		if (mode == Mode::Translate)	mesh = &arrowMesh;
 		if (mode == Mode::Rotate)		mesh = &rotateMesh;
 		if (mode == Mode::Scale)		mesh = &scaleMesh;
+		if (mode == Mode::Scale && index != 0 && (index & (index - 1)) != 0)		mesh = &scaleCubeMesh;
 
 		shader->setUniform(SimpleShader::Uniforms::modelMatrix, matrix);
-		if (mesh->collision(mouseRay, matrix) || selectedAxis == index)
+		if ((mesh->collision(mouseRay, matrix) || selectedAxis == index) && !axisHovered)
 		{
 			if(selectedAxis == 0)
 				shader->setUniform(SimpleShader::Uniforms::color, glm::vec4(1, 1, 0.25f, 1));
 			else
 				shader->setUniform(SimpleShader::Uniforms::color, glm::vec4(1.5, 1.5, 0.65f, 1));
-			if (ImGui::IsMouseDown(0) && selectedAxis == 0)
+			if (ImGui::IsMouseDown(0) && selectedAxis == 0 && isMouseJustPressed)
 			{
 				axisDragged = true;
 				axisClicked = true;
 				selectedAxis = index;
 			}
+			axisHovered = true;
 		}
 		else
 			shader->setUniform(SimpleShader::Uniforms::color, color);
@@ -66,12 +72,14 @@ void Gadget::draw(const math::Ray& mouseRay, const glm::mat4& modelMatrix)
 
 	};
 
+	if (mode == Mode::Scale)
+		drawDirection(modelMatrix, Axis::X | Axis::Y | Axis::Z, glm::vec4(1.0f, 0.25f, 1.0f, 1));
 
 	drawDirection(glm::rotate(modelMatrix, glm::radians(90.0f), glm::vec3(0, 0, -1)), Axis::X, glm::vec4(1, 0.25f, 0.25f, 1));
 	drawDirection(modelMatrix, Axis::Y, glm::vec4(0.25f, 1, 0.25f, 1));
 	drawDirection(glm::rotate(modelMatrix, glm::radians(90.0f), glm::vec3(1, 0, 0)), Axis::Z, glm::vec4(0.25f, 0.25f, 1, 1));
 
-
+	isMouseJustPressed = !ImGui::IsMouseDown(0);
 }
 
 
@@ -125,11 +133,15 @@ std::vector<glm::vec3> Gadget::ScaleMesh::buildVertices()
 	return verts;
 }
 
+std::vector<glm::vec3> Gadget::ScaleCubeMesh::buildVertices()
+{
+	return math::AABB::box(glm::vec3(-5, -5, -5), glm::vec3(5, 5, 5));
+}
 
 std::vector<glm::vec3> Gadget::RotateMesh::buildVertices()
 {
 	std::vector<glm::vec3> verts;
-	verts.push_back(glm::vec3(0.836100, 0.835598, 10.379000)); verts.push_back(glm::vec3(0.769100, 3.931098, 8.954101)); verts.push_back(glm::vec3(-0.769100, 3.931098, 8.954101));
+	/*verts.push_back(glm::vec3(0.836100, 0.835598, 10.379000)); verts.push_back(glm::vec3(0.769100, 3.931098, 8.954101)); verts.push_back(glm::vec3(-0.769100, 3.931098, 8.954101));
 	verts.push_back(glm::vec3(-0.769100, 3.931098, 8.954101)); verts.push_back(glm::vec3(-0.836100, 0.835598, 10.379000)); verts.push_back(glm::vec3(0.836100, 0.835598, 10.379000));
 	verts.push_back(glm::vec3(0.836100, 0.835598, 10.379000)); verts.push_back(glm::vec3(1.038300, 0.054898, 9.960600)); verts.push_back(glm::vec3(1.121500, 2.505899, 7.821900));
 	verts.push_back(glm::vec3(1.121500, 2.505899, 7.821900)); verts.push_back(glm::vec3(0.769100, 3.931098, 8.954101)); verts.push_back(glm::vec3(0.836100, 0.835598, 10.379000));
@@ -267,6 +279,53 @@ std::vector<glm::vec3> Gadget::RotateMesh::buildVertices()
 	for (std::size_t i = 0; i < verts.size(); i++)
 	{
 		verts[i] = glm::vec3(glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0, 0, 1)) * glm::vec4(verts[i], 1.0f));
+	}*/
+
+	float inc = (2 * glm::pi<float>()) / 36.0f;
+	float w = 1;
+	float size = 25;
+	float siz2 = size - 2*w;
+
+	for (float f = 0; f < 2 * glm::pi<float>(); f += inc)
+	{
+		glm::vec3 v1(size * glm::cos(f), -w, size * glm::sin(f));
+		glm::vec3 v2(size * glm::cos(f+inc), -w, size * glm::sin(f+inc));
+		glm::vec3 v3(size * glm::cos(f+inc), w, size * glm::sin(f+inc));
+		glm::vec3 v4(size * glm::cos(f), w, size * glm::sin(f));
+
+		glm::vec3 v5(siz2 * glm::cos(f), -w, siz2 * glm::sin(f));
+		glm::vec3 v6(siz2 * glm::cos(f + inc), -w, siz2 * glm::sin(f + inc));
+		glm::vec3 v7(siz2 * glm::cos(f + inc), w, siz2 * glm::sin(f + inc));
+		glm::vec3 v8(siz2 * glm::cos(f), w, siz2 * glm::sin(f));
+		//outside
+		verts.push_back(v3);
+		verts.push_back(v2);
+		verts.push_back(v1);
+		verts.push_back(v1);
+		verts.push_back(v4);
+		verts.push_back(v3);
+		//inside
+		verts.push_back(v5);
+		verts.push_back(v6);
+		verts.push_back(v7);
+		verts.push_back(v7);
+		verts.push_back(v8);
+		verts.push_back(v5);
+		//sides
+		verts.push_back(v1);
+		verts.push_back(v2);
+		verts.push_back(v6);
+		verts.push_back(v1);
+		verts.push_back(v6);
+		verts.push_back(v5);
+
+		verts.push_back(v3);
+		verts.push_back(v4);
+		verts.push_back(v8);
+		verts.push_back(v3);
+		verts.push_back(v8);
+		verts.push_back(v7);
+
 	}
 
 	return verts;
