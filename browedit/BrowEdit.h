@@ -24,7 +24,7 @@ class BrowEdit
 	gl::Texture* backgroundTexture;
 	gl::Texture* iconsTexture;
 	std::vector<Map*> maps;
-	std::vector<MapView> mapViews;
+	std::list<MapView> mapViews;
 
 	struct WindowData
 	{
@@ -38,15 +38,11 @@ class BrowEdit
 		bool undoVisible = true;
 
 
-		bool objectWindowVisible = false;
+		bool objectWindowVisible = true;
 
 		bool demoWindowVisible = false;
 
 	} windowData;
-	std::vector<Action*> undoStack;
-	std::vector<Action*> redoStack;
-
-
 public:
 	ImFont* font;
 	enum class EditMode
@@ -56,10 +52,14 @@ public:
 		Wall
 	} editMode = EditMode::Object;
 
-
+	std::map<std::string, std::vector<std::string>> tagList; // tag -> [ file ], utf8
+	std::map<std::string, std::vector<std::string>> tagListReverse; // file -> [ tag ], kr
 	GLFWwindow* window;
 	double scrollDelta = 0;
 	Config config;
+	Node* newNode = nullptr;
+	MapView* activeMapView = nullptr;
+
 
 	void configBegin();
 
@@ -80,7 +80,7 @@ public:
 	void saveMap(Map* map);
 	void showMapWindow(MapView& map);
 
-
+	void saveTagList();
 
 	void menuBar();
 	void toolbar();
@@ -92,12 +92,6 @@ public:
 	void showUndoWindow();
 	void showObjectWindow();
 
-	std::vector<Node*> selectedNodes;
-
-	
-	void doAction(Action* action);
-	void undo();
-	void redo();
 
 	bool toolBarToggleButton(const std::string_view &name, int icon, bool* status, const char* tooltip);
 	bool toolBarToggleButton(const std::string_view &name, int icon, bool status, const char* tooltip);

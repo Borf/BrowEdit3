@@ -110,8 +110,13 @@ void Node::setParent(Node* newParent)
 		parent->children.erase(std::remove_if(parent->children.begin(), parent->children.end(), [this](Node* n) { return n == this; }));
 	}
 	parent = newParent;
-	parent->children.push_back(this);
-	this->root = parent->root;
+	if (parent)
+	{
+		parent->children.push_back(this);
+		this->root = parent->root;
+	}
+	else
+		this->root = this;
 }
 
 void Node::removeChild(Node* child)

@@ -181,6 +181,88 @@ Gnd::Gnd(const std::string& fileName)
 
 
 
+glm::vec3 Gnd::rayCast(const math::Ray& ray)
+{
+	float f = 0;
+	for (auto x = 0; x < cubes.size(); x++)
+	{
+		for (auto y = 0; y < cubes[x].size(); y++)
+		{
+			Gnd::Cube* cube = cubes[x][y];
+
+			if (cube->tileUp != -1)
+			{
+				Gnd::Tile* tile = tiles[cube->tileUp];
+
+				glm::vec3 v1(10 * x, -cube->h3, 10 * height - 10 * y);
+				glm::vec3 v2(10 * x + 10, -cube->h4, 10 * height - 10 * y);
+				glm::vec3 v3(10 * x, -cube->h1, 10 * height - 10 * y + 10);
+				glm::vec3 v4(10 * x + 10, -cube->h2, 10 * height - 10 * y + 10);
+
+				{
+					std::vector<glm::vec3> v{ v3, v2, v1 };
+					if (ray.LineIntersectPolygon(v, f))
+						return ray.origin + f * ray.dir;
+				}
+				{
+					std::vector<glm::vec3> v{ v4, v2, v3 };
+					if (ray.LineIntersectPolygon(v, f))
+						return ray.origin + f * ray.dir;
+				}
+			}
+			if (cube->tileFront != -1 && x < width - 1)
+			{
+				Gnd::Tile* tile = tiles[cube->tileFront];
+				assert(tile->lightmapIndex >= 0);
+
+				glm::vec3 v1(10 * x + 10, -cube->h2, 10 * height - 10 * y + 10);
+				glm::vec3 v2(10 * x + 10, -cube->h4, 10 * height - 10 * y);
+				glm::vec3 v3(10 * x + 10, -cubes[x + 1][y]->h1, 10 * height - 10 * y + 10);
+				glm::vec3 v4(10 * x + 10, -cubes[x + 1][y]->h3, 10 * height - 10 * y);
+
+				{
+					std::vector<glm::vec3> v{ v3, v2, v1 };
+					if (ray.LineIntersectPolygon(v, f))
+						return ray.origin + f * ray.dir;
+				}
+				{
+					std::vector<glm::vec3> v{ v4, v2, v3 };
+					if (ray.LineIntersectPolygon(v, f))
+						return ray.origin + f * ray.dir;
+				}
+			}
+			if (cube->tileSide != -1 && y < height - 1)
+			{
+				Gnd::Tile* tile = tiles[cube->tileSide];
+
+				glm::vec3 v1(10 * x, -cube->h3, 10 * height - 10 * y);
+				glm::vec3 v2(10 * x + 10, -cube->h4, 10 * height - 10 * y);
+				glm::vec3 v4(10 * x + 10, -cubes[x][y + 1]->h2, 10 * height - 10 * y);
+				glm::vec3 v3(10 * x, -cubes[x][y + 1]->h1, 10 * height - 10 * y);
+
+				{
+					std::vector<glm::vec3> v{ v3, v2, v1 };
+					if (ray.LineIntersectPolygon(v, f))
+						return ray.origin + f * ray.dir;
+				}
+				{
+					std::vector<glm::vec3> v{ v4, v2, v3 };
+					if (ray.LineIntersectPolygon(v, f))
+						return ray.origin + f * ray.dir;
+				}
+			}
+		}
+	}
+	return glm::vec3(0, 0, 0);
+}
+
+
+
+
+
+
+
+
 
 Gnd::Texture::Texture()
 {
@@ -232,3 +314,6 @@ void Gnd::Cube::calcNormals(Gnd* gnd, int x, int y)
 		normals[i] = glm::normalize(normals[i]);
 	}
 }
+
+
+

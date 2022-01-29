@@ -28,7 +28,7 @@ struct MouseState
 class MapView
 {
 public:
-	Map* map;
+	Map* map = nullptr;
 	int id;
 	std::string viewName;
 
@@ -39,7 +39,7 @@ public:
 	gl::FBO* fbo;
 
 	bool ortho = false;
-	glm::vec2 cameraCenter = glm::vec2(500,500);
+	glm::vec2 cameraCenter;
 	float cameraRotX = 45.0f;
 	float cameraRotY = 0.0f;
 	float cameraDistance = 500;

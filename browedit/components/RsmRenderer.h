@@ -109,5 +109,5 @@ public:
 
 	void setDirty() { this->matrixCached = false; }
 	bool selected = false;
-	glm::mat4 matrixCache; //TODO: move this to RswObject ?
+	glm::mat4 matrixCache = glm::mat4(1.0f); //TODO: move this to RswObject ?
 };

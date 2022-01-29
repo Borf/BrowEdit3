@@ -11,6 +11,7 @@
 #include <browedit/actions/GroupAction.h>
 #include <browedit/actions/ObjectChangeAction.h>
 #include <browedit/actions/SelectAction.h>
+#include <browedit/actions/NewObjectAction.h>
 #include <browedit/gl/FBO.h>
 #include <browedit/gl/Vertex.h>
 #include <browedit/math/Ray.h>
@@ -29,6 +30,9 @@ MapView::MapView(Map* map, const std::string &viewName) : map(map), viewName(vie
 	fbo = new gl::FBO(1920, 1080, true);
 	//shader = new TestShader();
 
+	auto gnd = map->rootNode->getComponent<Gnd>();
+	cameraCenter.x = gnd->width * 5.0f;
+	cameraCenter.y = gnd->height * 5.0f;
 }
 
 void MapView::render(BrowEdit* browEdit)
@@ -65,6 +69,18 @@ void MapView::render(BrowEdit* browEdit)
 
 
 	NodeRenderer::render(map->rootNode, nodeRenderContext);
+
+	if (browEdit->newNode)
+	{
+		auto rswObject = browEdit->newNode->getComponent<RswObject>();
+		auto gnd = map->rootNode->getComponent<Gnd>();
+		auto rayCast = gnd->rayCast(mouseRay);
+		rswObject->position = glm::vec3(rayCast.x - 5 * gnd->width, -rayCast.y, -(rayCast.z + (-10 - 5 * gnd->height)));
+		browEdit->newNode->getComponent<RsmRenderer>()->matrixCache = glm::translate(glm::mat4(1.0f), rayCast);
+		browEdit->newNode->getComponent<RsmRenderer>()->matrixCache = glm::scale(browEdit->newNode->getComponent<RsmRenderer>()->matrixCache, glm::vec3(1,-1,1));
+		NodeRenderer::render(browEdit->newNode, nodeRenderContext);
+	}
+
 	fbo->unbind();
 }
 
@@ -127,6 +143,8 @@ void MapView::updateObjectMode(BrowEdit* browEdit)
 
 void MapView::postRenderObjectMode(BrowEdit* browEdit)
 {
+	if (!ImGui::IsWindowHovered())
+		return;
 	glUseProgram(0);
 	glMatrixMode(GL_PROJECTION);
 	glLoadMatrixf(glm::value_ptr(nodeRenderContext.projectionMatrix));
@@ -137,12 +155,23 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 	fbo->bind();
 
 	bool canSelectObject = true;
-
-	if (browEdit->selectedNodes.size() > 0)
+	if (browEdit->newNode)
+	{
+		if (ImGui::IsMouseClicked(0))
+		{
+			browEdit->newNode->setParent(map->rootNode);
+			auto ga = new GroupAction();
+			ga->addAction(new NewObjectAction(browEdit->newNode));
+			ga->addAction(new SelectAction(map, browEdit->newNode, false, false));
+			map->doAction(ga, browEdit);
+			browEdit->newNode = nullptr;
+		}
+	}
+	else if (map->selectedNodes.size() > 0)
 	{
 		glm::vec3 avgPos(0.0f);
 		int count = 0;
-		for(auto n : browEdit->selectedNodes)
+		for(auto n : map->selectedNodes)
 			if (n->root == map->rootNode && n->getComponent<RswObject>())
 			{
 				avgPos += n->getComponent<RswObject>()->position;
@@ -158,11 +187,11 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 
 			glm::mat4 mat = glm::scale(glm::mat4(1.0f), glm::vec3(1, 1, -1));
 			mat = glm::translate(mat, glm::vec3(5 * gnd->width + avgPos.x, -avgPos.y, (-10 - 5 * gnd->height + avgPos.z)));
-			if (browEdit->selectedNodes.size() == 1 && gadget.mode == Gadget::Mode::Rotate)
+			if (map->selectedNodes.size() == 1 && gadget.mode == Gadget::Mode::Rotate)
 			{
-				mat = glm::rotate(mat, glm::radians(browEdit->selectedNodes[0]->getComponent<RswObject>()->rotation.y), glm::vec3(0, 1, 0));
-				mat = glm::rotate(mat, -glm::radians(browEdit->selectedNodes[0]->getComponent<RswObject>()->rotation.x), glm::vec3(1, 0, 0));
-				mat = glm::rotate(mat, -glm::radians(browEdit->selectedNodes[0]->getComponent<RswObject>()->rotation.z), glm::vec3(0, 0, 1));
+				mat = glm::rotate(mat, glm::radians(map->selectedNodes[0]->getComponent<RswObject>()->rotation.y), glm::vec3(0, 1, 0));
+				mat = glm::rotate(mat, -glm::radians(map->selectedNodes[0]->getComponent<RswObject>()->rotation.x), glm::vec3(1, 0, 0));
+				mat = glm::rotate(mat, -glm::radians(map->selectedNodes[0]->getComponent<RswObject>()->rotation.z), glm::vec3(0, 0, 1));
 			}
 
 			gadget.draw(mouseRay, mat);
@@ -187,22 +216,22 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 
 				originalValues.clear();
 				if (gadget.mode == Gadget::Mode::Translate)
-					for (auto n : browEdit->selectedNodes)
+					for (auto n : map->selectedNodes)
 						originalValues[n] = n->getComponent<RswObject>()->position;
 				else if (gadget.mode == Gadget::Mode::Scale)
-					for (auto n : browEdit->selectedNodes)
+					for (auto n : map->selectedNodes)
 						originalValues[n] = n->getComponent<RswObject>()->scale;
 				else if (gadget.mode == Gadget::Mode::Rotate)
-					for (auto n : browEdit->selectedNodes)
+					for (auto n : map->selectedNodes)
 						originalValues[n] = n->getComponent<RswObject>()->rotation;
 				canSelectObject = false;
 			}
 			else if (gadget.axisReleased)
 			{
-				if(browEdit->selectedNodes.size() > 1)
+				if(map->selectedNodes.size() > 1)
 				{
 					GroupAction* ga = new GroupAction();
-					for (auto n : browEdit->selectedNodes)
+					for (auto n : map->selectedNodes)
 					{ //TODO: 
 						if (gadget.mode == Gadget::Mode::Translate)
 							ga->addAction(new ObjectChangeAction(n, &n->getComponent<RswObject>()->position, originalValues[n], "Moving"));
@@ -211,16 +240,16 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 						else if (gadget.mode == Gadget::Mode::Rotate)
 							ga->addAction(new ObjectChangeAction(n, &n->getComponent<RswObject>()->rotation, originalValues[n], "Rotating"));
 					}
-					browEdit->doAction(ga);
+					map->doAction(ga, browEdit);
 				}
 				else
-					for (auto n : browEdit->selectedNodes)
+					for (auto n : map->selectedNodes)
 						if (gadget.mode == Gadget::Mode::Translate)
-							browEdit->doAction(new ObjectChangeAction(n, &n->getComponent<RswObject>()->position, originalValues[n], "Moving"));
+							map->doAction(new ObjectChangeAction(n, &n->getComponent<RswObject>()->position, originalValues[n], "Moving"), browEdit);
 						else if (gadget.mode == Gadget::Mode::Scale)
-							browEdit->doAction(new ObjectChangeAction(n, &n->getComponent<RswObject>()->scale, originalValues[n], "Scaling"));
+							map->doAction(new ObjectChangeAction(n, &n->getComponent<RswObject>()->scale, originalValues[n], "Scaling"), browEdit);
 						else if (gadget.mode == Gadget::Mode::Rotate)
-							browEdit->doAction(new ObjectChangeAction(n, &n->getComponent<RswObject>()->rotation, originalValues[n], "Rotating"));
+							map->doAction(new ObjectChangeAction(n, &n->getComponent<RswObject>()->rotation, originalValues[n], "Rotating"), browEdit);
 			}
 
 			if (gadget.axisDragged)
@@ -314,7 +343,7 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 							closest = i;
 							closestDistance = glm::distance(mouseRay.origin, pos) < closestDistance;
 						}
-				browEdit->doAction(new SelectAction(browEdit, collisions[closest].first, ImGui::GetIO().KeyShift, std::find(browEdit->selectedNodes.begin(), browEdit->selectedNodes.end(), collisions[closest].first) != browEdit->selectedNodes.end() && ImGui::GetIO().KeyShift));
+				map->doAction(new SelectAction(map, collisions[closest].first, ImGui::GetIO().KeyShift, std::find(map->selectedNodes.begin(), map->selectedNodes.end(), collisions[closest].first) != map->selectedNodes.end() && ImGui::GetIO().KeyShift), browEdit);
 			}
 		}
 	}

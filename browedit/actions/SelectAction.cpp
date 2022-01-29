@@ -1,12 +1,12 @@
 #include "SelectAction.h"
-#include <browedit/BrowEdit.h>
+#include <browedit/Map.h>
 #include <browedit/Node.h>
 #include <browedit/components/RsmRenderer.h>
 
-SelectAction::SelectAction(BrowEdit* browEdit, Node* node, bool keepSelection, bool deSelect)
+SelectAction::SelectAction(Map* map, Node* node, bool keepSelection, bool deSelect)
 {
 	name = node->name;
-	oldSelection = browEdit->selectedNodes;
+	oldSelection = map->selectedNodes;
 	if (keepSelection)
 		newSelection = oldSelection;
 
@@ -18,14 +18,14 @@ SelectAction::SelectAction(BrowEdit* browEdit, Node* node, bool keepSelection, b
 
 void SelectAction::perform(Map* map, BrowEdit* browEdit)
 {
-	for (auto node : browEdit->selectedNodes)
+	for (auto node : map->selectedNodes)
 	{
 		auto rsmRenderer = node->getComponent<RsmRenderer>();
 		if (rsmRenderer)
 			rsmRenderer->selected = false;
 	}
-	browEdit->selectedNodes = newSelection;
-	for (auto node : browEdit->selectedNodes)
+	map->selectedNodes = newSelection;
+	for (auto node : map->selectedNodes)
 	{
 		auto rsmRenderer = node->getComponent<RsmRenderer>();
 		if (rsmRenderer)
@@ -35,14 +35,14 @@ void SelectAction::perform(Map* map, BrowEdit* browEdit)
 
 void SelectAction::undo(Map* map, BrowEdit* browEdit)
 {
-	for (auto node : browEdit->selectedNodes)
+	for (auto node : map->selectedNodes)
 	{
 		auto rsmRenderer = node->getComponent<RsmRenderer>();
 		if (rsmRenderer)
 			rsmRenderer->selected = false;
 	}
-	browEdit->selectedNodes = oldSelection;
-	for (auto node : browEdit->selectedNodes)
+	map->selectedNodes = oldSelection;
+	for (auto node : map->selectedNodes)
 	{
 		auto rsmRenderer = node->getComponent<RsmRenderer>();
 		if (rsmRenderer)

@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <glm/glm.hpp>
+#include <browedit/math/Ray.h>
 
 namespace gl {
 	class Texture;
@@ -13,10 +14,11 @@ class Gnd : public Component
 {
 public:
 	Gnd(const std::string& fileName);
-
-
-
 	void save(std::string fileName);
+	glm::vec3 rayCast(const math::Ray& ray);
+
+
+
 
 	class Texture
 	{

@@ -4,6 +4,7 @@
 #include <vector>
 
 class Node;
+class Map;
 
 class SelectAction : public Action
 {
@@ -11,7 +12,7 @@ class SelectAction : public Action
 	std::vector<Node*> newSelection;
 	std::string name;
 public:
-	SelectAction(BrowEdit* browEdit, Node* node, bool keepSelection, bool deSelect);
+	SelectAction(Map* map, Node* node, bool keepSelection, bool deSelect);
 
 	virtual void perform(Map* map, BrowEdit* browEdit) override;
 	virtual void undo(Map* map, BrowEdit* browEdit) override;

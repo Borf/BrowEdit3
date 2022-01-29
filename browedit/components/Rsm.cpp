@@ -91,7 +91,7 @@ Rsm::Rsm(const std::string& fileName)
 
 	int numKeyFrames;
 	rsmFile->read(reinterpret_cast<char*>(&numKeyFrames), sizeof(int));
-	assert(numKeyFrames == 0);
+	//assert(numKeyFrames == 0);
 
 	int numVolumeBox;
 	rsmFile->read(reinterpret_cast<char*>(&numVolumeBox), sizeof(int));

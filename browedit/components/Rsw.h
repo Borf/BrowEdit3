@@ -56,7 +56,7 @@ public:
 
 	Rsw();
 
-	void load(const std::string& fileName);
+	void load(const std::string& fileName, bool loadModels = true, bool loadGnd = true);
 	void save(const std::string& fileName);
 
 	void buildImGui(BrowEdit* browEdit) override;
@@ -67,11 +67,11 @@ public:
 class RswObject : public Component, public ImguiProps
 {
 public:
-	glm::vec3 position; //TODO: put in transform
-	glm::vec3 rotation;
-	glm::vec3 scale;
+	glm::vec3 position = glm::vec3(0,0,0);
+	glm::vec3 rotation = glm::vec3(0,0,0);
+	glm::vec3 scale = glm::vec3(1,1,1);
 
-	void load(std::istream* is, int version);
+	void load(std::istream* is, int version, bool loadModel);
 	void save(std::ofstream& file, int version);
 	void buildImGui(BrowEdit* browEdit) override;
 };
@@ -86,7 +86,8 @@ public:
 	std::string fileName;
 
 	RswModel() : aabb(glm::vec3(), glm::vec3()) {}
-	void load(std::istream* is, int version);
+	RswModel(const std::string &fileName) : aabb(glm::vec3(), glm::vec3()), animType(0), animSpeed(1), blockType(0), fileName(fileName) {}
+	void load(std::istream* is, int version, bool loadModel);
 	void save(std::ofstream &file, int version);
 	void buildImGui(BrowEdit* browEdit) override;
 };

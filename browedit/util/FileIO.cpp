@@ -127,6 +127,8 @@ namespace util
 			dir = directory.substr(0, directory.find("\\"));
 			rest = directory.substr(directory.find("\\") + 1);
 		}
+		if (directories.find(dir) == directories.end())
+			return nullptr;
 		return directories[dir]->getDirectory(rest);
 	}
 

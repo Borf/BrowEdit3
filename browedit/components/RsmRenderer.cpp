@@ -35,10 +35,10 @@ void RsmRenderer::render()
 		this->gnd = node->root->getComponent<Gnd>(); //TODO: remove parent->parent
 	if (!this->rsw)
 		this->rsw = node->root->getComponent<Rsw>();
-	if (!this->rsm || !this->rswModel || !this->gnd || !this->rsw)
+	if (!this->rsm)
 		return;
 
-	if (!matrixCached)
+	if (!matrixCached && this->rswModel && this->gnd && this->rsw)
 	{
 		matrixCache = glm::mat4(1.0f);
 		matrixCache = glm::scale(matrixCache, glm::vec3(1, 1, -1));
@@ -71,14 +71,17 @@ void RsmRenderer::render()
 	shader->setUniform(RsmShader::Uniforms::shadeType, (int)rsm->shadeType);
 	shader->setUniform(RsmShader::Uniforms::modelMatrix2, matrixCache);
 	//move to preframe
-	glm::vec3 lightDirection;
-	lightDirection[0] = -glm::cos(glm::radians((float)rsw->light.longitude)) * glm::sin(glm::radians((float)rsw->light.latitude));
-	lightDirection[1] = glm::cos(glm::radians((float)rsw->light.latitude));
-	lightDirection[2] = glm::sin(glm::radians((float)rsw->light.longitude)) * glm::sin(glm::radians((float)rsw->light.latitude));
-	shader->setUniform(RsmShader::Uniforms::lightAmbient, rsw->light.ambient);
-	shader->setUniform(RsmShader::Uniforms::lightDiffuse, rsw->light.diffuse);
+	glm::vec3 lightDirection(1,1,1);
+	if (rsw)
+	{
+		lightDirection[0] = -glm::cos(glm::radians((float)rsw->light.longitude)) * glm::sin(glm::radians((float)rsw->light.latitude));
+		lightDirection[1] = glm::cos(glm::radians((float)rsw->light.latitude));
+		lightDirection[2] = glm::sin(glm::radians((float)rsw->light.longitude)) * glm::sin(glm::radians((float)rsw->light.latitude));
+		shader->setUniform(RsmShader::Uniforms::lightAmbient, rsw->light.ambient);
+		shader->setUniform(RsmShader::Uniforms::lightDiffuse, rsw->light.diffuse);
+		shader->setUniform(RsmShader::Uniforms::lightIntensity, rsw->light.intensity);
+	}
 	shader->setUniform(RsmShader::Uniforms::lightDirection, lightDirection);
-	shader->setUniform(RsmShader::Uniforms::lightIntensity, rsw->light.intensity);
 
 	if (selected)
 	{

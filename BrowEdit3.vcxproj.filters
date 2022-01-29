@@ -212,6 +212,12 @@
     <ClCompile Include="lib\imgui\imgui_demo.cpp">
       <Filter>lib\imgui</Filter>
     </ClCompile>
+    <ClCompile Include="browedit\actions\NewObjectAction.cpp">
+      <Filter>browedit\actions</Filter>
+    </ClCompile>
+    <ClCompile Include="browedit\actions\DeleteObjectAction.cpp">
+      <Filter>browedit\actions</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="lib\imgui\imgui.h">
@@ -391,6 +397,12 @@
     <ClInclude Include="browedit\actions\GroupAction.h">
       <Filter>browedit\actions</Filter>
     </ClInclude>
+    <ClInclude Include="browedit\actions\NewObjectAction.h">
+      <Filter>browedit\actions</Filter>
+    </ClInclude>
+    <ClInclude Include="browedit\actions\DeleteObjectAction.h">
+      <Filter>browedit\actions</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="BrowEdit3.rc">
@@ -413,6 +425,12 @@
       <Filter>data\shaders</Filter>
     </None>
     <None Include="data\shaders\gnd.vs">
+      <Filter>data\shaders</Filter>
+    </None>
+    <None Include="data\shaders\rsm.fs">
+      <Filter>data\shaders</Filter>
+    </None>
+    <None Include="data\shaders\rsm.vs">
       <Filter>data\shaders</Filter>
     </None>
   </ItemGroup>

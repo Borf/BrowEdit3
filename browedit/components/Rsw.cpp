@@ -7,6 +7,7 @@
 
 #include <imgui.h>
 #include <misc/cpp/imgui_stdlib.h>
+#include <browedit/BrowEdit.h>
 #include <browedit/util/ResourceManager.h>
 #include <browedit/util/FileIO.h>
 #include <browedit/util/Util.h>
@@ -21,7 +22,7 @@ Rsw::Rsw()
 }
 
 
-void Rsw::load(const std::string& fileName)
+void Rsw::load(const std::string& fileName, bool loadModels, bool loadGnd)
 {
 	auto file = util::FileIO::open(fileName);
 	quadtree = nullptr;
@@ -39,6 +40,12 @@ void Rsw::load(const std::string& fileName)
 	file->read(reinterpret_cast<char*>(&version), sizeof(short));
 	version = util::swapShort(version);
 	std::cout << std::hex<<"RSW: Version 0x" << version << std::endl <<std::dec;
+
+	if (version >= 0x0203)
+	{
+		std::cerr << "RSW: Sorry, this version is not supported yet, did not open "<<fileName<< std::endl;
+		return;
+	}
 
 	if (version == 0x0202) // ???
 	{
@@ -72,9 +79,12 @@ void Rsw::load(const std::string& fileName)
 		throw "todo";
 	}
 
-	node->addComponent(new Gnd(gndFile));
-	node->addComponent(new GndRenderer());
-	//TODO: read GND & GAT here
+	if (loadGnd)
+	{
+		node->addComponent(new Gnd(gndFile));
+		node->addComponent(new GndRenderer());
+		//TODO: read GND & GAT here
+	}
 
 
 	light.longitude = 45;//TODO: remove the defaults here and put defaults of the water somewhere too
@@ -136,7 +146,7 @@ void Rsw::load(const std::string& fileName)
 		Node* object = new Node("");
 		auto rswObject = new RswObject();
 		object->addComponent(rswObject);
-		rswObject->load(file, version);
+		rswObject->load(file, version, loadModels);
 
 		std::string objPath = object->name;
 		if (objPath.find("\\") != std::string::npos)
@@ -154,8 +164,10 @@ void Rsw::load(const std::string& fileName)
 		file->read(reinterpret_cast<char*>(glm::value_ptr(p)), sizeof(float) * 3);
 		quadtreeFloats.push_back(p);
 	}
-	quadtree = new QuadTreeNode(quadtreeFloats.cbegin());
-
+	if (quadtreeFloats.size() > 1)
+		quadtree = new QuadTreeNode(quadtreeFloats.cbegin());
+	else
+		quadtree = nullptr;//TODO:
 
 	delete file;
 }
@@ -248,7 +260,7 @@ void Rsw::save(const std::string& fileName)
 	std::cout << "Done saving" << std::endl;
 }
 
-void RswObject::load(std::istream* is, int version)
+void RswObject::load(std::istream* is, int version, bool loadModel)
 {
 	int type;
 	is->read(reinterpret_cast<char*>(&type), sizeof(int));
@@ -256,7 +268,7 @@ void RswObject::load(std::istream* is, int version)
 	{
 		node->addComponent(new RswModel());
 		node->addComponent(new RswModelCollider());
-		node->getComponent<RswModel>()->load(is, version);
+		node->getComponent<RswModel>()->load(is, version, loadModel);
 	}
 	else if (type == 2)
 	{
@@ -281,7 +293,7 @@ void RswObject::load(std::istream* is, int version)
 
 
 
-void RswModel::load(std::istream* is, int version)
+void RswModel::load(std::istream* is, int version, bool loadModel)
 {
 	auto rswObject = node->getComponent<RswObject>();
 	if (version >= 0x103)
@@ -299,9 +311,11 @@ void RswModel::load(std::istream* is, int version)
 	is->read(reinterpret_cast<char*>(glm::value_ptr(rswObject->position)), sizeof(float) * 3);
 	is->read(reinterpret_cast<char*>(glm::value_ptr(rswObject->rotation)), sizeof(float) * 3);
 	is->read(reinterpret_cast<char*>(glm::value_ptr(rswObject->scale)), sizeof(float) * 3);
-
-	node->addComponent(util::ResourceManager<Rsm>::load("data\\model\\" + fileNameRaw));
-	node->addComponent(new RsmRenderer());
+	if (loadModel)
+	{
+		node->addComponent(util::ResourceManager<Rsm>::load("data\\model\\" + fileNameRaw));
+		node->addComponent(new RsmRenderer());
+	}
 }
 void RswModel::save(std::ofstream &file, int version)
 {
@@ -491,20 +505,20 @@ void Rsw::buildImGui(BrowEdit* browEdit)
 	ImGui::Text("RSW");
 	if (ImGui::CollapsingHeader("Lighting", ImGuiTreeNodeFlags_DefaultOpen))
 	{
-		util::DragInt(browEdit, node, "Longitude", &light.longitude, 1, 0, 360);
-		util::DragInt(browEdit, node, "Latitude", &light.latitude, 1, 0, 360);
-		util::DragFloat(browEdit, node, "Intensity", &light.intensity, 0.01f, 0, 1);
-		util::ColorEdit3(browEdit, node, "Diffuse", &light.diffuse);
-		util::ColorEdit3(browEdit, node, "Ambient", &light.ambient);
+		util::DragInt(browEdit, browEdit->activeMapView->map, node, "Longitude", &light.longitude, 1, 0, 360);
+		util::DragInt(browEdit, browEdit->activeMapView->map, node, "Latitude", &light.latitude, 1, 0, 360);
+		util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Intensity", &light.intensity, 0.01f, 0, 1);
+		util::ColorEdit3(browEdit, browEdit->activeMapView->map, node, "Diffuse", &light.diffuse);
+		util::ColorEdit3(browEdit, browEdit->activeMapView->map, node, "Ambient", &light.ambient);
 	}
 	if (ImGui::CollapsingHeader("Water", ImGuiTreeNodeFlags_DefaultOpen))
 	{
-		util::DragInt(browEdit, node, "Type", &water.type, 1, 0, 1000);
-		util::DragFloat(browEdit, node, "Height", &water.height, 0.1f, -100, 100);
-		util::DragFloat(browEdit, node, "Amplitude", &water.amplitude, 0.1f, -100, 100);
-		util::DragInt(browEdit, node, "Animation Speed", &water.animSpeed, 1, 0, 1000);
-		util::DragFloat(browEdit, node, "Phase", &water.phase, 0.1f, -100, 100);
-		util::DragFloat(browEdit, node, "Surface Curve", &water.surfaceCurve, 0.1f, -100, 100);
+		util::DragInt(browEdit, browEdit->activeMapView->map, node, "Type", &water.type, 1, 0, 1000);
+		util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Height", &water.height, 0.1f, -100, 100);
+		util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Amplitude", &water.amplitude, 0.1f, -100, 100);
+		util::DragInt(browEdit, browEdit->activeMapView->map, node, "Animation Speed", &water.animSpeed, 1, 0, 1000);
+		util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Phase", &water.phase, 0.1f, -100, 100);
+		util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Surface Curve", &water.surfaceCurve, 0.1f, -100, 100);
 	}
 }
 
@@ -514,49 +528,49 @@ void RswObject::buildImGui(BrowEdit* browEdit)
 	auto renderer = node->getComponent<RsmRenderer>();
 	ImGui::Text("Object");
 
-	if (util::DragFloat3(browEdit, node, "Position", &position, 1.0f, 0.0f, 0.0f, "Moving") && renderer)
+	if (util::DragFloat3(browEdit, browEdit->activeMapView->map, node, "Position", &position, 1.0f, 0.0f, 0.0f, "Moving") && renderer)
 		renderer->setDirty();
-	if (util::DragFloat3(browEdit, node, "Scale", &scale, 1.0f, 0.0f, 0.0f, "Resizing") && renderer)
+	if (util::DragFloat3(browEdit, browEdit->activeMapView->map, node, "Scale", &scale, 1.0f, 0.0f, 0.0f, "Resizing") && renderer)
 		renderer->setDirty();
-	if (util::DragFloat3(browEdit, node, "Rotation", &rotation, 1.0f, 0.0f, 0.0f, "Rotating") && renderer)
+	if (util::DragFloat3(browEdit, browEdit->activeMapView->map, node, "Rotation", &rotation, 1.0f, 0.0f, 0.0f, "Rotating") && renderer)
 		renderer->setDirty();
 }
 
 void RswModel::buildImGui(BrowEdit* browEdit)
 {
 	ImGui::Text("Model");
-	util::DragInt(browEdit, node, "Animation Type", &animType, 1, 0, 100);
-	util::DragFloat(browEdit, node, "Animation Speed", &animSpeed, 0.01f, 0.0f, 100.0f);
-	util::DragInt(browEdit, node, "Block Type", &blockType, 1, 0, 100);
-	util::InputText(browEdit, node, "Filename", &fileName, ImGuiInputTextFlags_ReadOnly);
+	util::DragInt(browEdit, browEdit->activeMapView->map, node, "Animation Type", &animType, 1, 0, 100);
+	util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Animation Speed", &animSpeed, 0.01f, 0.0f, 100.0f);
+	util::DragInt(browEdit, browEdit->activeMapView->map, node, "Block Type", &blockType, 1, 0, 100);
+	util::InputText(browEdit, browEdit->activeMapView->map, node, "Filename", &fileName, ImGuiInputTextFlags_ReadOnly);
 }
 
 void RswEffect::buildImGui(BrowEdit* browEdit)
 {
 	ImGui::Text("Effect");
-	util::DragInt(browEdit, node, "Type", &id, 1, 0, 500); //TODO: change this to a combobox
-	util::DragFloat(browEdit, node, "Loop", &loop, 0.01f, 0.0f, 100.0f);
-	util::DragFloat(browEdit, node, "Param 1", &param1, 0.01f, 0.0f, 100.0f);
-	util::DragFloat(browEdit, node, "Param 2", &param2, 0.01f, 0.0f, 100.0f);
-	util::DragFloat(browEdit, node, "Param 3", &param3, 0.01f, 0.0f, 100.0f);
-	util::DragFloat(browEdit, node, "Param 4", &param4, 0.01f, 0.0f, 100.0f);
+	util::DragInt(browEdit, browEdit->activeMapView->map, node, "Type", &id, 1, 0, 500); //TODO: change this to a combobox
+	util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Loop", &loop, 0.01f, 0.0f, 100.0f);
+	util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Param 1", &param1, 0.01f, 0.0f, 100.0f);
+	util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Param 2", &param2, 0.01f, 0.0f, 100.0f);
+	util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Param 3", &param3, 0.01f, 0.0f, 100.0f);
+	util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Param 4", &param4, 0.01f, 0.0f, 100.0f);
 }
 
 void RswSound::buildImGui(BrowEdit* browEdit)
 {
 	ImGui::Text("Sound");
-	util::InputText(browEdit, node, "Filename", &fileName);
-	util::DragFloat(browEdit, node, "Volume", &vol, 0.01f, 0.0f, 100.0f);
+	util::InputText(browEdit, browEdit->activeMapView->map, node, "Filename", &fileName);
+	util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Volume", &vol, 0.01f, 0.0f, 100.0f);
 
-	util::DragInt(browEdit, node, "Width", (int*)&width, 1, 0, 10000); //TODO: remove cast
-	util::DragInt(browEdit, node, "Height", (int*)&height, 1, 0, 10000); //TODO: remove cast
-	util::DragFloat(browEdit, node, "Range", &range, 0.01f, 0.0f, 100.0f);
-	util::DragFloat(browEdit, node, "Cycle", &cycle, 0.01f, 0.0f, 100.0f);
+	util::DragInt(browEdit, browEdit->activeMapView->map, node, "Width", (int*)&width, 1, 0, 10000); //TODO: remove cast
+	util::DragInt(browEdit, browEdit->activeMapView->map, node, "Height", (int*)&height, 1, 0, 10000); //TODO: remove cast
+	util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Range", &range, 0.01f, 0.0f, 100.0f);
+	util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Cycle", &cycle, 0.01f, 0.0f, 100.0f);
 	//no undo for this
 	ImGui::InputText("unknown6", unknown6, 8, ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_CharsUppercase);
 
-	util::DragFloat(browEdit, node, "Unknown7", &unknown7, 0.01f, 0.0f, 100.0f);
-	util::DragFloat(browEdit, node, "Unknown8", &unknown8, 0.01f, 0.0f, 100.0f);
+	util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Unknown7", &unknown7, 0.01f, 0.0f, 100.0f);
+	util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Unknown8", &unknown8, 0.01f, 0.0f, 100.0f);
 }
 
 void RswLight::buildImGui(BrowEdit* browEdit)
@@ -566,12 +580,12 @@ void RswLight::buildImGui(BrowEdit* browEdit)
 	for (int i = 0; i < 10; i++)
 	{
 		ImGui::PushID(i);
-		util::DragFloat(browEdit, node, "Unknown", &todo[i], 0.01f, -100.0f, 100.0f);
+		util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Unknown", &todo[i], 0.01f, -100.0f, 100.0f);
 		ImGui::PopID();
 	}
 
-	util::ColorEdit3(browEdit, node, "Color", &color);
-	util::DragFloat(browEdit, node, "Todo2", &todo2, 0.01f, -100.0f, 100.0f);
+	util::ColorEdit3(browEdit, browEdit->activeMapView->map, node, "Color", &color);
+	util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Todo2", &todo2, 0.01f, -100.0f, 100.0f);
 }
 
 

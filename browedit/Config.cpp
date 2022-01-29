@@ -188,6 +188,8 @@ bool Config::showWindow(BrowEdit* browEdit)
 			showStyleEditor = !showStyleEditor;
 
 		ImGui::ColorEdit3("Background Color", glm::value_ptr(backgroundColor));
+		ImGui::DragFloat2 ("Object Window thumbnail size", &thumbnailSize.x, 1, 32, 512);
+		ImGui::Checkbox("Close object window when adding a model", &closeObjectWindowOnAdd);
 
 
 		if (ImGui::Button("Save"))

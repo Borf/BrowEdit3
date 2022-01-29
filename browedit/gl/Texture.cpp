@@ -17,6 +17,8 @@ namespace gl
 		if (!is)
 		{
 			std::cerr << "Texture: Could not open " << fileName << std::endl;
+			id = 0;
+			return;
 		}
 		is->seekg(0, std::ios_base::end);
 		std::size_t len = is->tellg();

@@ -2,6 +2,7 @@
 #include <direct.h>
 #include <commdlg.h>
 #include "Util.h"
+#include <browedit/Map.h>
 #include <browedit/BrowEdit.h>
 #include <glm/gtc/type_ptr.hpp>
 #include <imgui.h>
@@ -78,7 +79,7 @@ namespace util
 		}
 		return ret;
 	}
-	bool ColorEdit3(BrowEdit* browEdit, Node* node, const char* label, glm::vec3* ptr, const std::string& action)
+	bool ColorEdit3(BrowEdit* browEdit, Map* map, Node* node, const char* label, glm::vec3* ptr, const std::string& action)
 	{
 		static glm::vec3 startValue;
 		bool ret = ImGui::ColorEdit3(label, glm::value_ptr(*ptr));
@@ -86,11 +87,11 @@ namespace util
 		if (ImGui::IsItemActivated())
 			startValue = *ptr;
 		if (ImGui::IsItemDeactivatedAfterEdit())
-			browEdit->doAction(new ObjectChangeAction(node, ptr, startValue, action == "" ? label : action));
+			map->doAction(new ObjectChangeAction(node, ptr, startValue, action == "" ? label : action), browEdit);
 		return ret;
 	}
 
-	bool DragInt(BrowEdit* browEdit, Node* node, const char* label, int* ptr, float v_speed, int v_min, int v_max, const std::string& action)
+	bool DragInt(BrowEdit* browEdit, Map* map, Node* node, const char* label, int* ptr, float v_speed, int v_min, int v_max, const std::string& action)
 	{
 		static int startValue;
 		bool ret = ImGui::DragInt(label, ptr, v_speed, v_min, v_max);
@@ -98,10 +99,10 @@ namespace util
 		if (ImGui::IsItemActivated())
 			startValue = *ptr;
 		if (ImGui::IsItemDeactivatedAfterEdit())
-			browEdit->doAction(new ObjectChangeAction(node, ptr, startValue, action == "" ? label : action));
+			map->doAction(new ObjectChangeAction(node, ptr, startValue, action == "" ? label : action), browEdit);
 		return ret;
 	}
-	bool DragFloat(BrowEdit* browEdit, Node* node, const char* label, float* ptr, float v_speed, float v_min, float v_max, const std::string& action)
+	bool DragFloat(BrowEdit* browEdit, Map* map, Node* node, const char* label, float* ptr, float v_speed, float v_min, float v_max, const std::string& action)
 	{
 		static float startValue;
 		bool ret = ImGui::DragFloat(label, ptr, v_speed, v_min, v_max);
@@ -109,11 +110,11 @@ namespace util
 		if (ImGui::IsItemActivated())
 			startValue = *ptr;
 		if (ImGui::IsItemDeactivatedAfterEdit())
-			browEdit->doAction(new ObjectChangeAction(node, ptr, startValue, action == "" ? label : action));
+			map->doAction(new ObjectChangeAction(node, ptr, startValue, action == "" ? label : action), browEdit);
 		return ret;
 	}
 
-	bool DragFloat3(BrowEdit* browEdit, Node* node, const char* label, glm::vec3* ptr, float v_speed, float v_min, float v_max, const std::string& action)
+	bool DragFloat3(BrowEdit* browEdit, Map* map, Node* node, const char* label, glm::vec3* ptr, float v_speed, float v_min, float v_max, const std::string& action)
 	{
 		static glm::vec3 startValue;
 		bool ret = ImGui::DragFloat3(label, glm::value_ptr(*ptr), v_speed, v_min, v_max);
@@ -121,11 +122,11 @@ namespace util
 		if (ImGui::IsItemActivated())
 			startValue = *ptr;
 		if (ImGui::IsItemDeactivatedAfterEdit())
-			browEdit->doAction(new ObjectChangeAction(node, ptr, startValue, action == "" ? label : action));
+			map->doAction(new ObjectChangeAction(node, ptr, startValue, action == "" ? label : action), browEdit);
 		return ret;
 	}
 
-	bool InputText(BrowEdit* browEdit, Node* node, const char* label, std::string* ptr, ImGuiInputTextFlags flags, const std::string& action)
+	bool InputText(BrowEdit* browEdit, Map* map, Node* node, const char* label, std::string* ptr, ImGuiInputTextFlags flags, const std::string& action)
 	{
 		static std::string startValue;
 		bool ret = ImGui::InputText(label, ptr, flags);
@@ -133,7 +134,7 @@ namespace util
 		if (ImGui::IsItemActivated())
 			startValue = *ptr;
 		if (ImGui::IsItemDeactivatedAfterEdit())
-			browEdit->doAction(new ObjectChangeAction(node, ptr, startValue, action == "" ? label : action));
+			map->doAction(new ObjectChangeAction(node, ptr, startValue, action == "" ? label : action), browEdit);
 		return ret;
 	}
 

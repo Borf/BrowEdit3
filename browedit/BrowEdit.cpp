@@ -16,12 +16,15 @@
 #include "Gadget.h"
 #include <browedit/actions/Action.h>
 #include <browedit/actions/SelectAction.h>
+#include <browedit/actions/DeleteObjectAction.h>
+#include <browedit/actions/GroupAction.h>
 #include "components/Rsw.h"
 #include "components/Gnd.h"
 #include "components/RsmRenderer.h"
 #include "components/ImguiProps.h"
 #include <browedit/util/FileIO.h>
 #include <browedit/util/Util.h>
+#include <browedit/util/ResourceManager.h>
 
 
 #ifdef _WIN32
@@ -86,6 +89,22 @@ void BrowEdit::run()
 	}
 	configBegin();
 
+	{
+		std::ifstream tagListFile("data\\tags.json");
+		if (tagListFile.is_open())
+		{
+			try {
+				json tagListJson;
+				tagListFile >> tagListJson;
+				tagListFile.close();
+				tagList = tagListJson.get<std::map<std::string, std::vector<std::string>>>();
+				for (auto tag : tagList)
+					for (const auto& t : tag.second)
+						tagListReverse[util::utf8_to_iso_8859_1(t)].push_back(util::utf8_to_iso_8859_1(tag.first));
+			}
+			catch (...) {}
+		}
+	}
 
 	backgroundTexture = new gl::Texture("data\\background.png", false);
 	iconsTexture = new gl::Texture("data\\icons.png", false);
@@ -125,33 +144,39 @@ void BrowEdit::run()
 			showObjectProperties();
 		}
 
-		for (std::size_t i = 0; i < mapViews.size(); i++)
+
+		for (auto it = mapViews.begin(); it != mapViews.end(); )
 		{
-			showMapWindow(mapViews[i]);
-			if (!mapViews[i].opened)
+			showMapWindow(*it);
+			if (!it->opened)
 			{
-				Map* map = mapViews[i].map;
-				mapViews.erase(mapViews.begin() + i);
-				i--;
-				//TODO: check if there are still mapviews for map
+				Map* map = it->map;
+				it = mapViews.erase(it);
 			}
+			else
+				it++;
 		}
 
 		if (!ImGui::GetIO().WantTextInput)
 		{
 			if (ImGui::GetIO().KeyCtrl)
 			{
-				if (ImGui::IsKeyPressed('Z'))
+				if (ImGui::IsKeyPressed('Z') && activeMapView)
 					if (ImGui::GetIO().KeyShift)
-						redo();
+						activeMapView->map->redo(this);
 					else
-						undo();
-				if (ImGui::IsKeyPressed('Y'))
-					redo();
-				if (ImGui::IsKeyPressed('S'))
-					for (auto m : maps)
-						saveMap(m);
-
+						activeMapView->map->undo(this);
+				if (ImGui::IsKeyPressed('Y') && activeMapView)
+					activeMapView->map->redo(this);
+				if (ImGui::IsKeyPressed('S') && activeMapView)
+					saveMap(activeMapView->map);
+			}
+			if (ImGui::IsKeyPressed(GLFW_KEY_DELETE) && activeMapView && activeMapView->map->selectedNodes.size() > 0)
+			{
+				auto ga = new GroupAction();
+				for (auto n : activeMapView->map->selectedNodes)
+					ga->addAction(new DeleteObjectAction(n));
+				activeMapView->map->doAction(ga, this);
 			}
 		}
 
@@ -193,35 +218,6 @@ void BrowEdit::configBegin()
 		util::FileIO::begin();
 		util::FileIO::addDirectory(".\\");
 		util::FileIO::end();
-	}
-}
-
-void BrowEdit::doAction(Action* action)
-{
-	action->perform(nullptr, this);
-	undoStack.push_back(action);
-
-	for (auto a : redoStack)
-		delete a;
-	redoStack.clear();
-}
-
-void BrowEdit::redo()
-{
-	if (redoStack.size() > 0)
-	{
-		redoStack.front()->perform(nullptr, this);
-		undoStack.push_back(redoStack.front());
-		redoStack.erase(redoStack.begin());
-	}
-}
-void BrowEdit::undo()
-{
-	if (undoStack.size() > 0)
-	{
-		undoStack.back()->undo(nullptr, this);
-		redoStack.insert(redoStack.begin(), undoStack.back());
-		undoStack.pop_back();
 	}
 }
 
@@ -317,7 +313,14 @@ void BrowEdit::showMapWindow(MapView& mapView)
 		ImGui::Image(id, size, ImVec2(0,1), ImVec2(1,0));
 		mapView.hovered = ImGui::IsItemHovered();
 	}
+	if (ImGui::IsWindowFocused())
+	{
+		if (activeMapView != &mapView)
+			std::cout << "Switching map to " << mapView.viewName<<std::endl;
+		activeMapView = &mapView;
+	}
 	ImGui::End();
+
 }
 
 
@@ -335,10 +338,9 @@ void BrowEdit::menuBar()
 			windowData.openVisible = true;
 			
 		}
-		if (ImGui::MenuItem("Save all", "Ctrl+s"))
+		if (activeMapView && ImGui::MenuItem(("Save " + activeMapView->map->name).c_str(), "Ctrl+s"))
 		{
-			for (auto m : maps)
-				saveMap(m);
+			saveMap(activeMapView->map);
 		}
 		if(ImGui::MenuItem("Quit"))
 			glfwSetWindowShouldClose(window, 1);
@@ -346,10 +348,10 @@ void BrowEdit::menuBar()
 	}
 	if (ImGui::BeginMenu("Edit"))
 	{
-		if (ImGui::MenuItem("Undo", "Ctrl+z"))
-			undo();
-		if (ImGui::MenuItem("Redo", "Ctrl+shift+z"))
-			redo();
+		if (ImGui::MenuItem("Undo", "Ctrl+z") && activeMapView)
+			activeMapView->map->undo(this);
+		if (ImGui::MenuItem("Redo", "Ctrl+shift+z") && activeMapView)
+			activeMapView->map->redo(this);
 		if (ImGui::MenuItem("Undo Window", nullptr, windowData.undoVisible))
 			windowData.undoVisible = !windowData.undoVisible;
 		if (ImGui::MenuItem("Configure"))
@@ -527,13 +529,12 @@ void BrowEdit::buildObjectTree(Node* node, Map* map)
 	if (node->children.size() > 0)
 	{
 		int flags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_OpenOnDoubleClick;
-		if (std::find(selectedNodes.begin(), selectedNodes.end(), node) != selectedNodes.end())
+		if (std::find(map->selectedNodes.begin(), map->selectedNodes.end(), node) != map->selectedNodes.end())
 			flags |= ImGuiTreeNodeFlags_Selected;
 		bool opened = ImGui::TreeNodeEx(node->name.c_str(), flags);
 		if (ImGui::IsItemClicked())
 		{
-			selectedNodes.clear();
-			selectedNodes.push_back(node);
+			map->doAction(new SelectAction(map, node, false, false), this);
 		}
 		if(opened)
 		{
@@ -545,7 +546,7 @@ void BrowEdit::buildObjectTree(Node* node, Map* map)
 	else
 	{
 		int flags = ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
-		if (std::find(selectedNodes.begin(), selectedNodes.end(), node) != selectedNodes.end())
+		if (std::find(map->selectedNodes.begin(), map->selectedNodes.end(), node) != map->selectedNodes.end())
 			flags |= ImGuiTreeNodeFlags_Selected;
 
 
@@ -580,8 +581,7 @@ void BrowEdit::buildObjectTree(Node* node, Map* map)
 		}
 		if (ImGui::IsItemClicked())
 		{
-			selectedNodes.clear();
-			selectedNodes.push_back(node);
+			map->doAction(new SelectAction(map, node, false, false), this);
 		}
 	}
 }
@@ -591,13 +591,13 @@ void BrowEdit::showObjectProperties()
 {
 	ImGui::Begin("Properties");
 	ImGui::PushFont(font);
-	if (selectedNodes.size() == 1)
+	if (activeMapView && activeMapView->map->selectedNodes.size() == 1)
 	{
-		if (util::InputText(this, selectedNodes[0], "Name", &selectedNodes[0]->name, 0, "Renaming"))
+		if (util::InputText(this, activeMapView->map, activeMapView->map->selectedNodes[0], "Name", &activeMapView->map->selectedNodes[0]->name, 0, "Renaming"))
 		{
-			selectedNodes[0]->onRename();
+			activeMapView->map->selectedNodes[0]->onRename();
 		}
-		for (auto c : selectedNodes[0]->components)
+		for (auto c : activeMapView->map->selectedNodes[0]->components)
 		{
 			auto props = dynamic_cast<ImguiProps*>(c);
 			if (props)
@@ -612,34 +612,124 @@ void BrowEdit::showObjectProperties()
 void BrowEdit::showUndoWindow()
 {
 	ImGui::Begin("Undo stack", &windowData.undoVisible);
-	if (ImGui::BeginListBox("##stack", ImGui::GetContentRegionAvail()))
+	if (activeMapView && ImGui::BeginListBox("##stack", ImGui::GetContentRegionAvail()))
 	{
-		for (auto action : undoStack)
+		for (auto action : activeMapView->map->undoStack)
 		{
 			ImGui::Selectable(action->str().c_str());
 		}
 		ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.9f, 0.1f, 0.1f, 1.0f));
-		for (auto action : redoStack)
+		for (auto action : activeMapView->map->redoStack)
 		{
 			ImGui::Selectable(action->str().c_str());
 		}
 		ImGui::PopStyleColor();
+		if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY())
+			ImGui::SetScrollHereY(1.0f);
 		ImGui::EndListBox();
 	}
-
 	ImGui::End();
 }
 
 
+class ObjectWindowObject
+{
+public:
+	Node* node;
+	gl::FBO* fbo;
+	NodeRenderContext nodeRenderContext;
+	float rotation = 0;
+	BrowEdit* browEdit;
+
+	ObjectWindowObject(const std::string &fileName, BrowEdit* browEdit) : browEdit(browEdit)
+	{
+		fbo = new gl::FBO((int)browEdit->config.thumbnailSize.x, (int)browEdit->config.thumbnailSize.y, true); //TODO: resolution?
+		node = new Node();
+		node->addComponent(util::ResourceManager<Rsm>::load(fileName));
+		node->addComponent(new RsmRenderer());
+	}
+
+	void draw()
+	{
+		auto rsm = node->getComponent<Rsm>();
+		if (!rsm->loaded)
+			return;
+		fbo->bind();
+		glViewport(0, 0, fbo->getWidth(), fbo->getHeight());
+		glClearColor(browEdit->config.backgroundColor.r, browEdit->config.backgroundColor.g, browEdit->config.backgroundColor.b, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		glDisable(GL_CULL_FACE);
+		glEnable(GL_DEPTH_TEST);
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+		float distance = 1.1f* glm::max(glm::abs(rsm->realbbmax.y), glm::max(glm::abs(rsm->realbbmax.z), glm::abs(rsm->realbbmax.x)));
+
+		float ratio = fbo->getWidth() / (float)fbo->getHeight();
+		nodeRenderContext.projectionMatrix = glm::perspective(glm::radians(45.0f), ratio, 0.1f, 5000.0f);
+		nodeRenderContext.viewMatrix = glm::lookAt(glm::vec3(0.0f, -distance, -distance), glm::vec3(0.0f, rsm->bbrange.y, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		RsmRenderer::RsmRenderContext::getInstance()->viewLighting = false;
+		node->getComponent<RsmRenderer>()->matrixCache = glm::rotate(glm::mat4(1.0f), glm::radians(rotation), glm::vec3(0, 1, 0));
+		NodeRenderer::render(node, nodeRenderContext);
+		fbo->unbind();
+	}
+};
+std::map<std::string, ObjectWindowObject*> objectWindowObjects;
 
 void BrowEdit::showObjectWindow()
 {
 	ImGui::Begin("Object Picker", &windowData.objectWindowVisible);
 	static std::string filter;
 	ImGui::InputText("Filter", &filter);
+	ImGui::SameLine();
+	if (ImGui::Button("Rescan map filters"))
+	{
+		tagListReverse.clear();
+		//remove old map: tags
+		for (auto it = tagList.begin(); it != tagList.end(); )
+			if (it->first.size() > 4 && it->first.substr(0, 4) == "map:")
+				it = tagList.erase(it);
+			else
+				it++;
+
+		std::vector<std::string> maps = util::FileIO::listFiles("data");
+		maps.erase(std::remove_if(maps.begin(), maps.end(), [](const std::string& map) { return map.substr(map.size() - 4, 4) != ".rsw"; }), maps.end());
+		for (const auto& fileName : maps)
+		{
+			Node* node = new Node();
+			Rsw* rsw = new Rsw();
+			node->addComponent(rsw);
+			rsw->load(fileName, false, false);
+
+			std::string mapTag = fileName;
+			if (mapTag.substr(0, 5) == "data\\")
+				mapTag = mapTag.substr(5);
+			if (mapTag.substr(mapTag.size() - 4, 4) == ".rsw")
+				mapTag = mapTag.substr(0, mapTag.size() - 4);
+
+			mapTag = "map:" + util::iso_8859_1_to_utf8(mapTag);
+
+			node->traverse([&](Node* node)
+			{
+				auto rswModel = node->getComponent<RswModel>();
+				if (rswModel)
+				{
+					if(std::find(tagList[mapTag].begin(), tagList[mapTag].end(), rswModel->fileName) == tagList[mapTag].end())
+						tagList[mapTag].push_back(rswModel->fileName);
+				}
+			});
+			delete node;
+		}
+		for (auto tag : tagList)
+			for (const auto& t : tag.second)
+				tagListReverse[util::utf8_to_iso_8859_1(t)].push_back(util::utf8_to_iso_8859_1(tag.first));
+
+		saveTagList();
+
+	}
 
 	static util::FileIO::Node* selectedNode = nullptr;
-
 	std::function<void(util::FileIO::Node*)> buildTreeNodes;
 	buildTreeNodes = [&](util::FileIO::Node* node)
 	{
@@ -665,37 +755,146 @@ void BrowEdit::showObjectWindow()
 	if (ImGui::TreeNodeEx("Models", ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_OpenOnDoubleClick))
 	{
 		auto root = util::FileIO::directoryNode("data\\model\\");
-		buildTreeNodes(root);
+		if(root)
+			buildTreeNodes(root);
 		ImGui::TreePop();
 	}
 	ImGui::EndChild();
 	ImGui::SameLine();
+
+	ImGuiStyle& style = ImGui::GetStyle();
+	float window_visible_x2 = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
+
+
+	auto buildBox = [&](const std::string& file) {
+		if (ImGui::BeginChild(file.c_str(), ImVec2(config.thumbnailSize.x, config.thumbnailSize.y + 50), true, ImGuiWindowFlags_NoScrollbar))
+		{
+			std::string path = util::utf8_to_iso_8859_1(file);
+			auto n = selectedNode;
+			while (n)
+			{
+				if (n->name != "")
+					path = util::utf8_to_iso_8859_1(n->name) + "\\" + path;
+				n = n->parent;
+			}
+
+			auto it = objectWindowObjects.find(path);
+			if (it == objectWindowObjects.end())
+			{
+				objectWindowObjects[path] = new ObjectWindowObject(path, this);
+				it = objectWindowObjects.find(path);
+				it->second->draw();
+			}
+			if (ImGui::ImageButton((ImTextureID)(long long)it->second->fbo->texid[0], config.thumbnailSize, ImVec2(0, 0), ImVec2(1, 1), 0))
+			{
+				if (activeMapView && !newNode)
+				{
+					newNode = new Node(file);
+					newNode->addComponent(util::ResourceManager<Rsm>::load(path));
+					newNode->addComponent(new RsmRenderer());
+					newNode->addComponent(new RswObject());
+					newNode->addComponent(new RswModel(path));
+					newNode->addComponent(new RsmRenderer());
+					newNode->addComponent(new RswModelCollider());
+				}
+				std::cout << "Click on " << file << std::endl;
+			}
+			if (ImGui::BeginPopupContextWindow("Object Tags"))
+			{
+				static std::string newTag;
+				ImGui::InputText("Tag", &newTag);
+				ImGui::SameLine();
+				if (ImGui::Button("Add"))
+				{
+					tagList[newTag].push_back(util::iso_8859_1_to_utf8(path.substr(11))); //remove data\model\ prefix
+					tagListReverse[path.substr(11)].push_back(newTag);
+					saveTagList();
+				}
+				for (auto tag : tagListReverse[path.substr(11)])
+				{
+					ImGui::Text(tag.c_str());
+					ImGui::SameLine();
+					ImGui::Button("Remove");
+				}
+
+				ImGui::EndPopup();
+			}
+			else if (ImGui::IsItemHovered())
+			{
+				ImGui::SetTooltip("map:prontera\nnature\ncookies");
+				it->second->rotation++;
+				it->second->draw();
+			}
+			ImGui::Text(file.c_str());
+		}
+		ImGui::EndChild();
+
+		float last_button_x2 = ImGui::GetItemRectMax().x;
+		float next_button_x2 = last_button_x2 + style.ItemSpacing.x + config.thumbnailSize.x; // Expected position if next button was on same line
+		if (next_button_x2 < window_visible_x2)
+			ImGui::SameLine();
+	};
+
 	if (ImGui::BeginChild("right pane", ImVec2(ImGui::GetContentRegionAvail().x, 0), true))
 	{
-		if (selectedNode != nullptr)
+		if (selectedNode != nullptr && filter == "")
 		{
-			ImGuiStyle& style = ImGui::GetStyle();
-			float window_visible_x2 = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
+			window_visible_x2 = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
 			for (auto file : selectedNode->files)
 			{
-				if (ImGui::BeginChild(file.c_str(), ImVec2(200, 250), true, ImGuiWindowFlags_NoScrollbar))
-				{
-					if (ImGui::ImageButton(0, ImVec2(200, 200), ImVec2(0, 0), ImVec2(1, 1), 0))
-					{
-						std::cout << "Click on " << file << std::endl;
-					}
-					ImGui::Text(file.c_str());
-				}
-				ImGui::EndChild();
-
-				float last_button_x2 = ImGui::GetItemRectMax().x;
-				float next_button_x2 = last_button_x2 + style.ItemSpacing.x + 200; // Expected position if next button was on same line
-				if (next_button_x2 < window_visible_x2)
-					ImGui::SameLine();
-
+				if (file.find(".rsm") == std::string::npos || file.find(".rsm2") != std::string::npos)
+					continue;
+				buildBox(file);
 			}
+		}
+		else if (filter != "")
+		{
+			static std::string currentFilterText = "";
+			static std::vector<std::string> filteredFiles;
+			if (currentFilterText != filter)
+			{
+				currentFilterText = filter;
+				std::vector<std::string> filterTags = util::split(filter, " ");
+				filteredFiles.clear();
+
+				for (auto t : tagListReverse)
+				{
+					bool match = true;
+					for (auto tag : filterTags)
+					{
+						bool tagOk = false;
+						for (auto fileTag : t.second)
+							if (fileTag.find(tag) != std::string::npos)
+							{
+								tagOk = true;
+								break;
+							}
+						if (!tagOk)
+						{
+							match = false;
+							break;
+						}
+					}
+					if (match)
+						filteredFiles.push_back("data\\model\\" + util::iso_8859_1_to_utf8(t.first));
+				}
+			}
+			for (const auto& file : filteredFiles)
+			{
+				buildBox(file);
+			}
+
 		}
 	}
 	ImGui::EndChild();
 	ImGui::End();
+}
+
+
+
+void BrowEdit::saveTagList()
+{
+	json tagListJson = tagList;
+	std::ofstream tagListFile("data\\tags.json");
+	tagListFile << std::setw(2) << tagListJson;
 }
