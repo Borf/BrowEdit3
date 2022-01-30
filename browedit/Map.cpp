@@ -2,7 +2,7 @@
 #include <browedit/Node.h>
 #include <browedit/actions/Action.h>
 #include <browedit/components/Rsw.h>
-
+#include <iostream>
 
 
 Map::Map(const std::string& name) : name(name)
@@ -17,6 +17,12 @@ Map::Map(const std::string& name) : name(name)
 
 void Map::doAction(Action* action, BrowEdit* browEdit)
 {
+	if (std::find(undoStack.begin(), undoStack.end(), action) != undoStack.end())
+	{
+		std::cerr << "Double undo!" << std::endl;
+		throw "Oops";
+		return;
+	}
 	action->perform(this, browEdit);
 	undoStack.push_back(action);
 

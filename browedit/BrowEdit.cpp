@@ -116,7 +116,7 @@ void BrowEdit::run()
 #ifdef _DEBUG
 	if(config.isValid() == "")
 //		loadMap("data\\comodo.rsw");
-		loadMap("data\\prontera.rsw");
+		loadMap("data\\guild_vs1.rsw");
 #endif
 
 
@@ -369,6 +369,20 @@ void BrowEdit::showMapWindow(MapView& mapView)
 			ImGui::SameLine();
 			if (toolBarToggleButton("scale", 10, mapView.gadget.mode == Gadget::Mode::Scale, "Scale"))
 				mapView.gadget.mode = Gadget::Mode::Scale;
+
+
+			if (mapView.gadget.mode == Gadget::Mode::Rotate || mapView.gadget.mode == Gadget::Mode::Scale)
+			{
+				ImGui::SameLine();
+				if (toolBarToggleButton("localglobal", mapView.pivotPoint == MapView::PivotPoint::Local ? 12 : 13, false, "Changes the pivot point for rotations"))
+				{
+					if (mapView.pivotPoint == MapView::PivotPoint::Local)
+						mapView.pivotPoint = MapView::PivotPoint::GroupCenter;
+					else
+						mapView.pivotPoint = MapView::PivotPoint::Local;
+				}
+
+			}
 		}
 
 
@@ -409,7 +423,6 @@ void BrowEdit::menuBar()
 			windowData.openFiles = util::FileIO::listFiles("data");
 			windowData.openFiles.erase(std::remove_if(windowData.openFiles.begin(), windowData.openFiles.end(), [](const std::string& map) { return map.substr(map.size()-4, 4) != ".rsw"; }), windowData.openFiles.end());
 			windowData.openVisible = true;
-			
 		}
 		if (activeMapView && ImGui::MenuItem(("Save " + activeMapView->map->name).c_str(), "Ctrl+s"))
 		{
@@ -433,6 +446,112 @@ void BrowEdit::menuBar()
 			windowData.demoWindowVisible = !windowData.demoWindowVisible;
 		ImGui::EndMenu();
 	}
+	if (editMode == EditMode::Object && activeMapView && ImGui::BeginMenu("Selection"))
+	{
+		if (ImGui::BeginMenu("Grow/shrink Selection"))
+		{
+			if (ImGui::MenuItem("Select same models"))
+			{
+				std::set<std::string> files;
+				for(auto n : activeMapView->map->selectedNodes)
+				{
+					auto rswModel = n->getComponent<RswModel>();
+					if (rswModel)
+						files.insert(rswModel->fileName);
+				}
+				auto ga = new GroupAction();
+				activeMapView->map->rootNode->traverse([&](Node* n) {
+					if (std::find(activeMapView->map->selectedNodes.begin(), activeMapView->map->selectedNodes.end(), n) != activeMapView->map->selectedNodes.end())
+						return;
+					auto rswModel = n->getComponent<RswModel>();
+					if (rswModel && std::find(files.begin(), files.end(), rswModel->fileName) != files.end())
+					{
+						auto sa = new SelectAction(activeMapView->map, n, true, false);
+						sa->perform(activeMapView->map, this);
+						ga->addAction(sa);
+					}
+				});
+				activeMapView->map->doAction(ga, this);
+			}
+			static float nearDistance = 50;
+			ImGui::SetNextItemWidth(100.0f);
+			ImGui::DragFloat("Near Distance", &nearDistance, 1.0f, 0.0f, 1000.0f);
+			if (ImGui::MenuItem("Select objects near"))
+			{
+				auto selection = activeMapView->map->selectedNodes;
+				auto ga = new GroupAction();
+				activeMapView->map->rootNode->traverse([&](Node* n) {
+					auto rswModel = n->getComponent<RswModel>();
+					auto rswObject = n->getComponent<RswObject>();
+					if (!rswObject)
+						return;
+					auto distance = 999999999;
+					for (auto nn : selection)
+						if (glm::distance(nn->getComponent<RswObject>()->position, rswObject->position) < distance)
+							distance = glm::distance(nn->getComponent<RswObject>()->position, rswObject->position);
+					if (distance < nearDistance)
+					{
+						auto sa = new SelectAction(activeMapView->map, n, true, false);
+						sa->perform(activeMapView->map, this);
+						ga->addAction(sa);
+					}
+					});
+				activeMapView->map->doAction(ga, this);
+
+			}
+			if (ImGui::MenuItem("Select all"))
+			{
+				auto ga = new GroupAction();
+				activeMapView->map->rootNode->traverse([&](Node* n) {
+					if (std::find(activeMapView->map->selectedNodes.begin(), activeMapView->map->selectedNodes.end(), n) != activeMapView->map->selectedNodes.end())
+						return;
+					auto rswModel = n->getComponent<RswModel>();
+					if (rswModel)
+					{
+						auto sa = new SelectAction(activeMapView->map, n, true, false);
+						sa->perform(activeMapView->map, this);
+						ga->addAction(sa);
+					}
+					});
+				activeMapView->map->doAction(ga, this);
+			}
+			if (ImGui::MenuItem("Invert selection"))
+			{
+				auto ga = new GroupAction();
+				activeMapView->map->rootNode->traverse([&](Node* n) {
+					bool selected = std::find(activeMapView->map->selectedNodes.begin(), activeMapView->map->selectedNodes.end(), n) != activeMapView->map->selectedNodes.end();
+
+					auto rswModel = n->getComponent<RswModel>();
+					if (rswModel)
+					{
+						auto sa = new SelectAction(activeMapView->map, n, true, selected);
+						sa->perform(activeMapView->map, this);
+						ga->addAction(sa);
+					}
+					});
+				activeMapView->map->doAction(ga, this);
+			}
+			ImGui::EndMenu();
+		}
+		if (ImGui::MenuItem("Flip horizontally"))
+		{
+
+		}
+		if (ImGui::MenuItem("Flip vertically"))
+		{
+
+		}
+		if (ImGui::MenuItem("Delete", "Delete"))
+		{
+
+		}
+		if (ImGui::MenuItem("Go to selection", "F"))
+		{
+
+		}
+		ImGui::EndMenu();
+	}
+
 	if (ImGui::BeginMenu("Maps"))
 	{
 		for (auto map : maps)

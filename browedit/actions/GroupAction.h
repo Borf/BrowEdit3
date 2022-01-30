@@ -38,7 +38,11 @@ public:
 			return title;
 		std::string ret;
 		for (auto a : actions)
-			ret += a->str() + "\n";
+		{
+			auto s = a->str();
+			if(s != "")
+				ret += s + "\n";
+		}
 		return ret;
 	}
 

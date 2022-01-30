@@ -42,6 +42,8 @@ public:
 	}
 	virtual std::string str()
 	{
+		if (action == "")
+			return "";
 		return action + " " + node->name;
 	};
 };

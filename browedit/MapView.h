@@ -49,6 +49,12 @@ public:
 	float gridSize = 5;
 	bool gridLocal = true;
 
+	enum class PivotPoint {
+		Local,
+		GroupCenter
+	} pivotPoint = PivotPoint::Local;
+
+
 
 	math::Ray mouseRay;
 

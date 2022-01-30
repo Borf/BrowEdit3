@@ -213,7 +213,15 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 			}
 
 			gadget.draw(mouseRay, mat);
-			static std::map<Node*, glm::vec3> originalValues;
+			struct PosRotScale {
+				glm::vec3 pos;
+				glm::vec3 rot;
+				glm::vec3 scale;
+				PosRotScale(RswObject* o) : pos(o->position), rot(o->rotation), scale(o->scale) {}
+				PosRotScale() : pos(0.0f), rot(0.0f), scale(1.0f) {}
+			};
+			static std::map<Node*, PosRotScale> originalValues;
+			static glm::vec3 groupCenter;
 
 			if (gadget.axisClicked)
 			{
@@ -232,42 +240,32 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 				mouseDragStart = mouseRay.origin + f * mouseRay.dir;
 				mouseDragStart2D = mouseState.position;
 
+				groupCenter = glm::vec3(0.0f);
 				originalValues.clear();
-				if (gadget.mode == Gadget::Mode::Translate)
-					for (auto n : map->selectedNodes)
-						originalValues[n] = n->getComponent<RswObject>()->position;
-				else if (gadget.mode == Gadget::Mode::Scale)
-					for (auto n : map->selectedNodes)
-						originalValues[n] = n->getComponent<RswObject>()->scale;
-				else if (gadget.mode == Gadget::Mode::Rotate)
-					for (auto n : map->selectedNodes)
-						originalValues[n] = n->getComponent<RswObject>()->rotation;
+				for (auto n : map->selectedNodes)
+				{
+					originalValues[n] = PosRotScale(n->getComponent<RswObject>());
+					groupCenter += n->getComponent<RswObject>()->position;
+				}
+				groupCenter /= map->selectedNodes.size();
 				canSelectObject = false;
 			}
 			else if (gadget.axisReleased)
 			{
-				if(map->selectedNodes.size() > 1)
-				{
-					GroupAction* ga = new GroupAction();
-					for (auto n : map->selectedNodes)
-					{ //TODO: 
-						if (gadget.mode == Gadget::Mode::Translate)
-							ga->addAction(new ObjectChangeAction(n, &n->getComponent<RswObject>()->position, originalValues[n], "Moving"));
-						else if (gadget.mode == Gadget::Mode::Scale)
-							ga->addAction(new ObjectChangeAction(n, &n->getComponent<RswObject>()->scale, originalValues[n], "Scaling"));
-						else if (gadget.mode == Gadget::Mode::Rotate)
-							ga->addAction(new ObjectChangeAction(n, &n->getComponent<RswObject>()->rotation, originalValues[n], "Rotating"));
+				GroupAction* ga = new GroupAction();
+				for (auto n : map->selectedNodes)
+				{ //TODO: 
+					if (gadget.mode == Gadget::Mode::Translate)
+						ga->addAction(new ObjectChangeAction(n, &n->getComponent<RswObject>()->position, originalValues[n].pos, "Moving"));
+					else if (gadget.mode == Gadget::Mode::Scale)
+						ga->addAction(new ObjectChangeAction(n, &n->getComponent<RswObject>()->scale, originalValues[n].scale, "Scaling"));
+					else if (gadget.mode == Gadget::Mode::Rotate)
+					{
+						ga->addAction(new ObjectChangeAction(n, &n->getComponent<RswObject>()->rotation, originalValues[n].rot, "Rotating"));
+						ga->addAction(new ObjectChangeAction(n, &n->getComponent<RswObject>()->position, originalValues[n].pos, ""));
 					}
-					map->doAction(ga, browEdit);
 				}
-				else
-					for (auto n : map->selectedNodes)
-						if (gadget.mode == Gadget::Mode::Translate)
-							map->doAction(new ObjectChangeAction(n, &n->getComponent<RswObject>()->position, originalValues[n], "Moving"), browEdit);
-						else if (gadget.mode == Gadget::Mode::Scale)
-							map->doAction(new ObjectChangeAction(n, &n->getComponent<RswObject>()->scale, originalValues[n], "Scaling"), browEdit);
-						else if (gadget.mode == Gadget::Mode::Rotate)
-							map->doAction(new ObjectChangeAction(n, &n->getComponent<RswObject>()->rotation, originalValues[n], "Rotating"), browEdit);
+				map->doAction(ga, browEdit);
 			}
 
 			if (gadget.axisDragged)
@@ -307,11 +305,9 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 
 				for (auto n : originalValues)
 				{
-
-
 					if (gadget.mode == Gadget::Mode::Translate)
 					{
-						n.first->getComponent<RswObject>()->position = n.second + mouseOffset * glm::vec3(1, -1, -1);
+						n.first->getComponent<RswObject>()->position = n.second.pos + mouseOffset * glm::vec3(1, -1, -1);
 						if (snap && !gridLocal)
 							n.first->getComponent<RswObject>()->position[gadget.selectedAxisIndex()] = glm::round(n.first->getComponent<RswObject>()->position[gadget.selectedAxisIndex()] / (float)gridSize) * (float)gridSize;
 					}
@@ -319,24 +315,37 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 					{
 						if (gadget.selectedAxis == (Gadget::Axis::X | Gadget::Axis::Y | Gadget::Axis::Z))
 						{
-							n.first->getComponent<RswObject>()->scale = n.second * (1 + pos * glm::length(0.01f * mouseOffset));
+							n.first->getComponent<RswObject>()->scale = n.second.scale * (1 + pos * glm::length(0.01f * mouseOffset));
 							if (snap && !gridLocal)
 								n.first->getComponent<RswObject>()->scale = glm::round(n.first->getComponent<RswObject>()->scale / (float)gridSize) * (float)gridSize;
 						}
 						else
 						{
-							n.first->getComponent<RswObject>()->scale[gadget.selectedAxisIndex()] = n.second[gadget.selectedAxisIndex()] * (1 + pos * glm::length(0.01f * mouseOffset));
+							n.first->getComponent<RswObject>()->scale[gadget.selectedAxisIndex()] = n.second.scale[gadget.selectedAxisIndex()] * (1 + pos * glm::length(0.01f * mouseOffset));
 							if (snap && !gridLocal)
 								n.first->getComponent<RswObject>()->scale[gadget.selectedAxisIndex()] = glm::round(n.first->getComponent<RswObject>()->scale[gadget.selectedAxisIndex()] / (float)gridSize) * (float)gridSize;
 						}
 					}
 					if (gadget.mode == Gadget::Mode::Rotate)
 					{
-						n.first->getComponent<RswObject>()->rotation[gadget.selectedAxisIndex()] = n.second[gadget.selectedAxisIndex()] + -pos * mouseOffset2D;
+						n.first->getComponent<RswObject>()->rotation[gadget.selectedAxisIndex()] = n.second.rot[gadget.selectedAxisIndex()] + -pos * mouseOffset2D;
+						if (pivotPoint == PivotPoint::GroupCenter)
+						{
+							float originalAngle = atan2(n.second.pos.z - groupCenter.z, n.second.pos.x - groupCenter.x);
+							float dist = glm::length(glm::vec2(n.second.pos.z - groupCenter.z, n.second.pos.x - groupCenter.x));
+							originalAngle -= glm::radians(- pos * mouseOffset2D);
+							if (snap && !gridLocal)
+								originalAngle = glm::radians(glm::round(glm::degrees(originalAngle) / (float)gridSize) * (float)gridSize);
+
+							n.first->getComponent<RswObject>()->position.x = dist * glm::cos(originalAngle);
+							n.first->getComponent<RswObject>()->position.z = dist * glm::sin(originalAngle);
+
+						}
 						if (snap && !gridLocal)
 							n.first->getComponent<RswObject>()->rotation[gadget.selectedAxisIndex()] = glm::round(n.first->getComponent<RswObject>()->rotation[gadget.selectedAxisIndex()] / (float)gridSize) * (float)gridSize;
 					}
-					n.first->getComponent<RsmRenderer>()->setDirty();
+					if(n.first->getComponent<RsmRenderer>())
+						n.first->getComponent<RsmRenderer>()->setDirty();
 				}
 				canSelectObject = false;
 			}
