@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <thread>
 
 #include <imgui.h>
 #include <imgui_internal.h>
@@ -139,6 +140,27 @@ void BrowEdit::run()
 			showObjectWindow();
 		if (windowData.demoWindowVisible)
 			ImGui::ShowDemoWindow(&windowData.demoWindowVisible);
+
+		if (windowData.progressWindowVisible)
+		{
+			ImGui::OpenPopup("Progress");
+			ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+			ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+			ImGui::SetNextWindowSize(ImVec2(300, 0));
+			if (ImGui::BeginPopupModal("Progress", 0, ImGuiWindowFlags_NoDocking))
+			{
+				ImGui::Text(windowData.progressWindowText.c_str());
+				ImGui::ProgressBar(windowData.progressWindowProgres);
+				ImGui::EndPopup();
+			}
+		}
+		else if (windowData.progressWindowProgres >= 1.0f)
+		{
+			windowData.progressWindowProgres = 0;
+			windowData.progressWindowOnDone();
+			windowData.progressWindowOnDone = nullptr;
+		}
+
 
 		if (editMode == EditMode::Object)
 		{
@@ -880,50 +902,67 @@ void BrowEdit::showObjectWindow()
 	static std::string filter;
 	ImGui::InputText("Filter", &filter);
 	ImGui::SameLine();
+	
+	static std::thread progressThread;
+	static std::map<std::string, std::vector<std::string>> newTagList; // tag -> [ file ], utf8
+
 	if (ImGui::Button("Rescan map filters"))
 	{
-		tagListReverse.clear();
-		//remove old map: tags
-		for (auto it = tagList.begin(); it != tagList.end(); )
-			if (it->first.size() > 4 && it->first.substr(0, 4) == "map:")
-				it = tagList.erase(it);
-			else
-				it++;
+		windowData.progressWindowVisible = true;
+		windowData.progressWindowText = "Loading maps...";
+		windowData.progressWindowProgres = 0;
+		windowData.progressWindowOnDone = [&]() {
+			std::cout << "Done!" << std::endl;
+			for (auto it = tagList.begin(); it != tagList.end(); )
+				if (it->first.size() > 4 && it->first.substr(0, 4) == "map:")
+					it = tagList.erase(it);
+				else
+					it++;
+			for (auto t : newTagList)
+				tagList[t.first] = t.second;
+			for (auto tag : tagList)
+				for (const auto& t : tag.second)
+					tagListReverse[util::utf8_to_iso_8859_1(t)].push_back(util::utf8_to_iso_8859_1(tag.first));
+			saveTagList();
+			std::cout << "TagList merged and saved to file" << std::endl;
+		};
 
-		std::vector<std::string> maps = util::FileIO::listFiles("data");
-		maps.erase(std::remove_if(maps.begin(), maps.end(), [](const std::string& map) { return map.substr(map.size() - 4, 4) != ".rsw"; }), maps.end());
-		for (const auto& fileName : maps)
-		{
-			Node* node = new Node();
-			Rsw* rsw = new Rsw();
-			node->addComponent(rsw);
-			rsw->load(fileName, false, false);
-
-			std::string mapTag = fileName;
-			if (mapTag.substr(0, 5) == "data\\")
-				mapTag = mapTag.substr(5);
-			if (mapTag.substr(mapTag.size() - 4, 4) == ".rsw")
-				mapTag = mapTag.substr(0, mapTag.size() - 4);
-
-			mapTag = "map:" + util::iso_8859_1_to_utf8(mapTag);
-
-			node->traverse([&](Node* node)
+		progressThread = std::thread([&]() {
+			std::vector<std::string> maps = util::FileIO::listFiles("data");
+			maps.erase(std::remove_if(maps.begin(), maps.end(), [](const std::string& map) { return map.substr(map.size() - 4, 4) != ".rsw"; }), maps.end());
+			windowData.progressWindowProgres = 0;
+			for (const auto& fileName : maps)
 			{
-				auto rswModel = node->getComponent<RswModel>();
-				if (rswModel)
+				windowData.progressWindowProgres += (1.0f / maps.size());
+				Node* node = new Node();
+				Rsw* rsw = new Rsw();
+				node->addComponent(rsw);
+				rsw->load(fileName, false, false);
+
+				std::string mapTag = fileName;
+				if (mapTag.substr(0, 5) == "data\\")
+					mapTag = mapTag.substr(5);
+				if (mapTag.substr(mapTag.size() - 4, 4) == ".rsw")
+					mapTag = mapTag.substr(0, mapTag.size() - 4);
+
+				mapTag = "map:" + util::iso_8859_1_to_utf8(mapTag);
+
+				node->traverse([&](Node* node)
 				{
-					if(std::find(tagList[mapTag].begin(), tagList[mapTag].end(), rswModel->fileName) == tagList[mapTag].end())
-						tagList[mapTag].push_back(rswModel->fileName);
-				}
-			});
-			delete node;
-		}
-		for (auto tag : tagList)
-			for (const auto& t : tag.second)
-				tagListReverse[util::utf8_to_iso_8859_1(t)].push_back(util::utf8_to_iso_8859_1(tag.first));
+					auto rswModel = node->getComponent<RswModel>();
+					if (rswModel)
+					{
+						if(std::find(newTagList[mapTag].begin(), newTagList[mapTag].end(), rswModel->fileName) == newTagList[mapTag].end())
+							newTagList[mapTag].push_back(rswModel->fileName);
+					}
+				});
+				delete node;
+			}
 
-		saveTagList();
-
+			windowData.progressWindowProgres = 1;
+			windowData.progressWindowVisible = false;
+		});
+		progressThread.detach();
 	}
 
 	static util::FileIO::Node* selectedNode = nullptr;

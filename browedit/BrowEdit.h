@@ -41,6 +41,10 @@ class BrowEdit
 		bool objectWindowVisible = true; //TODO: load from config
 
 		bool demoWindowVisible = false;
+		bool progressWindowVisible = false;
+		std::string progressWindowText = "Progress....";
+		float progressWindowProgres = .25;
+		std::function<void()> progressWindowOnDone;
 
 	} windowData;
 public:
