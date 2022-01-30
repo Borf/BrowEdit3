@@ -147,3 +147,18 @@ std::vector<std::pair<Node*, std::vector<glm::vec3>>> Node::getCollisions(const 
 	});
 	return ret;
 }
+
+
+
+
+void to_json(nlohmann::json& j, const Node& n) {
+	j = nlohmann::json{ {"name", n.name}, {"children", nlohmann::json::array() }, {"components", nlohmann::json::array() } };
+	for (auto c : n.components)
+		j["components"].push_back(*c);
+	for (auto n : n.children)
+		j["children"].push_back(*n);
+}
+
+void from_json(const nlohmann::json& j, Node& p) {
+
+}

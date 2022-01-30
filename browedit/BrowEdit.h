@@ -24,7 +24,7 @@ class BrowEdit
 	gl::Texture* backgroundTexture;
 	gl::Texture* iconsTexture;
 	std::vector<Map*> maps;
-	std::list<MapView> mapViews;
+	std::list<MapView> mapViews; //list, because vector reallocates mapviews when pushing back, which breaks activeMapview pointer
 
 	struct WindowData
 	{
@@ -38,7 +38,7 @@ class BrowEdit
 		bool undoVisible = true;
 
 
-		bool objectWindowVisible = true;
+		bool objectWindowVisible = true; //TODO: load from config
 
 		bool demoWindowVisible = false;
 
@@ -57,7 +57,7 @@ public:
 	GLFWwindow* window;
 	double scrollDelta = 0;
 	Config config;
-	Node* newNode = nullptr;
+	std::vector<std::pair<Node*, glm::vec3>> newNodes;
 	MapView* activeMapView = nullptr;
 
 

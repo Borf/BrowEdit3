@@ -1,5 +1,6 @@
 #pragma once
 
+#include <json.hpp>
 #include <vector>
 #include <string>
 #include <functional>
@@ -16,6 +17,7 @@ public:
 	Node* parent = nullptr;
 	Node* root = this;
 	std::string name;
+
 
 	Node(const std::string& name = "", Node* parent = nullptr);
 	void addComponent(Component* component);
@@ -42,3 +44,7 @@ public:
 	//TODO: move this somewhere else?
 	std::vector<std::pair<Node*, std::vector<glm::vec3>>> getCollisions(const math::Ray& ray);
 };
+
+
+void to_json(nlohmann::json& j, const Node& n);
+void from_json(const nlohmann::json& j, Node& p);

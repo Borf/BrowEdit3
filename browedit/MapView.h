@@ -46,7 +46,7 @@ public:
 	bool hovered = false;
 
 	bool snapToGrid = false;
-	int gridSize = 5;
+	float gridSize = 5;
 	bool gridLocal = true;
 
 
@@ -75,4 +75,5 @@ public:
 	bool viewLightmapColor = true;
 	bool viewColors = true;
 	bool viewLighting = true;
+	bool smoothColors = true;
 };

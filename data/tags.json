@@ -1,6 +1,16 @@
 {
-  "fruit": [
-    "geffen\\melon_s_01.rsm"
+  "food": [
+    "geffen\\melon_s_01.rsm",
+    "geffen\\melon_s_03.rsm",
+    "geffen\\melon_s_04.rsm",
+    "geffen\\melon_s_02.rsm"
+  ],
+  "fruit": [],
+  "leafs": [
+    "geffen\\melonleaf_s_01.rsm",
+    "geffen\\vine_s_01.rsm",
+    "geffen\\vine_s_02.rsm",
+    "geffen\\vine_s_03.rsm"
   ],
   "map:06guild_r": [
     "³»ºÎ¼ÒÇ°\\Ã¶´Ù¸®.rsm"
@@ -46067,5 +46077,29 @@
     "³»ºÎ¼ÒÇ°\\¸ð·ÎÄÚ_ÀÇÀÚ.rsm",
     "Èæ¸¶¹ý»ç¹æ\\¸¶¹ý¹æ_Ã¥Á¾ÀÌ3.rsm",
     "³ª¹«ÀâÃÊ²É\\È­ºÐ04.rsm"
+  ],
+  "nature": [
+    "abyss\\moss_s_01.rsm",
+    "abyss\\moss_s_02.rsm",
+    "abyss\\moss_s_04.rsm",
+    "abyss\\moss_s_05.rsm",
+    "abyss\\moss_s_08.rsm",
+    "abyss\\rust_s_01.rsm",
+    "brasilis\\³ª¹«03.rsm",
+    "brasilis\\³ª¹«04.rsm",
+    "brasilis\\³ª¹«05.rsm",
+    "brasilis\\³ª¹«02.rsm",
+    "brasilis\\³ª¹«01.rsm",
+    "brasilis\\°³±¸¸®¹ä01.rsm",
+    "brasilis\\°ú¶ó³ª.rsm",
+    "brasilis\\³ª¹«06.rsm",
+    "brasilis\\´ýºÒ01.rsm",
+    "crazy_i\\planta_s_02.rsm",
+    "crazy_i\\plantb_s_01.rsm",
+    "crazy_i\\plantb_s_02.rsm",
+    "crazy_i\\plantb_s_03.rsm",
+    "crazy_i\\plantb_s_04.rsm",
+    "crazy_i\\plantb_s_05.rsm",
+    "crazy_i\\plantb_s_06.rsm"
   ]
 }

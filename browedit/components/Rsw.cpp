@@ -260,6 +260,10 @@ void Rsw::save(const std::string& fileName)
 	std::cout << "Done saving" << std::endl;
 }
 
+RswObject::RswObject(RswObject* other) : position(other->position), rotation(other->rotation), scale(other->scale)
+{
+}
+
 void RswObject::load(std::istream* is, int version, bool loadModel)
 {
 	int type;
@@ -292,6 +296,10 @@ void RswObject::load(std::istream* is, int version, bool loadModel)
 }
 
 
+
+RswModel::RswModel(RswModel* other) : aabb(other->aabb), animType(other->animType), animSpeed(other->animSpeed), blockType(other->blockType), fileName(other->fileName)
+{
+}
 
 void RswModel::load(std::istream* is, int version, bool loadModel)
 {

@@ -31,8 +31,11 @@ MapView::MapView(Map* map, const std::string &viewName) : map(map), viewName(vie
 	//shader = new TestShader();
 
 	auto gnd = map->rootNode->getComponent<Gnd>();
-	cameraCenter.x = gnd->width * 5.0f;
-	cameraCenter.y = gnd->height * 5.0f;
+	if (gnd)
+	{
+		cameraCenter.x = gnd->width * 5.0f;
+		cameraCenter.y = gnd->height * 5.0f;
+	}
 }
 
 void MapView::render(BrowEdit* browEdit)
@@ -64,21 +67,29 @@ void MapView::render(BrowEdit* browEdit)
 	map->rootNode->getComponent<GndRenderer>()->viewLightmapColor = viewLightmapColor;
 	map->rootNode->getComponent<GndRenderer>()->viewColors = viewColors;
 	map->rootNode->getComponent<GndRenderer>()->viewLighting = viewLighting;
+	if (map->rootNode->getComponent<GndRenderer>()->smoothColors != smoothColors)
+	{
+		map->rootNode->getComponent<GndRenderer>()->smoothColors = smoothColors;
+		map->rootNode->getComponent<GndRenderer>()->gndShadowDirty = true;
+	}
 
 	RsmRenderer::RsmRenderContext::getInstance()->viewLighting = viewLighting;
 
 
 	NodeRenderer::render(map->rootNode, nodeRenderContext);
 
-	if (browEdit->newNode)
+	if (browEdit->newNodes.size() > 0)
 	{
-		auto rswObject = browEdit->newNode->getComponent<RswObject>();
-		auto gnd = map->rootNode->getComponent<Gnd>();
-		auto rayCast = gnd->rayCast(mouseRay);
-		rswObject->position = glm::vec3(rayCast.x - 5 * gnd->width, -rayCast.y, -(rayCast.z + (-10 - 5 * gnd->height)));
-		browEdit->newNode->getComponent<RsmRenderer>()->matrixCache = glm::translate(glm::mat4(1.0f), rayCast);
-		browEdit->newNode->getComponent<RsmRenderer>()->matrixCache = glm::scale(browEdit->newNode->getComponent<RsmRenderer>()->matrixCache, glm::vec3(1,-1,1));
-		NodeRenderer::render(browEdit->newNode, nodeRenderContext);
+		for (auto newNode : browEdit->newNodes)
+		{
+			auto rswObject = newNode.first->getComponent<RswObject>();
+			auto gnd = map->rootNode->getComponent<Gnd>();
+			auto rayCast = gnd->rayCast(mouseRay);
+			rswObject->position = glm::vec3(rayCast.x - 5 * gnd->width, -rayCast.y, -(rayCast.z + (-10 - 5 * gnd->height))) + newNode.second;
+			newNode.first->getComponent<RsmRenderer>()->matrixCache = glm::translate(glm::mat4(1.0f), rayCast + newNode.second);
+			newNode.first->getComponent<RsmRenderer>()->matrixCache = glm::scale(newNode.first->getComponent<RsmRenderer>()->matrixCache, glm::vec3(1, -1, 1));
+			NodeRenderer::render(newNode.first, nodeRenderContext);
+		}
 	}
 
 	fbo->unbind();
@@ -155,16 +166,23 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 	fbo->bind();
 
 	bool canSelectObject = true;
-	if (browEdit->newNode)
+	if (browEdit->newNodes.size() > 0)
 	{
 		if (ImGui::IsMouseClicked(0))
 		{
-			browEdit->newNode->setParent(map->rootNode);
-			auto ga = new GroupAction();
-			ga->addAction(new NewObjectAction(browEdit->newNode));
-			ga->addAction(new SelectAction(map, browEdit->newNode, false, false));
+			auto ga = new GroupAction("Pasting " + std::to_string(browEdit->newNodes.size()) + " objects");
+			bool first = false;
+			for (auto newNode : browEdit->newNodes)
+			{
+				newNode.first->setParent(map->rootNode);
+				ga->addAction(new NewObjectAction(newNode.first));
+				auto sa = new SelectAction(map, newNode.first, first, false);
+				sa->perform(map, browEdit); // to make sure everything is selected
+				ga->addAction(sa);
+				first = true;
+			}
 			map->doAction(ga, browEdit);
-			browEdit->newNode = nullptr;
+			browEdit->newNodes.clear();
 		}
 	}
 	else if (map->selectedNodes.size() > 0)

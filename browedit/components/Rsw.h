@@ -6,7 +6,8 @@
 #include "ImguiProps.h"
 #include <string>
 #include <glm/glm.hpp>
-#include <browedit/util/tree.h>
+#include <browedit/util/Util.h>
+#include <browedit/util/Tree.h>
 #include <browedit/math/AABB.h>
 
 class RsmRenderer;
@@ -71,9 +72,12 @@ public:
 	glm::vec3 rotation = glm::vec3(0,0,0);
 	glm::vec3 scale = glm::vec3(1,1,1);
 
+	RswObject() {}
+	RswObject(RswObject* other);
 	void load(std::istream* is, int version, bool loadModel);
 	void save(std::ofstream& file, int version);
 	void buildImGui(BrowEdit* browEdit) override;
+	NLOHMANN_DEFINE_TYPE_INTRUSIVE(RswObject, position, rotation, scale);
 };
 
 class RswModel : public Component, public ImguiProps
@@ -83,13 +87,16 @@ public:
 	int animType;
 	float animSpeed;
 	int blockType;
-	std::string fileName;
+	std::string fileName; //UTF8
 
 	RswModel() : aabb(glm::vec3(), glm::vec3()) {}
 	RswModel(const std::string &fileName) : aabb(glm::vec3(), glm::vec3()), animType(0), animSpeed(1), blockType(0), fileName(fileName) {}
+	RswModel(RswModel* other);
 	void load(std::istream* is, int version, bool loadModel);
 	void save(std::ofstream &file, int version);
 	void buildImGui(BrowEdit* browEdit) override;
+
+	NLOHMANN_DEFINE_TYPE_INTRUSIVE(RswModel, animType, animSpeed, blockType, fileName);
 };
 
 

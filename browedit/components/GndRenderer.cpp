@@ -57,11 +57,20 @@ void GndRenderer::render()
 				{
 					int xxx = 8 * x + xx;
 					int yyy = 8 * y + yy;
-
-					data[4 * (xxx + 2048 * yyy) + 0] = (lightMap->data[64 + 3 * (xx + 8 * yy) + 0] >> 4) << 4;
-					data[4 * (xxx + 2048 * yyy) + 1] = (lightMap->data[64 + 3 * (xx + 8 * yy) + 1] >> 4) << 4;
-					data[4 * (xxx + 2048 * yyy) + 2] = (lightMap->data[64 + 3 * (xx + 8 * yy) + 2] >> 4) << 4;
-					data[4 * (xxx + 2048 * yyy) + 3] = lightMap->data[xx + 8 * yy];
+					if (smoothColors)
+					{
+						data[4 * (xxx + 2048 * yyy) + 0] = (lightMap->data[64 + 3 * (xx + 8 * yy) + 0] >> 4) << 4;
+						data[4 * (xxx + 2048 * yyy) + 1] = (lightMap->data[64 + 3 * (xx + 8 * yy) + 1] >> 4) << 4;
+						data[4 * (xxx + 2048 * yyy) + 2] = (lightMap->data[64 + 3 * (xx + 8 * yy) + 2] >> 4) << 4;
+						data[4 * (xxx + 2048 * yyy) + 3] = lightMap->data[xx + 8 * yy];
+					}
+					else
+					{
+						data[4 * (xxx + 2048 * yyy) + 0] = (lightMap->data[64 + 3 * (xx + 8 * yy) + 0]);
+						data[4 * (xxx + 2048 * yyy) + 1] = (lightMap->data[64 + 3 * (xx + 8 * yy) + 1]);
+						data[4 * (xxx + 2048 * yyy) + 2] = (lightMap->data[64 + 3 * (xx + 8 * yy) + 2]);
+						data[4 * (xxx + 2048 * yyy) + 3] = lightMap->data[xx + 8 * yy];
+					}
 				}
 			}
 			x++;

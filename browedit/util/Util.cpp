@@ -175,3 +175,17 @@ namespace util
 		return "";
 	}
 }
+
+
+
+namespace glm
+{
+	void to_json(nlohmann::json& j, const glm::vec3& v) {
+		j = nlohmann::json{ v.x, v.y, v.z };
+	}
+	void from_json(const nlohmann::json& j, glm::vec3& v) {
+		j[0].get_to(v.x);
+		j[1].get_to(v.y);
+		j[2].get_to(v.z);
+	}
+}

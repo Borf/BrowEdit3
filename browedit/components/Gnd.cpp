@@ -1,7 +1,7 @@
 #include "Gnd.h"
+#include <browedit/util/Util.h>
 #include <browedit/util/FileIO.h>
 #include <iostream>
-#include <browedit/util/Util.h>
 
 Gnd::Gnd(const std::string& fileName)
 {

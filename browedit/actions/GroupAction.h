@@ -2,11 +2,16 @@
 
 #include "Action.h"
 #include <vector>
+#include <string>
 
 class GroupAction : public Action
 {
 	std::vector<Action*> actions;
+	std::string title;
 public:
+	GroupAction(const std::string& title = "") : title(title)
+	{
+	}
 	~GroupAction()
 	{
 		for (auto a : actions)
@@ -29,6 +34,8 @@ public:
 	}
 	virtual std::string str()
 	{
+		if (title != "")
+			return title;
 		std::string ret;
 		for (auto a : actions)
 			ret += a->str() + "\n";

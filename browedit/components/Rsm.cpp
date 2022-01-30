@@ -1,7 +1,7 @@
 #include "Rsm.h"
 
-#include <browedit/util/FileIO.h>
 #include <browedit/util/Util.h>
+#include <browedit/util/FileIO.h>
 #include <iostream>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/quaternion.hpp>

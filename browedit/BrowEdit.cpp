@@ -88,6 +88,8 @@ void BrowEdit::run()
 		return;
 	}
 	configBegin();
+	if (config.closeObjectWindowOnAdd)
+		windowData.objectWindowVisible = false;
 
 	{
 		std::ifstream tagListFile("data\\tags.json");
@@ -150,6 +152,8 @@ void BrowEdit::run()
 			showMapWindow(*it);
 			if (!it->opened)
 			{
+				if (activeMapView == &(*it))
+					activeMapView = nullptr;
 				Map* map = it->map;
 				it = mapViews.erase(it);
 			}
@@ -171,12 +175,73 @@ void BrowEdit::run()
 				if (ImGui::IsKeyPressed('S') && activeMapView)
 					saveMap(activeMapView->map);
 			}
-			if (ImGui::IsKeyPressed(GLFW_KEY_DELETE) && activeMapView && activeMapView->map->selectedNodes.size() > 0)
+			if (editMode == EditMode::Object && activeMapView)
 			{
-				auto ga = new GroupAction();
-				for (auto n : activeMapView->map->selectedNodes)
-					ga->addAction(new DeleteObjectAction(n));
-				activeMapView->map->doAction(ga, this);
+				if (ImGui::IsKeyPressed(GLFW_KEY_DELETE) && activeMapView && activeMapView->map->selectedNodes.size() > 0)
+				{
+					auto ga = new GroupAction();
+					for (auto n : activeMapView->map->selectedNodes)
+						ga->addAction(new DeleteObjectAction(n));
+					activeMapView->map->doAction(ga, this);
+				}
+				if (ImGui::IsKeyPressed('C'))
+				{
+					json clipboard;
+					for (auto n : activeMapView->map->selectedNodes)
+						clipboard.push_back(*n);
+					ImGui::SetClipboardText(clipboard.dump(1).c_str());
+				}
+
+				if(ImGui::IsKeyPressed('V'))
+				{
+					try
+					{
+						json clipboard = json::parse(ImGui::GetClipboardText());
+						if (clipboard.size() > 0)
+						{
+							for (auto n : newNodes) //TODO: should I do this?
+								delete n.first;
+							newNodes.clear();
+/*							glm::vec3 center(0, 0, 0);
+							for (auto n : activeMapView->map->selectedNodes)
+								center += n->getComponent<RswObject>()->position;
+							center /= activeMapView->map->selectedNodes.size();*/
+
+							for (auto n : clipboard)
+							{
+								auto newNode = new Node(n["name"].get<std::string>());
+								for (auto c : n["components"])
+								{
+									if (c["type"] == "rswobject")
+									{
+										auto rswObject = new RswObject();
+										from_json(c, *rswObject);
+										newNode->addComponent(rswObject);
+									}
+									if (c["type"] == "rswmodel")
+									{
+										auto rswModel = new RswModel();
+										from_json(c, *rswModel);
+										newNode->addComponent(rswModel);
+										newNode->addComponent(util::ResourceManager<Rsm>::load("data\\model\\" + util::utf8_to_iso_8859_1(rswModel->fileName)));
+										newNode->addComponent(new RsmRenderer());
+										newNode->addComponent(new RsmRenderer());
+										newNode->addComponent(new RswModelCollider());
+									}
+								}
+								newNodes.push_back(std::pair<Node*, glm::vec3>(newNode, newNode->getComponent<RswObject>()->position));
+							}
+							glm::vec3 center(0, 0, 0);
+							for (auto& n : newNodes)
+								center += n.second;
+							center /= newNodes.size();
+
+							for (auto& n : newNodes)
+								n.second = n.second - center;
+						}
+					}
+					catch (...) {};
+				}
 			}
 		}
 
@@ -266,6 +331,8 @@ void BrowEdit::showMapWindow(MapView& mapView)
 		ImGui::SameLine();
 		toolBarToggleButton("viewLighting", 3, &mapView.viewLighting, "Toggle lighting");
 		ImGui::SameLine();
+		toolBarToggleButton("smoothColors", 2, &mapView.smoothColors, "Smooth colormap");
+		ImGui::SameLine();
 		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 		ImGui::SameLine();
 
@@ -279,9 +346,13 @@ void BrowEdit::showMapWindow(MapView& mapView)
 		{
 			ImGui::SameLine();
 			ImGui::SetNextItemWidth(50);
-			ImGui::DragInt("##gridSize", &mapView.gridSize, 1, 100);
+			ImGui::DragFloat("##gridSize", &mapView.gridSize, 1.0f, 0.1f, 100.0f, "%.2f", ImGuiSliderFlags_Logarithmic);
+			if (ImGui::IsItemHovered())
+				ImGui::SetTooltip("Grid size. Doubleclick or ctrl+click to type a number");
 			ImGui::SameLine();
 			ImGui::Checkbox("##gridLocal", &mapView.gridLocal);
+			if (ImGui::IsItemHovered())
+				ImGui::SetTooltip("Local or Global grid. Either makes the movement rounded off, or the final position");
 		}
 
 		ImGui::SameLine();
@@ -301,13 +372,15 @@ void BrowEdit::showMapWindow(MapView& mapView)
 		}
 
 
-
 		auto size = ImGui::GetContentRegionAvail();
-		mapView.update(this, size);
-		mapView.render(this);
-		if(editMode == EditMode::Object)
-			mapView.postRenderObjectMode(this);
-		mapView.prevMouseState = mapView.mouseState; //meh
+		if (mapView.map->rootNode->getComponent<Gnd>())
+		{
+			mapView.update(this, size);
+			mapView.render(this);
+			if (editMode == EditMode::Object)
+				mapView.postRenderObjectMode(this);
+			mapView.prevMouseState = mapView.mouseState; //meh
+		}
 
 		ImTextureID id = (ImTextureID)((long long)mapView.fbo->texid[0]); //TODO: remove cast for 32bit
 		ImGui::Image(id, size, ImVec2(0,1), ImVec2(1,0));
@@ -787,21 +860,23 @@ void BrowEdit::showObjectWindow()
 			}
 			if (ImGui::ImageButton((ImTextureID)(long long)it->second->fbo->texid[0], config.thumbnailSize, ImVec2(0, 0), ImVec2(1, 1), 0))
 			{
-				if (activeMapView && !newNode)
+				if (activeMapView && newNodes.size() == 0)
 				{
-					newNode = new Node(file);
+					Node* newNode = new Node(file);
 					newNode->addComponent(util::ResourceManager<Rsm>::load(path));
 					newNode->addComponent(new RsmRenderer());
 					newNode->addComponent(new RswObject());
 					newNode->addComponent(new RswModel(path));
 					newNode->addComponent(new RsmRenderer());
 					newNode->addComponent(new RswModelCollider());
+					newNodes.push_back(std::pair<Node*, glm::vec3>(newNode, glm::vec3(0, 0, 0)));
 				}
 				std::cout << "Click on " << file << std::endl;
 			}
 			if (ImGui::BeginPopupContextWindow("Object Tags"))
 			{
 				static std::string newTag;
+				ImGui::SetNextItemWidth(100);
 				ImGui::InputText("Tag", &newTag);
 				ImGui::SameLine();
 				if (ImGui::Button("Add"))
@@ -814,14 +889,20 @@ void BrowEdit::showObjectWindow()
 				{
 					ImGui::Text(tag.c_str());
 					ImGui::SameLine();
-					ImGui::Button("Remove");
+					if (ImGui::Button("Remove"))
+					{
+						tagList[tag].erase(std::remove_if(tagList[tag].begin(), tagList[tag].end(), [&](const std::string& m) { return m == util::iso_8859_1_to_utf8(path.substr(11)); }), tagList[tag].end());
+						tagListReverse[path.substr(11)].erase(std::remove_if(tagListReverse[path.substr(11)].begin(), tagListReverse[path.substr(11)].end(), [&](const std::string& t) { return t == tag; }), tagListReverse[path.substr(11)].end());
+						saveTagList();
+					}
+					
 				}
 
 				ImGui::EndPopup();
 			}
 			else if (ImGui::IsItemHovered())
 			{
-				ImGui::SetTooltip("map:prontera\nnature\ncookies");
+				ImGui::SetTooltip(util::combine(tagListReverse[path.substr(11)], "\n").c_str());
 				it->second->rotation++;
 				it->second->draw();
 			}

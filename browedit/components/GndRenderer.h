@@ -121,4 +121,5 @@ public:
 	bool viewLightmapColor = true;
 	bool viewColors = true;
 	bool viewLighting = true;
+	bool smoothColors = false;
 };

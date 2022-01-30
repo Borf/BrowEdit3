@@ -1,5 +1,5 @@
-#include "FileIO.h"
 #include "Util.h"
+#include "FileIO.h"
 
 #include <iostream>
 #include <fstream>

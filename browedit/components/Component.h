@@ -1,4 +1,5 @@
 #pragma once
+#include <json.hpp>
 
 class Node;
 
@@ -10,3 +11,4 @@ public:
 	{
 	}
 };
+void to_json(nlohmann::json& j, const Component& c);
