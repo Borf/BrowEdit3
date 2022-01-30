@@ -76,6 +76,8 @@ public:
 	void render(BrowEdit* browEdit);
 	void postRenderObjectMode(BrowEdit* browEdit);
 
+	glm::vec3 getSelectionCenter();
+
 
 	bool viewLightmapShadow = true;
 	bool viewLightmapColor = true;

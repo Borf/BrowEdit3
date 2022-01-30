@@ -202,10 +202,6 @@ void BrowEdit::run()
 							for (auto n : newNodes) //TODO: should I do this?
 								delete n.first;
 							newNodes.clear();
-/*							glm::vec3 center(0, 0, 0);
-							for (auto n : activeMapView->map->selectedNodes)
-								center += n->getComponent<RswObject>()->position;
-							center /= activeMapView->map->selectedNodes.size();*/
 
 							for (auto n : clipboard)
 							{
@@ -485,7 +481,7 @@ void BrowEdit::menuBar()
 					auto rswObject = n->getComponent<RswObject>();
 					if (!rswObject)
 						return;
-					auto distance = 999999999;
+					auto distance = 999999999.0f;
 					for (auto nn : selection)
 						if (glm::distance(nn->getComponent<RswObject>()->position, rswObject->position) < distance)
 							distance = glm::distance(nn->getComponent<RswObject>()->position, rswObject->position);
@@ -535,7 +531,16 @@ void BrowEdit::menuBar()
 		}
 		if (ImGui::MenuItem("Flip horizontally"))
 		{
-
+			glm::vec3 center = activeMapView->getSelectionCenter();
+			for (auto n : activeMapView->map->selectedNodes)
+			{
+				auto rswObject = n->getComponent<RswObject>();
+				auto rsmRenderer = n->getComponent<RsmRenderer>();
+				if (rswObject)
+					rswObject->position.x = center.x - (rswObject->position.x - center.x);
+				if (rsmRenderer)
+					rsmRenderer->setDirty();
+			}
 		}
 		if (ImGui::MenuItem("Flip vertically"))
 		{

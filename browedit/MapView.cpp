@@ -242,12 +242,18 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 
 				groupCenter = glm::vec3(0.0f);
 				originalValues.clear();
+				int count = 0;
 				for (auto n : map->selectedNodes)
 				{
-					originalValues[n] = PosRotScale(n->getComponent<RswObject>());
-					groupCenter += n->getComponent<RswObject>()->position;
+					auto rswObject = n->getComponent<RswObject>();
+					if (rswObject)
+					{
+						originalValues[n] = PosRotScale(rswObject);
+						groupCenter += n->getComponent<RswObject>()->position;
+						count++;
+					}
 				}
-				groupCenter /= map->selectedNodes.size();
+				groupCenter /= count;
 				canSelectObject = false;
 			}
 			else if (gadget.axisReleased)
@@ -337,9 +343,8 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 							if (snap && !gridLocal)
 								originalAngle = glm::radians(glm::round(glm::degrees(originalAngle) / (float)gridSize) * (float)gridSize);
 
-							n.first->getComponent<RswObject>()->position.x = dist * glm::cos(originalAngle);
-							n.first->getComponent<RswObject>()->position.z = dist * glm::sin(originalAngle);
-
+							n.first->getComponent<RswObject>()->position.x = groupCenter.x + dist * glm::cos(originalAngle);
+							n.first->getComponent<RswObject>()->position.z = groupCenter.z + dist * glm::sin(originalAngle);
 						}
 						if (snap && !gridLocal)
 							n.first->getComponent<RswObject>()->rotation[gadget.selectedAxisIndex()] = glm::round(n.first->getComponent<RswObject>()->rotation[gadget.selectedAxisIndex()] / (float)gridSize) * (float)gridSize;
@@ -385,4 +390,20 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 	//glEnd();
 
 	fbo->unbind();
+}
+
+
+
+glm::vec3 MapView::getSelectionCenter()
+{
+	int count = 0;
+	glm::vec3 center;
+	for (auto n : map->selectedNodes)
+		if (n->getComponent<RswObject>())
+		{
+			center += n->getComponent<RswObject>()->position;
+			count++;
+		}
+	center /= count;
+	return center;
 }
