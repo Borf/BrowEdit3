@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <iostream>
 
 namespace util
 {
@@ -35,9 +36,9 @@ namespace util
 			resmap[str] = r;
 			return r;
 		}
-		void unload(T*)
+		static void unload(T*)
 		{
-			//TODO:
+			std::cout << "Unloading resource, but not really :P this is a memory leak, and will be fixed later" << std::endl;
 		}
 	};
 

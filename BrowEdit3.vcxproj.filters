@@ -41,6 +41,9 @@
     <Filter Include="browedit\actions">
       <UniqueIdentifier>{c40c6d15-bf7f-46c1-8a00-7f81367cfa99}</UniqueIdentifier>
     </Filter>
+    <Filter Include="browedit\windows">
+      <UniqueIdentifier>{74f0a97e-2bd6-4a0a-8c84-ce3a6ea8c82b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="lib\imgui\imgui.cpp">
@@ -217,6 +220,27 @@
     </ClCompile>
     <ClCompile Include="browedit\actions\DeleteObjectAction.cpp">
       <Filter>browedit\actions</Filter>
+    </ClCompile>
+    <ClCompile Include="browedit\windows\UndoWindow.cpp">
+      <Filter>browedit\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="browedit\windows\ObjectPropertiesWindow.cpp">
+      <Filter>browedit\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="browedit\windows\ObjectSelectWindow.cpp">
+      <Filter>browedit\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="browedit\windows\ObjectTreeWindow.cpp">
+      <Filter>browedit\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="browedit\windows\OpenMapWindow.cpp">
+      <Filter>browedit\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="browedit\windows\Toolbar.cpp">
+      <Filter>browedit\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="browedit\windows\MenuBar.cpp">
+      <Filter>browedit\windows</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

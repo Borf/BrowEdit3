@@ -157,6 +157,7 @@ class RswModelCollider : public Collider
 	Rsm* rsm = nullptr;
 	RsmRenderer* rsmRenderer = nullptr;
 public:
+	void begin();
 	std::vector<glm::vec3> getCollisions(const math::Ray& ray);
 	std::vector<glm::vec3> getCollisions(Rsm::Mesh* mesh, const math::Ray& ray, const glm::mat4 &matrix);
 };

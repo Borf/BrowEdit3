@@ -8,10 +8,10 @@
 
 namespace gl
 {
-	Texture::Texture(const std::string& fileName, bool flip) : fileName(fileName)
+	Texture::Texture(const std::string& fileName, bool flipSelection) : fileName(fileName)
 	{
 		int comp;
-		stbi_set_flip_vertically_on_load(flip);
+		stbi_set_flip_vertically_on_load(flipSelection);
 
 		std::istream* is = util::FileIO::open(fileName);
 		if (!is)

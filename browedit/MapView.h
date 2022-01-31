@@ -70,13 +70,13 @@ public:
 	MapView(const Map& other) = delete;
 	MapView() = delete;
 
+	void toolbar(BrowEdit* browEdit);
 
 	void update(BrowEdit* browEdit, const ImVec2& size);
 	void updateObjectMode(BrowEdit* browEdit);
 	void render(BrowEdit* browEdit);
 	void postRenderObjectMode(BrowEdit* browEdit);
 
-	glm::vec3 getSelectionCenter();
 
 
 	bool viewLightmapShadow = true;
@@ -84,4 +84,7 @@ public:
 	bool viewColors = true;
 	bool viewLighting = true;
 	bool smoothColors = true;
+
+
+	void focusSelection();
 };

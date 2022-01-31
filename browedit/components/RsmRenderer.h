@@ -101,6 +101,7 @@ public:
 	bool matrixCached = false;
 public:
 	RsmRenderer();
+	void begin();
 	virtual void render();
 	void initMeshInfo(Rsm::Mesh* mesh, const glm::mat4& matrix = glm::mat4(1.0f));
 	void renderMesh(Rsm::Mesh* mesh, const glm::mat4& matrix);

@@ -21,6 +21,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include <imgui.h>
+#include <imgui_internal.h>
 #include <GLFW/glfw3.h>
 
 #include <iostream>
@@ -35,6 +36,74 @@ MapView::MapView(Map* map, const std::string &viewName) : map(map), viewName(vie
 	{
 		cameraCenter.x = gnd->width * 5.0f;
 		cameraCenter.y = gnd->height * 5.0f;
+	}
+}
+
+void MapView::toolbar(BrowEdit* browEdit)
+{
+	browEdit->toolBarToggleButton("ortho", 11, &ortho, "Toggle between ortho and perspective camera");
+	ImGui::SameLine();
+
+	browEdit->toolBarToggleButton("viewLightMapShadow", 0, &viewLightmapShadow, "Toggle shadowmap");
+	ImGui::SameLine();
+	browEdit->toolBarToggleButton("viewLightmapColor", 1, &viewLightmapColor, "Toggle colormap");
+	ImGui::SameLine();
+	browEdit->toolBarToggleButton("viewColors", 2, &viewColors, "Toggle tile colors");
+	ImGui::SameLine();
+	browEdit->toolBarToggleButton("viewLighting", 3, &viewLighting, "Toggle lighting");
+	ImGui::SameLine();
+	browEdit->toolBarToggleButton("smoothColors", 2, &smoothColors, "Smooth colormap");
+	ImGui::SameLine();
+	ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+	ImGui::SameLine();
+
+	bool snapping = snapToGrid;
+	if (ImGui::GetIO().KeyShift)
+		snapping = !snapping;
+	bool ret = browEdit->toolBarToggleButton("snapToGrid", 7, snapping, "Snap to grid");
+	if (!ImGui::GetIO().KeyShift && ret)
+		snapToGrid = !snapToGrid;
+	if (snapping || snapToGrid)
+	{
+		ImGui::SameLine();
+		ImGui::SetNextItemWidth(50);
+		ImGui::DragFloat("##gridSize", &gridSize, 1.0f, 0.1f, 100.0f, "%.2f", ImGuiSliderFlags_Logarithmic);
+		if (ImGui::IsItemHovered())
+			ImGui::SetTooltip("Grid size. Doubleclick or ctrl+click to type a number");
+		ImGui::SameLine();
+		ImGui::Checkbox("##gridLocal", &gridLocal);
+		if (ImGui::IsItemHovered())
+			ImGui::SetTooltip("Local or Global grid. Either makes the movement rounded off, or the final position");
+	}
+
+	ImGui::SameLine();
+	ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+	ImGui::SameLine();
+
+	if (browEdit->editMode == BrowEdit::EditMode::Object)
+	{
+		if (browEdit->toolBarToggleButton("translate", 8, gadget.mode == Gadget::Mode::Translate, "Move"))
+			gadget.mode = Gadget::Mode::Translate;
+		ImGui::SameLine();
+		if (browEdit->toolBarToggleButton("rotate", 9, gadget.mode == Gadget::Mode::Rotate, "Rotate"))
+			gadget.mode = Gadget::Mode::Rotate;
+		ImGui::SameLine();
+		if (browEdit->toolBarToggleButton("scale", 10, gadget.mode == Gadget::Mode::Scale, "Scale"))
+			gadget.mode = Gadget::Mode::Scale;
+
+
+		if (gadget.mode == Gadget::Mode::Rotate || gadget.mode == Gadget::Mode::Scale)
+		{
+			ImGui::SameLine();
+			if (browEdit->toolBarToggleButton("localglobal", pivotPoint == MapView::PivotPoint::Local ? 12 : 13, false, "Changes the pivot point for rotations"))
+			{
+				if (pivotPoint == MapView::PivotPoint::Local)
+					pivotPoint = MapView::PivotPoint::GroupCenter;
+				else
+					pivotPoint = MapView::PivotPoint::Local;
+			}
+
+		}
 	}
 }
 
@@ -394,16 +463,8 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 
 
 
-glm::vec3 MapView::getSelectionCenter()
+void MapView::focusSelection()
 {
-	int count = 0;
-	glm::vec3 center;
-	for (auto n : map->selectedNodes)
-		if (n->getComponent<RswObject>())
-		{
-			center += n->getComponent<RswObject>()->position;
-			count++;
-		}
-	center /= count;
-	return center;
+
 }
+

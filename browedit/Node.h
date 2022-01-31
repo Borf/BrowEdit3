@@ -39,6 +39,25 @@ public:
 		}
 		return nullptr;
 	}
+	template<class T>
+	std::vector<T*> removeComponent()
+	{
+		std::vector<T*> ret;
+		for(auto it = components.begin(); it != components.end(); )
+		{
+			T* cc = dynamic_cast<T*>(*it);
+			if (cc)
+			{
+				ret.push_back(cc);
+				it = components.erase(it);
+			}
+			else
+				it++;
+		}
+		return ret;
+	}
+
+
 	void traverse(const std::function<void(Node*)>& callBack);
 
 	//TODO: move this somewhere else?

@@ -598,6 +598,12 @@ void RswLight::buildImGui(BrowEdit* browEdit)
 
 
 
+void RswModelCollider::begin()
+{
+	rswModel = nullptr;
+	rsm = nullptr;
+	rsmRenderer = nullptr;
+}
 
 std::vector<glm::vec3> RswModelCollider::getCollisions(const math::Ray& ray)
 {

@@ -24,5 +24,15 @@ public:
 	void undo(BrowEdit* browEdit);
 	void redo(BrowEdit* browEdit);
 
+	glm::vec3 getSelectionCenter();
 
+	void selectSameModels(BrowEdit* browEdit);
+	void selectAll(BrowEdit* browEdit);
+	void selectInvert(BrowEdit* browEdit);
+	void selectNear(float nearDistance, BrowEdit* browEdit);
+
+	void copySelection();
+	void pasteSelection(BrowEdit* browEdit);
+	void deleteSelection(BrowEdit* browEdit);
+	void flipSelection(int axis, BrowEdit* browEdit);
 };

@@ -10,7 +10,24 @@
 RsmRenderer::RsmRenderer()
 {
 	renderContext = RsmRenderContext::getInstance();
+	begin();
+}
+
+void RsmRenderer::begin()
+{
 	selected = false;
+	rsm = nullptr;
+	rswModel = nullptr;
+	rswObject = nullptr;
+	gnd = nullptr;
+	rsw = nullptr;
+	matrixCached = false;
+	for (auto t : textures)
+		util::ResourceManager<gl::Texture>::unload(t);
+	textures.clear();
+	for (auto ri : renderInfo)
+		delete ri.vbo;
+	renderInfo.clear();
 }
 
 void RsmRenderer::render()

@@ -40,6 +40,13 @@
     <ClCompile Include="browedit\NodeRenderer.cpp" />
     <ClCompile Include="browedit\util\FileIO.cpp" />
     <ClCompile Include="browedit\util\Util.cpp" />
+    <ClCompile Include="browedit\windows\MenuBar.cpp" />
+    <ClCompile Include="browedit\windows\ObjectPropertiesWindow.cpp" />
+    <ClCompile Include="browedit\windows\ObjectSelectWindow.cpp" />
+    <ClCompile Include="browedit\windows\ObjectTreeWindow.cpp" />
+    <ClCompile Include="browedit\windows\OpenMapWindow.cpp" />
+    <ClCompile Include="browedit\windows\Toolbar.cpp" />
+    <ClCompile Include="browedit\windows\UndoWindow.cpp" />
     <ClCompile Include="lib\glad\src\glad.c" />
     <ClCompile Include="lib\grflib\grf.c" />
     <ClCompile Include="lib\grflib\grfcrypt.c" />
