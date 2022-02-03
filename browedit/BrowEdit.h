@@ -38,10 +38,13 @@ class BrowEdit
 
 		bool undoVisible = true;
 
+		bool helpWindowVisible = false;
 
 		bool objectWindowVisible = true; //TODO: load from config
 
 		bool demoWindowVisible = false;
+
+		//progress
 		bool progressWindowVisible = false;
 		std::string progressWindowText = "Progress....";
 		float progressWindowProgres = .25;
@@ -97,6 +100,7 @@ public:
 	void showObjectProperties();
 	void showUndoWindow();
 	void showObjectWindow();
+	void showHelpWindow();
 
 
 	bool toolBarToggleButton(const std::string_view &name, int icon, bool* status, const char* tooltip);

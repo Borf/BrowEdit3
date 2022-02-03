@@ -242,6 +242,9 @@
     <ClCompile Include="browedit\windows\MenuBar.cpp">
       <Filter>browedit\windows</Filter>
     </ClCompile>
+    <ClCompile Include="browedit\windows\HelpWindow.cpp">
+      <Filter>browedit\windows</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="lib\imgui\imgui.h">
@@ -426,6 +429,9 @@
     </ClInclude>
     <ClInclude Include="browedit\actions\DeleteObjectAction.h">
       <Filter>browedit\actions</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\imgui\imgui_markdown.h">
+      <Filter>lib\imgui</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

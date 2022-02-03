@@ -153,6 +153,8 @@ void BrowEdit::run()
 			showObjectWindow();
 		if (windowData.demoWindowVisible)
 			ImGui::ShowDemoWindow(&windowData.demoWindowVisible);
+		if (windowData.helpWindowVisible)
+			showHelpWindow();
 
 		if (windowData.progressWindowVisible)
 		{

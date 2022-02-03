@@ -40,6 +40,7 @@
     <ClCompile Include="browedit\NodeRenderer.cpp" />
     <ClCompile Include="browedit\util\FileIO.cpp" />
     <ClCompile Include="browedit\util\Util.cpp" />
+    <ClCompile Include="browedit\windows\HelpWindow.cpp" />
     <ClCompile Include="browedit\windows\MenuBar.cpp" />
     <ClCompile Include="browedit\windows\ObjectPropertiesWindow.cpp" />
     <ClCompile Include="browedit\windows\ObjectSelectWindow.cpp" />
@@ -124,6 +125,7 @@
     <ClInclude Include="lib\imgui\imconfig.h" />
     <ClInclude Include="lib\imgui\imgui.h" />
     <ClInclude Include="lib\imgui\imgui_internal.h" />
+    <ClInclude Include="lib\imgui\imgui_markdown.h" />
     <ClInclude Include="lib\imgui\imstb_rectpack.h" />
     <ClInclude Include="lib\imgui\imstb_textedit.h" />
     <ClInclude Include="lib\imgui\imstb_truetype.h" />
@@ -201,7 +203,7 @@
       <PreprocessorDefinitions>NOMINMAX;GRF_STATIC;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>lib/imgui/;lib/glfw-3.3.6/include;lib/grflib;lib/zlib;lib/sfl;lib/glm;lib/glad/include;$(SolutionDir);lib/bugtrap</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
     </ClCompile>
     <Link>
@@ -226,7 +228,7 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>lib/imgui/;lib/glfw-3.3.6/include;lib/grflib;lib/zlib;lib/sfl;lib/glm;lib/glad/include;$(SolutionDir);lib/bugtrap</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
       <BrowseInformation>true</BrowseInformation>
     </ClCompile>
     <Link>

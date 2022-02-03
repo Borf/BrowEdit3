@@ -108,6 +108,10 @@ void BrowEdit::menuBar()
 		}
 		ImGui::EndMenu();
 	}
+
+	if (ImGui::MenuItem("Help"))
+		windowData.helpWindowVisible = true;
+
 	ImGui::EndMainMenuBar();
 }
 
