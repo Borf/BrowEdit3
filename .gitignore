@@ -3,7 +3,9 @@ game
 config.json
 BrowEdit3.zip
 BrowEdit3.exe
+BrowEdit3.pdb
 .vs
 *.rar
 BrowEdit3.vcxproj.user
 out
+bugreports

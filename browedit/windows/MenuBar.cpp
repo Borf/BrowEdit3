@@ -14,15 +14,9 @@ void BrowEdit::menuBar()
 	{
 		ImGui::MenuItem("New", "Ctrl+n");
 		if (ImGui::MenuItem("Open", "Ctrl+o"))
-		{
-			windowData.openFiles = util::FileIO::listFiles("data");
-			windowData.openFiles.erase(std::remove_if(windowData.openFiles.begin(), windowData.openFiles.end(), [](const std::string& map) { return map.substr(map.size() - 4, 4) != ".rsw"; }), windowData.openFiles.end());
-			windowData.openVisible = true;
-		}
+			showOpenWindow();
 		if (activeMapView && ImGui::MenuItem(("Save " + activeMapView->map->name).c_str(), "Ctrl+s"))
-		{
 			saveMap(activeMapView->map);
-		}
 		if (ImGui::MenuItem("Quit"))
 			glfwSetWindowShouldClose(window, 1);
 		ImGui::EndMenu();

@@ -231,7 +231,15 @@ namespace util
 
 	bool FileIO::DirSource::exists(const std::string& fileName)
 	{
-		return std::filesystem::exists(directory + fileName); //TODO
+		std::error_code ec;
+		bool exists = std::filesystem::exists(directory + fileName, ec); //TODO
+		if (ec)
+		{
+			std::cerr << "Exception when checking if file exists: " <<fileName<< std::endl;
+			std::cerr << ec << std::endl;
+			std::cerr << ec.message() << std::endl;
+		}
+		return exists;
 	}
 
 	void FileIO::DirSource::listFiles(const std::string& directory, std::vector<std::string>& files)

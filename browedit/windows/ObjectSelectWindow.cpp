@@ -210,7 +210,7 @@ void BrowEdit::showObjectWindow()
 					if (ImGui::Button("Add to map"))
 						std::cout << "Just click the thing" << std::endl;
 					ImGui::SameLine();
-					if (ImGui::Button("Replace selected models"))
+					if (ImGui::Button("Replace selected models") && activeMapView)
 					{
 						for (auto n : activeMapView->map->selectedNodes)
 						{
@@ -226,7 +226,7 @@ void BrowEdit::showObjectWindow()
 						}
 					}
 					ImGui::SameLine();
-					if (ImGui::Button("Select this model"))
+					if (ImGui::Button("Select this model") && activeMapView)
 					{
 						bool first = true;
 						auto ga = new GroupAction();

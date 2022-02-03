@@ -1,6 +1,7 @@
 #include <Windows.h> //to remove ugly warning :(
 #include "BrowEdit.h"
 #include <GLFW/glfw3.h>
+#include <BugTrap.h>
 
 #include <iostream>
 #include <fstream>
@@ -28,8 +29,25 @@ extern "C" __declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;
 extern "C" __declspec(dllexport) DWORD AmdPowerXpressRequestHighPerformance = 0x00000001;
 #endif
 
+#ifndef _DEBUG
+#pragma comment(lib, "BugTrap-x64.lib") // Link to ANSI DLL
+#endif
+
+static void SetupExceptionHandler()
+{
+	BT_InstallSehFilter();
+	BT_SetAppName("Browedit");
+	BT_SetFlags(BTF_DETAILEDMODE | BTF_SCREENCAPTURE);
+	BT_SetSupportURL("https://discord.gg/bQaj5dKtbV");
+}
+
+
 int main()
 {
+#ifndef _DEBUG
+	SetupExceptionHandler();
+#endif
+
 	std::cout << R"V0G0N(                                  ';cllllllc:,                                  
                                 ,lodddddddddddoc,                               
                                cdddddddddddoddddo:                              
@@ -127,8 +145,8 @@ void BrowEdit::run()
 
 		if (windowData.configVisible)
 			windowData.configVisible = !config.showWindow(this);
-		if (windowData.openVisible)
-			openWindow();
+
+		openWindow();
 		if (windowData.undoVisible)
 			showUndoWindow();
 		if (windowData.objectWindowVisible)
@@ -191,6 +209,8 @@ void BrowEdit::run()
 					activeMapView->map->redo(this);
 				if (ImGui::IsKeyPressed('S') && activeMapView)
 					saveMap(activeMapView->map);
+				if (ImGui::IsKeyPressed('O'))
+					showOpenWindow();
 			}
 			if (editMode == EditMode::Object && activeMapView)
 			{
@@ -200,9 +220,12 @@ void BrowEdit::run()
 					activeMapView->focusSelection();
 
 				if (ImGui::GetIO().KeyCtrl)
-					activeMapView->map->copySelection();
-				if(ImGui::IsKeyPressed('V'))
-					activeMapView->map->pasteSelection(this);
+				{
+					if (ImGui::IsKeyPressed('C'))
+						activeMapView->map->copySelection();
+					if (ImGui::IsKeyPressed('V'))
+						activeMapView->map->pasteSelection(this);
+				}
 			}
 		}
 

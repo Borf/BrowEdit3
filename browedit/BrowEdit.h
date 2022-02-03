@@ -30,7 +30,8 @@ class BrowEdit
 	{
 		bool configVisible = false;
 
-		bool openVisible = false;
+		//bool openVisible = false;
+		bool openJustVisible = false;
 		std::vector<std::string> openFiles;
 		std::size_t openFileSelected = 0;
 		std::string openFilter;
@@ -89,6 +90,7 @@ public:
 	void menuBar();
 	void toolbar();
 
+	void showOpenWindow();
 	void openWindow();
 	void showObjectTree();
 	void buildObjectTree(Node* node, Map* map);
