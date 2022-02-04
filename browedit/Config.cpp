@@ -200,7 +200,7 @@ bool Config::showWindow(BrowEdit* browEdit)
 			{
 				json configJson = *this;
 				std::ofstream configFile("config.json");
-				configFile << configJson;
+				configFile << std::setw(2)<<configJson;
 				close = true;
 
 				setupFileIO();

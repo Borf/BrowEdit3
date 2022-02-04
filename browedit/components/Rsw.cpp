@@ -298,6 +298,9 @@ void Rsw::save(const std::string& fileName)
 	});
 
 
+	std::ofstream extraFile((fileName + ".extra.json").c_str(), std::ios_base::out | std::ios_base::binary);
+	extraFile << std::setw(2)<<extraProperties;
+
 	//TODO: write gnd/gat
 	std::cout << "Done saving" << std::endl;
 }
