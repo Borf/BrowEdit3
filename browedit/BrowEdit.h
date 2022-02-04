@@ -15,12 +15,10 @@ namespace gl
 	class Texture;
 }
 
+#define MISSING 63
 
 class BrowEdit
 {
-	const float toolbarHeight = 40.0f;
-	
-
 	gl::Texture* backgroundTexture;
 	gl::Texture* iconsTexture;
 	std::vector<Map*> maps;
@@ -55,9 +53,11 @@ public:
 	ImFont* font;
 	enum class EditMode
 	{
+		Height,
 		Texture,
 		Object,
-		Wall
+		Wall,
+		Gat,
 	} editMode = EditMode::Object;
 
 	std::map<std::string, std::vector<std::string>> tagList; // tag -> [ file ], utf8
@@ -103,6 +103,6 @@ public:
 	void showHelpWindow();
 
 
-	bool toolBarToggleButton(const std::string_view &name, int icon, bool* status, const char* tooltip);
-	bool toolBarToggleButton(const std::string_view &name, int icon, bool status, const char* tooltip);
+	bool toolBarToggleButton(const std::string_view &name, int icon, bool* status, const char* tooltip, ImVec4 tint = ImVec4(1,1,1,-1));
+	bool toolBarToggleButton(const std::string_view &name, int icon, bool status, const char* tooltip, ImVec4 tint = ImVec4(1, 1, 1, -1));
 };

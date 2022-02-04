@@ -190,6 +190,8 @@ bool Config::showWindow(BrowEdit* browEdit)
 		ImGui::ColorEdit3("Background Color", glm::value_ptr(backgroundColor));
 		ImGui::DragFloat2 ("Object Window thumbnail size", &thumbnailSize.x, 1, 32, 512);
 		ImGui::Checkbox("Close object window when adding a model", &closeObjectWindowOnAdd);
+		ImGui::DragFloat("Toolbar Button Size", &toolbarButtonSize, 1, 1, 100);
+		ImGui::ColorEdit4("Toolbar Button Tint", &toolbarButtonTint.x);
 
 
 		if (ImGui::Button("Save"))

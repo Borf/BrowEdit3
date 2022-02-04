@@ -46,6 +46,8 @@ namespace util
 			}
 			else {
 				++it;
+				if (it == str.cend())
+					break;
 				uint8_t ch2 = *it;
 				strOut.push_back((ch & ~0xc0) << 6 | (ch2 & ~0x80));
 			}
@@ -188,4 +190,22 @@ namespace glm
 		j[1].get_to(v.y);
 		j[2].get_to(v.z);
 	}
+}
+
+
+void to_json(nlohmann::json& j, const ImVec4& v) {
+	j = nlohmann::json{ v.x, v.y, v.z, v.w };
+}
+void from_json(const nlohmann::json& j, ImVec4& v) {
+	j[0].get_to(v.x);
+	j[1].get_to(v.y);
+	j[2].get_to(v.z);
+	j[2].get_to(v.w);
+}
+void to_json(nlohmann::json& j, const ImVec2& v) {
+	j = nlohmann::json{ v.x, v.y };
+}
+void from_json(const nlohmann::json& j, ImVec2& v) {
+	j[0].get_to(v.x);
+	j[1].get_to(v.y);
 }

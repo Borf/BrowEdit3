@@ -33,3 +33,8 @@ namespace glm
 	void to_json(nlohmann::json& j, const glm::vec3& v);
 	void from_json(const nlohmann::json& j, glm::vec3& v);
 }
+
+void to_json(nlohmann::json& j, const ImVec4& v);
+void from_json(const nlohmann::json& j, ImVec4& v);
+void to_json(nlohmann::json& j, const ImVec2& v);
+void from_json(const nlohmann::json& j, ImVec2& v);

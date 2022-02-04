@@ -13,12 +13,14 @@
   <ItemGroup>
     <ClCompile Include="browedit\actions\DeleteObjectAction.cpp" />
     <ClCompile Include="browedit\actions\GroupAction.cpp" />
+    <ClCompile Include="browedit\actions\ModelChangeAction.cpp" />
     <ClCompile Include="browedit\actions\NewObjectAction.cpp" />
     <ClCompile Include="browedit\actions\ObjectChangeAction.cpp" />
     <ClCompile Include="browedit\actions\SelectAction.cpp" />
     <ClCompile Include="browedit\BrowEdit.cpp" />
     <ClCompile Include="browedit\BrowEdit.glfw.cpp" />
     <ClCompile Include="browedit\BrowEdit.imgui.cpp" />
+    <ClCompile Include="browedit\components\BillboardRenderer.cpp" />
     <ClCompile Include="browedit\components\Component.cpp" />
     <ClCompile Include="browedit\components\Gnd.cpp" />
     <ClCompile Include="browedit\components\GndRenderer.cpp" />
@@ -83,10 +85,12 @@
     <ClInclude Include="browedit\actions\Action.h" />
     <ClInclude Include="browedit\actions\DeleteObjectAction.h" />
     <ClInclude Include="browedit\actions\GroupAction.h" />
+    <ClInclude Include="browedit\actions\ModelChangeAction.h" />
     <ClInclude Include="browedit\actions\NewObjectAction.h" />
     <ClInclude Include="browedit\actions\ObjectChangeAction.h" />
     <ClInclude Include="browedit\actions\SelectAction.h" />
     <ClInclude Include="browedit\BrowEdit.h" />
+    <ClInclude Include="browedit\components\BillboardRenderer.h" />
     <ClInclude Include="browedit\components\Collider.h" />
     <ClInclude Include="browedit\components\Component.h" />
     <ClInclude Include="browedit\components\Gnd.h" />
@@ -150,6 +154,8 @@
     <Image Include="icon.ico" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="data\shaders\billboard.fs" />
+    <None Include="data\shaders\billboard.vs" />
     <None Include="data\shaders\gnd.fs" />
     <None Include="data\shaders\gnd.vs" />
     <None Include="data\shaders\rsm.fs" />

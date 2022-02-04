@@ -9,8 +9,10 @@
 #include <browedit/util/Util.h>
 #include <browedit/util/Tree.h>
 #include <browedit/math/AABB.h>
+#include <json.hpp>
 
 class RsmRenderer;
+class Gnd;
 
 class Rsw : public Component, public ImguiProps
 {
@@ -105,11 +107,24 @@ class RswLight : public Component, public ImguiProps
 public:
 	float todo[10];
 	glm::vec3		color;
-	float			todo2;
+	float			range;
+	// custom properties!!!!!!!!!
+	enum class Type
+	{
+		Point,
+		Spot
+	} type = Type::Point;
+	bool givesShadow = true;
+	float cutOff = 0;
+	float intensity = 20;
+	float realRange();
+	// end custom properties
 
 	RswLight() {}
 	void load(std::istream* is);
+	void loadExtra(nlohmann::json data);
 	void save(std::ofstream& file);
+	nlohmann::json saveExtra();
 	void buildImGui(BrowEdit* browEdit) override;
 };
 
@@ -160,4 +175,17 @@ public:
 	void begin();
 	std::vector<glm::vec3> getCollisions(const math::Ray& ray);
 	std::vector<glm::vec3> getCollisions(Rsm::Mesh* mesh, const math::Ray& ray, const glm::mat4 &matrix);
+};
+
+
+class CubeCollider : public Collider
+{
+	math::AABB aabb;
+	RswObject* rswObject = nullptr;
+	Gnd* gnd = nullptr;
+public:
+	void begin();
+	CubeCollider(int size);
+	std::vector<glm::vec3> getCollisions(const math::Ray& ray);
+	std::vector<glm::vec3> getCollisions(Rsm::Mesh* mesh, const math::Ray& ray, const glm::mat4& matrix);
 };

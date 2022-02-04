@@ -41,18 +41,18 @@ MapView::MapView(Map* map, const std::string &viewName) : map(map), viewName(vie
 
 void MapView::toolbar(BrowEdit* browEdit)
 {
-	browEdit->toolBarToggleButton("ortho", 11, &ortho, "Toggle between ortho and perspective camera");
+	browEdit->toolBarToggleButton("ortho", ortho ? 24 : 25, &ortho, "Toggle between ortho and perspective camera");
 	ImGui::SameLine();
 
-	browEdit->toolBarToggleButton("viewLightMapShadow", 0, &viewLightmapShadow, "Toggle shadowmap");
+	browEdit->toolBarToggleButton("viewLightMapShadow", 8, &viewLightmapShadow, "Toggle shadowmap");
 	ImGui::SameLine();
-	browEdit->toolBarToggleButton("viewLightmapColor", 1, &viewLightmapColor, "Toggle colormap");
+	browEdit->toolBarToggleButton("viewLightmapColor", 9, &viewLightmapColor, "Toggle colormap");
 	ImGui::SameLine();
-	browEdit->toolBarToggleButton("viewColors", 2, &viewColors, "Toggle tile colors");
+	browEdit->toolBarToggleButton("viewColors", 11, &viewColors, "Toggle tile colors");
 	ImGui::SameLine();
-	browEdit->toolBarToggleButton("viewLighting", 3, &viewLighting, "Toggle lighting");
+	browEdit->toolBarToggleButton("viewLighting", 12, &viewLighting, "Toggle lighting");
 	ImGui::SameLine();
-	browEdit->toolBarToggleButton("smoothColors", 2, &smoothColors, "Smooth colormap");
+	browEdit->toolBarToggleButton("smoothColors", 63, &smoothColors, "Smooth colormap");
 	ImGui::SameLine();
 	ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 	ImGui::SameLine();
@@ -60,7 +60,7 @@ void MapView::toolbar(BrowEdit* browEdit)
 	bool snapping = snapToGrid;
 	if (ImGui::GetIO().KeyShift)
 		snapping = !snapping;
-	bool ret = browEdit->toolBarToggleButton("snapToGrid", 7, snapping, "Snap to grid");
+	bool ret = browEdit->toolBarToggleButton("snapToGrid", 14, snapping, "Snap to grid");
 	if (!ImGui::GetIO().KeyShift && ret)
 		snapToGrid = !snapToGrid;
 	if (snapping || snapToGrid)
@@ -76,26 +76,26 @@ void MapView::toolbar(BrowEdit* browEdit)
 			ImGui::SetTooltip("Local or Global grid. Either makes the movement rounded off, or the final position");
 	}
 
-	ImGui::SameLine();
-	ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
-	ImGui::SameLine();
 
 	if (browEdit->editMode == BrowEdit::EditMode::Object)
 	{
-		if (browEdit->toolBarToggleButton("translate", 8, gadget.mode == Gadget::Mode::Translate, "Move"))
+		ImGui::SameLine();
+		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+		ImGui::SameLine();
+		if (browEdit->toolBarToggleButton("translate", 20, gadget.mode == Gadget::Mode::Translate, "Move"))
 			gadget.mode = Gadget::Mode::Translate;
 		ImGui::SameLine();
-		if (browEdit->toolBarToggleButton("rotate", 9, gadget.mode == Gadget::Mode::Rotate, "Rotate"))
+		if (browEdit->toolBarToggleButton("rotate", 21, gadget.mode == Gadget::Mode::Rotate, "Rotate"))
 			gadget.mode = Gadget::Mode::Rotate;
 		ImGui::SameLine();
-		if (browEdit->toolBarToggleButton("scale", 10, gadget.mode == Gadget::Mode::Scale, "Scale"))
+		if (browEdit->toolBarToggleButton("scale", 22, gadget.mode == Gadget::Mode::Scale, "Scale"))
 			gadget.mode = Gadget::Mode::Scale;
 
 
 		if (gadget.mode == Gadget::Mode::Rotate || gadget.mode == Gadget::Mode::Scale)
 		{
 			ImGui::SameLine();
-			if (browEdit->toolBarToggleButton("localglobal", pivotPoint == MapView::PivotPoint::Local ? 12 : 13, false, "Changes the pivot point for rotations"))
+			if (browEdit->toolBarToggleButton("localglobal", pivotPoint == MapView::PivotPoint::Local ? MISSING : MISSING, false, "Changes the pivot point for rotations"))
 			{
 				if (pivotPoint == MapView::PivotPoint::Local)
 					pivotPoint = MapView::PivotPoint::GroupCenter;
@@ -178,7 +178,7 @@ void MapView::update(BrowEdit* browEdit, const ImVec2 &size)
 		(ImGui::IsMouseDown(1) ? 0x02 : 0x00) |
 		(ImGui::IsMouseDown(2) ? 0x04 : 0x00);
 
-	if (ImGui::IsWindowHovered())
+	if (hovered)
 	{
 		if (browEdit->editMode == BrowEdit::EditMode::Object)
 			updateObjectMode(browEdit);
@@ -223,7 +223,7 @@ void MapView::updateObjectMode(BrowEdit* browEdit)
 
 void MapView::postRenderObjectMode(BrowEdit* browEdit)
 {
-	if (!ImGui::IsWindowHovered())
+	if (!hovered)
 		return;
 	glUseProgram(0);
 	glMatrixMode(GL_PROJECTION);

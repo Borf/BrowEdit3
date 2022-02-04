@@ -149,7 +149,7 @@ void BrowEdit::run()
 		openWindow();
 		if (windowData.undoVisible)
 			showUndoWindow();
-		if (windowData.objectWindowVisible)
+		if (windowData.objectWindowVisible && editMode == EditMode::Object)
 			showObjectWindow();
 		if (windowData.demoWindowVisible)
 			ImGui::ShowDemoWindow(&windowData.demoWindowVisible);
@@ -252,7 +252,9 @@ void BrowEdit::configBegin()
 		try {
 			config = configJson.get<Config>();
 		}
-		catch (...) {}
+		catch (...) {
+			std::cerr << "Config file invalid, resetting config" << std::endl;
+		}
 		if (config.isValid() != "")
 		{
 			windowData.configVisible = true;
@@ -272,14 +274,20 @@ void BrowEdit::configBegin()
 	}
 }
 
-bool BrowEdit::toolBarToggleButton(const std::string_view &name, int icon, bool* status, const char* tooltip)
+
+ImVec4 enabledColor(144 / 255.0f, 193 / 255.0f, 249 / 255.0f, 0.5f);
+ImVec4 disabledColor(72 / 255.0f, 96 / 255.0f, 125 / 255.0f, 0.5f);
+
+bool BrowEdit::toolBarToggleButton(const std::string_view &name, int icon, bool* status, const char* tooltip, ImVec4 tint)
 {
-	ImVec2 v1((1.0f / iconsTexture->width) * (36 * (icon%4) + 1.5f), //TODO: remove these hardcoded numbers
-		(1.0f / iconsTexture->height) * (36 * (icon/4) + 1.5f));
-	ImVec2 v2(v1.x + (1.0f / iconsTexture->width) * 34, v1.y + (1.0f / iconsTexture->height) * 34);
+	if (tint.w < 0)
+		tint = config.toolbarButtonTint;
+	ImVec2 v1((1.0f / iconsTexture->width) * (100 * (icon % 8)), //TODO: remove these hardcoded numbers
+		(1.0f / iconsTexture->height) * (100 * (icon / 8)));
+	ImVec2 v2(v1.x + (1.0f / iconsTexture->width) * 100, v1.y + (1.0f / iconsTexture->height) * 100);
 	ImGui::PushID(name.data());
 
-	bool clicked = ImGui::ImageButton((ImTextureID)(long long)iconsTexture->id, ImVec2(32, 32), v1, v2, 0, ImVec4(144 / 255.0f, 193 / 255.0f, 249 / 255.0f, *status ? 1.0f : 0.0f));
+	bool clicked = ImGui::ImageButton((ImTextureID)(long long)iconsTexture->id, ImVec2(config.toolbarButtonSize, config.toolbarButtonSize), v1, v2, 0, *status ? enabledColor : disabledColor, tint);
 	if (ImGui::IsItemHovered())
 		ImGui::SetTooltip(tooltip);
 	if(clicked)
@@ -288,14 +296,16 @@ bool BrowEdit::toolBarToggleButton(const std::string_view &name, int icon, bool*
 	return clicked;
 }
 
-bool BrowEdit::toolBarToggleButton(const std::string_view& name, int icon, bool status, const char* tooltip)
+bool BrowEdit::toolBarToggleButton(const std::string_view& name, int icon, bool status, const char* tooltip, ImVec4 tint)
 {
-	ImVec2 v1((1.0f / iconsTexture->width) * (36 * (icon % 4) + 1.5f), //TODO: remove these hardcoded numbers
-		(1.0f / iconsTexture->height) * (36 * (icon / 4) + 1.5f));
-	ImVec2 v2(v1.x + (1.0f / iconsTexture->width) * 34, v1.y + (1.0f / iconsTexture->height) * 34);
+	if (tint.w < 0)
+		tint = config.toolbarButtonTint;
+	ImVec2 v1((1.0f / iconsTexture->width) * (100 * (icon % 8)), //TODO: remove these hardcoded numbers
+		(1.0f / iconsTexture->height) * (100 * (icon / 8)));
+	ImVec2 v2(v1.x + (1.0f / iconsTexture->width) * 100, v1.y + (1.0f / iconsTexture->height) * 100);
 	ImGui::PushID(name.data());
 
-	bool clicked = ImGui::ImageButton((ImTextureID)(long long)iconsTexture->id, ImVec2(32, 32), v1, v2, 0, ImVec4(144 / 255.0f, 193 / 255.0f, 249 / 255.0f, status ? 1.0f : 0.0f));
+	bool clicked = ImGui::ImageButton((ImTextureID)(long long)iconsTexture->id, ImVec2(config.toolbarButtonSize, config.toolbarButtonSize), v1, v2, 0, status ? enabledColor : disabledColor, tint);
 	if (ImGui::IsItemHovered())
 		ImGui::SetTooltip(tooltip);
 	ImGui::PopID();
@@ -320,8 +330,9 @@ void BrowEdit::showMapWindow(MapView& mapView)
 		}
 
 		ImTextureID id = (ImTextureID)((long long)mapView.fbo->texid[0]); //TODO: remove cast for 32bit
-		ImGui::Image(id, size, ImVec2(0,1), ImVec2(1,0));
-		mapView.hovered = ImGui::IsItemHovered();
+		ImGui::ImageButton(id, size, ImVec2(0,1), ImVec2(1,0), 0, ImVec4(0,0,0,1), ImVec4(1,1,1,1));
+		//ImGui::Image(id, size, ImVec2(0, 1), ImVec2(1, 0));
+		mapView.hovered = ImGui::IsItemHovered() || ImGui::IsItemClicked();
 	}
 	if (ImGui::IsWindowFocused())
 	{

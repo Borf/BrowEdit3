@@ -20,7 +20,7 @@ varying vec3 normal;
 void main()
 {
 	vec4 color = texture2D(s_texture, texCoord);
-	if(color.a < 0.5)
+	if(color.a < 0.1)
 		discard;
 
 	if(shadeType == 1 || shadeType == 2 && lightToggle)

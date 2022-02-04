@@ -2,6 +2,7 @@
 #include <browedit/Map.h>
 #include <browedit/Node.h>
 #include <browedit/components/RsmRenderer.h>
+#include <browedit/components/BillboardRenderer.h>
 
 SelectAction::SelectAction(Map* map, Node* node, bool keepSelection, bool deSelect)
 {
@@ -23,6 +24,9 @@ void SelectAction::perform(Map* map, BrowEdit* browEdit)
 		auto rsmRenderer = node->getComponent<RsmRenderer>();
 		if (rsmRenderer)
 			rsmRenderer->selected = false;
+		auto billboardRenderer = node->getComponent<BillboardRenderer>();
+		if (billboardRenderer)
+			billboardRenderer->selected = false;
 	}
 	map->selectedNodes = newSelection;
 	for (auto node : map->selectedNodes)
@@ -30,6 +34,9 @@ void SelectAction::perform(Map* map, BrowEdit* browEdit)
 		auto rsmRenderer = node->getComponent<RsmRenderer>();
 		if (rsmRenderer)
 			rsmRenderer->selected = true;
+		auto billboardRenderer = node->getComponent<BillboardRenderer>();
+		if (billboardRenderer)
+			billboardRenderer->selected = true;
 	}
 }
 
@@ -40,6 +47,9 @@ void SelectAction::undo(Map* map, BrowEdit* browEdit)
 		auto rsmRenderer = node->getComponent<RsmRenderer>();
 		if (rsmRenderer)
 			rsmRenderer->selected = false;
+		auto billboardRenderer = node->getComponent<BillboardRenderer>();
+		if (billboardRenderer)
+			billboardRenderer->selected = false;
 	}
 	map->selectedNodes = oldSelection;
 	for (auto node : map->selectedNodes)
@@ -47,6 +57,9 @@ void SelectAction::undo(Map* map, BrowEdit* browEdit)
 		auto rsmRenderer = node->getComponent<RsmRenderer>();
 		if (rsmRenderer)
 			rsmRenderer->selected = true;
+		auto billboardRenderer = node->getComponent<BillboardRenderer>();
+		if (billboardRenderer)
+			billboardRenderer->selected = true;
 	}
 }
 

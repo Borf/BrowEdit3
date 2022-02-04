@@ -4,6 +4,7 @@
 #include <json.hpp>
 #include <vector>
 #include <imgui.h>
+#include <browedit/util/Util.h>
 class BrowEdit;
 
 class Config
@@ -17,6 +18,10 @@ public:
 	glm::vec3 backgroundColor = glm::vec3(0.1f, 0.1f, 0.15f);
 	ImVec2 thumbnailSize = ImVec2(200, 200);
 	bool closeObjectWindowOnAdd = false;
+	float toolbarButtonSize = 32;
+	ImVec4 toolbarButtonTint = ImVec4(1, 1, 1, 1);
+
+	float toolbarHeight() { return toolbarButtonSize + 8; }
 
 	std::string isValid() const;
 	bool showWindow(BrowEdit* browEdit);
@@ -28,7 +33,9 @@ public:
 		fov,
 		cameraMouseSpeed,
 		style,
-		backgroundColor.r, backgroundColor.g, backgroundColor.b,
-		thumbnailSize.x, thumbnailSize.y,
-		closeObjectWindowOnAdd);
+		backgroundColor,
+		thumbnailSize,
+		closeObjectWindowOnAdd,
+		toolbarButtonSize,
+		toolbarButtonTint);
 };

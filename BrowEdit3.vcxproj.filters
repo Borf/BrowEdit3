@@ -245,6 +245,12 @@
     <ClCompile Include="browedit\windows\HelpWindow.cpp">
       <Filter>browedit\windows</Filter>
     </ClCompile>
+    <ClCompile Include="browedit\actions\ModelChangeAction.cpp">
+      <Filter>browedit\actions</Filter>
+    </ClCompile>
+    <ClCompile Include="browedit\components\BillboardRenderer.cpp">
+      <Filter>browedit\components</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="lib\imgui\imgui.h">
@@ -433,6 +439,12 @@
     <ClInclude Include="lib\imgui\imgui_markdown.h">
       <Filter>lib\imgui</Filter>
     </ClInclude>
+    <ClInclude Include="browedit\actions\ModelChangeAction.h">
+      <Filter>browedit\actions</Filter>
+    </ClInclude>
+    <ClInclude Include="browedit\components\BillboardRenderer.h">
+      <Filter>browedit\components</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="BrowEdit3.rc">
@@ -461,6 +473,12 @@
       <Filter>data\shaders</Filter>
     </None>
     <None Include="data\shaders\rsm.vs">
+      <Filter>data\shaders</Filter>
+    </None>
+    <None Include="data\shaders\billboard.fs">
+      <Filter>data\shaders</Filter>
+    </None>
+    <None Include="data\shaders\billboard.vs">
       <Filter>data\shaders</Filter>
     </None>
   </ItemGroup>

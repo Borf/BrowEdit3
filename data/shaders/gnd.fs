@@ -26,6 +26,9 @@ void main()
 	vec4 texture = vec4(1,1,1,1);
 	
 	texture *= texture2D(s_texture, texCoord);
+	if(texture.a < 0.1)
+		discard;
+
 	texture *= max(texture2D(s_tileColor, tileColorCoord), colorToggle);
 	texture *= max(texture2D(s_lighting, texCoord2).a, shadowMapToggle);
 

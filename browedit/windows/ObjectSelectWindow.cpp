@@ -12,11 +12,13 @@
 #include <browedit/util/ResourceManager.h>
 #include <browedit/actions/GroupAction.h>
 #include <browedit/actions/SelectAction.h>
+#include <browedit/actions/ModelChangeAction.h>
 
 #include <misc/cpp/imgui_stdlib.h>
 #include <thread>
 #include <iostream>
 
+//TODO: this file is a mess
 
 class ObjectWindowObject
 {
@@ -212,18 +214,10 @@ void BrowEdit::showObjectWindow()
 					ImGui::SameLine();
 					if (ImGui::Button("Replace selected models") && activeMapView)
 					{
+						auto ga = new GroupAction();
 						for (auto n : activeMapView->map->selectedNodes)
-						{
-							//TODO: add undo
-							auto rswModel = n->getComponent<RswModel>();
-							rswModel->fileName = util::iso_8859_1_to_utf8(path);
-							auto removed = n->removeComponent<Rsm>();
-							for (auto r : removed)
-								util::ResourceManager<Rsm>::unload(r);
-							n->addComponent(util::ResourceManager<Rsm>::load(path));
-							n->getComponent<RsmRenderer>()->begin();
-							n->getComponent<RswModelCollider>()->begin();
-						}
+							ga->addAction(new ModelChangeAction(n, path));
+						activeMapView->map->doAction(ga, this);
 					}
 					ImGui::SameLine();
 					if (ImGui::Button("Select this model") && activeMapView)

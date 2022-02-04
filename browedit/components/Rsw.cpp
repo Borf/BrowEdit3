@@ -4,6 +4,7 @@
 #include "Rsm.h"
 #include "GndRenderer.h"
 #include "RsmRenderer.h"
+#include "BillboardRenderer.h"
 
 #include <imgui.h>
 #include <misc/cpp/imgui_stdlib.h>
@@ -25,8 +26,20 @@ Rsw::Rsw()
 void Rsw::load(const std::string& fileName, bool loadModels, bool loadGnd)
 {
 	auto file = util::FileIO::open(fileName);
+	if (!file)
+	{
+		std::cerr << "Could not open file " << fileName << std::endl;
+		return;
+	}
 	quadtree = nullptr;
 
+	nlohmann::json extraProperties;
+	auto extra = util::FileIO::open(fileName + ".extra.json");
+	if (extra)
+	{
+		*extra>> extraProperties;
+		delete extra;
+	}
 
 	char header[4];
 	file->read(header, 4);
@@ -102,15 +115,22 @@ void Rsw::load(const std::string& fileName, bool loadModels, bool loadGnd)
 		file->read(reinterpret_cast<char*>(glm::value_ptr(light.ambient)), sizeof(float) * 3);
 	}
 	if (version >= 0x107)
-		file->read(reinterpret_cast<char*>(&light.intensity), sizeof(float));
-
+		file->read(reinterpret_cast<char*>(&light.intensity), sizeof(float)); //shadowOpacity;
+	
+	if (extraProperties.find("mapproperties") != extraProperties.end())
+	{
+		if (extraProperties["mapproperties"].find("lightmapAmbient") != extraProperties["mapproperties"].end())
+			light.lightmapAmbient = extraProperties["mapproperties"]["lightmapAmbient"];
+		if (extraProperties["mapproperties"].find("lightmapIntensity") != extraProperties["mapproperties"].end())
+			light.lightmapIntensity = extraProperties["mapproperties"]["lightmapIntensity"];
+	}
 
 	if (version >= 0x106)
 	{
-		file->read(reinterpret_cast<char*>(&unknown[0]), sizeof(int));
-		file->read(reinterpret_cast<char*>(&unknown[1]), sizeof(int));
-		file->read(reinterpret_cast<char*>(&unknown[2]), sizeof(int));
-		file->read(reinterpret_cast<char*>(&unknown[3]), sizeof(int));
+		file->read(reinterpret_cast<char*>(&unknown[0]), sizeof(int)); //m_groundTop
+		file->read(reinterpret_cast<char*>(&unknown[1]), sizeof(int)); //m_groundBottom
+		file->read(reinterpret_cast<char*>(&unknown[2]), sizeof(int)); //m_groundLeft
+		file->read(reinterpret_cast<char*>(&unknown[3]), sizeof(int)); //m_groundRight
 	}
 	else
 	{
@@ -148,6 +168,13 @@ void Rsw::load(const std::string& fileName, bool loadModels, bool loadGnd)
 		object->addComponent(rswObject);
 		rswObject->load(file, version, loadModels);
 
+		if (object->getComponent<RswLight>() && extraProperties.is_object() && extraProperties["light"].is_array())
+		{
+			for (const json& l : extraProperties["light"])
+				if (l["id"] == i)
+					object->getComponent<RswLight>()->loadExtra(l);
+		}
+
 		std::string objPath = object->name;
 		if (objPath.find("\\") != std::string::npos)
 			objPath = objPath.substr(0, objPath.rfind("\\"));
@@ -177,6 +204,7 @@ void Rsw::save(const std::string& fileName)
 {
 	std::cout << "Saving to " << fileName << std::endl;
 	std::ofstream file(fileName.c_str(), std::ios_base::out | std::ios_base::binary);
+	nlohmann::json extraProperties;
 
 	char buf[80];
 
@@ -228,6 +256,11 @@ void Rsw::save(const std::string& fileName)
 	if (version >= 0x107)
 		file.write(reinterpret_cast<char*>(&light.intensity), sizeof(float));
 
+	extraProperties["light"] = json();
+	extraProperties["mapproperties"]["lightmapAmbient"] = light.lightmapAmbient;
+	extraProperties["mapproperties"]["lightmapIntensity"] = light.lightmapIntensity;
+
+
 	if (version >= 0x106)
 	{
 		file.write(reinterpret_cast<char*>(&unknown[0]), sizeof(int));
@@ -244,8 +277,17 @@ void Rsw::save(const std::string& fileName)
 	});
 	int objectCount = (int)objects.size();
 	file.write(reinterpret_cast<char*>(&objectCount), sizeof(int));
-	for (auto n : objects)
-		n->getComponent<RswObject>()->save(file, version);
+	for (auto i = 0; i < objects.size(); i++)
+	{
+		objects[i]->getComponent<RswObject>()->save(file, version);
+		auto light = objects[i]->getComponent<RswLight>();
+		if (light)
+		{
+			auto j = light->saveExtra();
+			j["id"] = i;
+			extraProperties["light"].push_back(j);
+		}
+	}
 
 	quadtree->foreach([&file](QuadTreeNode* n)
 	{
@@ -278,16 +320,22 @@ void RswObject::load(std::istream* is, int version, bool loadModel)
 	{
 		node->addComponent(new RswLight());
 		node->getComponent<RswLight>()->load(is);
+		node->addComponent(new BillboardRenderer("data\\light.png", "data\\light_selected.png"));
+		node->addComponent(new CubeCollider(5));
 	}
 	else if (type == 3)
 	{
 		node->addComponent(new RswSound());
 		node->getComponent<RswSound>()->load(is, version);
+		node->addComponent(new BillboardRenderer("data\\sound.png", "data\\sound_selected.png"));
+		node->addComponent(new CubeCollider(5));
 	}
 	else if (type == 4)
 	{
 		node->addComponent(new RswEffect());
 		node->getComponent<RswEffect>()->load(is);
+		node->addComponent(new BillboardRenderer("data\\effect.png", "data\\effect_selected.png"));
+		node->addComponent(new CubeCollider(5));
 	}
 	else
 		std::cerr << "RSW: Error loading object in RSW, objectType=" << type << std::endl;
@@ -379,8 +427,22 @@ void RswLight::load(std::istream* is)
 	is->read(reinterpret_cast<char*>(todo), sizeof(float) * 10);
 
 	is->read(reinterpret_cast<char*>(glm::value_ptr(color)), sizeof(float) * 3);
-	is->read(reinterpret_cast<char*>(&todo2), sizeof(float));
+	is->read(reinterpret_cast<char*>(&range), sizeof(float));
 }
+
+
+void RswLight::loadExtra(nlohmann::json data)
+{
+	if (data["type"] == "point")
+		type = Type::Point;
+	if (data["type"] == "spot")
+		type = Type::Spot;
+	givesShadow = data["shadow"];
+	cutOff = data["cutoff"];
+	intensity = data["intensity"];
+}
+
+
 void RswLight::save(std::ofstream &file)
 {
 	auto rswObject = node->getComponent<RswObject>();
@@ -392,8 +454,21 @@ void RswLight::save(std::ofstream &file)
 	file.write(reinterpret_cast<char*>(todo), sizeof(float) * 10);
 
 	file.write(reinterpret_cast<char*>(glm::value_ptr(color)), sizeof(float) * 3);
-	file.write(reinterpret_cast<char*>(&todo2), sizeof(float));
+	file.write(reinterpret_cast<char*>(&range), sizeof(float));
 	//todo: custom light properties
+}
+
+nlohmann::json RswLight::saveExtra()
+{
+	json ret;
+	if (type == Type::Point)
+		ret["type"] = "point";
+	else
+		ret["type"] = "spot";
+	ret["shadow"] = givesShadow;
+	ret["cutoff"] = cutOff;
+	ret["intensity"] = intensity;
+	return ret;
 }
 
 void RswSound::load(std::istream* is, int version)
@@ -421,6 +496,20 @@ void RswSound::load(std::istream* is, int version)
 	if (version >= 0x0200)
 		is->read(reinterpret_cast<char*>(&cycle), sizeof(float));
 }
+
+
+float RswLight::realRange()
+{
+	//formula from http://ogldev.atspace.co.uk/www/tutorial36/tutorial36.html and https://imdoingitwrong.wordpress.com/2011/01/31/light-attenuation/
+	float kC = 1;
+	float kL = 2.0f / range;
+	float kQ = 1.0f / (range * range);
+	float maxChannel = glm::max(glm::max(color.r, color.g), color.b);
+	float adjustedRange = (-kL + glm::sqrt(kL * kL - 4 * kQ * (kC - 128.0f * maxChannel * intensity))) / (2 * kQ);
+	return adjustedRange;
+}
+
+
 
 void RswSound::save(std::ofstream &file, int version)
 {
@@ -511,6 +600,29 @@ Rsw::QuadTreeNode::~QuadTreeNode()
 void Rsw::buildImGui(BrowEdit* browEdit)
 {
 	ImGui::Text("RSW");
+	char versionStr[10];
+	sprintf_s(versionStr, 10, "%04x", version);
+	if (ImGui::BeginCombo("Version", versionStr))
+	{
+		if (ImGui::Selectable("0103", version == 0x0103))
+			version = 0x0103;
+		if (ImGui::Selectable("0104", version == 0x0104))
+			version = 0x0104;
+		if (ImGui::Selectable("0108", version == 0x0108))
+			version = 0x0108;
+		if (ImGui::Selectable("0109", version == 0x0109))
+			version = 0x0109;
+		if (ImGui::Selectable("0201", version == 0x0201))
+			version = 0x0201;
+		if (ImGui::Selectable("0202", version == 0x0202))
+			version = 0x0202;
+		if (ImGui::Selectable("0203", version == 0x0203))
+			version = 0x0203;
+		if (ImGui::Selectable("0204", version == 0x0204))
+			version = 0x0204;
+		ImGui::EndCombo();
+	}
+
 	if (ImGui::CollapsingHeader("Lighting", ImGuiTreeNodeFlags_DefaultOpen))
 	{
 		util::DragInt(browEdit, browEdit->activeMapView->map, node, "Longitude", &light.longitude, 1, 0, 360);
@@ -593,7 +705,7 @@ void RswLight::buildImGui(BrowEdit* browEdit)
 	}
 
 	util::ColorEdit3(browEdit, browEdit->activeMapView->map, node, "Color", &color);
-	util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Todo2", &todo2, 0.01f, -100.0f, 100.0f);
+	util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Range", &range, 0.01f, -100.0f, 100.0f);
 }
 
 
@@ -649,5 +761,41 @@ std::vector<glm::vec3> RswModelCollider::getCollisions(Rsm::Mesh* mesh, const ma
 		if (!other.empty())
 			ret.insert(ret.end(), other.begin(), other.end());
 	}
+	return ret;
+}
+
+
+
+
+CubeCollider::CubeCollider(int size) : aabb(glm::vec3(-size,-size,-size), glm::vec3(size,size,size))
+{
+	begin();
+}
+
+void CubeCollider::begin()
+{
+	rswObject = nullptr;
+	gnd = nullptr;
+}
+
+std::vector<glm::vec3> CubeCollider::getCollisions(const math::Ray& ray)
+{
+	if (!rswObject)
+		rswObject = node->getComponent<RswObject>();
+	if (!gnd)
+		gnd = node->root->getComponent<Gnd>();
+	if (!rswObject || !gnd)
+		return std::vector<glm::vec3>();
+
+	glm::mat4 modelMatrix(1.0f);
+	modelMatrix = glm::scale(modelMatrix, glm::vec3(1, 1, -1));
+	modelMatrix = glm::translate(modelMatrix, glm::vec3(5 * gnd->width + rswObject->position.x, -rswObject->position.y, -10 - 5 * gnd->height + rswObject->position.z));
+
+	modelMatrix = glm::inverse(modelMatrix);
+	math::Ray newRay(ray * modelMatrix);
+
+	std::vector<glm::vec3> ret;
+	if (aabb.hasRayCollision(newRay, 0, 100000))
+		ret.push_back(glm::vec3(5 * gnd->width + rswObject->position.x, -rswObject->position.y, -10 - 5 * gnd->height + rswObject->position.z));
 	return ret;
 }

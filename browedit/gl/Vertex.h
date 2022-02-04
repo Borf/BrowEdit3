@@ -56,6 +56,7 @@
 	template<int N>
 	class Vert
 	{
+	public:
 		float data[N];
 	protected:
 		void set(const glm::vec2& v, int& pos)
@@ -76,7 +77,7 @@
 		return glm::vec##size();\
 	}
 
-	class VertexP3T2T2T2N3 : Vert<3+2+2+2+3>
+	class VertexP3T2T2T2N3 : public Vert<3+2+2+2+3>
 	{
 	public:
 		VertexP3T2T2T2N3(const glm::vec3& pos, const glm::vec2& t1, const glm::vec2& t2, const glm::vec2& t3, const glm::vec3& n)
@@ -91,7 +92,7 @@
 		ATTR(p, 3, 0);
 	};
 
-	class VertexP3T2N3 : Vert<3 + 2 + 3>
+	class VertexP3T2N3 : public Vert<3 + 2 + 3>
 	{
 	public:
 		VertexP3T2N3(const glm::vec3& pos, const glm::vec2& t, const glm::vec3& n)
@@ -107,6 +108,19 @@
 			set(pos, index);
 			index += 2;
 			set(n, index);
+		}
+		ATTR(p, 3, 0);
+	};
+
+
+	class VertexP3T2 : public Vert<3 + 2>
+	{
+	public:
+		VertexP3T2(const glm::vec3& pos, const glm::vec2& t)
+		{
+			int index = 0;
+			set(pos, index);
+			set(t, index);
 		}
 		ATTR(p, 3, 0);
 	};

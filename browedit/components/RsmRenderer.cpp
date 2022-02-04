@@ -144,19 +144,18 @@ void RsmRenderer::initMeshInfo(Rsm::Mesh* mesh, const glm::mat4 &matrix)
 	renderInfo[mesh->index].matrixSub = matrix * mesh->matrix1;
 	
 	for (size_t i = 0; i < mesh->children.size(); i++)
-		initMeshInfo(mesh->children[i], renderInfo[mesh->children[i]->index].matrixSub);
+		initMeshInfo(mesh->children[i], renderInfo[mesh->index].matrixSub);
 }
 
 void RsmRenderer::renderMesh(Rsm::Mesh* mesh, const glm::mat4& matrix)
 {
-	//TODO: animation
-	//if (rsmMesh && (!rsmMesh->frames.empty() || rsmMesh->matrixDirty))
-	//{
-	//	rsmMesh->matrixDirty = false;
-	//	rsmMesh->calcMatrix1();
-	//	rsmMesh->renderer->matrix = matrix * rsmMesh->matrix1 * rsmMesh->matrix2;
-	//	rsmMesh->renderer->matrixSub = matrix * rsmMesh->matrix1;
-	//}
+	if (mesh && (!mesh->frames.empty() || mesh->matrixDirty))
+	{
+		mesh->matrixDirty = false;
+		mesh->calcMatrix1((int)floor(glfwGetTime() * 1000));
+		renderInfo[mesh->index].matrix = matrix * mesh->matrix1 * mesh->matrix2;
+		renderInfo[mesh->index].matrixSub = matrix * mesh->matrix1;
+	}
 
 	auto shader = dynamic_cast<RsmRenderContext*>(renderContext)->shader;
 
@@ -176,9 +175,8 @@ void RsmRenderer::renderMesh(Rsm::Mesh* mesh, const glm::mat4& matrix)
 		}
 	}
 
-
 	for (size_t i = 0; i < mesh->children.size(); i++)
-		renderMesh(mesh->children[i], renderInfo[mesh->children[i]->index].matrixSub);
+		renderMesh(mesh->children[i], renderInfo[mesh->index].matrixSub);
 }
 
 

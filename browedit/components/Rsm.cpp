@@ -226,7 +226,6 @@ Rsm::Mesh::Mesh(Rsm* model, std::istream* rsmFile)
 		rsmFile->read(reinterpret_cast<char*>(&y), sizeof(float));
 		rsmFile->read(reinterpret_cast<char*>(&z), sizeof(float));
 		rsmFile->read(reinterpret_cast<char*>(&w), sizeof(float));
-
 		frames[i]->quaternion = glm::quat(w, x, y, z);
 	}
 }
