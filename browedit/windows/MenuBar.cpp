@@ -99,6 +99,13 @@ void BrowEdit::menuBar()
 								}
 								ImGui::EndMenu();
 							}
+							if (ImGui::MenuItem("Export shadowmap"))
+								;
+							if (ImGui::MenuItem("Export colormap"))
+								;
+							if (ImGui::MenuItem("Calculate lightmaps"))
+								;
+
 							ImGui::EndMenu();
 						}
 					}
