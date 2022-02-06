@@ -95,14 +95,19 @@ public:
 	std::string fileName; //UTF8
 	std::string objectName; //not sure what this is, UTF8
 
+	//custom properties
+	bool givesShadow = true;
+
 	RswModel() : aabb(glm::vec3(), glm::vec3()) {}
 	RswModel(const std::string &fileName) : aabb(glm::vec3(), glm::vec3()), animType(0), animSpeed(1), blockType(0), fileName(fileName) {}
 	RswModel(RswModel* other);
 	void load(std::istream* is, int version, bool loadModel);
+	void loadExtra(nlohmann::json data);
 	void save(std::ofstream &file, int version);
+	nlohmann::json saveExtra();
 	void buildImGui(BrowEdit* browEdit) override;
 
-	NLOHMANN_DEFINE_TYPE_INTRUSIVE(RswModel, animType, animSpeed, blockType, fileName);
+	NLOHMANN_DEFINE_TYPE_INTRUSIVE(RswModel, animType, animSpeed, blockType, fileName, givesShadow);
 };
 
 
@@ -119,9 +124,12 @@ public:
 		Spot
 	} type = Type::Point;
 	bool givesShadow = true;
+	bool affectShadowMap = true;
+	bool affectLightmap = true;
 	float cutOff = 0;
 	float intensity = 20;
 	float realRange();
+	
 	// end custom properties
 
 	RswLight() {}
@@ -130,7 +138,7 @@ public:
 	void save(std::ofstream& file);
 	nlohmann::json saveExtra();
 	void buildImGui(BrowEdit* browEdit) override;
-	NLOHMANN_DEFINE_TYPE_INTRUSIVE(RswLight, color, range, givesShadow, cutOff, cutOff, intensity);
+	NLOHMANN_DEFINE_TYPE_INTRUSIVE(RswLight, color, range, givesShadow, cutOff, cutOff, intensity, affectShadowMap, affectLightmap);
 };
 
 class RswEffect : public Component, public ImguiProps

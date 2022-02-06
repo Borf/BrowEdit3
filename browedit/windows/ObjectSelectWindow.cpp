@@ -239,7 +239,9 @@ void BrowEdit::showObjectWindow()
 						path.find("data\\lights") != std::string::npos)
 					{
 						auto l = new RswLight();
-						from_json(util::FileIO::getJson(path), *l);
+						try {
+							from_json(util::FileIO::getJson(path), *l);
+						}catch(...) { std::cerr<<"Error loading json"<<std::endl; }
 						Node* newNode = new Node(file);
 						newNode->addComponent(new RswObject());
 						newNode->addComponent(l);

@@ -161,7 +161,7 @@ std::pair<glm::vec3, int> Lightmapper::calculateLight(const glm::vec3& groundPos
 			if (collides)
 				return;
 			auto rswModel = n->getComponent<RswModel>();
-			if (rswModel)
+			if (rswModel && rswModel->givesShadow)
 			{
 				auto collider = n->getComponent<RswModelCollider>();
 				if (collider->getCollisions(ray).size() > 0)
@@ -187,34 +187,43 @@ std::pair<glm::vec3, int> Lightmapper::calculateLight(const glm::vec3& groundPos
 
 		glm::vec3 lightPosition(5 * gnd->width + rswObject->position.x, -rswObject->position.y, 5 * gnd->height - rswObject->position.z);
 
-		float distance = glm::distance(lightPosition, groundPos);
-		if (distance > rswLight->realRange())
-			continue;
-
-		float d = glm::max(distance - rswLight->range, 0.0f);
-		float denom = d / rswLight->range + 1;
-		float attenuation = rswLight->intensity / (denom * denom);
-		if (rswLight->cutOff > 0)
-			attenuation = glm::max(0.0f, (attenuation - rswLight->cutOff) / (1 - rswLight->cutOff));
-
-
-		math::Ray ray(groundPos, glm::normalize(lightPosition - groundPos));
-		bool collides = false;
-		map->rootNode->traverse([&](Node* n) {
-			if (collides)
-				return;
-			auto rswModel = n->getComponent<RswModel>();
-			if (rswModel)
-			{
-				auto collider = n->getComponent<RswModelCollider>();
-				if (collider->getCollisions(ray).size() > 0)
-					collides = true;
-			}
-		});
-		if (!collides)
+		glm::vec3 lightDirection2 = glm::normalize(lightPosition - groundPos);
+		if (rsw->light.lightmapIntensity > 0 && glm::dot(normal, lightDirection2) > 0)
 		{
-			intensity += (int)attenuation;
-			colorInc += (attenuation / 255.0f) * rswLight->color;
+			float distance = glm::distance(lightPosition, groundPos);
+			if (distance > rswLight->realRange())
+				continue;
+
+			float d = glm::max(distance - rswLight->range, 0.0f);
+			float denom = d / rswLight->range + 1;
+			float attenuation = rswLight->intensity / (denom * denom);
+			if (rswLight->cutOff > 0)
+				attenuation = glm::max(0.0f, (attenuation - rswLight->cutOff) / (1 - rswLight->cutOff));
+
+
+			math::Ray ray(groundPos, glm::normalize(lightPosition - groundPos));
+			bool collides = false;
+			if (rswLight->givesShadow)
+			{
+				map->rootNode->traverse([&](Node* n) {
+					if (collides)
+						return;
+					auto rswModel = n->getComponent<RswModel>();
+					if (rswModel)
+					{
+						auto collider = n->getComponent<RswModelCollider>();
+						if (collider->getCollisions(ray).size() > 0)
+							collides = true;
+					}
+					});
+			}
+			if (!collides)
+			{
+				if (rswLight->affectShadowMap)
+					intensity += (int)attenuation;
+				if (rswLight->affectLightmap)
+					colorInc += (attenuation / 255.0f) * rswLight->color;
+			}
 		}
 	}
 	return std::pair<glm::vec3, int>(colorInc, intensity);

@@ -27,6 +27,11 @@
     <ClCompile Include="browedit\components\Rsm.cpp" />
     <ClCompile Include="browedit\components\RsmRenderer.cpp" />
     <ClCompile Include="browedit\components\Rsw.cpp" />
+    <ClCompile Include="browedit\components\Rsw.Effect.cpp" />
+    <ClCompile Include="browedit\components\Rsw.Light.cpp" />
+    <ClCompile Include="browedit\components\Rsw.Model.cpp" />
+    <ClCompile Include="browedit\components\Rsw.Object.cpp" />
+    <ClCompile Include="browedit\components\Rsw.Sound.cpp" />
     <ClCompile Include="browedit\Config.cpp" />
     <ClCompile Include="browedit\Gadget.cpp" />
     <ClCompile Include="browedit\gl\FBO.cpp" />

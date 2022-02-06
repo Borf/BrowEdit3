@@ -257,6 +257,21 @@
     <ClCompile Include="browedit\windows\LightmapSettingsWindow.cpp">
       <Filter>browedit\windows</Filter>
     </ClCompile>
+    <ClCompile Include="browedit\components\Rsw.Effect.cpp">
+      <Filter>browedit\components</Filter>
+    </ClCompile>
+    <ClCompile Include="browedit\components\Rsw.Light.cpp">
+      <Filter>browedit\components</Filter>
+    </ClCompile>
+    <ClCompile Include="browedit\components\Rsw.Model.cpp">
+      <Filter>browedit\components</Filter>
+    </ClCompile>
+    <ClCompile Include="browedit\components\Rsw.Sound.cpp">
+      <Filter>browedit\components</Filter>
+    </ClCompile>
+    <ClCompile Include="browedit\components\Rsw.Object.cpp">
+      <Filter>browedit\components</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="lib\imgui\imgui.h">

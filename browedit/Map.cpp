@@ -208,7 +208,10 @@ void Map::pasteSelection(BrowEdit* browEdit)
 {
 	try
 	{
-		json clipboard = json::parse(ImGui::GetClipboardText());
+		std::string cb = ImGui::GetClipboardText();
+		if (cb == "")
+			return;
+		json clipboard = json::parse(cb);
 		if (clipboard.size() > 0)
 		{
 			for (auto n : browEdit->newNodes) //TODO: should I do this?

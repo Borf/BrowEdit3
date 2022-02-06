@@ -168,6 +168,12 @@ void Rsw::load(const std::string& fileName, bool loadModels, bool loadGnd)
 				if (l["id"] == i)
 					object->getComponent<RswLight>()->loadExtra(l);
 		}
+		if (object->getComponent<RswModel>() && extraProperties.is_object() && extraProperties["model"].is_array())
+		{
+			for (const json& l : extraProperties["model"])
+				if (l["id"] == i)
+					object->getComponent<RswModel>()->loadExtra(l);
+		}
 
 		std::string objPath = object->name;
 		if (objPath.find("\\") != std::string::npos)
@@ -279,6 +285,13 @@ void Rsw::save(const std::string& fileName)
 			j["id"] = i;
 			extraProperties["light"].push_back(j);
 		}
+		auto model = objects[i]->getComponent<RswModel>();
+		if (model)
+		{
+			auto j = model->saveExtra();
+			j["id"] = i;
+			extraProperties["model"].push_back(j);
+		}
 	}
 	quadtree->foreach([&file](QuadTreeNode* n)
 	{
@@ -296,260 +309,8 @@ void Rsw::save(const std::string& fileName)
 }
 
 
-RswObject::RswObject(RswObject* other) : position(other->position), rotation(other->rotation), scale(other->scale)
-{
-}
-
-void RswObject::load(std::istream* is, int version, bool loadModel)
-{
-	int type;
-	is->read(reinterpret_cast<char*>(&type), sizeof(int));
-	if (type == 1)
-	{
-		node->addComponent(new RswModel());
-		node->addComponent(new RswModelCollider());
-		node->getComponent<RswModel>()->load(is, version, loadModel);
-	}
-	else if (type == 2)
-	{
-		node->addComponent(new RswLight());
-		node->getComponent<RswLight>()->load(is);
-		node->addComponent(new BillboardRenderer("data\\light.png", "data\\light_selected.png"));
-		node->addComponent(new CubeCollider(5));
-	}
-	else if (type == 3)
-	{
-		node->addComponent(new RswSound());
-		node->getComponent<RswSound>()->load(is, version);
-		node->addComponent(new BillboardRenderer("data\\sound.png", "data\\sound_selected.png"));
-		node->addComponent(new CubeCollider(5));
-	}
-	else if (type == 4)
-	{
-		node->addComponent(new RswEffect());
-		node->getComponent<RswEffect>()->load(is);
-		node->addComponent(new BillboardRenderer("data\\effect.png", "data\\effect_selected.png"));
-		node->addComponent(new CubeCollider(5));
-	}
-	else
-		std::cerr << "RSW: Error loading object in RSW, objectType=" << type << std::endl;
 
 
-}
-
-
-
-RswModel::RswModel(RswModel* other) : aabb(other->aabb), animType(other->animType), animSpeed(other->animSpeed), blockType(other->blockType), fileName(other->fileName)
-{
-}
-
-void RswModel::load(std::istream* is, int version, bool loadModel)
-{
-	auto rswObject = node->getComponent<RswObject>();
-	if (version >= 0x103)
-	{
-		node->name = util::iso_8859_1_to_utf8(util::FileIO::readString(is, 40));
-
-		is->read(reinterpret_cast<char*>(&animType), sizeof(int));
-		is->read(reinterpret_cast<char*>(&animSpeed), sizeof(float));
-		is->read(reinterpret_cast<char*>(&blockType), sizeof(int));
-	}
-	std::string fileNameRaw = util::FileIO::readString(is, 80);
-	fileName = util::iso_8859_1_to_utf8(fileNameRaw);
-	assert(fileNameRaw == util::utf8_to_iso_8859_1(fileName));
-	objectName = util::iso_8859_1_to_utf8(util::FileIO::readString(is, 80)); // TODO: Unknown?
-	is->read(reinterpret_cast<char*>(glm::value_ptr(rswObject->position)), sizeof(float) * 3);
-	is->read(reinterpret_cast<char*>(glm::value_ptr(rswObject->rotation)), sizeof(float) * 3);
-	is->read(reinterpret_cast<char*>(glm::value_ptr(rswObject->scale)), sizeof(float) * 3);
-	if (loadModel)
-	{
-		node->addComponent(util::ResourceManager<Rsm>::load("data\\model\\" + fileNameRaw));
-		node->addComponent(new RsmRenderer());
-	}
-}
-void RswModel::save(std::ofstream &file, int version)
-{
-	auto rswObject = node->getComponent<RswObject>();
-	if (version >= 0x103)
-	{
-		util::FileIO::writeString(file, util::utf8_to_iso_8859_1(node->name), 40);
-		file.write(reinterpret_cast<char*>(&animType), sizeof(int));
-		file.write(reinterpret_cast<char*>(&animSpeed), sizeof(float));
-		file.write(reinterpret_cast<char*>(&blockType), sizeof(int));
-	}
-	util::FileIO::writeString(file, util::utf8_to_iso_8859_1(fileName), 80);
-	util::FileIO::writeString(file, util::utf8_to_iso_8859_1(objectName), 80); //unknown
-	file.write(reinterpret_cast<char*>(glm::value_ptr(rswObject->position)), sizeof(float) * 3);
-	file.write(reinterpret_cast<char*>(glm::value_ptr(rswObject->rotation)), sizeof(float) * 3);
-	file.write(reinterpret_cast<char*>(glm::value_ptr(rswObject->scale)), sizeof(float) * 3);
-}
-
-void RswObject::save(std::ofstream& file, int version)
-{
-	RswModel* rswModel = nullptr;
-	RswEffect* rswEffect = nullptr;
-	RswLight* rswLight = nullptr;
-	RswSound* rswSound= nullptr;
-	int type = 0;
-	if (rswModel = node->getComponent<RswModel>())
-		type = 1;
-	if (rswLight = node->getComponent<RswLight>())
-		type = 2;
-	if (rswSound = node->getComponent<RswSound>())
-		type = 3;
-	if (rswEffect = node->getComponent<RswEffect>())
-		type = 4;
-	file.write(reinterpret_cast<char*>(&type), sizeof(int));
-	if (rswModel)		rswModel->save(file, version); //meh don't like this if...maybe make this an interface savable
-	if (rswEffect)		rswEffect->save(file);
-	if (rswLight)		rswLight->save(file);
-	if (rswSound)		rswSound->save(file, version);
-}
-
-
-
-void RswLight::load(std::istream* is)
-{
-	auto rswObject = node->getComponent<RswObject>();
-	node->name = util::iso_8859_1_to_utf8(util::FileIO::readString(is, 40));
-	is->read(reinterpret_cast<char*>(glm::value_ptr(rswObject->position)), sizeof(float) * 3);
-	rswObject->position *= glm::vec3(1, -1, 1);
-	is->read(reinterpret_cast<char*>(todo), sizeof(float) * 10);
-
-	is->read(reinterpret_cast<char*>(glm::value_ptr(color)), sizeof(float) * 3);
-	is->read(reinterpret_cast<char*>(&range), sizeof(float));
-}
-
-
-void RswLight::loadExtra(nlohmann::json data)
-{
-	if (data["type"] == "point")
-		type = Type::Point;
-	if (data["type"] == "spot")
-		type = Type::Spot;
-	givesShadow = data["shadow"];
-	cutOff = data["cutoff"];
-	intensity = data["intensity"];
-}
-
-
-void RswLight::save(std::ofstream &file)
-{
-	auto rswObject = node->getComponent<RswObject>();
-	util::FileIO::writeString(file, util::utf8_to_iso_8859_1(node->name), 40);
-
-	file.write(reinterpret_cast<const char*>(glm::value_ptr(rswObject->position * glm::vec3(1, -1, 1))), sizeof(float) * 3);
-	file.write(reinterpret_cast<char*>(todo), sizeof(float) * 10);
-
-	file.write(reinterpret_cast<char*>(glm::value_ptr(color)), sizeof(float) * 3);
-	file.write(reinterpret_cast<char*>(&range), sizeof(float));
-	//todo: custom light properties
-}
-
-nlohmann::json RswLight::saveExtra()
-{
-	json ret;
-	if (type == Type::Point)
-		ret["type"] = "point";
-	else
-		ret["type"] = "spot";
-	ret["shadow"] = givesShadow;
-	ret["cutoff"] = cutOff;
-	ret["intensity"] = intensity;
-	return ret;
-}
-
-void RswSound::load(std::istream* is, int version)
-{
-	auto rswObject = node->getComponent<RswObject>();
-
-	node->name = util::iso_8859_1_to_utf8(util::FileIO::readString(is, 80));
-
-	fileName = util::iso_8859_1_to_utf8(util::FileIO::readString(is, 40));
-
-	is->read(reinterpret_cast<char*>(&unknown7), sizeof(float));
-	is->read(reinterpret_cast<char*>(&unknown8), sizeof(float));
-	is->read(reinterpret_cast<char*>(glm::value_ptr(rswObject->rotation)), sizeof(float) * 3);
-	is->read(reinterpret_cast<char*>(glm::value_ptr(rswObject->scale)), sizeof(float) * 3);
-
-	is->read(unknown6, 8);
-
-	is->read(reinterpret_cast<char*>(glm::value_ptr(rswObject->position)), sizeof(float) * 3);
-
-	is->read(reinterpret_cast<char*>(&vol), sizeof(float));
-	is->read(reinterpret_cast<char*>(&width), sizeof(int));
-	is->read(reinterpret_cast<char*>(&height), sizeof(int));
-	is->read(reinterpret_cast<char*>(&range), sizeof(float));
-
-	if (version >= 0x0200)
-		is->read(reinterpret_cast<char*>(&cycle), sizeof(float));
-}
-
-
-float RswLight::realRange()
-{
-	//formula from http://ogldev.atspace.co.uk/www/tutorial36/tutorial36.html and https://imdoingitwrong.wordpress.com/2011/01/31/light-attenuation/
-	float kC = 1;
-	float kL = 2.0f / range;
-	float kQ = 1.0f / (range * range);
-	float maxChannel = glm::max(glm::max(color.r, color.g), color.b);
-	float adjustedRange = (-kL + glm::sqrt(kL * kL - 4 * kQ * (kC - 128.0f * maxChannel * intensity))) / (2 * kQ);
-	return adjustedRange;
-}
-
-
-
-void RswSound::save(std::ofstream &file, int version)
-{
-	auto rswObject = node->getComponent<RswObject>();
-
-	util::FileIO::writeString(file, util::utf8_to_iso_8859_1(node->name), 40);
-	util::FileIO::writeString(file, util::utf8_to_iso_8859_1(fileName), 80); //TODO: CHECK IF 80/40 or 40/80
-
-	file.write(reinterpret_cast<char*>(&unknown7), sizeof(float));
-	file.write(reinterpret_cast<char*>(&unknown8), sizeof(float));
-	file.write(reinterpret_cast<char*>(glm::value_ptr(rswObject->rotation)), sizeof(float) * 3);
-	file.write(reinterpret_cast<char*>(glm::value_ptr(rswObject->scale)), sizeof(float) * 3);
-
-	file.write(unknown6, 8);
-
-	file.write(reinterpret_cast<char*>(glm::value_ptr(rswObject->position)), sizeof(float) * 3);
-
-	file.write(reinterpret_cast<char*>(&vol), sizeof(float));
-	file.write(reinterpret_cast<char*>(&width), sizeof(int));
-	file.write(reinterpret_cast<char*>(&height), sizeof(int));
-	file.write(reinterpret_cast<char*>(&range), sizeof(float));
-
-	if (version >= 0x0200)
-		file.write(reinterpret_cast<char*>(&cycle), sizeof(float));
-}
-
-
-void RswEffect::load(std::istream* is)
-{
-	auto rswObject = node->getComponent<RswObject>();
-	node->name = util::iso_8859_1_to_utf8(util::FileIO::readString(is, 80));
-	is->read(reinterpret_cast<char*>(glm::value_ptr(rswObject->position)), sizeof(float) * 3);
-	is->read(reinterpret_cast<char*>(&id), sizeof(int));
-	is->read(reinterpret_cast<char*>(&loop), sizeof(float));
-	is->read(reinterpret_cast<char*>(&param1), sizeof(float));
-	is->read(reinterpret_cast<char*>(&param2), sizeof(float));
-	is->read(reinterpret_cast<char*>(&param3), sizeof(float));
-	is->read(reinterpret_cast<char*>(&param4), sizeof(float));
-}
-
-void RswEffect::save(std::ofstream &file)
-{
-	auto rswObject = node->getComponent<RswObject>();
-	util::FileIO::writeString(file, util::utf8_to_iso_8859_1(node->name), 80);
-	file.write(reinterpret_cast<char*>(glm::value_ptr(rswObject->position)), sizeof(float) * 3);
-	file.write(reinterpret_cast<char*>(&id), sizeof(int));
-	file.write(reinterpret_cast<char*>(&loop), sizeof(float));
-	file.write(reinterpret_cast<char*>(&param1), sizeof(float));
-	file.write(reinterpret_cast<char*>(&param2), sizeof(float));
-	file.write(reinterpret_cast<char*>(&param3), sizeof(float));
-	file.write(reinterpret_cast<char*>(&param4), sizeof(float));
-}
 
 Rsw::QuadTreeNode::QuadTreeNode(std::vector<glm::vec3>::const_iterator &it, int level /*= 0*/) : bbox(glm::vec3(0, 0, 0), glm::vec3(0, 0, 0))
 {
@@ -628,77 +389,6 @@ void Rsw::buildImGui(BrowEdit* browEdit)
 	}
 }
 
-
-void RswObject::buildImGui(BrowEdit* browEdit)
-{
-	auto renderer = node->getComponent<RsmRenderer>();
-	ImGui::Text("Object");
-
-	if (util::DragFloat3(browEdit, browEdit->activeMapView->map, node, "Position", &position, 1.0f, 0.0f, 0.0f, "Moving") && renderer)
-		renderer->setDirty();
-	if (util::DragFloat3(browEdit, browEdit->activeMapView->map, node, "Scale", &scale, 1.0f, 0.0f, 0.0f, "Resizing") && renderer)
-		renderer->setDirty();
-	if (util::DragFloat3(browEdit, browEdit->activeMapView->map, node, "Rotation", &rotation, 1.0f, 0.0f, 0.0f, "Rotating") && renderer)
-		renderer->setDirty();
-}
-
-void RswModel::buildImGui(BrowEdit* browEdit)
-{
-	ImGui::Text("Model");
-	util::DragInt(browEdit, browEdit->activeMapView->map, node, "Animation Type", &animType, 1, 0, 100);
-	util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Animation Speed", &animSpeed, 0.01f, 0.0f, 100.0f);
-	util::DragInt(browEdit, browEdit->activeMapView->map, node, "Block Type", &blockType, 1, 0, 100);
-	util::InputText(browEdit, browEdit->activeMapView->map, node, "Filename", &fileName, ImGuiInputTextFlags_ReadOnly);
-}
-
-void RswEffect::buildImGui(BrowEdit* browEdit)
-{
-	ImGui::Text("Effect");
-	util::DragInt(browEdit, browEdit->activeMapView->map, node, "Type", &id, 1, 0, 500); //TODO: change this to a combobox
-	util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Loop", &loop, 0.01f, 0.0f, 100.0f);
-	util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Param 1", &param1, 0.01f, 0.0f, 100.0f);
-	util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Param 2", &param2, 0.01f, 0.0f, 100.0f);
-	util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Param 3", &param3, 0.01f, 0.0f, 100.0f);
-	util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Param 4", &param4, 0.01f, 0.0f, 100.0f);
-}
-
-void RswSound::buildImGui(BrowEdit* browEdit)
-{
-	ImGui::Text("Sound");
-	util::InputText(browEdit, browEdit->activeMapView->map, node, "Filename", &fileName);
-	util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Volume", &vol, 0.01f, 0.0f, 100.0f);
-
-	util::DragInt(browEdit, browEdit->activeMapView->map, node, "Width", (int*)&width, 1, 0, 10000); //TODO: remove cast
-	util::DragInt(browEdit, browEdit->activeMapView->map, node, "Height", (int*)&height, 1, 0, 10000); //TODO: remove cast
-	util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Range", &range, 0.01f, 0.0f, 100.0f);
-	util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Cycle", &cycle, 0.01f, 0.0f, 100.0f);
-	//no undo for this
-	ImGui::InputText("unknown6", unknown6, 8, ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_CharsUppercase);
-
-	util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Unknown7", &unknown7, 0.01f, 0.0f, 100.0f);
-	util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Unknown8", &unknown8, 0.01f, 0.0f, 100.0f);
-}
-
-void RswLight::buildImGui(BrowEdit* browEdit)
-{
-	ImGui::Text("Light");
-
-	if (ImGui::CollapsingHeader("Unknown rubbish"))
-	{
-		for (int i = 0; i < 10; i++)
-		{
-			ImGui::PushID(i);
-			util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Unknown", &todo[i], 0.01f, -100.0f, 100.0f);
-			ImGui::PopID();
-		}
-	}
-
-	util::ColorEdit3(browEdit, browEdit->activeMapView->map, node, "Color", &color);
-	util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Range", &range, 0.01f, -100.0f, 100.0f);
-	util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Intensity", &intensity, 0.01f, 0.0f, 10000.0f);
-	util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Cutoff", &cutOff, 0.01f, 0.0f, 1.0f);
-
-}
 
 
 

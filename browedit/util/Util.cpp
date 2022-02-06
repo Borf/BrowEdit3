@@ -140,6 +140,17 @@ namespace util
 		return ret;
 	}
 
+	bool Checkbox(BrowEdit* browEdit, Map* map, Node* node, const char* label, bool* ptr, const std::string& action)
+	{
+		static bool startValue;
+		bool ret = ImGui::Checkbox(label, ptr);
+
+		if (ImGui::IsItemActivated())
+			startValue = *ptr;
+		if (ImGui::IsItemDeactivatedAfterEdit())
+			map->doAction(new ObjectChangeAction(node, ptr, startValue, action == "" ? label : action), browEdit);
+		return ret;
+	}
 
 
 
