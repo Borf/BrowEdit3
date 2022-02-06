@@ -7,6 +7,7 @@
 #include "components/Gnd.h"
 #include "components/GndRenderer.h"
 #include "components/RsmRenderer.h"
+#include "components/BillboardRenderer.h"
 
 #include <browedit/actions/GroupAction.h>
 #include <browedit/actions/ObjectChangeAction.h>
@@ -161,8 +162,15 @@ void MapView::render(BrowEdit* browEdit)
 			auto gnd = map->rootNode->getComponent<Gnd>();
 			auto rayCast = gnd->rayCast(mouseRay);
 			rswObject->position = glm::vec3(rayCast.x - 5 * gnd->width, -rayCast.y, -(rayCast.z + (-10 - 5 * gnd->height))) + newNode.second;
-			newNode.first->getComponent<RsmRenderer>()->matrixCache = glm::translate(glm::mat4(1.0f), rayCast + newNode.second);
-			newNode.first->getComponent<RsmRenderer>()->matrixCache = glm::scale(newNode.first->getComponent<RsmRenderer>()->matrixCache, glm::vec3(1, -1, 1));
+			if (newNode.first->getComponent<RsmRenderer>())
+			{
+				newNode.first->getComponent<RsmRenderer>()->matrixCache = glm::translate(glm::mat4(1.0f), rayCast + newNode.second);
+				newNode.first->getComponent<RsmRenderer>()->matrixCache = glm::scale(newNode.first->getComponent<RsmRenderer>()->matrixCache, glm::vec3(1, -1, 1));
+			}
+			if (newNode.first->getComponent<BillboardRenderer>())
+			{
+				newNode.first->getComponent<BillboardRenderer>()->gnd = gnd;
+			}
 			NodeRenderer::render(newNode.first, nodeRenderContext);
 		}
 	}

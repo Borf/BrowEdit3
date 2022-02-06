@@ -130,6 +130,7 @@ public:
 	void save(std::ofstream& file);
 	nlohmann::json saveExtra();
 	void buildImGui(BrowEdit* browEdit) override;
+	NLOHMANN_DEFINE_TYPE_INTRUSIVE(RswLight, color, range, givesShadow, cutOff, cutOff, intensity);
 };
 
 class RswEffect : public Component, public ImguiProps
@@ -146,6 +147,7 @@ public:
 	void load(std::istream* is);
 	void save(std::ofstream& file);
 	void buildImGui(BrowEdit* browEdit) override;
+	NLOHMANN_DEFINE_TYPE_INTRUSIVE(RswEffect, id, loop, param1, param2, param3, param4);
 };
 
 class RswSound : public Component, public ImguiProps
@@ -168,6 +170,7 @@ public:
 	void load(std::istream* is, int version);
 	void save(std::ofstream& file, int version);
 	void buildImGui(BrowEdit* browEdit) override;
+	NLOHMANN_DEFINE_TYPE_INTRUSIVE(RswSound, fileName, vol, width, height, range, cycle, unknown6, unknown7, unknown8);
 };
 
 class RswModelCollider : public Collider

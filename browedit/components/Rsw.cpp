@@ -33,13 +33,7 @@ void Rsw::load(const std::string& fileName, bool loadModels, bool loadGnd)
 	}
 	quadtree = nullptr;
 
-	nlohmann::json extraProperties;
-	auto extra = util::FileIO::open(fileName + ".extra.json");
-	if (extra)
-	{
-		*extra>> extraProperties;
-		delete extra;
-	}
+	auto extraProperties = util::FileIO::getJson(fileName + ".extra.json");
 
 	char header[4];
 	file->read(header, 4);
@@ -689,17 +683,18 @@ void RswLight::buildImGui(BrowEdit* browEdit)
 {
 	ImGui::Text("Light");
 
-	for (int i = 0; i < 10; i++)
+	if (ImGui::CollapsingHeader("Unknown rubbish"))
 	{
-		ImGui::PushID(i);
-		util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Unknown", &todo[i], 0.01f, -100.0f, 100.0f);
-		ImGui::PopID();
+		for (int i = 0; i < 10; i++)
+		{
+			ImGui::PushID(i);
+			util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Unknown", &todo[i], 0.01f, -100.0f, 100.0f);
+			ImGui::PopID();
+		}
 	}
 
 	util::ColorEdit3(browEdit, browEdit->activeMapView->map, node, "Color", &color);
 	util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Range", &range, 0.01f, -100.0f, 100.0f);
-
-
 	util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Intensity", &intensity, 0.01f, 0.0f, 10000.0f);
 	util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Cutoff", &cutOff, 0.01f, 0.0f, 1.0f);
 

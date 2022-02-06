@@ -251,13 +251,20 @@ namespace util
 		}
 	}
 
-	void FileIO::DirSource::listFiles(const std::string& directory, std::vector<std::string>& files)
+	void FileIO::DirSource::listFiles(const std::string& dir, std::vector<std::string>& files)
 	{
+		for (const auto& entry : std::filesystem::directory_iterator(dir))
+		{
+			if (entry.is_directory())
+				listFiles(entry.path().string(), files);
+			else
+				files.push_back(entry.path().string().substr(directory.size()));
+		}
 	}
-
 
 	void FileIO::DirSource::listAllFiles(std::vector<std::string>& files)
 	{
+		listFiles(directory, files);
 	}
 
 	std::string FileIO::readString(std::istream* is, int maxLength, int length)
@@ -280,7 +287,17 @@ namespace util
 		delete[] buf;
 	}
 
-
+	nlohmann::json FileIO::getJson(const std::string& fileName)
+	{
+		nlohmann::json ret;
+		auto file = open(fileName);
+		if (file)
+		{
+			*file >> ret;
+			delete file;
+		}
+		return ret;
+	}
 
 
 }

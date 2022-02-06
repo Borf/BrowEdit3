@@ -4,9 +4,11 @@
 #include <browedit/MapView.h>
 #include <browedit/Map.h>
 #include <browedit/components/RsmRenderer.h>
+#include <browedit/components/BillboardRenderer.h>
 #include <browedit/components/Rsm.h>
 #include <browedit/components/Rsw.h>
 #include <browedit/gl/FBO.h>
+#include <browedit/gl/Texture.h>
 #include <browedit/util/Util.h>
 #include <browedit/util/FileIO.h>
 #include <browedit/util/ResourceManager.h>
@@ -155,15 +157,28 @@ void BrowEdit::showObjectWindow()
 				selectedNode = f.second;
 		}
 	};
-
+	
 	ImGui::BeginChild("left pane", ImVec2(250, 0), true);
-	if (ImGui::TreeNodeEx("Models", ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_OpenOnDoubleClick))
+
+	auto startTree = [&](const char* nodeName, const std::string& path)
 	{
-		auto root = util::FileIO::directoryNode("data\\model\\");
-		if (root)
+		auto root = util::FileIO::directoryNode(path);
+		if (!root)
+			return;
+		if (ImGui::TreeNodeEx(nodeName, ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_OpenOnDoubleClick))
+		{
+			if (ImGui::IsItemClicked())
+				selectedNode = root;
 			buildTreeNodes(root);
-		ImGui::TreePop();
-	}
+			ImGui::TreePop();
+		}
+		else if (ImGui::IsItemClicked())
+			selectedNode = root;
+	};
+	startTree("Models", "data\\model\\");
+	startTree("Sounds", "data\\wav\\");
+	startTree("Lights", "data\\lights\\");
+	startTree("Effects", "data\\effects\\");
 	ImGui::EndChild();
 	ImGui::SameLine();
 
@@ -182,26 +197,56 @@ void BrowEdit::showObjectWindow()
 					path = util::utf8_to_iso_8859_1(n->name) + "\\" + path;
 				n = n->parent;
 			}
-
-			auto it = objectWindowObjects.find(path);
-			if (it == objectWindowObjects.end())
+			
+			ImTextureID texture = 0;
+			if (path.substr(path.size() - 4) == ".rsm" ||
+				path.substr(path.size() - 5) == ".rsm2")
 			{
-				objectWindowObjects[path] = new ObjectWindowObject(path, this);
-				it = objectWindowObjects.find(path);
-				it->second->draw();
+				auto it = objectWindowObjects.find(path);
+				if (it == objectWindowObjects.end())
+				{
+					objectWindowObjects[path] = new ObjectWindowObject(path, this);
+					it = objectWindowObjects.find(path);
+					it->second->draw();
+				}
+				texture = (ImTextureID)(long long)it->second->fbo->texid[0];
 			}
-			if (ImGui::ImageButton((ImTextureID)(long long)it->second->fbo->texid[0], config.thumbnailSize, ImVec2(0, 0), ImVec2(1, 1), 0))
+			else if (path.substr(path.size() - 4) == ".wav")
+				texture = (ImTextureID)(long long)soundTexture->id;
+			else if (path.substr(path.size() - 5) == ".json")
+			{
+				if (path.find("data\\lights") != std::string::npos)
+					texture = (ImTextureID)(long long)lightTexture->id;
+				if (path.find("data\\effects") != std::string::npos)
+					texture = (ImTextureID)(long long)effectTexture->id;
+			}
+			if (ImGui::ImageButton(texture, config.thumbnailSize, ImVec2(0, 0), ImVec2(1, 1), 0))
 			{
 				if (activeMapView && newNodes.size() == 0)
 				{
-					Node* newNode = new Node(file);
-					newNode->addComponent(util::ResourceManager<Rsm>::load(path));
-					newNode->addComponent(new RsmRenderer());
-					newNode->addComponent(new RswObject());
-					newNode->addComponent(new RswModel(util::iso_8859_1_to_utf8(path)));
-					newNode->addComponent(new RsmRenderer());
-					newNode->addComponent(new RswModelCollider());
-					newNodes.push_back(std::pair<Node*, glm::vec3>(newNode, glm::vec3(0, 0, 0)));
+					if (file.substr(file.size() - 4) == ".rsm")
+					{
+						Node* newNode = new Node(file);
+						newNode->addComponent(util::ResourceManager<Rsm>::load(path));
+						newNode->addComponent(new RsmRenderer());
+						newNode->addComponent(new RswObject());
+						newNode->addComponent(new RswModel(util::iso_8859_1_to_utf8(path)));
+						newNode->addComponent(new RsmRenderer());
+						newNode->addComponent(new RswModelCollider());
+						newNodes.push_back(std::pair<Node*, glm::vec3>(newNode, glm::vec3(0, 0, 0)));
+					}
+					else if (file.substr(file.size() - 5) == ".json" &&
+						path.find("data\\lights") != std::string::npos)
+					{
+						auto l = new RswLight();
+						from_json(util::FileIO::getJson(path), *l);
+						Node* newNode = new Node(file);
+						newNode->addComponent(new RswObject());
+						newNode->addComponent(l);
+						newNode->addComponent(new BillboardRenderer("data\\light.png", "data\\light_selected.png"));
+						newNode->addComponent(new CubeCollider(5));
+						newNodes.push_back(std::pair<Node*, glm::vec3>(newNode, glm::vec3(0, 0, 0)));
+					}
 				}
 				std::cout << "Click on " << file << std::endl;
 			}
@@ -270,8 +315,12 @@ void BrowEdit::showObjectWindow()
 			else if (ImGui::IsItemHovered())
 			{
 				ImGui::SetTooltip(util::combine(tagListReverse[path.substr(11)], "\n").c_str());
-				it->second->rotation++;
-				it->second->draw();
+				auto it = objectWindowObjects.find(path);
+				if (it != objectWindowObjects.end())
+				{
+					it->second->rotation = glfwGetTime()*90; //TODO: make this increment based on deltatime
+					it->second->draw();
+				}
 			}
 			ImGui::Text(file.c_str());
 		}
@@ -290,7 +339,10 @@ void BrowEdit::showObjectWindow()
 			window_visible_x2 = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
 			for (auto file : selectedNode->files)
 			{
-				if (file.find(".rsm") == std::string::npos || file.find(".rsm2") != std::string::npos)
+				if ((file.find(".rsm") == std::string::npos || 
+					file.find(".rsm2") == std::string::npos) &&
+					file.find(".wav") == std::string::npos &&
+					file.find(".json") == std::string::npos)
 					continue;
 				buildBox(file);
 			}

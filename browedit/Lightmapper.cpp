@@ -143,9 +143,10 @@ bool Lightmapper::collidesMap(const math::Ray& ray)
 };
 
 
-int Lightmapper::calculateLight(const glm::vec3& groundPos, const glm::vec3& normal)
+std::pair<glm::vec3, int> Lightmapper::calculateLight(const glm::vec3& groundPos, const glm::vec3& normal)
 {
 	int intensity = 0;
+	glm::vec3 colorInc(0.0f);
 
 	if (rsw->light.lightmapAmbient > 0)
 		intensity = (int)(rsw->light.lightmapAmbient * 255);
@@ -213,9 +214,10 @@ int Lightmapper::calculateLight(const glm::vec3& groundPos, const glm::vec3& nor
 		if (!collides)
 		{
 			intensity += (int)attenuation;
+			colorInc += (attenuation / 255.0f) * rswLight->color;
 		}
 	}
-	return intensity;
+	return std::pair<glm::vec3, int>(colorInc, intensity);
 };
 
 
@@ -236,6 +238,7 @@ void Lightmapper::calcPos(int direction, int tileId, int x, int y)
 	{
 		for (int yy = 1; yy < 7; yy++)
 		{
+			glm::vec3 totalColor(0.0f);
 			int totalIntensity = 0;
 			int count = 0;
 			for (float xxx = 0; xxx < 1; xxx += qualityStep)
@@ -277,8 +280,9 @@ void Lightmapper::calcPos(int direction, int tileId, int x, int y)
 							normal = -normal;
 
 					}
-
-					totalIntensity += calculateLight(groundPos, normal);
+					auto light = calculateLight(groundPos, normal);
+					totalIntensity += light.second;
+					totalColor += light.first;
 					count++;
 				}
 			}
@@ -287,10 +291,12 @@ void Lightmapper::calcPos(int direction, int tileId, int x, int y)
 			if (intensity > 255)
 				intensity = 255;
 
+			glm::vec3 color = totalColor / (float)count;
+
 			lightmap->data[xx + 8 * yy] = intensity;
-			lightmap->data[64 + 3 * (xx + 8 * yy) + 0] = 0;
-			lightmap->data[64 + 3 * (xx + 8 * yy) + 1] = 0;
-			lightmap->data[64 + 3 * (xx + 8 * yy) + 2] = 0;
+			lightmap->data[64 + 3 * (xx + 8 * yy) + 0] = glm::min(255, (int)(color.r * 255));
+			lightmap->data[64 + 3 * (xx + 8 * yy) + 1] = glm::min(255, (int)(color.g * 255));
+			lightmap->data[64 + 3 * (xx + 8 * yy) + 2] = glm::min(255, (int)(color.b * 255));
 		}
 	}
 };

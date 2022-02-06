@@ -33,7 +33,7 @@ void BillboardRenderer::render()
 		rswObject = node->getComponent<RswObject>();
 	if (!gnd)
 		gnd = node->root->getComponent<Gnd>();
-	if (!rswObject || !gnd)
+	if (!rswObject)
 		return;
 
 	auto shader = dynamic_cast<BillboardRenderContext*>(renderContext)->shader;//TODO: don't cast

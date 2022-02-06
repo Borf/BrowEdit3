@@ -619,7 +619,7 @@ void Gnd::cleanTiles()
 
 	std::list<std::size_t> toRemove;
 	for (std::size_t i = 0; i < tiles.size(); i++)
-		if (used.find(i) == used.end())
+		if (used.find((int)i) == used.end())
 			toRemove.push_back(i);
 	toRemove.reverse();
 

@@ -8,6 +8,7 @@
 #include <browedit/components/Rsw.h>
 #include <browedit/components/Gnd.h>
 #include <browedit/components/GndRenderer.h>
+#include <browedit/components/BillboardRenderer.h>
 #include <browedit/BrowEdit.h>
 #include <browedit/util/ResourceManager.h>
 
@@ -232,8 +233,15 @@ void Map::pasteSelection(BrowEdit* browEdit)
 						newNode->addComponent(rswModel);
 						newNode->addComponent(util::ResourceManager<Rsm>::load("data\\model\\" + util::utf8_to_iso_8859_1(rswModel->fileName)));
 						newNode->addComponent(new RsmRenderer());
-						newNode->addComponent(new RsmRenderer());
 						newNode->addComponent(new RswModelCollider());
+					}
+					if (c["type"] == "rswlight")
+					{
+						auto rswLight = new RswLight();
+						from_json(c, *rswLight);
+						newNode->addComponent(rswLight);
+						newNode->addComponent(new BillboardRenderer("data\\light.png", "data\\light_selected.png"));
+						newNode->addComponent(new CubeCollider(5));
 					}
 				}
 				browEdit->newNodes.push_back(std::pair<Node*, glm::vec3>(newNode, newNode->getComponent<RswObject>()->position));
@@ -247,5 +255,7 @@ void Map::pasteSelection(BrowEdit* browEdit)
 				n.second = n.second - center;
 		}
 	}
-	catch (...) {};
+	catch (...) {
+		std::cerr << "!!!!!!!!!!! Some sort of error occurred???" << std::endl;
+	};
 }

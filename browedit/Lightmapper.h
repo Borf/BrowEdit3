@@ -36,7 +36,7 @@ private:
 	void onDone();
 
 	bool collidesMap(const math::Ray& ray);
-	int calculateLight(const glm::vec3& groundPos, const glm::vec3& normal);
+	std::pair<glm::vec3, int> calculateLight(const glm::vec3& groundPos, const glm::vec3& normal);
 	void calcPos(int direction, int tileId, int x, int y);
 
 	void setProgressText(const std::string& text);

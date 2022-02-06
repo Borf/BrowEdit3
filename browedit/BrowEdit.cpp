@@ -17,6 +17,7 @@
 #include <browedit/NodeRenderer.h>
 #include <browedit/Node.h>
 #include <browedit/Gadget.h>
+#include <browedit/Lightmapper.h>
 #include <browedit/components/Rsw.h>
 #include <browedit/components/Gnd.h>
 #include <browedit/util/FileIO.h>
@@ -106,24 +107,21 @@ void BrowEdit::run()
 		windowData.objectWindowVisible = false;
 
 	{
-		std::ifstream tagListFile("data\\tags.json");
-		if (tagListFile.is_open())
-		{
-			try {
-				json tagListJson;
-				tagListFile >> tagListJson;
-				tagListFile.close();
-				tagList = tagListJson.get<std::map<std::string, std::vector<std::string>>>();
-				for (auto tag : tagList)
-					for (const auto& t : tag.second)
-						tagListReverse[util::utf8_to_iso_8859_1(t)].push_back(util::utf8_to_iso_8859_1(tag.first));
-			}
-			catch (...) {}
+		try {
+			tagList = util::FileIO::getJson("data\\tags.json").get<std::map<std::string, std::vector<std::string>>>();
+			for (auto tag : tagList)
+				for (const auto& t : tag.second)
+					tagListReverse[util::utf8_to_iso_8859_1(t)].push_back(util::utf8_to_iso_8859_1(tag.first));
 		}
+		catch (...) {}
 	}
 
 	backgroundTexture = util::ResourceManager<gl::Texture>::load("data\\background.png");
 	iconsTexture = util::ResourceManager<gl::Texture>::load("data\\icons.png");
+	lightTexture = util::ResourceManager<gl::Texture>::load("data\\light.png");
+	effectTexture = util::ResourceManager<gl::Texture>::load("data\\effect.png");
+	soundTexture = util::ResourceManager<gl::Texture>::load("data\\sound.png");
+	
 	NodeRenderer::begin();
 	Gadget::init();
 
@@ -216,6 +214,11 @@ void BrowEdit::run()
 					saveMap(activeMapView->map);
 				if (ImGui::IsKeyPressed('O'))
 					showOpenWindow();
+				if (ImGui::IsKeyPressed('L') && activeMapView)
+				{
+					lightmapper = new Lightmapper(activeMapView->map, this);
+					windowData.openLightmapSettings = true;
+				}
 			}
 			if (editMode == EditMode::Object && activeMapView)
 			{
@@ -246,7 +249,7 @@ void BrowEdit::run()
 
 void BrowEdit::configBegin()
 {
-	json configJson;
+	json configJson; //don't use util::FileIO::getJson for this, as the paths haven't been loaded in the FileIO yet
 	std::ifstream configFile("config.json");
 	if (configFile.is_open())
 	{

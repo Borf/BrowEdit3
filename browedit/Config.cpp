@@ -219,7 +219,7 @@ bool Config::showWindow(BrowEdit* browEdit)
 void Config::setupFileIO()
 {
 	util::FileIO::begin();
-	util::FileIO::addDirectory("./");
+	util::FileIO::addDirectory(".\\");
 	util::FileIO::addDirectory(ropath);
 	for (const auto& grf : grfs)
 		util::FileIO::addGrf(grf);

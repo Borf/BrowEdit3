@@ -23,6 +23,12 @@ class BrowEdit
 {
 	gl::Texture* backgroundTexture;
 	gl::Texture* iconsTexture;
+
+	gl::Texture* lightTexture;
+	gl::Texture* effectTexture;
+	gl::Texture* soundTexture;
+
+
 	std::vector<Map*> maps;
 	std::list<MapView> mapViews; //list, because vector reallocates mapviews when pushing back, which breaks activeMapview pointer
 public:

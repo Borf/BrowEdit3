@@ -1,5 +1,6 @@
 #pragma once
 
+#include <json.hpp>
 #include <string>
 #include <vector>
 #include <map>
@@ -67,6 +68,7 @@ namespace util
 		//helper methods
 		static std::string readString(std::istream* is, int maxLength, int length = -1);
 		static void writeString(std::ostream& os, const std::string &data, int length);
+		static nlohmann::json getJson(const std::string& fileName);
 
 		class Node
 		{

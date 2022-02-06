@@ -82,7 +82,7 @@ void BrowEdit::menuBar()
 					;
 				if (ImGui::MenuItem("Export colormap"))
 					;
-				if (ImGui::MenuItem("Calculate lightmaps") && !lightmapper)
+				if (ImGui::MenuItem("Calculate lightmaps", "Ctrl+L") && !lightmapper)
 				{
 					lightmapper = new Lightmapper(map, this);
 					windowData.openLightmapSettings = true;

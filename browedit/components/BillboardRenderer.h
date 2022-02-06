@@ -37,11 +37,11 @@ class BillboardRenderer : public Renderer
 		}
 	};
 	RswObject* rswObject;
-	Gnd* gnd;
 	gl::Texture* texture;
 	gl::Texture* textureSelected = nullptr;
 
 public:
+	Gnd* gnd;
 	class BillboardRenderContext : public Renderer::RenderContext, public util::Singleton<BillboardRenderContext>
 	{
 	public:
