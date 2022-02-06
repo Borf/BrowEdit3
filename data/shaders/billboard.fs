@@ -2,8 +2,7 @@
 
 uniform sampler2D s_texture;
 uniform float selection;
-varying vec2 texCoord;
-
+in vec2 texCoord;
 out vec4 fragColor;
 
 

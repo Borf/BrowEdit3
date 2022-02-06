@@ -28,7 +28,7 @@ void main()
 
 	if(shadeType == 4 && lightToggle) // only for editor
 		color.rgb *= lightDiffuse;
-	
+
 	gl_FragData[0] = mix(color, vec4(1,0,0,1), min(1.0,selection));
 	//gl_FragData[1] = highlightColor;
 }

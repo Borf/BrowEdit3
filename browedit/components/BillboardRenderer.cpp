@@ -66,7 +66,7 @@ BillboardRenderer::BillboardRenderContext::BillboardRenderContext() : shader(uti
 void BillboardRenderer::BillboardRenderContext::preFrame(const glm::mat4& projectionMatrix, const glm::mat4& viewMatrix)
 {
 	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA,GL_ONE,GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_DEPTH_TEST);
 	shader->use();
 	shader->setUniform(BillboardShader::Uniforms::projectionMatrix, projectionMatrix);

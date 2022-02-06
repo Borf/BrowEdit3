@@ -34,46 +34,53 @@ namespace gl
 			return;
 		}
 
-		for (int x = 0; x < width; x++)
+		for (int i = 0; i < 10; i++) //TODO: maybe 10 is a bit too big?
 		{
-			for (int y = 0; y < height; y++)
+			bool changed = false;
+			for (int x = 0; x < width; x++)
 			{
-				if (data[4 * (x + width * y) + 0] > 250 &&
-					data[4 * (x + width * y) + 1] < 5 &&
-					data[4 * (x + width * y) + 2] > 250)
+				for (int y = 0; y < height; y++)
 				{
-					int totalr = 0;
-					int totalg = 0;
-					int totalb = 0;
-					int total = 0;
-					for (int xx = -1; xx <= 1; xx++)
+					if (data[4 * (x + width * y) + 0] > 250 &&
+						data[4 * (x + width * y) + 1] < 5 &&
+						data[4 * (x + width * y) + 2] > 250)
 					{
-						for (int yy = -1; yy <= 1; yy++)
+						changed = true;
+						int totalr = 0;
+						int totalg = 0;
+						int totalb = 0;
+						int total = 0;
+						for (int xx = -1; xx <= 1; xx++)
 						{
-							int xxx = x + xx;
-							int yyy = y + yy;
-							if (xxx < 0 || xxx >= width || yyy < 0 || yyy >= height)
-								continue;
-							if (data[4 * (xxx + width * yyy) + 0] > 250 && data[4 * (xxx + width * yyy) + 1] < 5 && data[4 * (xxx + width * yyy) + 2] > 250)
-								continue;
-							if (data[4 * (xxx + width * yyy) + 3] == 0)
-								continue;
-							totalr += data[4 * (xxx + width * yyy) + 0];
-							totalg += data[4 * (xxx + width * yyy) + 1];
-							totalb += data[4 * (xxx + width * yyy) + 2];
-							total++;
+							for (int yy = -1; yy <= 1; yy++)
+							{
+								int xxx = x + xx;
+								int yyy = y + yy;
+								if (xxx < 0 || xxx >= width || yyy < 0 || yyy >= height)
+									continue;
+								if (data[4 * (xxx + width * yyy) + 0] > 250 &&
+									data[4 * (xxx + width * yyy) + 1] < 5 &&
+									data[4 * (xxx + width * yyy) + 2] > 250)
+									continue;
+								totalr += data[4 * (xxx + width * yyy) + 0];
+								totalg += data[4 * (xxx + width * yyy) + 1];
+								totalb += data[4 * (xxx + width * yyy) + 2];
+								total++;
+							}
 						}
-					}
-					if (total > 0)
-					{
-						data[4 * (x + width * y) + 0] = totalr / total;
-						data[4 * (x + width * y) + 1] = totalg / total;
-						data[4 * (x + width * y) + 2] = totalb / total;
-					}
+						if (total > 0)
+						{
+							data[4 * (x + width * y) + 0] = totalr / total;
+							data[4 * (x + width * y) + 1] = totalg / total;
+							data[4 * (x + width * y) + 2] = totalb / total;
+						}
 
-					data[4 * (x + width * y) + 3] = 0;
+						data[4 * (x + width * y) + 3] = 0;
+					}
 				}
 			}
+			if (!changed)
+				break;
 		}
 
 

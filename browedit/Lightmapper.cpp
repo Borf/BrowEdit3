@@ -113,10 +113,9 @@ void Lightmapper::run()
 			progressMutex.lock();
 			browEdit->windowData.progressWindowProgres = 1.0f;
 			browEdit->windowData.progressWindowVisible = false;
-			progressMutex.unlock();
-
 			gnd->makeLightmapBorders();
-
+			map->rootNode->getComponent<GndRenderer>()->gndShadowDirty = true;
+			progressMutex.unlock();
 		}));
 
 
