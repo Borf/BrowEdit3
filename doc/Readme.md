@@ -20,6 +20,9 @@ Browedit uses a simple camera system that rotates around a point that can be mov
 * [Wall Edit (todo)]()
 * [Gat Edit (todo)]()
 
+## Lightmapping
+see [Lightmapping](Lightmapping.md)
+
 
 ## Buglist
 * [x] When dragging a map outside of the main browedit window, it can not be interacted with
@@ -29,16 +32,18 @@ Browedit uses a simple camera system that rotates around a point that can be mov
 When browedit3 crashes, you should get a popup window with some information about the crash. Click the 'more' button to view the error report, then click on 'save' to save a zipfile with the bugreport. This might include a screenshot, a minidump and an xml file. In order for me to actually use this report, the .pdb file is needed in order to map the error report to the source code. The .pdb file is included in the browedit3 zipfile, so add this to the .zip file, then send it over on discord
 
 ## Todo
-* [ ] Make sure the maps load properly ingame
-* [ ] Add undo to 'replace selected models' action
+* [x] Make sure the maps load properly ingame
+* [x] Add undo to 'replace selected models' action
 * [ ] Add button to hide textures on mapview
 * [ ] Hotkeys for changing translate/rotate/scale
-* [ ] Filter for filenames
-* [ ] Make lights, effects and sounds visible and clickable
+* [ ] Filter for filenames in object window
+* [x] Make lights, effects and sounds visible and clickable
+* [ ] Lightmapper
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbNjI0MjAzNzgzLC0xMzQ0ODE3OTQwLC0yMD
-Y4NzEzNjE0LDUzMzU2ODU5OSwxNjk5NDY2MDgxLC0xOTk2OTcz
-MjI4LDEyMzg2MzI3NjcsLTM3MjM1MDQ3NCwxMzY3NTM1NzQ5LC
-02OTU5MTI5MDQsNTkxMDA1OTAzLC05NTQzNDE0MDIsNzkzNjk4
-NjQ4LC01MTg0NTY3NDksLTc3NDIyNTM0NF19
+eyJoaXN0b3J5IjpbLTczODg4NDA5OSw2MjQyMDM3ODMsLTEzND
+Q4MTc5NDAsLTIwNjg3MTM2MTQsNTMzNTY4NTk5LDE2OTk0NjYw
+ODEsLTE5OTY5NzMyMjgsMTIzODYzMjc2NywtMzcyMzUwNDc0LD
+EzNjc1MzU3NDksLTY5NTkxMjkwNCw1OTEwMDU5MDMsLTk1NDM0
+MTQwMiw3OTM2OTg2NDgsLTUxODQ1Njc0OSwtNzc0MjI1MzQ0XX
+0=
 -->

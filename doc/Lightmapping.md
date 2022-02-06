@@ -1,0 +1,16 @@
+# Lightmapping
+
+The BrowEdit lightmapper is a custom written, and is basically a software raytracer to calculate the light intensity on the ground in RO. Every tile (and wall) has a tiny 8x8 lightmap, where the edges of this lightmap are shared with the tiles around it. This means the actual lightmap information is only 6x6. Let's call these 6v6 lightmap pixels **luxels**. BrowEdit calculates the distance of every luxel to the lights around it, and if there is a 3d model inbetween the light and that luxel, this light won't be used. This calculation is not the same as the original lightmap calculations, so this page will try to explain how to set it up and how to get good lighting.
+
+The lighting is based on different lights. 
+* Sunlight
+  The sunlight is the basic method of lighting normal, outdoor maps, but is important for all maps. It can be configured using 4 settings. To change the lighting, click on the RSW map in *object edit* mode. In here, you can change the `Latitude`, `Longitude`, `Lightmap Ambient` and `Lightmap Intensity`.  The `Latitude` and `Longitude` are stored in the .rsw file and are used by the game to calculate the lighting ingame as well, the `Lightmap Ambient`and `Lightmap Intensity` are stored in the .extra.json file, and won't be used by the game. You can use `Latitude` and `Longitude` to control the direction the light is coming from. `Lightmap Ambient` controls the dark levels. `Lightmap Ambient` is a value between 0 and 1. Setting it to 0 means places in shadow are completely dark, setting it to 1 means the shadows are completely light. `Lightmap Intensity` is the value that is added on top of the `Lightmap Ambient` for areas that are lit by the sun. For a map that is properly lit, usually `Lightmap Ambient` and `Lightmap Intensity` added together should be 1
+- Point light
+  Point lights are the lights you can drag around and add for a local light. They can be placed around the map and have a few important properties for lighting; `Position`, `Color`, `Range`, `Intensity` and `Cutoff`.  I'll explain what those values mean later, but you can read about it on [ogldev](https://ogldev.org/www/tutorial36/tutorial36.html) and [this blog](https://imdoingitwrong.wordpress.com/2011/01/31/light-attenuation/). warning, it has math
+
+The lightmapper has some settings you can use to tweak it.
+* Quality: this can improve the quality of your lightmap, with supersampling. With a quality of 1, exactly 1 ray is cast from the texel to the different lights. With a quality of 2, 4 rays are cast. quality of 3 gives 9 rays, 4 gives 16 rays, etc. The results of the rays are averaged for smoother shadow edges. 
+* Thread count: The lightmapper is multithread optimized. This means that it can run on multiple computer threads at the same time. Tweak this value to be the amount of cores on your PC for faster calculations. If you don't want your computer to use up all its resources or overheat, lower the amount of cores. Using more threads than you have cores will work too, but it probably won't make it faster
+<!--stackedit_data:
+eyJoaXN0b3J5IjpbMTY2NDIxMjA1NV19
+-->
