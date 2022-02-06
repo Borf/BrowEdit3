@@ -6,6 +6,8 @@
 #include <browedit/actions/SelectAction.h>
 #include <browedit/actions/DeleteObjectAction.h>
 #include <browedit/components/Rsw.h>
+#include <browedit/components/Gnd.h>
+#include <browedit/components/GndRenderer.h>
 #include <browedit/BrowEdit.h>
 #include <browedit/util/ResourceManager.h>
 
@@ -14,6 +16,8 @@ using json = nlohmann::json;
 
 #include <set>
 #include <iostream>
+#include <thread>
+#include <mutex>
 
 
 Map::Map(const std::string& name) : name(name)

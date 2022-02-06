@@ -66,7 +66,8 @@ namespace util
 
 		//helper methods
 		static std::string readString(std::istream* is, int maxLength, int length = -1);
-		
+		static void writeString(std::ostream& os, const std::string &data, int length);
+
 		class Node
 		{
 		public:

@@ -25,10 +25,12 @@ public:
 	class QuadTreeNode : public util::Tree<4, QuadTreeNode>
 	{
 	public:
-		QuadTreeNode(std::vector<glm::vec3>::const_iterator it, int level = 0);
+		QuadTreeNode(std::vector<glm::vec3>::const_iterator &it, int level = 0);
 		~QuadTreeNode();
 		math::AABB bbox;
 		glm::vec3 range[2];
+
+		void draw(int);
 	};
 
 	struct
@@ -62,6 +64,7 @@ public:
 	void load(const std::string& fileName, bool loadModels = true, bool loadGnd = true);
 	void save(const std::string& fileName);
 
+
 	void buildImGui(BrowEdit* browEdit) override;
 };
 
@@ -90,6 +93,7 @@ public:
 	float animSpeed;
 	int blockType;
 	std::string fileName; //UTF8
+	std::string objectName; //not sure what this is, UTF8
 
 	RswModel() : aabb(glm::vec3(), glm::vec3()) {}
 	RswModel(const std::string &fileName) : aabb(glm::vec3(), glm::vec3()), animType(0), animSpeed(1), blockType(0), fileName(fileName) {}

@@ -156,8 +156,11 @@ void BrowEdit::run()
 		if (windowData.helpWindowVisible)
 			showHelpWindow();
 
+		showLightmapSettingsWindow();
+
 		if (windowData.progressWindowVisible)
 		{
+			std::lock_guard<std::mutex> guard(windowData.progressMutex);
 			ImGui::OpenPopup("Progress");
 			ImVec2 center = ImGui::GetMainViewport()->GetCenter();
 			ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
@@ -354,7 +357,7 @@ void BrowEdit::showMapWindow(MapView& mapView)
 
 void BrowEdit::saveMap(Map* map)
 {
-	map->rootNode->getComponent<Rsw>()->save("out\\" + map->name);
+	map->rootNode->getComponent<Rsw>()->save(config.ropath + map->name);
 }
 
 void BrowEdit::loadMap(const std::string& file)

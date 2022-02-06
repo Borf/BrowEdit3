@@ -5,6 +5,7 @@
 #include <browedit/gl/FBO.h>
 #include <browedit/util/FileIO.h>
 #include <browedit/util/Util.h>
+#include <browedit/Lightmapper.h>
 #include <GLFW/glfw3.h>
 
 void BrowEdit::menuBar()
@@ -77,6 +78,17 @@ void BrowEdit::menuBar()
 					saveMap(map);
 				if (ImGui::MenuItem("Open new view"))
 					loadMap(map->name);
+				if (ImGui::MenuItem("Export shadowmap"))
+					;
+				if (ImGui::MenuItem("Export colormap"))
+					;
+				if (ImGui::MenuItem("Calculate lightmaps") && !lightmapper)
+				{
+					lightmapper = new Lightmapper(map, this);
+					windowData.openLightmapSettings = true;
+				}
+
+
 				for (auto mv : mapViews)
 				{
 					if (mv.map == map)
@@ -99,13 +111,6 @@ void BrowEdit::menuBar()
 								}
 								ImGui::EndMenu();
 							}
-							if (ImGui::MenuItem("Export shadowmap"))
-								;
-							if (ImGui::MenuItem("Export colormap"))
-								;
-							if (ImGui::MenuItem("Calculate lightmaps"))
-								;
-
 							ImGui::EndMenu();
 						}
 					}

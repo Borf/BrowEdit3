@@ -271,6 +271,16 @@ namespace util
 		return ret;
 	}
 
+	void FileIO::writeString(std::ostream& os, const std::string& data, int length)
+	{
+		char* buf = new char[length];
+		memset(buf, 0, length);
+		memcpy(buf, data.c_str(), std::min(data.length(), (std::size_t)length));
+		os.write(buf, length);
+		delete[] buf;
+	}
+
+
 
 
 }

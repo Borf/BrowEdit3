@@ -35,4 +35,5 @@ public:
 	void pasteSelection(BrowEdit* browEdit);
 	void deleteSelection(BrowEdit* browEdit);
 	void flipSelection(int axis, BrowEdit* browEdit);
+
 };

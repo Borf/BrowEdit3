@@ -49,6 +49,8 @@ public:
 	float gridSize = 5;
 	bool gridLocal = true;
 
+	int quadTreeMaxLevel = 0;
+
 	enum class PivotPoint {
 		Local,
 		GroupCenter

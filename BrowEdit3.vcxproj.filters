@@ -251,6 +251,12 @@
     <ClCompile Include="browedit\components\BillboardRenderer.cpp">
       <Filter>browedit\components</Filter>
     </ClCompile>
+    <ClCompile Include="browedit\Lightmapper.cpp">
+      <Filter>browedit</Filter>
+    </ClCompile>
+    <ClCompile Include="browedit\windows\LightmapSettingsWindow.cpp">
+      <Filter>browedit\windows</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="lib\imgui\imgui.h">
@@ -444,6 +450,9 @@
     </ClInclude>
     <ClInclude Include="browedit\components\BillboardRenderer.h">
       <Filter>browedit\components</Filter>
+    </ClInclude>
+    <ClInclude Include="browedit\Lightmapper.h">
+      <Filter>browedit</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

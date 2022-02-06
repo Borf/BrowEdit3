@@ -257,6 +257,413 @@ glm::vec3 Gnd::rayCast(const math::Ray& ray)
 }
 
 
+void Gnd::makeLightmapsUnique()
+{
+	makeTilesUnique();
+	std::set<int> taken;
+	for (Tile* t : tiles)
+	{
+		if (taken.find(t->lightmapIndex) == taken.end())
+			taken.insert(t->lightmapIndex);
+		else
+		{
+			Lightmap* l = new Lightmap(*lightmaps[t->lightmapIndex]);
+			t->lightmapIndex = (unsigned short)lightmaps.size();
+			lightmaps.push_back(l);
+		}
+	}
+}
+
+void Gnd::makeLightmapsClear()
+{
+	lightmaps.clear();
+	Lightmap* l = new Lightmap();
+	memset(l->data, 255, 64);
+	memset(l->data + 64, 0, 256 - 64);
+	lightmaps.push_back(l);
+
+	for (Tile* t : tiles)
+		t->lightmapIndex = 0;
+}
+void Gnd::makeLightmapBorders()
+{
+	makeLightmapsUnique();
+	std::cout<< "Fixing borders" << std::endl;
+	for (int x = 0; x < width; x++)
+	{
+		for (int y = 0; y < height; y++)
+		{
+			Gnd::Cube* cube = cubes[x][y];
+			int tileId = cube->tileUp;
+			if (tileId != -1)
+			{
+				Gnd::Tile* tile = tiles[tileId];
+				assert(tile && tile->lightmapIndex != -1);
+				Gnd::Lightmap* lightmap = lightmaps[tile->lightmapIndex];
+
+				for (int i = 0; i < 8; i++)
+				{
+					lightmap->data[i + 8 * 0] = getLightmapBrightness(x, y - 1, i, 6);
+					lightmap->data[i + 8 * 7] = getLightmapBrightness(x, y + 1, i, 1);
+					lightmap->data[0 + 8 * i] = getLightmapBrightness(x - 1, y, 6, i);
+					lightmap->data[7 + 8 * i] = getLightmapBrightness(x + 1, y, 1, i);
+
+					for (int c = 0; c < 3; c++)
+					{
+						lightmap->data[64 + 3 * (i + 8 * 0) + c] = getLightmapColor(x, y - 1, i, 6)[c];
+						lightmap->data[64 + 3 * (i + 8 * 7) + c] = getLightmapColor(x, y + 1, i, 1)[c];
+						lightmap->data[64 + 3 * (0 + 8 * i) + c] = getLightmapColor(x - 1, y, 6, i)[c];
+						lightmap->data[64 + 3 * (7 + 8 * i) + c] = getLightmapColor(x + 1, y, 1, i)[c];
+
+					}
+
+				}
+			}
+			tileId = cube->tileSide;
+			if (tileId != -1)
+			{
+				Gnd::Tile* tile = tiles[tileId];
+				assert(tile && tile->lightmapIndex != -1);
+				Gnd::Lightmap* lightmap = lightmaps[tile->lightmapIndex];
+
+				auto otherCube = cubes[x - 1][y];
+				if (otherCube->tileSide != -1)
+				{
+					auto otherTile = tiles[otherCube->tileSide];
+					auto otherLightmap = lightmaps[otherTile->lightmapIndex];
+
+					for (int i = 0; i < 8; i++)
+						lightmap->data[0 + 8 * i] = otherLightmap->data[6 + 8 * i];
+				}
+				else
+					for (int i = 0; i < 8; i++)
+						lightmap->data[0 + 8 * i] = lightmap->data[1 + 8 * i];
+
+				otherCube = cubes[x + 1][y];
+				if (otherCube->tileSide != -1)
+				{
+					auto otherTile = tiles[otherCube->tileSide];
+					auto otherLightmap = lightmaps[otherTile->lightmapIndex];
+
+					for (int i = 0; i < 8; i++)
+						lightmap->data[7 + 8 * i] = otherLightmap->data[1 + 8 * i];
+				}
+				else
+					for (int i = 0; i < 8; i++)
+						lightmap->data[7 + 8 * i] = lightmap->data[6 + 8 * i];
+
+				//top and bottom
+				otherCube = cubes[x][y + 1];
+				if (otherCube->tileUp != -1)
+				{
+					auto otherTile = tiles[otherCube->tileUp];
+					auto otherLightmap = lightmaps[otherTile->lightmapIndex];
+
+					for (int i = 0; i < 8; i++)
+						lightmap->data[i + 8 * 7] = otherLightmap->data[i + 8 * 1]; //bottom
+				}
+				else
+					for (int i = 0; i < 8; i++)
+						lightmap->data[i + 8 * 7] = lightmap->data[i + 8 * 6];
+
+
+				otherCube = cubes[x][y];
+				if (otherCube->tileUp != -1)
+				{
+					auto otherTile = tiles[otherCube->tileUp];
+					auto otherLightmap = lightmaps[otherTile->lightmapIndex];
+
+					for (int i = 0; i < 8; i++)
+						lightmap->data[i + 8 * 0] = otherLightmap->data[i + 8 * 1]; //bottom
+				}
+				else
+					for (int i = 0; i < 8; i++)
+						lightmap->data[i + 8 * 0] = lightmap->data[i + 8 * 1];
+			}
+
+			tileId = cube->tileFront;
+			if (tileId != -1)
+			{
+				Gnd::Tile* tile = tiles[tileId];
+				assert(tile && tile->lightmapIndex != -1);
+				Gnd::Lightmap* lightmap = lightmaps[tile->lightmapIndex];
+
+				if (y < width)
+				{
+					auto otherCube = cubes[x][y + 1];
+					if (otherCube->tileFront != -1)
+					{
+						auto otherTile = tiles[otherCube->tileFront];
+						auto otherLightmap = lightmaps[otherTile->lightmapIndex];
+
+						for (int i = 0; i < 8; i++)
+							lightmap->data[0 + 8 * i] = otherLightmap->data[6 + 8 * i];
+					}
+					else
+						for (int i = 0; i < 8; i++)
+							lightmap->data[0 + 8 * i] = lightmap->data[1 + 8 * i];
+				}
+
+				if (y > 0)
+				{
+					auto otherCube = cubes[x][y - 1];
+					if (otherCube->tileFront != -1)
+					{
+						auto otherTile = tiles[otherCube->tileFront];
+						auto otherLightmap = lightmaps[otherTile->lightmapIndex];
+
+						for (int i = 0; i < 8; i++)
+							lightmap->data[7 + 8 * i] = otherLightmap->data[1 + 8 * i];
+					}
+					else
+						for (int i = 0; i < 8; i++)
+							lightmap->data[7 + 8 * i] = lightmap->data[6 + 8 * i];
+				}
+
+				if (x < width)
+				{
+					//top and bottom
+					auto otherCube = cubes[x + 1][y];
+					if (otherCube->tileUp != -1)
+					{
+						auto otherTile = tiles[otherCube->tileUp];
+						auto otherLightmap = lightmaps[otherTile->lightmapIndex];
+
+						for (int i = 0; i < 8; i++)
+							lightmap->data[i + 8 * 7] = otherLightmap->data[i + 8 * 1]; //bottom
+					}
+					else
+						for (int i = 0; i < 8; i++)
+							lightmap->data[i + 8 * 7] = lightmap->data[i + 8 * 6];
+				}
+
+				auto otherCube = cubes[x][y];
+				if (otherCube->tileUp != -1)
+				{
+					auto otherTile = tiles[otherCube->tileUp];
+					auto otherLightmap = lightmaps[otherTile->lightmapIndex];
+
+					for (int i = 0; i < 8; i++)
+						lightmap->data[i + 8 * 0] = otherLightmap->data[i + 8 * 1]; //bottom
+				}
+				else
+					for (int i = 0; i < 8; i++)
+						lightmap->data[i + 8 * 0] = lightmap->data[i + 8 * 1];
+			}
+
+		}
+	}
+
+
+}
+
+
+void Gnd::makeLightmapBorders(int x, int y)
+{
+	if (x < 0 || x >= width || y < 0 || y >= height)
+		return;
+	Gnd::Cube* cube = cubes[x][y];
+	int tileId = cube->tileUp;
+	if (tileId == -1)
+		return;
+	Gnd::Tile* tile = tiles[tileId];
+	assert(tile && tile->lightmapIndex != -1);
+	Gnd::Lightmap* lightmap = lightmaps[tile->lightmapIndex];
+
+	for (int i = 0; i < 8; i++)
+	{
+		lightmap->data[i + 8 * 0] = getLightmapBrightness(x, y - 1, i, 6);
+		lightmap->data[i + 8 * 7] = getLightmapBrightness(x, y + 1, i, 1);
+		lightmap->data[0 + 8 * i] = getLightmapBrightness(x - 1, y, 6, i);
+		lightmap->data[7 + 8 * i] = getLightmapBrightness(x + 1, y, 1, i);
+
+		for (int c = 0; c < 3; c++)
+		{
+			lightmap->data[64 + 3 * (i + 8 * 0) + c] = getLightmapColor(x, y - 1, i, 6)[c];
+			lightmap->data[64 + 3 * (i + 8 * 7) + c] = getLightmapColor(x, y + 1, i, 1)[c];
+			lightmap->data[64 + 3 * (0 + 8 * i) + c] = getLightmapColor(x - 1, y, 6, i)[c];
+			lightmap->data[64 + 3 * (7 + 8 * i) + c] = getLightmapColor(x + 1, y, 1, i)[c];
+
+		}
+	}
+}
+
+
+int Gnd::getLightmapBrightness(int x, int y, int lightmapX, int lightmapY)
+{
+	if (x < 0 || y < 0 || x >= width || y >= height)
+		return 0;
+
+	Gnd::Cube* cube = cubes[x][y];
+	int tileId = cube->tileUp;
+	if (tileId == -1)
+		return 0;
+	Gnd::Tile* tile = tiles[tileId];
+	assert(tile && tile->lightmapIndex != -1);
+	Gnd::Lightmap* lightmap = lightmaps[tile->lightmapIndex];
+
+	return lightmap->data[lightmapX + 8 * lightmapY];
+
+}
+
+glm::ivec3 Gnd::getLightmapColor(int x, int y, int lightmapX, int lightmapY)
+{
+	if (x < 0 || y < 0 || x >= width || y >= height)
+		return glm::ivec3(0, 0, 0);
+
+	Gnd::Cube* cube = cubes[x][y];
+	int tileId = cube->tileUp;
+	if (tileId == -1)
+		return glm::ivec3(0, 0, 0);
+	Gnd::Tile* tile = tiles[tileId];
+	assert(tile && tile->lightmapIndex != -1);
+	Gnd::Lightmap* lightmap = lightmaps[tile->lightmapIndex];
+
+	return glm::ivec3(
+		lightmap->data[64 + (lightmapX + 8 * lightmapY) * 3 + 0],
+		lightmap->data[64 + (lightmapX + 8 * lightmapY) * 3 + 1],
+		lightmap->data[64 + (lightmapX + 8 * lightmapY) * 3 + 2]);
+
+
+}
+
+void Gnd::cleanLightmaps()
+{
+	std::cout<< "Lightmap cleanup, starting with " << lightmaps.size() << " lightmaps" <<std::endl;
+	std::map<unsigned char, std::vector<std::size_t>> lookup;
+
+	for (int i = 0; i < (int)lightmaps.size(); i++)
+	{
+		unsigned char hash = lightmaps[i]->hash();
+		bool found = false;
+		if (lookup.find(hash) != lookup.end())
+		{
+			for (const auto ii : lookup[hash])
+			{
+				if ((*lightmaps[i]) == (*lightmaps[ii]))
+				{// if it is found
+					assert(i > ii);
+					//change all tiles with lightmap i to ii
+					for (auto tile : tiles)
+						if (tile->lightmapIndex == i)
+							tile->lightmapIndex = (unsigned short)ii;
+						else if (tile->lightmapIndex > i)
+							tile->lightmapIndex--;
+					//remove lightmap i
+					delete lightmaps[i];
+					lightmaps.erase(lightmaps.begin() + i);
+					i--;
+					found = true;
+					break;
+				}
+			}
+		}
+		if (!found)
+		{
+			lookup[hash].push_back(i);
+		}
+
+	}
+
+	std::cout<< "Lightmap cleanup, ending with " << lightmaps.size() << " lightmaps" << std::endl;
+
+}
+
+
+void Gnd::makeLightmapsSmooth()
+{
+	std::cout << "Smoothing..." << std::endl;
+	for (int x = 0; x < width; x++)
+	{
+		for (int y = 0; y < height; y++)
+		{
+			Gnd::Cube* cube = cubes[x][y];
+			int tileId = cube->tileUp;
+			if (tileId == -1)
+				continue;
+			Gnd::Tile* tile = tiles[tileId];
+			assert(tile && tile->lightmapIndex != -1);
+			Gnd::Lightmap* lightmap = lightmaps[tile->lightmapIndex];
+
+			char newData[64];
+
+			for (int xx = 1; xx < 7; xx++)
+			{
+				for (int yy = 1; yy < 7; yy++)
+				{
+					int total = 0;
+					for (int xxx = xx - 1; xxx <= xx + 1; xxx++)
+						for (int yyy = yy - 1; yyy <= yy + 1; yyy++)
+							total += lightmap->data[xxx + 8 * yyy];
+					newData[xx + 8 * yy] = total / 9;
+				}
+			}
+			memcpy(lightmap->data, newData, 64 * sizeof(char));
+		}
+	}
+
+}
+
+void Gnd::cleanTiles()
+{
+	std::cout << "Tiles cleanup, starting with " << tiles.size() << " tiles" << std::endl;
+	std::set<int> used;
+	for (int y = 0; y < height; y++)
+		for (int x = 0; x < width; x++)
+		{
+			used.insert(cubes[x][y]->tileUp);
+			used.insert(cubes[x][y]->tileFront);
+			used.insert(cubes[x][y]->tileSide);
+		}
+
+
+	std::list<std::size_t> toRemove;
+	for (std::size_t i = 0; i < tiles.size(); i++)
+		if (used.find(i) == used.end())
+			toRemove.push_back(i);
+	toRemove.reverse();
+
+	for (std::size_t i : toRemove)
+	{
+		tiles.erase(tiles.begin() + i);
+		for (int y = 0; y < height; y++)
+		{
+			for (int x = 0; x < width; x++)
+			{
+				if (cubes[x][y]->tileUp > i)
+					cubes[x][y]->tileUp--;
+				if (cubes[x][y]->tileSide > i)
+					cubes[x][y]->tileSide--;
+				if (cubes[x][y]->tileFront > i)
+					cubes[x][y]->tileFront--;
+			}
+		}
+	}
+	std::cout<< "Tiles cleanup, ending with " << tiles.size() << " tiles" << std::endl;
+}
+
+
+void Gnd::makeTilesUnique()
+{
+	std::set<int> taken;
+	for (int y = 0; y < height; y++)
+	{
+		for (int x = 0; x < width; x++)
+		{
+			if (cubes[x][y]->tileUp == -1)
+				continue;
+			if (taken.find(cubes[x][y]->tileUp) == taken.end())
+				taken.insert(cubes[x][y]->tileUp);
+			else
+			{
+				Tile* t = new Tile(*tiles[cubes[x][y]->tileUp]);
+				cubes[x][y]->tileUp = (int)tiles.size();
+				tiles.push_back(t);
+			}
+		}
+	}
+}
+
 
 
 
@@ -317,3 +724,112 @@ void Gnd::Cube::calcNormals(Gnd* gnd, int x, int y)
 
 
 
+std::vector<glm::vec3> Gnd::getMapQuads()
+{
+	std::vector<glm::vec3> quads;
+
+	for (int x = 0; x < width; x++)
+	{
+		for (int y = 0; y < height; y++)
+		{
+			auto cube = cubes[x][y];
+			if (cube->tileUp != -1)
+			{
+				/*quads.push_back(glm::vec3((x + 0) * 10, -cube->heights[2], 10 * height - (y + 1) * 10 + 10));
+				quads.push_back(glm::vec3((x + 0) * 10, -cube->heights[0], 10 * height - (y + 0) * 10 + 10));
+				quads.push_back(glm::vec3((x + 1) * 10, -cube->heights[1], 10 * height - (y + 0) * 10 + 10));
+				quads.push_back(glm::vec3((x + 1) * 10, -cube->heights[3], 10 * height - (y + 1) * 10 + 10));*/
+			}
+			if (cube->tileSide != -1)
+			{
+				quads.push_back(glm::vec3(10 * x, -cube->h3, 10 * height - 10 * y));
+				quads.push_back(glm::vec3(10 * x + 10, -cube->h4, 10 * height - 10 * y));
+				quads.push_back(glm::vec3(10 * x + 10, -cubes[x][y + 1]->h2, 10 * height - 10 * y));
+				quads.push_back(glm::vec3(10 * x, -cubes[x][y + 1]->h1, 10 * height - 10 * y));
+			}
+			if (cube->tileFront != -1)
+			{
+				quads.push_back(glm::vec3(10 * x + 10, -cube->h2, 10 * height - 10 * y + 10));
+				quads.push_back(glm::vec3(10 * x + 10, -cube->h4, 10 * height - 10 * y));
+				quads.push_back(glm::vec3(10 * x + 10, -cubes[x + 1][y]->h3, 10 * height - 10 * y));
+				quads.push_back(glm::vec3(10 * x + 10, -cubes[x + 1][y]->h1, 10 * height - 10 * y + 10));
+			}
+		}
+	}
+
+	/*for (int x = 0; x < width; x++)
+	{
+		for (int y = 0; y < height; y++)
+		{
+			if (cubes[x][y]->tileUp != -1)
+			{
+				file << "f ";
+				for (int i = 0; i < 4; i++)
+					file << (x + y * width) * 4 + i + 1 << " ";
+				file << std::endl;
+			}
+			if (cubes[x][y]->tileSide != -1)
+			{
+				file << "f ";
+				file << (x + y * width) * 4 + 2 + 1 << " ";
+				file << (x + y * width) * 4 + 3 + 1 << " ";
+				file << (x + (y + 1) * width) * 4 + 0 + 1 << " ";
+				file << (x + (y + 1) * width) * 4 + 1 + 1 << " ";
+				file << std::endl;
+			}
+
+			if (cubes[x][y]->tileFront != -1)
+			{
+				file << "f ";
+				file << (x + y * width) * 4 + 3 + 1 << " ";
+				file << (x + y * width) * 4 + 0 + 1 << " ";
+				file << ((x + 1) + y * width) * 4 + 1 + 1 << " ";
+				file << ((x + 1) + y * width) * 4 + 2 + 1 << " ";
+				file << std::endl;
+			}
+		}
+	}*/
+	return quads;
+}
+
+const unsigned char Gnd::Lightmap::hash() const //actually a crc, but will work
+{
+#define POLY 0x82f63b78
+	unsigned char crc = ~0;
+	for (int i = 0; i < 256; i++) {
+		crc ^= data[i];
+		for (int k = 0; k < 8; k++)
+			crc = crc & 1 ? (crc >> 1) ^ POLY : crc >> 1;
+	}
+	return ~crc;
+}
+
+
+const unsigned char Gnd::Tile::hash() const
+{
+#define POLY 0x82f63b78
+	unsigned char crc = ~0;
+	for (int i = 0; i < sizeof(Tile); i++) {
+		crc ^= ((char*)this)[i];
+		for (int k = 0; k < 8; k++)
+			crc = crc & 1 ? (crc >> 1) ^ POLY : crc >> 1;
+	}
+	return ~crc;
+}
+
+bool Gnd::Lightmap::operator==(const Lightmap& other) const
+{
+	return memcmp(data, other.data, 256) == 0;
+}
+
+
+bool Gnd::Tile::operator==(const Gnd::Tile& o) const
+{
+	return	v1 == o.v1 &&
+		v2 == o.v2 &&
+		v3 == o.v3 &&
+		v4 == o.v4 &&
+		textureIndex == o.textureIndex &&
+		lightmapIndex == o.lightmapIndex &&
+		color == o.color;
+}

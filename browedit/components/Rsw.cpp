@@ -189,10 +189,14 @@ void Rsw::load(const std::string& fileName, bool loadModels, bool loadGnd)
 	{
 		glm::vec3 p;
 		file->read(reinterpret_cast<char*>(glm::value_ptr(p)), sizeof(float) * 3);
-		quadtreeFloats.push_back(p);
+		if(file->gcount() > 0) //if data is actually read
+			quadtreeFloats.push_back(p);
 	}
 	if (quadtreeFloats.size() > 1)
-		quadtree = new QuadTreeNode(quadtreeFloats.cbegin());
+	{
+		auto it = quadtreeFloats.cbegin();
+		quadtree = new QuadTreeNode(it);
+	}
 	else
 		quadtree = nullptr;//TODO:
 
@@ -206,8 +210,6 @@ void Rsw::save(const std::string& fileName)
 	std::ofstream file(fileName.c_str(), std::ios_base::out | std::ios_base::binary);
 	nlohmann::json extraProperties;
 
-	char buf[80];
-
 	char header[4] = { 'G','R','S','W' };
 	file.write(header, 4);
 	short versionFlipped = util::swapShort(version);
@@ -215,19 +217,15 @@ void Rsw::save(const std::string& fileName)
 
 	if (version == 0x0202)
 		file.put(0); // ???
-	strcpy_s(buf, 40, iniFile.c_str());
-	file.write(buf, 40);
+	util::FileIO::writeString(file, iniFile, 40);
 
-	strcpy_s(buf, 40, gndFile.c_str());
-	file.write(buf, 40);
+	util::FileIO::writeString(file, gndFile, 40);
 
 	if (version > 0x0104)
 	{
-		strcpy_s(buf, 40, gatFile.c_str());
-		file.write(buf, 40);
+		util::FileIO::writeString(file, gatFile, 40);
 	}
-	strcpy_s(buf, 40, iniFile.c_str());
-	file.write(buf, 40);
+	util::FileIO::writeString(file, iniFile, 40);
 
 	if (version >= 0x103)
 		file.write(reinterpret_cast<char*>(&water.height), sizeof(float));
@@ -288,7 +286,6 @@ void Rsw::save(const std::string& fileName)
 			extraProperties["light"].push_back(j);
 		}
 	}
-
 	quadtree->foreach([&file](QuadTreeNode* n)
 	{
 		file.write(reinterpret_cast<char*>(glm::value_ptr(n->bbox.bounds[1])), sizeof(float) * 3);
@@ -297,13 +294,13 @@ void Rsw::save(const std::string& fileName)
 		file.write(reinterpret_cast<char*>(glm::value_ptr(n->range[1])), sizeof(float) * 3);
 	});
 
-
 	std::ofstream extraFile((fileName + ".extra.json").c_str(), std::ios_base::out | std::ios_base::binary);
 	extraFile << std::setw(2)<<extraProperties;
 
 	//TODO: write gnd/gat
 	std::cout << "Done saving" << std::endl;
 }
+
 
 RswObject::RswObject(RswObject* other) : position(other->position), rotation(other->rotation), scale(other->scale)
 {
@@ -366,7 +363,7 @@ void RswModel::load(std::istream* is, int version, bool loadModel)
 	std::string fileNameRaw = util::FileIO::readString(is, 80);
 	fileName = util::iso_8859_1_to_utf8(fileNameRaw);
 	assert(fileNameRaw == util::utf8_to_iso_8859_1(fileName));
-	util::FileIO::readString(is, 80); // TODO: Unknown?
+	objectName = util::iso_8859_1_to_utf8(util::FileIO::readString(is, 80)); // TODO: Unknown?
 	is->read(reinterpret_cast<char*>(glm::value_ptr(rswObject->position)), sizeof(float) * 3);
 	is->read(reinterpret_cast<char*>(glm::value_ptr(rswObject->rotation)), sizeof(float) * 3);
 	is->read(reinterpret_cast<char*>(glm::value_ptr(rswObject->scale)), sizeof(float) * 3);
@@ -379,19 +376,15 @@ void RswModel::load(std::istream* is, int version, bool loadModel)
 void RswModel::save(std::ofstream &file, int version)
 {
 	auto rswObject = node->getComponent<RswObject>();
-	char buf[80];
 	if (version >= 0x103)
 	{
-		strcpy_s(buf, 40, util::utf8_to_iso_8859_1(node->name).c_str());
-		file.write(buf, 40);
+		util::FileIO::writeString(file, util::utf8_to_iso_8859_1(node->name), 40);
 		file.write(reinterpret_cast<char*>(&animType), sizeof(int));
 		file.write(reinterpret_cast<char*>(&animSpeed), sizeof(float));
 		file.write(reinterpret_cast<char*>(&blockType), sizeof(int));
 	}
-	strcpy_s(buf, 80, util::utf8_to_iso_8859_1(fileName).c_str());
-	file.write(buf, 80);
-	buf[0] = 0;
-	file.write(buf, 80); //UNKNOWN
+	util::FileIO::writeString(file, util::utf8_to_iso_8859_1(fileName), 80);
+	util::FileIO::writeString(file, util::utf8_to_iso_8859_1(objectName), 80); //unknown
 	file.write(reinterpret_cast<char*>(glm::value_ptr(rswObject->position)), sizeof(float) * 3);
 	file.write(reinterpret_cast<char*>(glm::value_ptr(rswObject->rotation)), sizeof(float) * 3);
 	file.write(reinterpret_cast<char*>(glm::value_ptr(rswObject->scale)), sizeof(float) * 3);
@@ -449,10 +442,8 @@ void RswLight::loadExtra(nlohmann::json data)
 void RswLight::save(std::ofstream &file)
 {
 	auto rswObject = node->getComponent<RswObject>();
-	char buf[80];
-	strcpy_s(buf, 40, util::utf8_to_iso_8859_1(node->name).c_str());
-	file.write(buf, 40);
-	
+	util::FileIO::writeString(file, util::utf8_to_iso_8859_1(node->name), 40);
+
 	file.write(reinterpret_cast<const char*>(glm::value_ptr(rswObject->position * glm::vec3(1, -1, 1))), sizeof(float) * 3);
 	file.write(reinterpret_cast<char*>(todo), sizeof(float) * 10);
 
@@ -518,12 +509,8 @@ void RswSound::save(std::ofstream &file, int version)
 {
 	auto rswObject = node->getComponent<RswObject>();
 
-	char buf[80];
-	strcpy_s(buf, 80, util::utf8_to_iso_8859_1(node->name).c_str());
-	file.write(buf, 80);
-
-	strcpy_s(buf, 40, util::utf8_to_iso_8859_1(fileName).c_str());
-	file.write(buf, 40);
+	util::FileIO::writeString(file, util::utf8_to_iso_8859_1(node->name), 40);
+	util::FileIO::writeString(file, util::utf8_to_iso_8859_1(fileName), 80); //TODO: CHECK IF 80/40 or 40/80
 
 	file.write(reinterpret_cast<char*>(&unknown7), sizeof(float));
 	file.write(reinterpret_cast<char*>(&unknown8), sizeof(float));
@@ -560,9 +547,7 @@ void RswEffect::load(std::istream* is)
 void RswEffect::save(std::ofstream &file)
 {
 	auto rswObject = node->getComponent<RswObject>();
-	char buf[80];
-	strcpy_s(buf, 80, util::utf8_to_iso_8859_1(node->name).c_str());
-	file.write(buf, 80);
+	util::FileIO::writeString(file, util::utf8_to_iso_8859_1(node->name), 80);
 	file.write(reinterpret_cast<char*>(glm::value_ptr(rswObject->position)), sizeof(float) * 3);
 	file.write(reinterpret_cast<char*>(&id), sizeof(int));
 	file.write(reinterpret_cast<char*>(&loop), sizeof(float));
@@ -572,8 +557,7 @@ void RswEffect::save(std::ofstream &file)
 	file.write(reinterpret_cast<char*>(&param4), sizeof(float));
 }
 
-
-Rsw::QuadTreeNode::QuadTreeNode(std::vector<glm::vec3>::const_iterator it, int level /*= 0*/) : bbox(glm::vec3(0, 0, 0), glm::vec3(0, 0, 0))
+Rsw::QuadTreeNode::QuadTreeNode(std::vector<glm::vec3>::const_iterator &it, int level /*= 0*/) : bbox(glm::vec3(0, 0, 0), glm::vec3(0, 0, 0))
 {
 	bbox.bounds[1] = *it;
 	it++;
@@ -633,6 +617,11 @@ void Rsw::buildImGui(BrowEdit* browEdit)
 		util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Intensity", &light.intensity, 0.01f, 0, 1);
 		util::ColorEdit3(browEdit, browEdit->activeMapView->map, node, "Diffuse", &light.diffuse);
 		util::ColorEdit3(browEdit, browEdit->activeMapView->map, node, "Ambient", &light.ambient);
+
+
+		util::DragFloat(browEdit, browEdit->activeMapView->map, node, "lightmapAmbient", &light.lightmapAmbient, 0.01f, 0, 1);
+		util::DragFloat(browEdit, browEdit->activeMapView->map, node, "lightmapIntensity", &light.lightmapIntensity, 0.01f, 0, 1);
+
 	}
 	if (ImGui::CollapsingHeader("Water", ImGuiTreeNodeFlags_DefaultOpen))
 	{
@@ -709,6 +698,11 @@ void RswLight::buildImGui(BrowEdit* browEdit)
 
 	util::ColorEdit3(browEdit, browEdit->activeMapView->map, node, "Color", &color);
 	util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Range", &range, 0.01f, -100.0f, 100.0f);
+
+
+	util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Intensity", &intensity, 0.01f, 0.0f, 10000.0f);
+	util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Cutoff", &cutOff, 0.01f, 0.0f, 1.0f);
+
 }
 
 
@@ -801,4 +795,47 @@ std::vector<glm::vec3> CubeCollider::getCollisions(const math::Ray& ray)
 	if (aabb.hasRayCollision(newRay, 0, 100000))
 		ret.push_back(glm::vec3(5 * gnd->width + rswObject->position.x, -rswObject->position.y, -10 - 5 * gnd->height + rswObject->position.z));
 	return ret;
+}
+
+
+
+
+void Rsw::QuadTreeNode::draw(int levelLeft)
+{
+	if (levelLeft <= 0)
+		return;
+	glColor4f(1, 0, 0, 1);
+	glBegin(GL_LINES);
+	glVertex3f(bbox.min.x, bbox.min.y, bbox.min.z);
+	glVertex3f(bbox.min.x, bbox.min.y, bbox.max.z);
+	glVertex3f(bbox.min.x, bbox.min.y, bbox.max.z);
+	glVertex3f(bbox.min.x, bbox.max.y, bbox.max.z);
+	glVertex3f(bbox.min.x, bbox.max.y, bbox.max.z);
+	glVertex3f(bbox.min.x, bbox.max.y, bbox.min.z);
+	glVertex3f(bbox.min.x, bbox.max.y, bbox.min.z);
+	glVertex3f(bbox.min.x, bbox.min.y, bbox.min.z);
+
+	glVertex3f(bbox.max.x, bbox.min.y, bbox.min.z);
+	glVertex3f(bbox.max.x, bbox.min.y, bbox.max.z);
+	glVertex3f(bbox.max.x, bbox.min.y, bbox.max.z);
+	glVertex3f(bbox.max.x, bbox.max.y, bbox.max.z);
+	glVertex3f(bbox.max.x, bbox.max.y, bbox.max.z);
+	glVertex3f(bbox.max.x, bbox.max.y, bbox.min.z);
+	glVertex3f(bbox.max.x, bbox.max.y, bbox.min.z);
+	glVertex3f(bbox.max.x, bbox.min.y, bbox.min.z);
+
+	glVertex3f(bbox.min.x, bbox.min.y, bbox.min.z);
+	glVertex3f(bbox.max.x, bbox.min.y, bbox.min.z);
+	glVertex3f(bbox.min.x, bbox.min.y, bbox.max.z);
+	glVertex3f(bbox.max.x, bbox.min.y, bbox.max.z);
+	glVertex3f(bbox.min.x, bbox.max.y, bbox.min.z);
+	glVertex3f(bbox.max.x, bbox.max.y, bbox.min.z);
+	glVertex3f(bbox.min.x, bbox.max.y, bbox.max.z);
+	glVertex3f(bbox.max.x, bbox.max.y, bbox.max.z);
+	glEnd();
+
+	for (int i = 0; i < 4; i++)
+		if (children[i])
+			children[i]->draw(levelLeft-1);
+
 }

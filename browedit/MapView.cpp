@@ -56,6 +56,12 @@ void MapView::toolbar(BrowEdit* browEdit)
 	ImGui::SameLine();
 	ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 	ImGui::SameLine();
+	ImGui::SetNextItemWidth(50);
+	ImGui::DragInt("##quadTreeMaxLevel", &quadTreeMaxLevel, 1, 0, 6);
+	if (ImGui::IsItemHovered())
+		ImGui::SetTooltip("Change quadtree detail level");
+	ImGui::SameLine();
+
 
 	bool snapping = snapToGrid;
 	if (ImGui::GetIO().KeyShift)
@@ -223,16 +229,28 @@ void MapView::updateObjectMode(BrowEdit* browEdit)
 
 void MapView::postRenderObjectMode(BrowEdit* browEdit)
 {
-	if (!hovered)
-		return;
 	glUseProgram(0);
 	glMatrixMode(GL_PROJECTION);
 	glLoadMatrixf(glm::value_ptr(nodeRenderContext.projectionMatrix));
 	glMatrixMode(GL_MODELVIEW);
 	glLoadMatrixf(glm::value_ptr(nodeRenderContext.viewMatrix));
 	glColor3f(1, 0, 0);
-
 	fbo->bind();
+
+	glPushMatrix();
+	glScalef(1, -1, -1);
+	auto gnd = map->rootNode->getComponent<Gnd>();
+	glTranslatef(gnd->width * 5.0f, 0.0f, -gnd->height * 5.0f);
+	map->rootNode->getComponent<Rsw>()->quadtree->draw(quadTreeMaxLevel);
+	glPopMatrix();
+
+
+	if (!hovered)
+	{
+		fbo->unbind();
+		return;
+	}
+
 
 	bool canSelectObject = true;
 	if (browEdit->newNodes.size() > 0)

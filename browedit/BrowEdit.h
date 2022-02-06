@@ -5,7 +5,9 @@
 #include <json.hpp>
 #include <imgui.h>
 #include <string_view>
+#include <mutex>
 class Action;
+class Lightmapper;
 using json = nlohmann::json;
 
 class Map;
@@ -23,6 +25,8 @@ class BrowEdit
 	gl::Texture* iconsTexture;
 	std::vector<Map*> maps;
 	std::list<MapView> mapViews; //list, because vector reallocates mapviews when pushing back, which breaks activeMapview pointer
+public:
+	Lightmapper* lightmapper = nullptr;
 
 	struct WindowData
 	{
@@ -42,14 +46,16 @@ class BrowEdit
 
 		bool demoWindowVisible = false;
 
+		bool openLightmapSettings = false;
+
 		//progress
+		std::mutex progressMutex;
 		bool progressWindowVisible = false;
 		std::string progressWindowText = "Progress....";
 		float progressWindowProgres = .25;
 		std::function<void()> progressWindowOnDone;
 
 	} windowData;
-public:
 	ImFont* font;
 	enum class EditMode
 	{
@@ -101,6 +107,7 @@ public:
 	void showUndoWindow();
 	void showObjectWindow();
 	void showHelpWindow();
+	void showLightmapSettingsWindow();
 
 
 	bool toolBarToggleButton(const std::string_view &name, int icon, bool* status, const char* tooltip, ImVec4 tint = ImVec4(1,1,1,-1));

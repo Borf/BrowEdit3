@@ -32,6 +32,7 @@
     <ClCompile Include="browedit\gl\FBO.cpp" />
     <ClCompile Include="browedit\gl\Shader.cpp" />
     <ClCompile Include="browedit\gl\Texture.cpp" />
+    <ClCompile Include="browedit\Lightmapper.cpp" />
     <ClCompile Include="browedit\Map.cpp" />
     <ClCompile Include="browedit\MapView.cpp" />
     <ClCompile Include="browedit\math\AABB.cpp" />
@@ -43,6 +44,7 @@
     <ClCompile Include="browedit\util\FileIO.cpp" />
     <ClCompile Include="browedit\util\Util.cpp" />
     <ClCompile Include="browedit\windows\HelpWindow.cpp" />
+    <ClCompile Include="browedit\windows\LightmapSettingsWindow.cpp" />
     <ClCompile Include="browedit\windows\MenuBar.cpp" />
     <ClCompile Include="browedit\windows\ObjectPropertiesWindow.cpp" />
     <ClCompile Include="browedit\windows\ObjectSelectWindow.cpp" />
@@ -109,6 +111,7 @@
     <ClInclude Include="browedit\gl\VBO.h" />
     <ClInclude Include="browedit\gl\Vertex.h" />
     <ClInclude Include="browedit\gl\VIO.h" />
+    <ClInclude Include="browedit\Lightmapper.h" />
     <ClInclude Include="browedit\Map.h" />
     <ClInclude Include="browedit\MapView.h" />
     <ClInclude Include="browedit\math\AABB.h" />

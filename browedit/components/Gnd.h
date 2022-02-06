@@ -16,9 +16,18 @@ public:
 	Gnd(const std::string& fileName);
 	void save(std::string fileName);
 	glm::vec3 rayCast(const math::Ray& ray);
+	void makeLightmapsUnique();
+	void makeLightmapsClear();
+	void makeLightmapBorders();
+	void makeLightmapBorders(int x, int y);
+	int getLightmapBrightness(int x, int y, int lightmapX, int lightmapY);
+	glm::ivec3 getLightmapColor(int x, int y, int lightmapX, int lightmapY);
+	void makeLightmapsSmooth();
+	void makeTilesUnique();
+	void cleanLightmaps();
+	void cleanTiles();
 
-
-
+	std::vector<glm::vec3> getMapQuads();
 
 	class Texture
 	{
