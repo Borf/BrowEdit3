@@ -36,4 +36,13 @@ public:
 	void deleteSelection(BrowEdit* browEdit);
 	void flipSelection(int axis, BrowEdit* browEdit);
 
+
+	void exportShadowMap(BrowEdit* browEdit, bool exportWalls, bool exportBorders);
+	void exportLightMap(BrowEdit* browEdit, bool exportWalls, bool exportBorders);
+	void exportTileColors(BrowEdit* browEdit, bool exportWalls);
+
+	void importShadowMap(BrowEdit* browEdit, bool exportWalls, bool exportBorders);
+	void importLightMap(BrowEdit* browEdit, bool exportWalls, bool exportBorders);
+	void importTileColors(BrowEdit* browEdit, bool exportWalls);
+
 };

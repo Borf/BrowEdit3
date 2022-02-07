@@ -15,6 +15,8 @@
 #include <json.hpp>
 using json = nlohmann::json;
 
+#include <stb/stb_image_write.h>
+#include <stb/stb_image.h>
 #include <set>
 #include <iostream>
 #include <thread>
@@ -261,4 +263,286 @@ void Map::pasteSelection(BrowEdit* browEdit)
 	catch (...) {
 		std::cerr << "!!!!!!!!!!! Some sort of error occurred???" << std::endl;
 	};
+}
+
+
+
+void Map::exportShadowMap(BrowEdit* browEdit, bool exportWalls, bool exportBorders)
+{
+	int tileSize = 8;
+	int tilePadding = 0;
+	if (!exportBorders)
+	{
+		tileSize = 6;
+		tilePadding = 1;
+	}
+	int wallMultiplier = 2;
+	if (!exportWalls)
+		wallMultiplier = 1;
+
+	auto shadowmapcpy = [&](unsigned char* src, char* dst, int dstx, int dsty, int w)
+	{
+		for (int x = 0; x < tileSize; x++)
+			for (int y = 0; y < tileSize; y++)
+				dst[(dstx+x)+w*(dsty+y)] = src[(x+tilePadding) + 8 * (y+tilePadding)];
+	};
+	auto gnd = rootNode->getComponent<Gnd>();
+	char* img = new char[gnd->width * tileSize* wallMultiplier * gnd->height * tileSize * wallMultiplier];
+	memset(img, 0, gnd->width * tileSize * wallMultiplier * gnd->height * tileSize * wallMultiplier);
+	for (auto x = 0; x < gnd->width; x++)
+	{
+		for (auto y = 0; y < gnd->height; y++)
+		{
+			auto cube = gnd->cubes[x][y];
+			int xx = wallMultiplier * tileSize * x;
+			int yy = wallMultiplier * tileSize * y;
+
+			if (cube->tileUp > -1 && gnd->tiles[cube->tileUp]->lightmapIndex > -1)
+				shadowmapcpy(gnd->lightmaps[gnd->tiles[cube->tileUp]->lightmapIndex]->data, img, xx, yy, wallMultiplier*tileSize*gnd->width);
+			if (exportWalls)
+			{
+				if (cube->tileSide > -1 && gnd->tiles[cube->tileSide]->lightmapIndex > -1)
+					shadowmapcpy(gnd->lightmaps[gnd->tiles[cube->tileSide]->lightmapIndex]->data, img, xx, yy + tileSize, wallMultiplier * tileSize * gnd->width);
+				if (cube->tileFront > -1 && gnd->tiles[cube->tileFront]->lightmapIndex > -1)
+					shadowmapcpy(gnd->lightmaps[gnd->tiles[cube->tileFront]->lightmapIndex]->data, img, xx + tileSize, yy, wallMultiplier * tileSize * gnd->width);
+			}
+		}
+	}
+	stbi_write_png((browEdit->config.ropath + name + ".shadowmap.png").c_str(), gnd->width* wallMultiplier * tileSize, gnd->height* wallMultiplier * tileSize, 1, img, gnd->width * wallMultiplier * tileSize);
+	delete[] img;
+}
+void Map::importShadowMap(BrowEdit* browEdit, bool exportWalls, bool exportBorders)
+{
+	int tileSize = 8;
+	int tilePadding = 0;
+	if (!exportBorders)
+	{
+		tileSize = 6;
+		tilePadding = 1;
+	}
+	int wallMultiplier = 2;
+	if (!exportWalls)
+		wallMultiplier = 1;
+
+	auto shadowmapcpy = [&](unsigned char* dst, unsigned char* src, int srcx, int srcy, int w)
+	{
+		for (int x = 0; x < tileSize; x++)
+			for (int y = 0; y < tileSize; y++)
+				dst[(x + tilePadding) + 8 * (y + tilePadding)] = src[(srcx + x) + w * (srcy + y)];
+	};
+	auto gnd = rootNode->getComponent<Gnd>();
+	int w, h,c;
+	unsigned char* img = stbi_load((browEdit->config.ropath + name + ".shadowmap.png").c_str(), &w, &h, &c, 1);
+	if (w != gnd->width * wallMultiplier * tileSize ||
+		h != gnd->height * wallMultiplier * tileSize)
+	{
+		std::cerr << "Image is wrong size" << std::endl;
+		return;
+	}
+
+	for (auto x = 0; x < gnd->width; x++)
+	{
+		for (auto y = 0; y < gnd->height; y++)
+		{
+			auto cube = gnd->cubes[x][y];
+			int xx = wallMultiplier * tileSize * x;
+			int yy = wallMultiplier * tileSize * y;
+
+			if (cube->tileUp > -1 && gnd->tiles[cube->tileUp]->lightmapIndex > -1)
+				shadowmapcpy(gnd->lightmaps[gnd->tiles[cube->tileUp]->lightmapIndex]->data, img, xx, yy, wallMultiplier * tileSize * gnd->width);
+			if (exportWalls)
+			{
+				if (cube->tileSide > -1 && gnd->tiles[cube->tileSide]->lightmapIndex > -1)
+					shadowmapcpy(gnd->lightmaps[gnd->tiles[cube->tileSide]->lightmapIndex]->data, img, xx, yy + tileSize, wallMultiplier * tileSize * gnd->width);
+				if (cube->tileFront > -1 && gnd->tiles[cube->tileFront]->lightmapIndex > -1)
+					shadowmapcpy(gnd->lightmaps[gnd->tiles[cube->tileFront]->lightmapIndex]->data, img, xx + tileSize, yy, wallMultiplier * tileSize * gnd->width);
+			}
+		}
+	}
+	rootNode->getComponent<GndRenderer>()->gndShadowDirty = true;
+	stbi_image_free(img);
+}
+
+
+/////////////////////////////////////////////////lightmap
+
+
+void Map::exportLightMap(BrowEdit* browEdit, bool exportWalls, bool exportBorders)
+{
+	int tileSize = 8;
+	int tilePadding = 0;
+	if (!exportBorders)
+	{
+		tileSize = 6;
+		tilePadding = 1;
+	}
+	int wallMultiplier = 2;
+	if (!exportWalls)
+		wallMultiplier = 1;
+
+	auto lightmapcpy = [&](unsigned char* src, char* dst, int dstx, int dsty, int w)
+	{
+		for (int x = 0; x < tileSize; x++)
+			for (int y = 0; y < tileSize; y++)
+				for (int c = 0; c < 3; c++)
+					dst[((dstx + x) + w * (dsty + y))*3+c] = src[64+ ((x+tilePadding) + 8 * (y+tilePadding))*3+c];
+	};
+	auto gnd = rootNode->getComponent<Gnd>();
+	char* img = new char[(gnd->width * tileSize * wallMultiplier * gnd->height * tileSize * wallMultiplier)*3];
+	memset(img, 0, gnd->width * tileSize * wallMultiplier * gnd->height * tileSize * wallMultiplier *3);
+	for (auto x = 0; x < gnd->width; x++)
+	{
+		for (auto y = 0; y < gnd->height; y++)
+		{
+			auto cube = gnd->cubes[x][y];
+			int xx = tileSize * wallMultiplier * x;
+			int yy = tileSize * wallMultiplier * y;
+
+			if (cube->tileUp > -1 && gnd->tiles[cube->tileUp]->lightmapIndex > -1)
+				lightmapcpy(gnd->lightmaps[gnd->tiles[cube->tileUp]->lightmapIndex]->data, img, xx, yy, tileSize * wallMultiplier * gnd->width);
+			if (exportWalls)
+			{
+				if (cube->tileSide > -1 && gnd->tiles[cube->tileSide]->lightmapIndex > -1)
+					lightmapcpy(gnd->lightmaps[gnd->tiles[cube->tileSide]->lightmapIndex]->data, img, xx, yy + tileSize, tileSize * wallMultiplier * gnd->width);
+				if (cube->tileFront > -1 && gnd->tiles[cube->tileFront]->lightmapIndex > -1)
+					lightmapcpy(gnd->lightmaps[gnd->tiles[cube->tileFront]->lightmapIndex]->data, img, xx + tileSize, yy, tileSize * wallMultiplier * gnd->width);
+			}
+		}
+	}
+	stbi_write_png((browEdit->config.ropath + name + ".colormap.png").c_str(), gnd->width * tileSize * wallMultiplier, gnd->height * tileSize * wallMultiplier, 3, img, gnd->width * tileSize * wallMultiplier *3);
+	delete[] img;
+}
+void Map::importLightMap(BrowEdit* browEdit, bool exportWalls, bool exportBorders)
+{
+	int tileSize = 8;
+	int tilePadding = 0;
+	if (!exportBorders)
+	{
+		tileSize = 6;
+		tilePadding = 1;
+	}
+	int wallMultiplier = 2;
+	if (!exportWalls)
+		wallMultiplier = 1;
+
+	auto lightmapcpy = [&](unsigned char* dst, unsigned char* src, int srcx, int srcy, int w)
+	{
+		for (int x = 0; x < tileSize; x++)
+			for (int y = 0; y < tileSize; y++)
+				for (int c = 0; c < 3; c++)
+					dst[64 + ((x + tilePadding) + 8 * (y + tilePadding)) * 3 + c] = src[((srcx + x) + w * (srcy + y)) * 3 + c];
+	};
+	auto gnd = rootNode->getComponent<Gnd>();
+	int w, h, c;
+	unsigned char* img = stbi_load((browEdit->config.ropath + name + ".colormap.png").c_str(), &w, &h, &c, 1);
+	if (w != gnd->width * wallMultiplier*tileSize ||
+		h != gnd->height * wallMultiplier*tileSize)
+	{
+		std::cerr << "Image is wrong size" << std::endl;
+		return;
+	}
+	for (auto x = 0; x < gnd->width; x++)
+	{
+		for (auto y = 0; y < gnd->height; y++)
+		{
+			auto cube = gnd->cubes[x][y];
+			int xx = tileSize * wallMultiplier * x;
+			int yy = tileSize * wallMultiplier * y;
+
+			if (cube->tileUp > -1 && gnd->tiles[cube->tileUp]->lightmapIndex > -1)
+				lightmapcpy(gnd->lightmaps[gnd->tiles[cube->tileUp]->lightmapIndex]->data, img, xx, yy, tileSize * wallMultiplier * gnd->width);
+			if (exportWalls)
+			{
+				if (cube->tileSide > -1 && gnd->tiles[cube->tileSide]->lightmapIndex > -1)
+					lightmapcpy(gnd->lightmaps[gnd->tiles[cube->tileSide]->lightmapIndex]->data, img, xx, yy + tileSize, tileSize * wallMultiplier * gnd->width);
+				if (cube->tileFront > -1 && gnd->tiles[cube->tileFront]->lightmapIndex > -1)
+					lightmapcpy(gnd->lightmaps[gnd->tiles[cube->tileFront]->lightmapIndex]->data, img, xx + tileSize, yy, tileSize * wallMultiplier * gnd->width);
+			}
+		}
+	}
+	rootNode->getComponent<GndRenderer>()->gndShadowDirty = true;
+
+	stbi_image_free(img);
+}
+
+void Map::exportTileColors(BrowEdit* browEdit, bool exportWalls)
+{
+	int wallMultiplier = 2;
+	if (!exportWalls)
+		wallMultiplier = 1;
+
+	auto lightmapcpy = [&](const glm::ivec4& src, char* dst, int dstx, int dsty, int w)
+	{
+		for (int c = 0; c < 3; c++)
+			dst[((dstx) + w * (dsty)) * 3 + c] = src[c];
+	};
+	auto gnd = rootNode->getComponent<Gnd>();
+	char* img = new char[(gnd->width * wallMultiplier * gnd->height * wallMultiplier) * 3];
+	memset(img, 0, gnd->width * wallMultiplier * gnd->height * wallMultiplier * 3);
+	for (auto x = 0; x < gnd->width; x++)
+	{
+		for (auto y = 0; y < gnd->height; y++)
+		{
+			auto cube = gnd->cubes[x][y];
+			int xx = wallMultiplier * x;
+			int yy = wallMultiplier * y;
+
+			if (cube->tileUp > -1)
+				lightmapcpy(gnd->tiles[cube->tileUp]->color, img, xx, yy, wallMultiplier * gnd->width);
+			if (exportWalls)
+			{
+				if (cube->tileSide > -1)
+					lightmapcpy(gnd->tiles[cube->tileSide]->color, img, xx, yy + 1, wallMultiplier * gnd->width);
+				if (cube->tileFront > -1)
+					lightmapcpy(gnd->tiles[cube->tileFront]->color, img, xx + 1, yy, wallMultiplier * gnd->width);
+			}
+		}
+	}
+
+
+	stbi_write_png((browEdit->config.ropath + name + ".tilecolor.png").c_str(), gnd->width * 2, gnd->height * 2, 3, img, gnd->width * 2 * 3);
+	delete[] img;
+}
+void Map::importTileColors(BrowEdit* browEdit, bool exportWalls)
+{
+	int wallMultiplier = 2;
+	if (!exportWalls)
+		wallMultiplier = 1;
+
+	auto lightmapcpy = [&](glm::ivec4& dst, unsigned char* src, int srcx, int srcy, int w)
+	{
+		for (int c = 0; c < 3; c++)
+			dst[c] = src[((srcx)+w * (srcy)) * 3 + c];
+	};
+	auto gnd = rootNode->getComponent<Gnd>();
+	int w, h, c;
+	unsigned char* img = stbi_load((browEdit->config.ropath + name + ".colormap.png").c_str(), &w, &h, &c, 1);
+	if (w != gnd->width * wallMultiplier ||
+		h != gnd->height * wallMultiplier)
+	{
+		std::cerr << "Image is wrong size" << std::endl;
+		return;
+	}
+	for (auto x = 0; x < gnd->width; x++)
+	{
+		for (auto y = 0; y < gnd->height; y++)
+		{
+			auto cube = gnd->cubes[x][y];
+			int xx = wallMultiplier * x;
+			int yy = wallMultiplier * y;
+
+			if (cube->tileUp > -1)
+				lightmapcpy(gnd->tiles[cube->tileUp]->color, img, xx, yy, wallMultiplier * gnd->width);
+			if (exportWalls)
+			{
+				if (cube->tileSide > -1)
+					lightmapcpy(gnd->tiles[cube->tileSide]->color, img, xx, yy + 1, wallMultiplier * gnd->width);
+				if (cube->tileFront > -1)
+					lightmapcpy(gnd->tiles[cube->tileFront]->color, img, xx + 1, yy, wallMultiplier * gnd->width);
+			}
+		}
+	}
+	rootNode->getComponent<GndRenderer>()->gndTileColorDirty = true;
+
+	stbi_image_free(img);
 }

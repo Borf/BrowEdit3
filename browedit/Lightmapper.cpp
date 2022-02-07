@@ -201,7 +201,7 @@ std::pair<glm::vec3, int> Lightmapper::calculateLight(const glm::vec3& groundPos
 				attenuation = glm::max(0.0f, (attenuation - rswLight->cutOff) / (1 - rswLight->cutOff));
 
 
-			math::Ray ray(groundPos, glm::normalize(lightPosition - groundPos));
+			math::Ray ray(groundPos, lightDirection2);
 			bool collides = false;
 			if (rswLight->givesShadow)
 			{

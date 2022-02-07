@@ -7,6 +7,7 @@
 #include <browedit/util/Util.h>
 #include <browedit/Lightmapper.h>
 #include <GLFW/glfw3.h>
+#include <imgui_internal.h>
 
 void BrowEdit::menuBar()
 {
@@ -78,10 +79,32 @@ void BrowEdit::menuBar()
 					saveMap(map);
 				if (ImGui::MenuItem("Open new view"))
 					loadMap(map->name);
-				if (ImGui::MenuItem("Export shadowmap"))
-					;
-				if (ImGui::MenuItem("Export colormap"))
-					;
+				if (ImGui::BeginMenu("Import/Export maps"))
+				{
+					static bool exportWalls = true;
+					static bool exportBorders = true;
+					ImGui::PushItemFlag(ImGuiItemFlags_SelectableDontClosePopup, true); 
+					ImGui::MenuItem("Import/Export Walls", nullptr, &exportWalls);
+					ImGui::MenuItem("Import/Export Borders", nullptr, &exportBorders);
+					ImGui::PopItemFlag();
+					ImGui::Separator();
+					if (ImGui::MenuItem("Export shadowmap"))
+						map->exportShadowMap(this, exportWalls, exportBorders);
+					if (ImGui::MenuItem("Export colormap"))
+						map->exportLightMap(this, exportWalls, exportBorders);
+					if (ImGui::MenuItem("Export tile colors"))
+						map->exportTileColors(this, exportWalls);
+					ImGui::Separator();
+					if (ImGui::MenuItem("Import shadowmap"))
+						map->importShadowMap(this, exportWalls, exportBorders);
+					if(ImGui::MenuItem("Import colormap"))
+						map->importLightMap(this, exportWalls, exportBorders);
+					if(ImGui::MenuItem("Import tile colors"))
+						map->importTileColors(this, exportWalls);
+
+
+					ImGui::EndMenu();
+				}
 				if (ImGui::MenuItem("Calculate lightmaps", "Ctrl+L") && !lightmapper)
 				{
 					lightmapper = new Lightmapper(map, this);

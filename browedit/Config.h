@@ -26,6 +26,7 @@ public:
 	std::string isValid() const;
 	bool showWindow(BrowEdit* browEdit);
 	void setupFileIO();
+	void setStyle(int style);
 public:
 	NLOHMANN_DEFINE_TYPE_INTRUSIVE(Config,
 		ropath,

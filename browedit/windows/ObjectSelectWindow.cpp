@@ -320,7 +320,7 @@ void BrowEdit::showObjectWindow()
 				auto it = objectWindowObjects.find(path);
 				if (it != objectWindowObjects.end())
 				{
-					it->second->rotation = glfwGetTime()*90; //TODO: make this increment based on deltatime
+					it->second->rotation = (float)(glfwGetTime()*90); //TODO: make this increment based on deltatime
 					it->second->draw();
 				}
 			}
