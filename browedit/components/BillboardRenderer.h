@@ -10,6 +10,7 @@ class Gnd;
 
 class BillboardRenderer : public Renderer
 {
+public:
 	class BillboardShader : public gl::Shader
 	{
 	public:
@@ -36,6 +37,7 @@ class BillboardRenderer : public Renderer
 			bindUniform(Uniforms::selection, "selection");
 		}
 	};
+private:
 	RswObject* rswObject;
 	gl::Texture* texture;
 	gl::Texture* textureSelected = nullptr;

@@ -1,4 +1,5 @@
 #include <Windows.h>
+#include <glad/glad.h>
 #include "Rsw.h"
 #include "Gnd.h"
 #include "Rsm.h"
@@ -522,5 +523,4 @@ void Rsw::QuadTreeNode::draw(int levelLeft)
 	for (int i = 0; i < 4; i++)
 		if (children[i])
 			children[i]->draw(levelLeft-1);
-
 }

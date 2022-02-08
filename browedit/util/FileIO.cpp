@@ -253,10 +253,10 @@ namespace util
 
 	void FileIO::DirSource::listFiles(const std::string& dir, std::vector<std::string>& files)
 	{
-		for (const auto& entry : std::filesystem::directory_iterator(dir))
+		for (const auto& entry : std::filesystem::directory_iterator(directory + dir))
 		{
 			if (entry.is_directory())
-				listFiles(entry.path().string(), files);
+				listFiles(entry.path().string().substr(directory.size()), files);
 			else
 				files.push_back(entry.path().string().substr(directory.size()));
 		}
@@ -264,7 +264,7 @@ namespace util
 
 	void FileIO::DirSource::listAllFiles(std::vector<std::string>& files)
 	{
-		listFiles(directory, files);
+		listFiles("", files);
 	}
 
 	std::string FileIO::readString(std::istream* is, int maxLength, int length)

@@ -4,6 +4,7 @@
 #include <browedit/NodeRenderer.h>
 #include <browedit/math/Ray.h>
 #include <browedit/math/Plane.h>
+#include <browedit/components/BillboardRenderer.h>
 #include <browedit/Gadget.h>
 class BrowEdit;
 class Map;
@@ -34,6 +35,8 @@ public:
 
 	NodeRenderContext nodeRenderContext;
 	Gadget gadget;
+	BillboardRenderer::BillboardShader* billboardShader;
+	gl::Texture* whiteTexture;
 
 	bool opened = true;
 	gl::FBO* fbo;

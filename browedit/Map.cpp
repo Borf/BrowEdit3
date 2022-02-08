@@ -265,8 +265,6 @@ void Map::pasteSelection(BrowEdit* browEdit)
 	};
 }
 
-
-
 void Map::exportShadowMap(BrowEdit* browEdit, bool exportWalls, bool exportBorders)
 {
 	int tileSize = 8;
@@ -362,10 +360,6 @@ void Map::importShadowMap(BrowEdit* browEdit, bool exportWalls, bool exportBorde
 	rootNode->getComponent<GndRenderer>()->gndShadowDirty = true;
 	stbi_image_free(img);
 }
-
-
-/////////////////////////////////////////////////lightmap
-
 
 void Map::exportLightMap(BrowEdit* browEdit, bool exportWalls, bool exportBorders)
 {

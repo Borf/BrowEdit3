@@ -191,15 +191,30 @@ std::pair<glm::vec3, int> Lightmapper::calculateLight(const glm::vec3& groundPos
 		if (rsw->light.lightmapIntensity > 0 && glm::dot(normal, lightDirection2) > 0)
 		{
 			float distance = glm::distance(lightPosition, groundPos);
-			if (distance > rswLight->realRange())
-				continue;
+			float attenuation = 0;
+			if (rswLight->falloffStyle == RswLight::FalloffStyle::Magic)
+			{
+				if (distance > rswLight->realRange())
+					continue;
 
-			float d = glm::max(distance - rswLight->range, 0.0f);
-			float denom = d / rswLight->range + 1;
-			float attenuation = rswLight->intensity / (denom * denom);
-			if (rswLight->cutOff > 0)
-				attenuation = glm::max(0.0f, (attenuation - rswLight->cutOff) / (1 - rswLight->cutOff));
-
+				float d = glm::max(distance - rswLight->range, 0.0f);
+				float denom = d / rswLight->range + 1;
+				attenuation = rswLight->intensity / (denom * denom);
+				if (rswLight->cutOff > 0)
+					attenuation = glm::max(0.0f, (attenuation - rswLight->cutOff) / (1 - rswLight->cutOff));
+			}
+			else
+			{
+				if (distance > rswLight->range)
+					continue;
+				float d = distance / rswLight->range;
+				if (rswLight->falloffStyle == RswLight::FalloffStyle::LagrangeTweak)
+					attenuation = glm::clamp(util::interpolateLagrange(rswLight->falloff, d),0.0f, 1.0f)*255.0f;
+				else if (rswLight->falloffStyle == RswLight::FalloffStyle::LinearTweak)
+					attenuation = glm::clamp(util::interpolateLinear(rswLight->falloff, d),0.0f, 1.0f)*255.0f;
+				if (rswLight->falloffStyle == RswLight::FalloffStyle::Exponential)
+					attenuation = glm::clamp((1 - glm::pow(d, rswLight->cutOff)), 0.0f, 1.0f) * 255.0f;
+			}
 
 			math::Ray ray(groundPos, lightDirection2);
 			bool collides = false;
@@ -290,8 +305,8 @@ void Lightmapper::calcPos(int direction, int tileId, int x, int y)
 
 					}
 					auto light = calculateLight(groundPos, normal);
-					totalIntensity += light.second;
-					totalColor += light.first;
+					totalIntensity += glm::min(255, light.second);
+					totalColor += glm::min(glm::vec3(1.0f, 1.0f, 1.0f), light.first);
 					count++;
 				}
 			}

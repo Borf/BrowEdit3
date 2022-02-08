@@ -110,7 +110,6 @@ public:
 	NLOHMANN_DEFINE_TYPE_INTRUSIVE(RswModel, animType, animSpeed, blockType, fileName, givesShadow);
 };
 
-
 class RswLight : public Component, public ImguiProps
 {
 public:
@@ -126,11 +125,20 @@ public:
 	bool givesShadow = true;
 	bool affectShadowMap = true;
 	bool affectLightmap = true;
+
+	int falloffStyle = 0;
+	enum FalloffStyle {
+		Magic = 0,
+		LagrangeTweak = 1,
+		LinearTweak = 2,
+		Exponential = 3
+	};
+
 	float cutOff = 0;
 	float intensity = 20;
-	float realRange();
-	
+	std::vector<glm::vec2> falloff = { glm::vec2(0,1), glm::vec2(1,0) };
 	// end custom properties
+	float realRange();
 
 	RswLight() {}
 	void load(std::istream* is);
@@ -138,7 +146,7 @@ public:
 	void save(std::ofstream& file);
 	nlohmann::json saveExtra();
 	void buildImGui(BrowEdit* browEdit) override;
-	NLOHMANN_DEFINE_TYPE_INTRUSIVE(RswLight, color, range, givesShadow, cutOff, cutOff, intensity, affectShadowMap, affectLightmap);
+	NLOHMANN_DEFINE_TYPE_INTRUSIVE(RswLight, color, range, givesShadow, cutOff, cutOff, intensity, affectShadowMap, affectLightmap, falloff, falloffStyle);
 };
 
 class RswEffect : public Component, public ImguiProps

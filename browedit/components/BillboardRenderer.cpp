@@ -49,7 +49,7 @@ void BillboardRenderer::render()
 	else
 		texture->bind();
 	glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexP3T2), verts[0].data);
-	glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexP3T2), verts[0].data+3);
+	glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexP3T2), verts[0].data + 3);
 	glDrawArrays(GL_QUADS, 0, 4);
 
 
@@ -76,4 +76,5 @@ void BillboardRenderer::BillboardRenderContext::preFrame(const glm::mat4& projec
 	glDisableVertexAttribArray(2);
 	glDisableVertexAttribArray(3);
 	glDisableVertexAttribArray(4); //TODO: vao
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }

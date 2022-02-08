@@ -32,10 +32,12 @@ void RswLight::loadExtra(nlohmann::json data)
 		if (data["type"] == "spot")
 			type = Type::Spot;
 		givesShadow = data["shadow"];
-		affectShadowMap = data["affectshadow"];
+		affectShadowMap = data["affectshadowmap"];
 		affectLightmap = data["affectlightmap"];
 		cutOff = data["cutoff"];
 		intensity = data["intensity"];
+		falloff = data["falloff"].get<std::vector<glm::vec2>>();
+		falloffStyle = data["falloffstyle"];
 	}
 	catch (...) {}
 }
@@ -66,6 +68,8 @@ nlohmann::json RswLight::saveExtra()
 	ret["intensity"] = intensity;
 	ret["affectshadowmap"] = affectShadowMap;
 	ret["affectlightmap"] = affectLightmap;
+	ret["falloff"] = falloff;
+	ret["falloffstyle"] = falloffStyle;
 
 	return ret;
 }
@@ -101,14 +105,29 @@ void RswLight::buildImGui(BrowEdit* browEdit)
 
 	util::ColorEdit3(browEdit, browEdit->activeMapView->map, node, "Color", &color);
 	util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Range", &range, 1.0f, 0.0f, 1000.0f);
-	util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Intensity", &intensity, 1.00f, 0.0f, 100000.0f);
-	util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Cutoff", &cutOff, 0.01f, 0.0f, 1.0f);
 	util::Checkbox(browEdit, browEdit->activeMapView->map, node, "Gives Shadows", &givesShadow);
 	util::Checkbox(browEdit, browEdit->activeMapView->map, node, "Affects Shadowmap", &affectShadowMap);
 	util::Checkbox(browEdit, browEdit->activeMapView->map, node, "Affects Colormap", &affectLightmap);
 
+	ImGui::Combo("Falloff style", &falloffStyle, "magic\0lagrange tweak\0linear tweak\0exponential\0");
+
+	if (falloffStyle == FalloffStyle::Magic)
+	{
+		util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Intensity", &intensity, 1.00f, 0.0f, 100000.0f);
+		util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Cutoff", &cutOff, 0.01f, 0.0f, 1.0f);
+	}
+	else if (falloffStyle == FalloffStyle::LagrangeTweak)
+		util::EditableGraph("Light Falloff", &falloff, util::interpolateLagrange);
+	else if (falloffStyle == FalloffStyle::LinearTweak)
+		util::EditableGraph("Light Falloff", &falloff, util::interpolateLinear);
+	else if (falloffStyle == FalloffStyle::Exponential)
+	{
+		util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Exponent", &cutOff, 0.01f, 0.00001f, 10.0f);
+		util::Graph("Light Falloff", [&](float x) { return 1.0f - glm::pow(x, cutOff); });
+	}
 
 	ImGui::Separator();
+	ImGui::Text("Save as template:");
 	static std::string templateName = "default";
 	ImGui::InputText("Template Name", &templateName);
 	if (ImGui::Button("Save as template"))
