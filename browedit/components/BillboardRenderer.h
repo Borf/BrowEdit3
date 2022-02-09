@@ -23,8 +23,8 @@ public:
 				cameraMatrix,
 				modelMatrix,
 				s_texture,
+				color,
 				billboard,
-				selection,
 				End
 			};
 		};
@@ -34,7 +34,7 @@ public:
 			bindUniform(Uniforms::cameraMatrix, "cameraMatrix");
 			bindUniform(Uniforms::s_texture, "s_texture");
 			bindUniform(Uniforms::modelMatrix, "modelMatrix");
-			bindUniform(Uniforms::selection, "selection");
+			bindUniform(Uniforms::color, "color");
 		}
 	};
 private:

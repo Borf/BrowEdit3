@@ -185,7 +185,7 @@ std::pair<glm::vec3, int> Lightmapper::calculateLight(const glm::vec3& groundPos
 		auto rswObject = light->getComponent<RswObject>();
 		auto rswLight = light->getComponent<RswLight>();
 
-		glm::vec3 lightPosition(5 * gnd->width + rswObject->position.x, -rswObject->position.y, 5 * gnd->height - rswObject->position.z);
+		glm::vec3 lightPosition(5 * gnd->width + rswObject->position.x, -rswObject->position.y, 5 * gnd->height - rswObject->position.z+10);
 
 		glm::vec3 lightDirection2 = glm::normalize(lightPosition - groundPos);
 		if (rsw->light.lightmapIntensity > 0 && glm::dot(normal, lightDirection2) > 0)
@@ -208,11 +208,13 @@ std::pair<glm::vec3, int> Lightmapper::calculateLight(const glm::vec3& groundPos
 				if (distance > rswLight->range)
 					continue;
 				float d = distance / rswLight->range;
-				if (rswLight->falloffStyle == RswLight::FalloffStyle::LagrangeTweak)
+				if (rswLight->falloffStyle == RswLight::FalloffStyle::SplineTweak)
+					attenuation = glm::clamp(util::interpolateSpline(rswLight->falloff, d), 0.0f, 1.0f) * 255.0f;
+				else if (rswLight->falloffStyle == RswLight::FalloffStyle::LagrangeTweak)
 					attenuation = glm::clamp(util::interpolateLagrange(rswLight->falloff, d),0.0f, 1.0f)*255.0f;
 				else if (rswLight->falloffStyle == RswLight::FalloffStyle::LinearTweak)
 					attenuation = glm::clamp(util::interpolateLinear(rswLight->falloff, d),0.0f, 1.0f)*255.0f;
-				if (rswLight->falloffStyle == RswLight::FalloffStyle::Exponential)
+				else if (rswLight->falloffStyle == RswLight::FalloffStyle::Exponential)
 					attenuation = glm::clamp((1 - glm::pow(d, rswLight->cutOff)), 0.0f, 1.0f) * 255.0f;
 			}
 

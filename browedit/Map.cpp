@@ -248,6 +248,22 @@ void Map::pasteSelection(BrowEdit* browEdit)
 						newNode->addComponent(new BillboardRenderer("data\\light.png", "data\\light_selected.png"));
 						newNode->addComponent(new CubeCollider(5));
 					}
+					if (c["type"] == "rsweffect")
+					{
+						auto rswEffect = new RswEffect();
+						from_json(c, *rswEffect);
+						newNode->addComponent(rswEffect);
+						newNode->addComponent(new BillboardRenderer("data\\effect.png", "data\\effect_selected.png"));
+						newNode->addComponent(new CubeCollider(5));
+					}
+					if (c["type"] == "rswsound")
+					{
+						auto rswSound = new RswSound();
+						from_json(c, *rswSound);
+						newNode->addComponent(rswSound);
+						newNode->addComponent(new BillboardRenderer("data\\sound.png", "data\\sound_selected.png"));
+						newNode->addComponent(new CubeCollider(5));
+					}
 				}
 				browEdit->newNodes.push_back(std::pair<Node*, glm::vec3>(newNode, newNode->getComponent<RswObject>()->position));
 			}

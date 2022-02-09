@@ -28,6 +28,11 @@ struct MouseState
 
 class MapView
 {
+	class SphereMesh : public Mesh
+	{
+	public:
+		std::vector<glm::vec3> buildVertices();
+	};
 public:
 	Map* map = nullptr;
 	int id;
@@ -36,6 +41,8 @@ public:
 	NodeRenderContext nodeRenderContext;
 	Gadget gadget;
 	BillboardRenderer::BillboardShader* billboardShader;
+	Gadget::SimpleShader* simpleShader = nullptr;
+	static inline SphereMesh sphereMesh;
 	gl::Texture* whiteTexture;
 
 	bool opened = true;
@@ -51,6 +58,9 @@ public:
 	bool snapToGrid = false;
 	float gridSize = 5;
 	bool gridLocal = true;
+
+	bool showAllLights = false;
+	bool showLightSphere = false;
 
 	int quadTreeMaxLevel = 0;
 
@@ -92,4 +102,5 @@ public:
 
 
 	void focusSelection();
+	void drawLight(Node* n);
 };

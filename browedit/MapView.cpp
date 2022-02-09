@@ -43,6 +43,10 @@ MapView::MapView(Map* map, const std::string &viewName) : map(map), viewName(vie
 	}
 	billboardShader = util::ResourceManager<gl::Shader>::load<BillboardRenderer::BillboardShader>();
 	whiteTexture = util::ResourceManager<gl::Texture>::load("data\\white.png");
+	if(!sphereMesh.vbo)
+		sphereMesh.init();
+	if (!simpleShader)
+		simpleShader = util::ResourceManager<gl::Shader>::load<Gadget::SimpleShader>();
 }
 
 void MapView::toolbar(BrowEdit* browEdit)
@@ -61,6 +65,10 @@ void MapView::toolbar(BrowEdit* browEdit)
 	browEdit->toolBarToggleButton("smoothColors", 63, &smoothColors, "Smooth colormap");
 	ImGui::SameLine();
 	ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+	ImGui::SameLine();
+	browEdit->toolBarToggleButton("showAllLights", 63, &showAllLights, "Show all lights");
+	ImGui::SameLine();
+	browEdit->toolBarToggleButton("showLightSphere", 63, &showLightSphere, "Show light sphere");
 	ImGui::SameLine();
 	ImGui::SetNextItemWidth(50);
 	ImGui::DragInt("##quadTreeMaxLevel", &quadTreeMaxLevel, 1, 0, 6);
@@ -265,11 +273,19 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 	map->rootNode->getComponent<Rsw>()->quadtree->draw(quadTreeMaxLevel);
 	glPopMatrix();
 
+	if (showAllLights)
+		map->rootNode->traverse([&](Node* n)
+			{
+				auto rswLight = n->getComponent<RswLight>();
+				if (rswLight)
+					drawLight(n);
+			});
+
 
 
 
 	bool canSelectObject = true;
-	if (browEdit->newNodes.size() > 0)
+	if (browEdit->newNodes.size() > 0 && hovered)
 	{
 		if (ImGui::IsMouseClicked(0))
 		{
@@ -300,38 +316,13 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 			}
 		if (count > 0)
 		{
-			for (auto n : map->selectedNodes)
-			{
-				auto rswLight = n->getComponent<RswLight>();
-				if (rswLight)
-				{//this is a bit ugly, it draws a circle
-					auto rswObject = n->getComponent<RswObject>();
-					std::vector<VertexP3T2> vertsCircle;
-					for (float f = 0; f < 2 * glm::pi<float>(); f += glm::pi<float>() / 50)
-						vertsCircle.push_back(VertexP3T2(glm::vec3(rswLight->range * glm::cos(f), rswLight->range * glm::sin(f), 0), glm::vec2(glm::cos(f), glm::sin(f))));
-
-					glm::mat4 modelMatrix(1.0f);
-					modelMatrix = glm::scale(modelMatrix, glm::vec3(1, 1, -1));
-					modelMatrix = glm::translate(modelMatrix, glm::vec3(5 * gnd->width + rswObject->position.x, -rswObject->position.y, -10 - 5 * gnd->height + rswObject->position.z));
-
-					billboardShader->use();
-					billboardShader->setUniform(BillboardRenderer::BillboardShader::Uniforms::cameraMatrix, nodeRenderContext.viewMatrix);
-					billboardShader->setUniform(BillboardRenderer::BillboardShader::Uniforms::projectionMatrix, nodeRenderContext.projectionMatrix);
-					billboardShader->setUniform(BillboardRenderer::BillboardShader::Uniforms::modelMatrix, modelMatrix);
-					whiteTexture->bind();
-					glBindBuffer(GL_ARRAY_BUFFER, 0);
-					glEnableVertexAttribArray(0);
-					glEnableVertexAttribArray(1);
-					glDisableVertexAttribArray(2);
-					glDisableVertexAttribArray(3);
-					glDisableVertexAttribArray(4); //TODO: vao
-					glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexP3T2), vertsCircle[0].data);
-					glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexP3T2), vertsCircle[0].data + 3);
-					glLineWidth(4.0f);
-					glDrawArrays(GL_LINE_LOOP, 0, (int)vertsCircle.size());
-					glUseProgram(0);
+			if(!showAllLights)
+				for (auto n : map->selectedNodes)
+				{
+					auto rswLight = n->getComponent<RswLight>();
+					if (rswLight)
+						drawLight(n);
 				}
-			}
 
 			avgPos /= count;
 			Gnd* gnd = map->rootNode->getComponent<Gnd>();
@@ -536,3 +527,152 @@ void MapView::focusSelection()
 
 }
 
+
+namespace icosphere
+{
+	struct Triangle
+	{
+		int vertex[3];
+	};
+
+	using TriangleList = std::vector<Triangle>;
+	using VertexList = std::vector<glm::vec3>;
+
+	const float X = .525731112119133606f;
+	const float Z = .850650808352039932f;
+	const float N = 0.f;
+
+	static const VertexList beginVertices =
+	{
+		{-X,N,Z}, {X,N,Z}, {-X,N,-Z}, {X,N,-Z},
+		{N,Z,X}, {N,Z,-X}, {N,-Z,X}, {N,-Z,-X},
+		{Z,X,N}, {-Z,X, N}, {Z,-X,N}, {-Z,-X, N}
+	};
+
+	static const TriangleList beginTriangles =
+	{
+		{0,4,1},{0,9,4},{9,5,4},{4,5,8},{4,8,1},
+		{8,10,1},{8,3,10},{5,3,8},{5,2,3},{2,7,3},
+		{7,10,3},{7,6,10},{7,11,6},{11,0,6},{0,1,6},
+		{6,1,10},{9,0,11},{9,11,2},{9,2,5},{7,2,11}
+	};
+
+
+	using Lookup = std::map<std::pair<int, int>, int>;
+
+	int vertex_for_edge(Lookup& lookup,
+		VertexList& vertices, int first, int second)
+	{
+		Lookup::key_type key(first, second);
+		if (key.first > key.second)
+			std::swap(key.first, key.second);
+
+		auto inserted = lookup.insert({ key, (int)vertices.size() });
+		if (inserted.second)
+		{
+			auto& edge0 = vertices[first];
+			auto& edge1 = vertices[second];
+			auto point = normalize(edge0 + edge1);
+			vertices.push_back(point);
+		}
+
+		return inserted.first->second;
+	}
+	TriangleList subdivide(VertexList& vertices,
+		TriangleList triangles)
+	{
+		Lookup lookup;
+		TriangleList result;
+
+		for (auto&& each : triangles)
+		{
+			std::array<int, 3> mid;
+			for (int edge = 0; edge < 3; ++edge)
+			{
+				mid[edge] = vertex_for_edge(lookup, vertices,
+					each.vertex[edge], each.vertex[(edge + 1) % 3]);
+			}
+
+			result.push_back({ each.vertex[0], mid[0], mid[2] });
+			result.push_back({ each.vertex[1], mid[1], mid[0] });
+			result.push_back({ each.vertex[2], mid[2], mid[1] });
+			result.push_back({ mid[0], mid[1], mid[2] });
+		}
+
+		return result;
+	}
+
+	using IndexedMesh = std::pair<VertexList, TriangleList>;
+	IndexedMesh make_icosphere(int subdivisions)
+	{
+		VertexList vertices = beginVertices;
+		TriangleList triangles = beginTriangles;
+
+		for (int i = 0; i < subdivisions; ++i)
+		{
+			triangles = subdivide(vertices, triangles);
+		}
+
+		return{ vertices, triangles };
+	}
+}
+
+std::vector<glm::vec3> MapView::SphereMesh::buildVertices()
+{
+	std::vector<glm::vec3> verts;
+	auto ico = icosphere::make_icosphere(3);
+	for (const auto &triangle : ico.second)
+		for(int i = 0; i < 3; i++)
+			verts.push_back(ico.first[triangle.vertex[i]]);
+	return verts;
+}
+
+
+
+void MapView::drawLight(Node* n)
+{
+	auto rswObject = n->getComponent<RswObject>();
+	auto rswLight = n->getComponent<RswLight>();
+	auto gnd = n->root->getComponent<Gnd>();
+
+	glm::mat4 modelMatrix(1.0f);
+	modelMatrix = glm::scale(modelMatrix, glm::vec3(1, 1, -1));
+	modelMatrix = glm::translate(modelMatrix, glm::vec3(5 * gnd->width + rswObject->position.x, -rswObject->position.y, -10 - 5 * gnd->height + rswObject->position.z));
+	if (showLightSphere)
+	{
+		modelMatrix = glm::scale(modelMatrix, glm::vec3(rswLight->range, rswLight->range, rswLight->range));
+		simpleShader->use();
+		simpleShader->setUniform(Gadget::SimpleShader::Uniforms::projectionMatrix, nodeRenderContext.projectionMatrix);
+		simpleShader->setUniform(Gadget::SimpleShader::Uniforms::viewMatrix, nodeRenderContext.viewMatrix);
+		simpleShader->setUniform(Gadget::SimpleShader::Uniforms::modelMatrix, modelMatrix);
+		simpleShader->setUniform(Gadget::SimpleShader::Uniforms::textureFac, 0);
+		simpleShader->setUniform(Gadget::SimpleShader::Uniforms::color, glm::vec4(rswLight->color, 0.25f));
+		glDepthMask(0);
+		sphereMesh.draw();
+		glDepthMask(1);
+		glUseProgram(0);
+	}
+	else
+	{
+		std::vector<VertexP3T2> vertsCircle;
+		for (float f = 0; f < 2 * glm::pi<float>(); f += glm::pi<float>() / 50)
+			vertsCircle.push_back(VertexP3T2(glm::vec3(rswLight->range * glm::cos(f), rswLight->range * glm::sin(f), 0), glm::vec2(glm::cos(f), glm::sin(f))));
+		billboardShader->use();
+		billboardShader->setUniform(BillboardRenderer::BillboardShader::Uniforms::cameraMatrix, nodeRenderContext.viewMatrix);
+		billboardShader->setUniform(BillboardRenderer::BillboardShader::Uniforms::projectionMatrix, nodeRenderContext.projectionMatrix);
+		billboardShader->setUniform(BillboardRenderer::BillboardShader::Uniforms::modelMatrix, modelMatrix);
+		billboardShader->setUniform(BillboardRenderer::BillboardShader::Uniforms::color, glm::vec4(rswLight->color, 1));
+		whiteTexture->bind();
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glEnableVertexAttribArray(0);
+		glEnableVertexAttribArray(1);
+		glDisableVertexAttribArray(2);
+		glDisableVertexAttribArray(3);
+		glDisableVertexAttribArray(4); //TODO: vao
+		glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexP3T2), vertsCircle[0].data);
+		glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexP3T2), vertsCircle[0].data + 3);
+		glLineWidth(4.0f);
+		glDrawArrays(GL_LINE_LOOP, 0, (int)vertsCircle.size());
+		glUseProgram(0);
+	}
+}

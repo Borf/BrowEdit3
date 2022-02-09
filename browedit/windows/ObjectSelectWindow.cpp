@@ -102,6 +102,12 @@ void BrowEdit::showObjectWindow()
 			std::vector<std::string> maps = util::FileIO::listFiles("data");
 			maps.erase(std::remove_if(maps.begin(), maps.end(), [](const std::string& map) { return map.substr(map.size() - 4, 4) != ".rsw"; }), maps.end());
 			windowData.progressWindowProgres = 0;
+
+			std::map<int, std::vector<std::string>> effectFiles;
+			for (auto& f : util::FileIO::listFiles("data\\effects"))
+				if(f.rfind(".json") != std::string::npos)
+					effectFiles[util::FileIO::getJson(f)["id"]].push_back(f);
+
 			for (const auto& fileName : maps)
 			{
 				windowData.progressWindowProgres += (1.0f / maps.size());
@@ -125,6 +131,19 @@ void BrowEdit::showObjectWindow()
 						{
 							if (std::find(newTagList[mapTag].begin(), newTagList[mapTag].end(), "data\\model\\" + rswModel->fileName) == newTagList[mapTag].end())
 								newTagList[mapTag].push_back("data\\model\\"+rswModel->fileName);
+						}
+						auto rswEffect = node->getComponent<RswEffect>();
+						if (rswEffect)
+						{
+							for(auto effectFile : effectFiles[rswEffect->id])
+								if (std::find(newTagList[mapTag].begin(), newTagList[mapTag].end(), effectFile) == newTagList[mapTag].end())
+									newTagList[mapTag].push_back(effectFile);
+						}
+						auto rswSound = node->getComponent<RswSound>();
+						if (rswSound)
+						{
+							if (std::find(newTagList[mapTag].begin(), newTagList[mapTag].end(), "data\\wav\\" + rswSound->fileName) == newTagList[mapTag].end())
+								newTagList[mapTag].push_back("data\\wav\\" + rswSound->fileName);
 						}
 					});
 				delete node;
@@ -252,6 +271,31 @@ void BrowEdit::showObjectWindow()
 						newNode->addComponent(new CubeCollider(5));
 						newNodes.push_back(std::pair<Node*, glm::vec3>(newNode, glm::vec3(0, 0, 0)));
 					}
+					else if (file.substr(file.size() - 5) == ".json" &&
+						path.find("data\\effects") != std::string::npos)
+					{
+						auto e = new RswEffect();
+						try {
+							from_json(util::FileIO::getJson(path), *e);
+						}
+						catch (...) { std::cerr << "Error loading json" << std::endl; }
+						Node* newNode = new Node(file);
+						newNode->addComponent(new RswObject());
+						newNode->addComponent(e);
+						newNode->addComponent(new BillboardRenderer("data\\effect.png", "data\\effect_selected.png"));
+						newNode->addComponent(new CubeCollider(5));
+						newNodes.push_back(std::pair<Node*, glm::vec3>(newNode, glm::vec3(0, 0, 0)));
+					}
+					else if (file.substr(file.size() - 4) == ".wav")
+					{
+						auto s = new RswSound(util::iso_8859_1_to_utf8(path));
+						Node* newNode = new Node(file);
+						newNode->addComponent(new RswObject());
+						newNode->addComponent(s);
+						newNode->addComponent(new BillboardRenderer("data\\sound.png", "data\\sound_selected.png"));
+						newNode->addComponent(new CubeCollider(5));
+						newNodes.push_back(std::pair<Node*, glm::vec3>(newNode, glm::vec3(0, 0, 0)));
+					}
 				}
 				std::cout << "Click on " << file << std::endl;
 			}
@@ -319,7 +363,21 @@ void BrowEdit::showObjectWindow()
 			}
 			else if (ImGui::IsItemHovered())
 			{
-				ImGui::SetTooltip(util::combine(tagListReverse[path], "\n").c_str());
+				static std::string lastPopup;
+				static std::string desc;
+				if (lastPopup != path)
+				{
+					desc = "";
+					lastPopup = path;
+					if (path.substr(path.size() - 5) == ".json" &&
+						path.find("data\\effects") != std::string::npos)
+					{
+						auto data = util::FileIO::getJson(path);
+						if (data.find("desc") != data.end() && data["desc"].is_string())
+							desc = data["desc"].get<std::string>() + "\n\n";
+					}
+				}
+				ImGui::SetTooltip((desc + util::combine(tagListReverse[path], "\n")).c_str());
 				auto it = objectWindowObjects.find(path);
 				if (it != objectWindowObjects.end())
 				{

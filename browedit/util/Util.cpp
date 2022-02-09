@@ -154,6 +154,64 @@ namespace util
 		return ret;
 	}
 	
+	float interpolateSpline(const std::vector<glm::vec2>& data, float p)
+	{
+		auto n = data.size();
+		std::vector<float> h, F,s;
+		std::vector<std::vector<float>> m;
+		h.resize(n, 0);
+		F.resize(n, 0);
+		s.resize(n, 0);
+		m.resize(n);
+		for (auto i = 0; i < n; i++)
+			m[i].resize(n);
+
+		for (auto i = n - 1; i > 0; i--)
+		{
+			F[i] = (data[i].y - data[i - 1].y) / (data[i].x - data[i - 1].x);
+			h[i - 1] = data[i].x - data[i - 1].x;
+		}
+
+		//*********** formation of h, s , f matrix **************//
+		for (auto i = 1; i < n - 1; i++)
+		{
+			m[i][i] = 2 * (h[i - 1] + h[i]);
+			if (i != 1)
+			{
+				m[i][i - 1] = h[i - 1];
+				m[i - 1][i] = h[i - 1];
+			}
+			m[i][n - 1] = 6 * (F[i + 1] - F[i]);
+		}
+
+		//***********  forward elimination **************//
+
+		for (auto i = 1; i < n - 2; i++)
+		{
+			float temp = (m[i + 1][i] / m[i][i]);
+			for (auto j = 1; j <= n - 1; j++)
+				m[i + 1][j] -= temp * m[i][j];
+		}
+		float sum;
+		//*********** back ward substitution *********//
+		for (auto i = n - 2; i > 0; i--)
+		{
+			sum = 0;
+			for (auto j = i; j <= n - 2; j++)
+				sum += m[i][j] * s[j];
+			s[i] = (m[i][n - 1] - sum) / m[i][i];
+		}
+		for (auto i = 0; i < n - 1; i++)
+			if (data[i].x <= p && p <= data[i + 1].x)
+			{
+				auto a = (s[i + 1] - s[i]) / (6 * h[i]);
+				auto b = s[i] / 2;
+				auto c = (data[i + 1].y - data[i].y) / h[i] - (2 * h[i] * s[i] + s[i + 1] * h[i]) / 6;
+				auto d = data[i].y;
+				sum = a * glm::pow((p - data[i].x), 3.0f) + b * glm::pow((p - data[i].x), 2.0f) + c * (p - data[i].x) + d;
+			}
+		return sum;
+	}
 	float interpolateLagrange(const std::vector<glm::vec2> &f, float x)
 	{
 		float result = 0; // Initialize result
@@ -185,6 +243,7 @@ namespace util
 
 	void EditableGraph(const char* label, std::vector<glm::vec2>* points, std::function<float(const std::vector<glm::vec2>&, float)> interpolationStyle)
 	{
+		bool changed = false;
 		auto window = ImGui::GetCurrentWindow();
 		if (window->SkipItems)
 			return;
@@ -194,11 +253,12 @@ namespace util
 		
 		int hovered = ImGui::IsItemActive() || ImGui::IsItemHovered(); // IsItemDragged() ?
 
-		ImGui::Dummy(ImVec2(0, 3));
+		ImGui::Text(label);
 
+//		ImGui::Dummy(ImVec2(0, 3));
 		// prepare canvas
 		const float avail = ImGui::GetContentRegionAvailWidth();
-		const float dim = avail;
+		const float dim = ImMin(avail, 300.0f);
 		ImVec2 Canvas(dim, dim);
 
 		ImRect bb(window->DC.CursorPos, window->DC.CursorPos + Canvas);
@@ -247,22 +307,22 @@ namespace util
 					v.x += ImGui::GetIO().MouseDelta.x / Canvas.x;
 				v.y -= ImGui::GetIO().MouseDelta.y / Canvas.y;
 				v = glm::clamp(v, 0.0f, 1.0f);
+				changed = true;
 			}
 			ImGui::PopID();
 			it++;
 			i++;
 		}
+		if(changed)
+			std::sort(points->begin(), points->end(), [](const glm::vec2& a, const glm::vec2& b) { return std::signbit(a.x - b.x); });
+
 		ImGui::SetCursorScreenPos(bb.Min);
 		if (ImGui::InvisibleButton("new", bb.GetSize()))
 		{
 			ImVec2 pos = (IO.MousePos - bb.Min) / Canvas;
 			pos.y = 1.0f - pos.y;
 			points->push_back(glm::vec2(pos.x, pos.y));
-			std::sort(points->begin(), points->end(), [](const glm::vec2& a, const glm::vec2& b)
-				{
-					return std::signbit(a.x - b.x);
-				});
-
+			std::sort(points->begin(), points->end(), [](const glm::vec2& a, const glm::vec2& b){ return std::signbit(a.x - b.x);});
 		}
 		ImGui::SetCursorScreenPos(cursorPos);
 	}
@@ -278,11 +338,12 @@ namespace util
 
 		int hovered = ImGui::IsItemActive() || ImGui::IsItemHovered(); // IsItemDragged() ?
 
-		ImGui::Dummy(ImVec2(0, 3));
+		ImGui::Text(label);
+		//ImGui::Dummy(ImVec2(0, 3));
 
 		// prepare canvas
 		const float avail = ImGui::GetContentRegionAvailWidth();
-		const float dim = avail;
+		const float dim = ImMin(avail, 300.0f);
 		ImVec2 Canvas(dim, dim);
 
 		ImRect bb(window->DC.CursorPos, window->DC.CursorPos + Canvas);
@@ -399,6 +460,8 @@ namespace std
 	}
 	void from_json(const nlohmann::json& j, std::vector<glm::vec2>& v)
 	{
+		if(!j.is_null())
+			v.clear();
 		int i = 0;
 		for (const auto& jj : j)
 		{

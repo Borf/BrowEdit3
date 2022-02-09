@@ -1,7 +1,7 @@
 #version 420
 
 uniform sampler2D s_texture;
-uniform float selection;
+uniform vec4 color = vec4(1,1,1,1);
 in vec2 texCoord;
 out vec4 fragColor;
 
@@ -9,8 +9,9 @@ out vec4 fragColor;
 
 void main()
 {
-	vec4 color = texture2D(s_texture, texCoord);
-	if(color.a < 0.1)
+	vec4 output = texture2D(s_texture, texCoord);
+	output *= color;
+	if(output.a < 0.1)
 		discard;
-	fragColor = color;
+	fragColor = output;
 }

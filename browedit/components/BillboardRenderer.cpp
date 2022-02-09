@@ -71,6 +71,7 @@ void BillboardRenderer::BillboardRenderContext::preFrame(const glm::mat4& projec
 	shader->use();
 	shader->setUniform(BillboardShader::Uniforms::projectionMatrix, projectionMatrix);
 	shader->setUniform(BillboardShader::Uniforms::cameraMatrix, viewMatrix);
+	shader->setUniform(BillboardShader::Uniforms::color, glm::vec4(1,1,1,1));
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
 	glDisableVertexAttribArray(2);

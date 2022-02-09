@@ -41,5 +41,6 @@ private:
 
 	void setProgressText(const std::string& text);
 	void setProgress(float);
+
 };
 

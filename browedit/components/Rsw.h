@@ -129,9 +129,10 @@ public:
 	int falloffStyle = 0;
 	enum FalloffStyle {
 		Magic = 0,
-		LagrangeTweak = 1,
-		LinearTweak = 2,
-		Exponential = 3
+		SplineTweak = 1,
+		LagrangeTweak = 2,
+		LinearTweak = 3,
+		Exponential = 4
 	};
 
 	float cutOff = 0;
@@ -171,18 +172,19 @@ class RswSound : public Component, public ImguiProps
 public:
 	std::string fileName;
 	//float repeatDelay;
-	float vol;
-	long	width;
-	long	height;
-	float	range;
-	float	cycle;
+	float	vol = 0.7f;
+	long	width = 10;
+	long	height = 10;
+	float	range = 100.0f;
+	float	cycle = 4.0f;
 
 	char unknown6[8];
-	float unknown7;
-	float unknown8;
+	float unknown7 = -45.0f;
+	float unknown8 = 0.0f;
 
 
 	RswSound() {}
+	RswSound(const std::string &fileName) : fileName(fileName) {}
 	void load(std::istream* is, int version);
 	void save(std::ofstream& file, int version);
 	void buildImGui(BrowEdit* browEdit) override;

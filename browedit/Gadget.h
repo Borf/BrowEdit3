@@ -10,6 +10,7 @@
 
 class Gadget
 {
+public:
 	class SimpleShader : public gl::Shader
 	{
 	public:
@@ -37,6 +38,7 @@ class Gadget
 			bindUniform(Uniforms::color, "color");
 		}
 	};
+private:
 	class ArrowMesh : public Mesh
 	{
 	public:

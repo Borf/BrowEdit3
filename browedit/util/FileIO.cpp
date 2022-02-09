@@ -253,12 +253,23 @@ namespace util
 
 	void FileIO::DirSource::listFiles(const std::string& dir, std::vector<std::string>& files)
 	{
-		for (const auto& entry : std::filesystem::directory_iterator(directory + dir))
+		try {
+			for (const auto& entry : std::filesystem::directory_iterator(directory + dir))
+			{
+				auto f = entry.path().string();
+				if (f.size() > directory.size() && directory.size() > 0 && f.find(directory) == 0)
+					f = f.substr(directory.size());
+				if (entry.is_directory() && entry.path().string().find("\\game") != std::string::npos)
+					continue;
+				if (entry.is_directory())
+					listFiles(f, files);
+				else
+					files.push_back(f);
+			}
+		}
+		catch (...)
 		{
-			if (entry.is_directory())
-				listFiles(entry.path().string().substr(directory.size()), files);
-			else
-				files.push_back(entry.path().string().substr(directory.size()));
+			std::cerr << "Something went wrong with listing files" << std::endl;
 		}
 	}
 

@@ -109,13 +109,15 @@ void RswLight::buildImGui(BrowEdit* browEdit)
 	util::Checkbox(browEdit, browEdit->activeMapView->map, node, "Affects Shadowmap", &affectShadowMap);
 	util::Checkbox(browEdit, browEdit->activeMapView->map, node, "Affects Colormap", &affectLightmap);
 
-	ImGui::Combo("Falloff style", &falloffStyle, "magic\0lagrange tweak\0linear tweak\0exponential\0");
+	ImGui::Combo("Falloff style", &falloffStyle, "magic\0spline tweak\0lagrange tweak\0linear tweak\0exponential\0");
 
 	if (falloffStyle == FalloffStyle::Magic)
 	{
 		util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Intensity", &intensity, 1.00f, 0.0f, 100000.0f);
 		util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Cutoff", &cutOff, 0.01f, 0.0f, 1.0f);
 	}
+	else if (falloffStyle == FalloffStyle::SplineTweak)
+		util::EditableGraph("Light Falloff", &falloff, util::interpolateSpline);
 	else if (falloffStyle == FalloffStyle::LagrangeTweak)
 		util::EditableGraph("Light Falloff", &falloff, util::interpolateLagrange);
 	else if (falloffStyle == FalloffStyle::LinearTweak)
