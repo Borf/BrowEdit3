@@ -14,7 +14,7 @@ class Gnd : public Component
 {
 public:
 	Gnd(const std::string& fileName);
-	void save(std::string fileName);
+	void save(const std::string &fileName);
 	glm::vec3 rayCast(const math::Ray& ray);
 	void makeLightmapsUnique();
 	void makeLightmapsClear();

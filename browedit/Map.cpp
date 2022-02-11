@@ -28,13 +28,37 @@ Map::Map(const std::string& name) : name(name)
 	rootNode = new Node(name);
 	auto rsw = new Rsw();
 	rootNode->addComponent(rsw);	
-	rsw->load(name);
+	rsw->load(name, this);
 }
 
+
+Node* Map::findAndBuildNode(const std::string& path, Node* root)
+{
+	if (!root)
+		root = rootNode;
+	if (path == "")
+		return root;
+	std::string firstPart = path;
+	std::string secondPart = "";
+	if (firstPart.find("\\") != std::string::npos)
+	{
+		firstPart = firstPart.substr(0, firstPart.find("\\"));
+		secondPart = path.substr(path.find("\\") + 1);
+	}
+	for (auto c : root->children)
+		if (c->name == firstPart)
+			return findAndBuildNode(secondPart, c);
+	Node* node = new Node(firstPart, root);
+	return findAndBuildNode(secondPart, node);
+}
 
 
 void Map::doAction(Action* action, BrowEdit* browEdit)
 {
+	auto ga = dynamic_cast<GroupAction*>(action);
+	if (ga && ga->isEmpty())
+		return;
+
 	if (std::find(undoStack.begin(), undoStack.end(), action) != undoStack.end())
 	{
 		std::cerr << "Double undo!" << std::endl;
@@ -104,6 +128,30 @@ void Map::flipSelection(int axis, BrowEdit* browEdit)
 	}
 	doAction(ga, browEdit);
 }
+
+void Map::setSelectedItemsToFloorHeight(BrowEdit* browEdit)
+{
+	auto gnd = rootNode->getComponent<Gnd>();
+	auto ga = new GroupAction();
+	for (auto n : selectedNodes)
+	{
+		auto rswObject = n->getComponent<RswObject>();
+		if (rswObject)
+		{
+			glm::vec3 position(5 * gnd->width + rswObject->position.x, -rswObject->position.y, 5 * gnd->height - rswObject->position.z + 10);
+
+			glm::vec3 pos = gnd->rayCast(math::Ray(position + glm::vec3(0, 1000, 0), glm::vec3(0, -1, 0)));
+			float orig = rswObject->position.y;
+			rswObject->position.y = -pos.y;
+			ga->addAction(new ObjectChangeAction(n, &rswObject->position.y, orig, "Moving"));
+			if (n->getComponent<RsmRenderer>())
+				n->getComponent<RsmRenderer>()->setDirty();
+		}
+	}
+	doAction(ga, browEdit);
+
+}
+
 
 void Map::selectNear(float nearDistance, BrowEdit* browEdit)
 {

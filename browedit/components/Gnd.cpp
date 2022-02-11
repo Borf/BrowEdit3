@@ -2,6 +2,7 @@
 #include <browedit/util/Util.h>
 #include <browedit/util/FileIO.h>
 #include <iostream>
+#include <fstream>
 
 Gnd::Gnd(const std::string& fileName)
 {
@@ -179,6 +180,121 @@ Gnd::Gnd(const std::string& fileName)
 	std::cout << "GND: Done calculating normals" << std::endl;
 }
 
+void Gnd::save(const std::string& fileName)
+{
+	std::ofstream file(fileName.c_str(), std::ios_base::binary | std::ios_base::out);
+	if (!file.is_open())
+	{
+		std::cerr << "GND: Unable to open gnd file: " << fileName << std::endl;
+		return;
+	}
+	std::cout << "GND: Reading gnd file" << std::endl;
+	char header[4] = { 'G', 'R', 'G', 'N'};
+	file.write(header, 4);
+	version = util::swapShort(version);
+	file.write(reinterpret_cast<char*>(&version), sizeof(short));
+	version = util::swapShort(version);
+
+	int textureCount = (int)textures.size();
+	if (version > 0)
+	{
+		file.write(reinterpret_cast<char*>(&width), sizeof(int));
+		file.write(reinterpret_cast<char*>(&height), sizeof(int));
+		file.write(reinterpret_cast<char*>(&tileScale), sizeof(float));
+		file.write(reinterpret_cast<char*>(&textureCount), sizeof(int));
+		file.write(reinterpret_cast<char*>(&maxTexName), sizeof(int)); //80
+	}
+	else
+	{
+		file.put(0); file.put(0); file.put(0); file.put(0); file.put(0); file.put(0);
+		file.write(reinterpret_cast<char*>(&width), sizeof(int));
+		file.write(reinterpret_cast<char*>(&height), sizeof(int));
+		file.write(reinterpret_cast<char*>(&textureCount), sizeof(int));
+	}
+
+	for (auto texture : textures)
+	{
+		util::FileIO::writeString(file, texture->file, 40);
+		util::FileIO::writeString(file, texture->name, 40);
+	}
+
+	if (version > 0)
+	{
+		int lightmapCount = (int)lightmaps.size();
+		file.write(reinterpret_cast<char*>(&lightmapCount), sizeof(int));
+		file.write(reinterpret_cast<char*>(&lightmapWidth), sizeof(int));
+		file.write(reinterpret_cast<char*>(&lightmapHeight), sizeof(int));
+		file.write(reinterpret_cast<char*>(&gridSizeCell), sizeof(int));
+
+		for (auto lightmap : lightmaps)
+			file.write((char*)lightmap->data, 256);
+
+		int tileCount = (int)tiles.size();
+		file.write(reinterpret_cast<char*>(&tileCount), sizeof(int));
+		for (auto tile : tiles)
+		{
+			file.write(reinterpret_cast<char*>(&tile->v1.x), sizeof(float));
+			file.write(reinterpret_cast<char*>(&tile->v2.x), sizeof(float));
+			file.write(reinterpret_cast<char*>(&tile->v3.x), sizeof(float));
+			file.write(reinterpret_cast<char*>(&tile->v4.x), sizeof(float));
+			file.write(reinterpret_cast<char*>(&tile->v1.y), sizeof(float));
+			file.write(reinterpret_cast<char*>(&tile->v2.y), sizeof(float));
+			file.write(reinterpret_cast<char*>(&tile->v3.y), sizeof(float));
+			file.write(reinterpret_cast<char*>(&tile->v4.y), sizeof(float));
+
+			file.write(reinterpret_cast<char*>(&tile->textureIndex), sizeof(short));
+			file.write(reinterpret_cast<char*>(&tile->lightmapIndex), sizeof(unsigned short));
+
+
+			if (tile->lightmapIndex < 0 || tile->lightmapIndex == (unsigned short)-1)
+			{
+				std::cout << "GND: Lightmapindex < 0" << std::endl;
+				tile->lightmapIndex = 0;
+			}
+
+			file.put(tile->color.b);
+			file.put(tile->color.g);
+			file.put(tile->color.r);
+			file.put(tile->color.a);
+		}
+
+		for (int y = 0; y < height; y++)
+		{
+			for (int x = 0; x < width; x++)
+			{
+				Cube* cube = cubes[x][y];
+				file.write(reinterpret_cast<char*>(&cube->h1), sizeof(float));
+				file.write(reinterpret_cast<char*>(&cube->h2), sizeof(float));
+				file.write(reinterpret_cast<char*>(&cube->h3), sizeof(float));
+				file.write(reinterpret_cast<char*>(&cube->h4), sizeof(float));
+
+				if (version >= 0x0106)
+				{
+					file.write(reinterpret_cast<char*>(&cube->tileUp), sizeof(int));
+					file.write(reinterpret_cast<char*>(&cube->tileSide), sizeof(int));
+					file.write(reinterpret_cast<char*>(&cube->tileFront), sizeof(int));
+				}
+				else
+				{
+					unsigned short up, side, front;
+					file.write(reinterpret_cast<char*>(&up), sizeof(unsigned short));
+					file.write(reinterpret_cast<char*>(&side), sizeof(unsigned short));
+					file.write(reinterpret_cast<char*>(&front), sizeof(unsigned short));
+
+					cube->tileUp = up;
+					cube->tileSide = side;
+					cube->tileFront = front;
+				}
+			}
+		}
+	}
+	else
+	{
+		//TODO: port code...too lazy for now
+	}
+	std::cout << "GND: Done saving GND" << std::endl;
+}
+
 
 
 glm::vec3 Gnd::rayCast(const math::Ray& ray)
@@ -314,7 +430,6 @@ void Gnd::makeLightmapBorders()
 						lightmap->data[64 + 3 * (i + 8 * 7) + c] = getLightmapColor(x, y + 1, i, 1)[c];
 						lightmap->data[64 + 3 * (0 + 8 * i) + c] = getLightmapColor(x - 1, y, 6, i)[c];
 						lightmap->data[64 + 3 * (7 + 8 * i) + c] = getLightmapColor(x + 1, y, 1, i)[c];
-
 					}
 
 				}
@@ -327,7 +442,7 @@ void Gnd::makeLightmapBorders()
 				Gnd::Lightmap* lightmap = lightmaps[tile->lightmapIndex];
 
 				auto otherCube = cubes[x - 1][y];
-				if (otherCube->tileSide != -1)
+				if (otherCube && otherCube->tileSide != -1)
 				{
 					auto otherTile = tiles[otherCube->tileSide];
 					auto otherLightmap = lightmaps[otherTile->lightmapIndex];
@@ -340,7 +455,7 @@ void Gnd::makeLightmapBorders()
 						lightmap->data[0 + 8 * i] = lightmap->data[1 + 8 * i];
 
 				otherCube = cubes[x + 1][y];
-				if (otherCube->tileSide != -1)
+				if (otherCube && otherCube->tileSide != -1)
 				{
 					auto otherTile = tiles[otherCube->tileSide];
 					auto otherLightmap = lightmaps[otherTile->lightmapIndex];
@@ -354,7 +469,7 @@ void Gnd::makeLightmapBorders()
 
 				//top and bottom
 				otherCube = cubes[x][y + 1];
-				if (otherCube->tileUp != -1)
+				if (otherCube && otherCube->tileUp != -1)
 				{
 					auto otherTile = tiles[otherCube->tileUp];
 					auto otherLightmap = lightmaps[otherTile->lightmapIndex];
@@ -368,7 +483,7 @@ void Gnd::makeLightmapBorders()
 
 
 				otherCube = cubes[x][y];
-				if (otherCube->tileUp != -1)
+				if (otherCube && otherCube->tileUp != -1)
 				{
 					auto otherTile = tiles[otherCube->tileUp];
 					auto otherLightmap = lightmaps[otherTile->lightmapIndex];
@@ -407,7 +522,7 @@ void Gnd::makeLightmapBorders()
 				if (y > 0)
 				{
 					auto otherCube = cubes[x][y - 1];
-					if (otherCube->tileFront != -1)
+					if (otherCube && otherCube->tileFront != -1)
 					{
 						auto otherTile = tiles[otherCube->tileFront];
 						auto otherLightmap = lightmaps[otherTile->lightmapIndex];
@@ -438,7 +553,7 @@ void Gnd::makeLightmapBorders()
 				}
 
 				auto otherCube = cubes[x][y];
-				if (otherCube->tileUp != -1)
+				if (otherCube && otherCube->tileUp != -1)
 				{
 					auto otherTile = tiles[otherCube->tileUp];
 					auto otherLightmap = lightmaps[otherTile->lightmapIndex];

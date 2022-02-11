@@ -128,7 +128,8 @@ void BrowEdit::run()
 #ifdef _DEBUG
 	if(config.isValid() == "")
 //		loadMap("data\\comodo.rsw");
-		loadMap("data\\guild_vs1.rsw");
+//		loadMap("data\\guild_vs1.rsw");
+		loadMap("data\\effects_ro.rsw");
 #endif
 
 
@@ -361,6 +362,7 @@ void BrowEdit::showMapWindow(MapView& mapView)
 void BrowEdit::saveMap(Map* map)
 {
 	map->rootNode->getComponent<Rsw>()->save(config.ropath + map->name);
+	map->rootNode->getComponent<Gnd>()->save(config.ropath + map->name + ".gnd");
 }
 
 void BrowEdit::loadMap(const std::string& file)

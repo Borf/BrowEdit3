@@ -19,6 +19,8 @@ public:
 	std::vector<Node*> selectedNodes;
 
 
+	Node* findAndBuildNode(const std::string &path, Node* root = nullptr);
+
 	Map(const std::string& name);
 	void doAction(Action* action, BrowEdit* browEdit);
 	void undo(BrowEdit* browEdit);
@@ -35,6 +37,7 @@ public:
 	void pasteSelection(BrowEdit* browEdit);
 	void deleteSelection(BrowEdit* browEdit);
 	void flipSelection(int axis, BrowEdit* browEdit);
+	void setSelectedItemsToFloorHeight(BrowEdit* browEdit);
 
 
 	void exportShadowMap(BrowEdit* browEdit, bool exportWalls, bool exportBorders);

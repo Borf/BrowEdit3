@@ -278,3 +278,8 @@ void GndRenderer::Chunk::rebuild()
 	dirty = false;
 	rebuilding = false;
 }
+
+void GndRenderer::setChunkDirty(int x, int y)
+{
+	chunks[y / CHUNKSIZE][x / CHUNKSIZE]->dirty = true;
+}

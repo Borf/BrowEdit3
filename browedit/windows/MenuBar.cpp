@@ -2,10 +2,15 @@
 #include <browedit/BrowEdit.h>
 #include <browedit/MapView.h>
 #include <browedit/Map.h>
+#include <browedit/Node.h>
 #include <browedit/gl/FBO.h>
 #include <browedit/util/FileIO.h>
 #include <browedit/util/Util.h>
 #include <browedit/Lightmapper.h>
+#include <browedit/components/Gnd.h>
+#include <browedit/components/Rsw.h>
+#include <browedit/components/GndRenderer.h>
+#include <browedit/components/BillboardRenderer.h>
 #include <GLFW/glfw3.h>
 #include <imgui_internal.h>
 
@@ -109,6 +114,90 @@ void BrowEdit::menuBar()
 				{
 					lightmapper = new Lightmapper(map, this);
 					windowData.openLightmapSettings = true;
+				}
+
+				if (map->name == "data\\effects_ro.rsw" && ImGui::MenuItem("Generate effects")) //speedrun map
+				{
+					map->rootNode->children.clear(); //oops
+					auto gnd = map->rootNode->getComponent<Gnd>();
+
+					int tU[6][6];
+					int tF[6][6];
+					int tS[6][6];
+					int digits[10];
+
+					int xx = 5 + 6 * (0 % 40) - 1;
+					int yy = 17 + 6 * (0 / 40) - 1;
+					for (int x = xx; x < xx + 6; x++)
+					{
+						for (int y = yy; y < yy + 6; y++)
+						{
+							tU[x - xx][y - yy] = gnd->cubes[x][gnd->height - 1 - y]->tileUp;
+							tF[x - xx][y - yy] = gnd->cubes[x][gnd->height - 1 - y]->tileFront;
+							tS[x - xx][y - yy] = gnd->cubes[x][gnd->height - 1 - y]->tileSide;
+						}
+					}
+					for (int x = 0; x < 10; x++)
+					{
+						xx = 5 + 6 * (x % 40) - 1;
+						yy = 17 + 6 * (0 / 40) - 1;
+						digits[x] = gnd->cubes[xx + 1][gnd->height - 1 - (yy + 5)]->tileUp;
+					}
+
+					for (int x = 0; x < gnd->width; x++)
+					{
+						for (int y = 0; y < gnd->height-15; y++)
+						{
+							gnd->cubes[x][y]->h1 = -30;
+							gnd->cubes[x][y]->h2 = -30;
+							gnd->cubes[x][y]->h3 = -30;
+							gnd->cubes[x][y]->h4 = -30;
+							map->rootNode->getComponent<GndRenderer>()->setChunkDirty(x, y);
+						}
+					}
+					for (int i = 0; i < 1000; i++)
+					{
+						int xx = 5+  6 * (i % 40)-1;
+						int yy = 17+ 6 * (i / 40)-1;
+						for (int x = xx; x < xx + 6; x++)
+						{
+							for (int y = yy; y < yy + 6; y++)
+							{
+								float h = -40;
+								if (x == xx || x == xx + 5 || y == yy || y == yy + 5)
+									h = -30;
+								gnd->cubes[x][gnd->height - 1 - y]->h1 = h;
+								gnd->cubes[x][gnd->height - 1 - y]->h2 = h;
+								gnd->cubes[x][gnd->height - 1 - y]->h3 = h;
+								gnd->cubes[x][gnd->height - 1 - y]->h4 = h;
+								gnd->cubes[x][gnd->height - 1 - y]->tileFront = tF[x-xx][y-yy];
+								gnd->cubes[x][gnd->height - 1 - y]->tileSide = tS[x - xx][y - yy];
+								gnd->cubes[x][gnd->height - 1 - y]->tileUp = tU[x - xx][y - yy];
+							}
+						}
+						int nr = i;
+						int len = floor(log10(nr));
+						while (nr > 0)
+						{
+							gnd->cubes[xx + 1 + len][gnd->height - 1 - (yy + 5)]->tileUp = digits[nr % 10];
+							nr /= 10;
+							len--;
+						}
+
+						auto e = new RswEffect();
+						auto o = new RswObject();
+						o->position.x = -1180.0f + 60 * (i % 40);
+						o->position.y = -48.0f;
+						o->position.z = 1060.0f - 60 * (i / 40);
+						e->id = i;
+						Node* newNode = new Node("Effect" + std::to_string(i));
+						newNode->addComponent(o);
+						newNode->addComponent(e);
+						newNode->addComponent(new BillboardRenderer("data\\effect.png", "data\\effect_selected.png"));
+						newNode->addComponent(new CubeCollider(5));
+						newNode->setParent(map->rootNode);
+					}
+
 				}
 
 

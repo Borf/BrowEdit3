@@ -21,6 +21,10 @@ public:
 	{
 		actions.push_back(action);
 	}
+	bool isEmpty()
+	{
+		return actions.size() == 0;
+	}
 
 	virtual void perform(Map* map, BrowEdit* browEdit) override
 	{

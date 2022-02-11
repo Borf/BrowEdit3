@@ -181,17 +181,13 @@ void MapView::render(BrowEdit* browEdit)
 				snap = !snap;
 			if(snap)
 				rayCast = glm::round(rayCast / (float)gridSize) * (float)gridSize;
-
-
 			if (newNode.first->getComponent<RsmRenderer>())
 			{
 				newNode.first->getComponent<RsmRenderer>()->matrixCache = glm::translate(glm::mat4(1.0f), rayCast + newNode.second);
 				newNode.first->getComponent<RsmRenderer>()->matrixCache = glm::scale(newNode.first->getComponent<RsmRenderer>()->matrixCache, glm::vec3(1, -1, 1));
 			}
 			if (newNode.first->getComponent<BillboardRenderer>())
-			{
 				newNode.first->getComponent<BillboardRenderer>()->gnd = gnd;
-			}
 			NodeRenderer::render(newNode.first, nodeRenderContext);
 		}
 	}
@@ -282,6 +278,24 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 			});
 
 
+	if (ImGui::IsMouseReleased(1) && ImGui::GetIO().MouseDragMaxDistanceSqr[1] < 5)
+		ImGui::OpenPopup("Object Rightclick");
+	if (ImGui::BeginPopup("Object Rightclick"))
+	{
+		if (ImGui::MenuItem("Set to floor height"))
+			map->setSelectedItemsToFloorHeight(browEdit);
+		if (ImGui::MenuItem("Copy", "Ctrl+c"))
+			map->copySelection();
+		if (ImGui::MenuItem("Paste", "Ctrl+v"))
+			map->pasteSelection(browEdit);
+		if (ImGui::MenuItem("Select Same"))
+			map->selectSameModels(browEdit);
+		if (ImGui::MenuItem("Select Same near"))
+			map->selectNear(50.0f, browEdit);
+
+
+		ImGui::EndPopup();
+	}
 
 
 	bool canSelectObject = true;
@@ -293,7 +307,10 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 			bool first = false;
 			for (auto newNode : browEdit->newNodes)
 			{
-				newNode.first->setParent(map->rootNode);
+				std::string path = newNode.first->name;
+				if (path.find("\\") != std::string::npos)
+					path = path.substr(0, path.find("\\"));
+				newNode.first->setParent(map->findAndBuildNode(path));				
 				ga->addAction(new NewObjectAction(newNode.first));
 				auto sa = new SelectAction(map, newNode.first, first, false);
 				sa->perform(map, browEdit); // to make sure everything is selected

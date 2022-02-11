@@ -110,6 +110,8 @@ public:
 	gl::Texture* gndShadow;
 	gl::Texture* gndTileColors;
 
+
+	void setChunkDirty(int x, int y);
 	bool gndShadowDirty = true;
 	bool gndTileColorDirty = true;
 

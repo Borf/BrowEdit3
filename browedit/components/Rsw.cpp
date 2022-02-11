@@ -14,6 +14,7 @@
 #include <browedit/util/FileIO.h>
 #include <browedit/util/Util.h>
 #include <browedit/math/Ray.h>
+#include <browedit/Map.h>
 #include <iostream>
 #include <fstream>
 #include <glm/gtc/type_ptr.hpp>
@@ -24,7 +25,7 @@ Rsw::Rsw()
 }
 
 
-void Rsw::load(const std::string& fileName, bool loadModels, bool loadGnd)
+void Rsw::load(const std::string& fileName, Map* map, bool loadModels, bool loadGnd)
 {
 	auto file = util::FileIO::open(fileName);
 	if (!file)
@@ -137,25 +138,6 @@ void Rsw::load(const std::string& fileName, bool loadModels, bool loadGnd)
 	file->read(reinterpret_cast<char*>(&objectCount), sizeof(int));
 	std::cout << "RSW: Loading " << objectCount << " objects" << std::endl;
 
-	std::function<Node* (Node*, const std::string&)> buildNode;
-	buildNode = [&buildNode](Node* root, const std::string& path)
-	{
-		if (path == "")
-			return root;
-		std::string firstPart = path;
-		std::string secondPart = "";
-		if (firstPart.find("\\") != std::string::npos)
-		{
-			firstPart = firstPart.substr(0, firstPart.find("\\"));
-			secondPart = path.substr(path.find("\\")+1);
-		}
-		for (auto c : root->children)
-			if (c->name == firstPart)
-				return buildNode(c, secondPart);
-		Node* node = new Node(firstPart, root);
-		return buildNode(node, secondPart);
-	};
-
 	for (int i = 0; i < objectCount; i++)
 	{
 		Node* object = new Node("");
@@ -182,7 +164,7 @@ void Rsw::load(const std::string& fileName, bool loadModels, bool loadGnd)
 		else
 			objPath = "";
 
-		object->setParent(buildNode(node, objPath));
+		object->setParent(map->findAndBuildNode(objPath));
 	}
 
 

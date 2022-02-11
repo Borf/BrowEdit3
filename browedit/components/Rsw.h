@@ -13,6 +13,7 @@
 
 class RsmRenderer;
 class Gnd;
+class Map;
 
 class Rsw : public Component, public ImguiProps
 {
@@ -61,7 +62,7 @@ public:
 
 	Rsw();
 
-	void load(const std::string& fileName, bool loadModels = true, bool loadGnd = true);
+	void load(const std::string& fileName, Map* map, bool loadModels = true, bool loadGnd = true);
 	void save(const std::string& fileName);
 
 
@@ -128,14 +129,14 @@ public:
 
 	int falloffStyle = 0;
 	enum FalloffStyle {
-		Magic = 0,
+		Exponential = 0,
 		SplineTweak = 1,
 		LagrangeTweak = 2,
 		LinearTweak = 3,
-		Exponential = 4
+		Magic = 4,
 	};
 
-	float cutOff = 0;
+	float cutOff = 0.5f;
 	float intensity = 20;
 	std::vector<glm::vec2> falloff = { glm::vec2(0,1), glm::vec2(1,0) };
 	// end custom properties
