@@ -8,6 +8,7 @@
 #include <browedit/util/Util.h>
 #include <browedit/Lightmapper.h>
 #include <browedit/components/Gnd.h>
+#include <browedit/components/GndRenderer.h>
 #include <browedit/components/Rsw.h>
 #include <browedit/components/GndRenderer.h>
 #include <browedit/components/BillboardRenderer.h>
@@ -88,7 +89,7 @@ void BrowEdit::menuBar()
 				{
 					static bool exportWalls = true;
 					static bool exportBorders = true;
-					ImGui::PushItemFlag(ImGuiItemFlags_SelectableDontClosePopup, true); 
+					ImGui::PushItemFlag(ImGuiItemFlags_SelectableDontClosePopup, true);
 					ImGui::MenuItem("Import/Export Walls", nullptr, &exportWalls);
 					ImGui::MenuItem("Import/Export Borders", nullptr, &exportBorders);
 					ImGui::PopItemFlag();
@@ -102,9 +103,9 @@ void BrowEdit::menuBar()
 					ImGui::Separator();
 					if (ImGui::MenuItem("Import shadowmap"))
 						map->importShadowMap(this, exportWalls, exportBorders);
-					if(ImGui::MenuItem("Import colormap"))
+					if (ImGui::MenuItem("Import colormap"))
 						map->importLightMap(this, exportWalls, exportBorders);
-					if(ImGui::MenuItem("Import tile colors"))
+					if (ImGui::MenuItem("Import tile colors"))
 						map->importTileColors(this, exportWalls);
 
 
@@ -114,6 +115,30 @@ void BrowEdit::menuBar()
 				{
 					lightmapper = new Lightmapper(map, this);
 					windowData.openLightmapSettings = true;
+				}
+				if (ImGui::MenuItem("Make tiles unique"))
+					map->rootNode->getComponent<Gnd>()->makeTilesUnique();
+				if (ImGui::MenuItem("Clean Tiles"))
+					map->rootNode->getComponent<Gnd>()->cleanTiles();
+				if (ImGui::MenuItem("Fix lightmap borders"))
+				{
+					map->rootNode->getComponent<Gnd>()->makeLightmapBorders();
+					map->rootNode->getComponent<GndRenderer>()->gndShadowDirty = true;
+				}
+				if (ImGui::MenuItem("Clear lightmap borders"))
+				{
+					map->rootNode->getComponent<Gnd>()->makeLightmapsClear();
+					map->rootNode->getComponent<GndRenderer>()->gndShadowDirty = true;
+				}
+				if (ImGui::MenuItem("Smoothen lightmaps"))
+				{
+					map->rootNode->getComponent<Gnd>()->makeLightmapsSmooth();
+					map->rootNode->getComponent<GndRenderer>()->gndShadowDirty = true;
+				}
+				if (ImGui::MenuItem("Make lightmaps unique"))
+				{
+					map->rootNode->getComponent<Gnd>()->makeLightmapsUnique();
+					map->rootNode->getComponent<GndRenderer>()->gndShadowDirty = true;
 				}
 
 				if (map->name == "data\\effects_ro.rsw" && ImGui::MenuItem("Generate effects")) //speedrun map
@@ -176,7 +201,7 @@ void BrowEdit::menuBar()
 							}
 						}
 						int nr = i;
-						int len = floor(log10(nr));
+						int len = (int)floor(log10(nr));
 						while (nr > 0)
 						{
 							gnd->cubes[xx + 1 + len][gnd->height - 1 - (yy + 5)]->tileUp = digits[nr % 10];

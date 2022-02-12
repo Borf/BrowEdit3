@@ -39,7 +39,6 @@ public:
 	void flipSelection(int axis, BrowEdit* browEdit);
 	void setSelectedItemsToFloorHeight(BrowEdit* browEdit);
 
-
 	void exportShadowMap(BrowEdit* browEdit, bool exportWalls, bool exportBorders);
 	void exportLightMap(BrowEdit* browEdit, bool exportWalls, bool exportBorders);
 	void exportTileColors(BrowEdit* browEdit, bool exportWalls);
@@ -48,4 +47,5 @@ public:
 	void importLightMap(BrowEdit* browEdit, bool exportWalls, bool exportBorders);
 	void importTileColors(BrowEdit* browEdit, bool exportWalls);
 
+	void optimizeGndTiles(BrowEdit* browEdit);
 };

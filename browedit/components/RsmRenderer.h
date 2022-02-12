@@ -37,6 +37,7 @@ class RsmRenderer : public Renderer
 				selection,
 				shadeType,
 				lightToggle,
+				viewTextures,
 				End
 			};
 		};
@@ -54,6 +55,7 @@ class RsmRenderer : public Renderer
 			bindUniform(Uniforms::selection, "selection");
 			bindUniform(Uniforms::shadeType, "shadeType");
 			bindUniform(Uniforms::lightToggle, "lightToggle");
+			bindUniform(Uniforms::viewTextures, "viewTextures");
 		}
 	};
 public:
@@ -63,6 +65,7 @@ public:
 		RsmShader* shader = nullptr;
 		glm::mat4 viewMatrix = glm::mat4(1.0f);
 		bool viewLighting = true;
+		bool viewTextures = true;
 
 		RsmRenderContext();
 		virtual void preFrame(const glm::mat4& projectionMatrix, const glm::mat4& viewMatrix) override;

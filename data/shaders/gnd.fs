@@ -12,6 +12,7 @@ uniform float lightToggle = 1.0f;
 uniform float colorToggle = 1.0f;
 uniform float lightColorToggle = 1.0f;
 uniform float shadowMapToggle = 1.0f;
+uniform float viewTextures = 1.0f;
 
 in vec2 texCoord;
 in vec2 texCoord2;
@@ -24,13 +25,14 @@ out vec4 fragColor;
 void main()
 {
 	vec4 texture = vec4(1,1,1,1);
-	
-	texture *= texture2D(s_texture, texCoord);
+
+	vec4 texColor = texture2D(s_texture, texCoord);
+	texture = mix(vec4(1,1,1,texColor.a), texColor, viewTextures);
 	if(texture.a < 0.1)
 		discard;
 
-	texture *= max(texture2D(s_tileColor, tileColorCoord), colorToggle);
-	texture *= max(texture2D(s_lighting, texCoord2).a, shadowMapToggle);
+	texture.rgb *= max(texture2D(s_tileColor, tileColorCoord), colorToggle).rgb;
+	texture.rgb *= max(texture2D(s_lighting, texCoord2).a, shadowMapToggle);
 
 
 	texture.rgb *= max((abs(dot(normal, lightDirection)) * lightDiffuse + lightIntensity * lightAmbient), lightToggle);

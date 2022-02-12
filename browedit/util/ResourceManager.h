@@ -36,6 +36,11 @@ namespace util
 			resmap[str] = r;
 			return r;
 		}
+
+		static std::size_t count()
+		{
+			return resources.size() + resmap.size();
+		}
 		static void unload(T*)
 		{
 			std::cout << "Unloading resource, but not really :P this is a memory leak, and will be fixed later" << std::endl;

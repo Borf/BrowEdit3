@@ -5,13 +5,14 @@
 #include <browedit/components/RsmRenderer.h>
 #include <browedit/components/BillboardRenderer.h>
 #include <browedit/util/FileIO.h>
+#include <browedit/util/Util.h>
 
 #include <iostream>
 #include <fstream>
 #include <json.hpp>
 #include <glm/gtc/type_ptr.hpp>
-
-
+#include <ranges>
+#include <algorithm>
 
 
 RswObject::RswObject(RswObject* other) : position(other->position), rotation(other->rotation), scale(other->scale)
@@ -92,9 +93,33 @@ void RswObject::buildImGui(BrowEdit* browEdit)
 	ImGui::Text("Object");
 
 	if (util::DragFloat3(browEdit, browEdit->activeMapView->map, node, "Position", &position, 1.0f, 0.0f, 0.0f, "Moving") && renderer)
-		renderer->setDirty();
+		if(renderer)
+			renderer->setDirty();
 	if (util::DragFloat3(browEdit, browEdit->activeMapView->map, node, "Scale", &scale, 1.0f, 0.0f, 0.0f, "Resizing") && renderer)
-		renderer->setDirty();
+		if (renderer)
+			renderer->setDirty();
 	if (util::DragFloat3(browEdit, browEdit->activeMapView->map, node, "Rotation", &rotation, 1.0f, 0.0f, 0.0f, "Rotating") && renderer)
-		renderer->setDirty();
+		if (renderer)
+			renderer->setDirty();
+}
+
+
+void RswObject::buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>& nodes)
+{
+	std::vector<RswObject*> rswObjects;
+	std::ranges::copy(nodes | std::ranges::views::transform([](Node* n) { return n->getComponent<RswObject>(); }) | std::ranges::views::filter([](RswObject* r) { return r != nullptr; }), std::back_inserter(rswObjects));
+	if (rswObjects.size() == 0)
+		return;
+	ImGui::Text("Object");
+
+	if (util::DragFloat3Multi<RswObject>(browEdit, browEdit->activeMapView->map, rswObjects, "Position", [](RswObject* o) { return &o->position; }, 1.0f, 0.0f, 0.0f))
+		for (auto renderer : nodes | std::ranges::views::transform([](Node* n) { return n->getComponent<RsmRenderer>(); }) | std::ranges::views::filter([](RsmRenderer* r) { return r != nullptr; }))
+			renderer->setDirty();
+	if (util::DragFloat3Multi<RswObject>(browEdit, browEdit->activeMapView->map, rswObjects, "Scale", [](RswObject* o) { return &o->scale; }, .1f, 0.0f, 1000.0f))
+		for (auto renderer : nodes | std::ranges::views::transform([](Node* n) { return n->getComponent<RsmRenderer>(); }) | std::ranges::views::filter([](RsmRenderer* r) { return r != nullptr; }))
+			renderer->setDirty();
+	if (util::DragFloat3Multi<RswObject>(browEdit, browEdit->activeMapView->map, rswObjects, "Rotation", [](RswObject* o) { return &o->rotation; }, 1.0f, 0, 360.0f))
+		for (auto renderer : nodes | std::ranges::views::transform([](Node* n) { return n->getComponent<RsmRenderer>(); }) | std::ranges::views::filter([](RsmRenderer* r) { return r != nullptr; }))
+			renderer->setDirty();
+
 }

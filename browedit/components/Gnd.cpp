@@ -411,6 +411,7 @@ void Gnd::makeLightmapBorders()
 		{
 			Gnd::Cube* cube = cubes[x][y];
 			int tileId = cube->tileUp;
+			//fix topside
 			if (tileId != -1)
 			{
 				Gnd::Tile* tile = tiles[tileId];
@@ -435,7 +436,7 @@ void Gnd::makeLightmapBorders()
 				}
 			}
 			tileId = cube->tileSide;
-			if (tileId != -1)
+			if (tileId != -1 && x > 0 && x < width-1 && y < height-1)
 			{
 				Gnd::Tile* tile = tiles[tileId];
 				assert(tile && tile->lightmapIndex != -1);
@@ -449,6 +450,9 @@ void Gnd::makeLightmapBorders()
 
 					for (int i = 0; i < 8; i++)
 						lightmap->data[0 + 8 * i] = otherLightmap->data[6 + 8 * i];
+					for (int i = 0; i < 8; i++)
+						for (int c = 0; c < 3; c++)
+							lightmap->data[64 + 3 * (0 + 8 * i) + c] = otherLightmap->data[64+3*(6 + 8 * i)+c];
 				}
 				else
 					for (int i = 0; i < 8; i++)
@@ -462,6 +466,9 @@ void Gnd::makeLightmapBorders()
 
 					for (int i = 0; i < 8; i++)
 						lightmap->data[7 + 8 * i] = otherLightmap->data[1 + 8 * i];
+					for (int i = 0; i < 8; i++)
+						for (int c = 0; c < 3; c++)
+							lightmap->data[64+3*(7 + 8 * i)+c] = otherLightmap->data[64+3*(1 + 8 * i)+c];
 				}
 				else
 					for (int i = 0; i < 8; i++)
@@ -476,6 +483,9 @@ void Gnd::makeLightmapBorders()
 
 					for (int i = 0; i < 8; i++)
 						lightmap->data[i + 8 * 7] = otherLightmap->data[i + 8 * 1]; //bottom
+					for (int i = 0; i < 8; i++)
+						for (int c = 0; c < 3; c++)
+							lightmap->data[64+3*(i + 8 * 7)+c] = otherLightmap->data[64+3*(i + 8 * 1)+c]; //bottom
 				}
 				else
 					for (int i = 0; i < 8; i++)
@@ -490,6 +500,9 @@ void Gnd::makeLightmapBorders()
 
 					for (int i = 0; i < 8; i++)
 						lightmap->data[i + 8 * 0] = otherLightmap->data[i + 8 * 1]; //bottom
+					for (int i = 0; i < 8; i++)
+						for (int c = 0; c < 3; c++)
+							lightmap->data[64+3*(i + 8 * 0)+c] = otherLightmap->data[64+3*(i + 8 * 1)+c]; //bottom
 				}
 				else
 					for (int i = 0; i < 8; i++)
@@ -497,7 +510,7 @@ void Gnd::makeLightmapBorders()
 			}
 
 			tileId = cube->tileFront;
-			if (tileId != -1)
+			if (tileId != -1 && y > 0 && y < height - 1 && x < width - 1)
 			{
 				Gnd::Tile* tile = tiles[tileId];
 				assert(tile && tile->lightmapIndex != -1);
@@ -513,6 +526,9 @@ void Gnd::makeLightmapBorders()
 
 						for (int i = 0; i < 8; i++)
 							lightmap->data[0 + 8 * i] = otherLightmap->data[6 + 8 * i];
+						for (int i = 0; i < 8; i++)
+							for (int c = 0; c < 3; c++)
+								lightmap->data[64+3*(0 + 8 * i)+c] = otherLightmap->data[64+3*(6 + 8 * i)+c];
 					}
 					else
 						for (int i = 0; i < 8; i++)
@@ -529,6 +545,9 @@ void Gnd::makeLightmapBorders()
 
 						for (int i = 0; i < 8; i++)
 							lightmap->data[7 + 8 * i] = otherLightmap->data[1 + 8 * i];
+						for (int i = 0; i < 8; i++)
+							for (int c = 0; c < 3; c++)
+								lightmap->data[64+3*(7 + 8 * i)+c] = otherLightmap->data[64+3*(1 + 8 * i)+c];
 					}
 					else
 						for (int i = 0; i < 8; i++)
@@ -546,6 +565,9 @@ void Gnd::makeLightmapBorders()
 
 						for (int i = 0; i < 8; i++)
 							lightmap->data[i + 8 * 7] = otherLightmap->data[i + 8 * 1]; //bottom
+						for (int i = 0; i < 8; i++)
+							for (int c = 0; c < 3; c++)
+								lightmap->data[64+3*(i + 8 * 7)+c] = otherLightmap->data[64+3*(i + 8 * 1)+c]; //bottom
 					}
 					else
 						for (int i = 0; i < 8; i++)
@@ -560,6 +582,9 @@ void Gnd::makeLightmapBorders()
 
 					for (int i = 0; i < 8; i++)
 						lightmap->data[i + 8 * 0] = otherLightmap->data[i + 8 * 1]; //bottom
+					for (int i = 0; i < 8; i++)
+						for (int c = 0; c < 3; c++)
+							lightmap->data[64+3*(i + 8 * 0)+c] = otherLightmap->data[64+3*(i + 8 * 1)+c]; //bottom
 				}
 				else
 					for (int i = 0; i < 8; i++)
@@ -742,17 +767,10 @@ void Gnd::cleanTiles()
 	{
 		tiles.erase(tiles.begin() + i);
 		for (int y = 0; y < height; y++)
-		{
 			for (int x = 0; x < width; x++)
-			{
-				if (cubes[x][y]->tileUp > i)
-					cubes[x][y]->tileUp--;
-				if (cubes[x][y]->tileSide > i)
-					cubes[x][y]->tileSide--;
-				if (cubes[x][y]->tileFront > i)
-					cubes[x][y]->tileFront--;
-			}
-		}
+				for(int ii = 0; ii < 3; ii++)
+					if (cubes[x][y]->tileIds[ii] > i)
+						cubes[x][y]->tileIds[ii]--;
 	}
 	std::cout<< "Tiles cleanup, ending with " << tiles.size() << " tiles" << std::endl;
 }
@@ -850,60 +868,27 @@ std::vector<glm::vec3> Gnd::getMapQuads()
 			auto cube = cubes[x][y];
 			if (cube->tileUp != -1)
 			{
-				/*quads.push_back(glm::vec3((x + 0) * 10, -cube->heights[2], 10 * height - (y + 1) * 10 + 10));
-				quads.push_back(glm::vec3((x + 0) * 10, -cube->heights[0], 10 * height - (y + 0) * 10 + 10));
-				quads.push_back(glm::vec3((x + 1) * 10, -cube->heights[1], 10 * height - (y + 0) * 10 + 10));
-				quads.push_back(glm::vec3((x + 1) * 10, -cube->heights[3], 10 * height - (y + 1) * 10 + 10));*/
+				quads.push_back(glm::vec3((x + 0) * 10, -cube->heights[2], 10 * height - (y + 1) * 10 + 10));//1
+				quads.push_back(glm::vec3((x + 0) * 10, -cube->heights[0], 10 * height - (y + 0) * 10 + 10));//2
+				quads.push_back(glm::vec3((x + 1) * 10, -cube->heights[1], 10 * height - (y + 0) * 10 + 10));//3
+				quads.push_back(glm::vec3((x + 1) * 10, -cube->heights[3], 10 * height - (y + 1) * 10 + 10));//4
 			}
 			if (cube->tileSide != -1)
 			{
-				quads.push_back(glm::vec3(10 * x, -cube->h3, 10 * height - 10 * y));
-				quads.push_back(glm::vec3(10 * x + 10, -cube->h4, 10 * height - 10 * y));
-				quads.push_back(glm::vec3(10 * x + 10, -cubes[x][y + 1]->h2, 10 * height - 10 * y));
-				quads.push_back(glm::vec3(10 * x, -cubes[x][y + 1]->h1, 10 * height - 10 * y));
+				quads.push_back(glm::vec3(10 * x, -cube->h3, 10 * height - 10 * y));//1
+				quads.push_back(glm::vec3(10 * x + 10, -cube->h4, 10 * height - 10 * y));//2
+				quads.push_back(glm::vec3(10 * x + 10, -cubes[x][y + 1]->h2, 10 * height - 10 * y));//3
+				quads.push_back(glm::vec3(10 * x, -cubes[x][y + 1]->h1, 10 * height - 10 * y));//4
 			}
 			if (cube->tileFront != -1)
 			{
-				quads.push_back(glm::vec3(10 * x + 10, -cube->h2, 10 * height - 10 * y + 10));
-				quads.push_back(glm::vec3(10 * x + 10, -cube->h4, 10 * height - 10 * y));
-				quads.push_back(glm::vec3(10 * x + 10, -cubes[x + 1][y]->h3, 10 * height - 10 * y));
-				quads.push_back(glm::vec3(10 * x + 10, -cubes[x + 1][y]->h1, 10 * height - 10 * y + 10));
+				quads.push_back(glm::vec3(10 * x + 10, -cube->h2, 10 * height - 10 * y + 10));//1
+				quads.push_back(glm::vec3(10 * x + 10, -cube->h4, 10 * height - 10 * y));//2
+				quads.push_back(glm::vec3(10 * x + 10, -cubes[x + 1][y]->h3, 10 * height - 10 * y));//3
+				quads.push_back(glm::vec3(10 * x + 10, -cubes[x + 1][y]->h1, 10 * height - 10 * y + 10));//4
 			}
 		}
 	}
-
-	/*for (int x = 0; x < width; x++)
-	{
-		for (int y = 0; y < height; y++)
-		{
-			if (cubes[x][y]->tileUp != -1)
-			{
-				file << "f ";
-				for (int i = 0; i < 4; i++)
-					file << (x + y * width) * 4 + i + 1 << " ";
-				file << std::endl;
-			}
-			if (cubes[x][y]->tileSide != -1)
-			{
-				file << "f ";
-				file << (x + y * width) * 4 + 2 + 1 << " ";
-				file << (x + y * width) * 4 + 3 + 1 << " ";
-				file << (x + (y + 1) * width) * 4 + 0 + 1 << " ";
-				file << (x + (y + 1) * width) * 4 + 1 + 1 << " ";
-				file << std::endl;
-			}
-
-			if (cubes[x][y]->tileFront != -1)
-			{
-				file << "f ";
-				file << (x + y * width) * 4 + 3 + 1 << " ";
-				file << (x + y * width) * 4 + 0 + 1 << " ";
-				file << ((x + 1) + y * width) * 4 + 1 + 1 << " ";
-				file << ((x + 1) + y * width) * 4 + 2 + 1 << " ";
-				file << std::endl;
-			}
-		}
-	}*/
 	return quads;
 }
 

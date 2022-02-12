@@ -83,6 +83,7 @@ public:
 	void load(std::istream* is, int version, bool loadModel);
 	void save(std::ofstream& file, int version);
 	void buildImGui(BrowEdit* browEdit) override;
+	static void buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>&);
 	NLOHMANN_DEFINE_TYPE_INTRUSIVE(RswObject, position, rotation, scale);
 };
 
@@ -148,6 +149,7 @@ public:
 	void save(std::ofstream& file);
 	nlohmann::json saveExtra();
 	void buildImGui(BrowEdit* browEdit) override;
+	static void buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>&);
 	NLOHMANN_DEFINE_TYPE_INTRUSIVE(RswLight, color, range, givesShadow, cutOff, cutOff, intensity, affectShadowMap, affectLightmap, falloff, falloffStyle);
 };
 

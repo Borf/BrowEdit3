@@ -29,6 +29,25 @@ namespace util
 	bool Checkbox(BrowEdit* browEdit, Map* map, Node* node, const char* label, bool* ptr, const std::string& action = "");
 
 
+	template<class T>
+	bool ColorEdit3Multi(BrowEdit* browEdit, Map* map, const std::vector<T*>& data, const char* label, const std::function<glm::vec3* (T*)>& callback);
+
+	template<class T>
+	bool DragFloatMulti(BrowEdit* browEdit, Map* map, const std::vector<T*>& data, const char* label, const std::function<float* (T*)>& callback, float v_speed, float v_min, float v_max);
+
+	template<class T>
+	bool DragFloat3Multi(BrowEdit* browEdit, Map* map, const std::vector<T*>& data, const char* label, const std::function<glm::vec3* (T*)>& callback, float v_speed, float v_min, float v_max);
+
+	template<class T>
+	bool CheckboxMulti(BrowEdit* browEdit, Map* map, const std::vector<T*>& data, const char* label, const std::function<bool* (T*)>& callback);
+
+	template<class T>
+	bool ComboBoxMulti(BrowEdit* browEdit, Map* map, const std::vector<T*>& data, const char* label, const char* items, const std::function<int* (T*)>& callback);
+
+	template<class T>
+	bool EditableGraphMulti(BrowEdit* browEdit, Map* map, const std::vector<T*>& data, const char* label, const std::function<std::vector<glm::vec2>* (T*)>& callback, std::function<float(const std::vector<glm::vec2>&, float)> interpolationStyle);
+
+
 	float interpolateLagrange(const std::vector<glm::vec2>& f, float x);
 	float interpolateSpline(const std::vector<glm::vec2>& f, float x);
 	float interpolateLinear(const std::vector<glm::vec2>& f, float x);

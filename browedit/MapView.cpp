@@ -30,6 +30,9 @@
 
 #include <iostream>
 
+std::vector<glm::vec3> debugPoints;
+std::mutex debugPointMutex;
+
 MapView::MapView(Map* map, const std::string &viewName) : map(map), viewName(viewName), mouseRay(glm::vec3(0,0,0), glm::vec3(0,0,0))
 {
 	fbo = new gl::FBO(1920, 1080, true);
@@ -61,6 +64,8 @@ void MapView::toolbar(BrowEdit* browEdit)
 	browEdit->toolBarToggleButton("viewColors", 11, &viewColors, "Toggle tile colors");
 	ImGui::SameLine();
 	browEdit->toolBarToggleButton("viewLighting", 12, &viewLighting, "Toggle lighting");
+	ImGui::SameLine();
+	browEdit->toolBarToggleButton("viewTextures", 10, &viewTextures, "Toggle textures");
 	ImGui::SameLine();
 	browEdit->toolBarToggleButton("smoothColors", 63, &smoothColors, "Smooth colormap");
 	ImGui::SameLine();
@@ -156,6 +161,8 @@ void MapView::render(BrowEdit* browEdit)
 	map->rootNode->getComponent<GndRenderer>()->viewLightmapColor = viewLightmapColor;
 	map->rootNode->getComponent<GndRenderer>()->viewColors = viewColors;
 	map->rootNode->getComponent<GndRenderer>()->viewLighting = viewLighting;
+	map->rootNode->getComponent<GndRenderer>()->viewTextures = viewTextures;
+
 	if (map->rootNode->getComponent<GndRenderer>()->smoothColors != smoothColors)
 	{
 		map->rootNode->getComponent<GndRenderer>()->smoothColors = smoothColors;
@@ -163,6 +170,7 @@ void MapView::render(BrowEdit* browEdit)
 	}
 
 	RsmRenderer::RsmRenderContext::getInstance()->viewLighting = viewLighting;
+	RsmRenderer::RsmRenderContext::getInstance()->viewTextures = viewTextures;
 
 
 	NodeRenderer::render(map->rootNode, nodeRenderContext);
@@ -268,6 +276,16 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 	glTranslatef(gnd->width * 5.0f, 0.0f, -gnd->height * 5.0f);
 	map->rootNode->getComponent<Rsw>()->quadtree->draw(quadTreeMaxLevel);
 	glPopMatrix();
+
+	debugPointMutex.lock();
+	glPointSize(2.0f);
+	glBegin(GL_POINTS);
+	for (auto& v : debugPoints)
+		glVertex3fv(glm::value_ptr(v));
+	glEnd();
+	glPointSize(1.0f);
+	debugPointMutex.unlock();
+
 
 	if (showAllLights)
 		map->rootNode->traverse([&](Node* n)

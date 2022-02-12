@@ -79,7 +79,7 @@ public:
 	Config config;
 	std::vector<std::pair<Node*, glm::vec3>> newNodes;
 	MapView* activeMapView = nullptr;
-
+	float statusBarHeight = 10;
 
 	void configBegin();
 

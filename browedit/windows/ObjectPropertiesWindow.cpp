@@ -4,6 +4,7 @@
 #include <browedit/Node.h>
 #include <browedit/util/Util.h>
 #include <browedit/components/ImguiProps.h>
+#include <browedit/components/Rsw.h>
 
 void BrowEdit::showObjectProperties()
 {
@@ -21,5 +22,12 @@ void BrowEdit::showObjectProperties()
 				props->buildImGui(this);
 		}
 	}
+	if (activeMapView && activeMapView->map->selectedNodes.size() > 1)
+	{
+		RswObject::buildImGuiMulti(this, activeMapView->map->selectedNodes);
+		RswLight::buildImGuiMulti(this, activeMapView->map->selectedNodes);
+	}
+
+
 	ImGui::End();
 }

@@ -329,6 +329,13 @@ void Map::pasteSelection(BrowEdit* browEdit)
 	};
 }
 
+
+void Map::optimizeGndTiles(BrowEdit* browEdit)
+{
+	rootNode->getComponent<Gnd>()->cleanTiles();
+}
+
+
 void Map::exportShadowMap(BrowEdit* browEdit, bool exportWalls, bool exportBorders)
 {
 	int tileSize = 8;

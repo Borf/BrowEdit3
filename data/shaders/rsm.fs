@@ -9,6 +9,7 @@ uniform float lightIntensity;
 uniform int shadeType;
 uniform float selection;
 uniform bool lightToggle;
+uniform bool viewTextures;
 
 
 varying vec2 texCoord;
@@ -20,6 +21,8 @@ varying vec3 normal;
 void main()
 {
 	vec4 color = texture2D(s_texture, texCoord);
+	if(!viewTextures)
+		color.rgb = vec3(1,1,1);
 	if(color.a < 0.1)
 		discard;
 

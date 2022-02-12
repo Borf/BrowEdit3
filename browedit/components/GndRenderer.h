@@ -41,6 +41,7 @@ public:
 				lightToggle,
 				colorToggle,
 				lightColorToggle,
+				viewTextures,
 				End
 			};
 		};
@@ -59,6 +60,7 @@ public:
 			bindUniform(Uniforms::lightToggle, "lightToggle");
 			bindUniform(Uniforms::colorToggle, "colorToggle");
 			bindUniform(Uniforms::lightColorToggle, "lightColorToggle");
+			bindUniform(Uniforms::viewTextures, "viewTextures");			
 		}
 	};
 	class GndRenderContext : public Renderer::RenderContext, public util::Singleton<GndRenderContext>
@@ -124,4 +126,5 @@ public:
 	bool viewColors = true;
 	bool viewLighting = true;
 	bool smoothColors = false;
+	bool viewTextures = true;
 };

@@ -10,7 +10,10 @@
 #include <misc/cpp/imgui_stdlib.h>
 #include <imgui_internal.h>
 #include <iostream>
+#include <browedit/components/Rsw.h>
+#include <browedit/components/RsmRenderer.h>
 #include <browedit/actions/ObjectChangeAction.h>
+#include <browedit/actions/GroupAction.h>
 
 namespace util
 {
@@ -154,6 +157,233 @@ namespace util
 		return ret;
 	}
 	
+	const ImGuiDataTypeInfo* ImGui::DataTypeGetInfo(ImGuiDataType data_type);
+	bool DragScalarNMultiLabel(const char* label, ImGuiDataType data_type, void* p_data, int components, float v_speed, const void* p_min, const void* p_max, const std::vector<const char*> &formats, ImGuiSliderFlags flags)
+	{
+		ImGuiWindow* window = ImGui::GetCurrentWindow();
+		if (window->SkipItems)
+			return false;
+
+		ImGuiContext& g = *GImGui;
+		bool value_changed = false;
+		ImGui::BeginGroup();
+		ImGui::PushID(label);
+		ImGui::PushMultiItemsWidths(components, ImGui::CalcItemWidth());
+		size_t type_size = ImGui::DataTypeGetInfo(data_type)->Size;
+		for (int i = 0; i < components; i++)
+		{
+			ImGui::PushID(i);
+			if (i > 0)
+				ImGui::SameLine(0, g.Style.ItemInnerSpacing.x);
+			value_changed |= ImGui::DragScalar("", data_type, p_data, v_speed, p_min, p_max, formats[i], flags);
+			ImGui::PopID();
+			ImGui::PopItemWidth();
+			p_data = (void*)((char*)p_data + type_size);
+		}
+		ImGui::PopID();
+
+		const char* label_end = ImGui::FindRenderedTextEnd(label);
+		if (label != label_end)
+		{
+			ImGui::SameLine(0, g.Style.ItemInnerSpacing.x);
+			ImGui::TextEx(label, label_end);
+		}
+
+		ImGui::EndGroup();
+		return value_changed;
+	}
+
+	template<class T>
+	bool DragFloatMulti(BrowEdit* browEdit, Map* map, const std::vector<T*> &data, const char* label, const std::function<float* (T*)>& getProp, float v_speed, float v_min, float v_max)
+	{
+		static std::vector<float> startValues;
+		bool differentValues = !std::all_of(data.begin(), data.end(), [&](T* o) { return *getProp(o) == *getProp(data.front()); });
+		float* f = getProp(data.front());
+		bool ret = ImGui::DragFloat(label, f, v_speed, v_min, v_max, differentValues ? "multiple" : nullptr);
+		if(ret)
+			for (auto o : data)
+				*getProp(o) = *f;
+		if (ImGui::IsItemActivated())
+		{
+			startValues.clear();
+			for (auto o : data)
+				startValues.push_back(*getProp(o));
+		}
+		if (ImGui::IsItemDeactivatedAfterEdit())
+		{
+			auto ga = new GroupAction();
+			for(auto i = 0; i < data.size(); i++)
+				ga->addAction(new ObjectChangeAction(data[i]->node, getProp(data[i]), startValues[i], label));
+			map->doAction(ga, browEdit);
+		}
+		return ret;
+	}
+	template bool DragFloatMulti<RswObject>(BrowEdit* browEdit, Map* map, const std::vector<RswObject*>& data, const char* label, const std::function<float* (RswObject*)>& getProp, float v_speed, float v_min, float v_max);
+	template bool DragFloatMulti<RswLight>(BrowEdit* browEdit, Map* map, const std::vector<RswLight*>& data, const char* label, const std::function<float* (RswLight*)>& getProp, float v_speed, float v_min, float v_max);
+	template bool DragFloatMulti<RswEffect>(BrowEdit* browEdit, Map* map, const std::vector<RswEffect*>& data, const char* label, const std::function<float* (RswEffect*)>& getProp, float v_speed, float v_min, float v_max);
+	template bool DragFloatMulti<RswSound>(BrowEdit* browEdit, Map* map, const std::vector<RswSound*>& data, const char* label, const std::function<float* (RswSound*)>& getProp, float v_speed, float v_min, float v_max);
+
+	template<class T>
+	bool DragFloat3Multi(BrowEdit* browEdit, Map* map, const std::vector<T*>& data, const char* label, const std::function<glm::vec3* (T*)>& getProp, float v_speed, float v_min, float v_max)
+	{
+		static std::vector<glm::vec3> startValues;
+		glm::vec3* f = getProp(data.front());
+		std::vector<const char*> formats;
+		for (int c = 0; c < 3; c++)
+		{
+			bool differentValues = !std::all_of(data.begin(), data.end(), [&](T* o) { return (*getProp(o))[c] == (*getProp(data.front()))[c]; });
+			formats.push_back(differentValues ? "multiple" : nullptr);
+		}
+		bool ret = DragScalarNMultiLabel(label, ImGuiDataType_Float, glm::value_ptr(*f), 3, v_speed, &v_min, &v_max, formats, 0);
+		if (ImGui::IsItemActivated())
+		{
+			startValues.clear();
+			for (auto o : data)
+				startValues.push_back(*getProp(o));
+		}
+		if (ret)
+		{
+			for (auto o : data)
+			{
+				if (f->x != startValues[0].x)
+					getProp(o)->x = f->x;
+				if (f->y != startValues[0].y)
+					getProp(o)->y = f->y;
+				if (f->z != startValues[0].z)
+					getProp(o)->z = f->z;
+			}
+		}
+		if (ImGui::IsItemDeactivatedAfterEdit())
+		{
+			auto ga = new GroupAction();
+			for (auto i = 0; i < data.size(); i++)
+				ga->addAction(new ObjectChangeAction(data[i]->node, getProp(data[i]), startValues[i], label));
+			map->doAction(ga, browEdit);
+		}
+		return ret;
+	}
+	template bool DragFloat3Multi<RswObject>(BrowEdit* browEdit, Map* map, const std::vector<RswObject*>& data, const char* label, const std::function<glm::vec3* (RswObject*)>& getProp, float v_speed, float v_min, float v_max);
+	template bool DragFloat3Multi<RswModel>(BrowEdit* browEdit, Map* map, const std::vector<RswModel*>& data, const char* label, const std::function<glm::vec3* (RswModel*)>& getProp, float v_speed, float v_min, float v_max);
+	template bool DragFloat3Multi<RswEffect>(BrowEdit* browEdit, Map* map, const std::vector<RswEffect*>& data, const char* label, const std::function<glm::vec3* (RswEffect*)>& getProp, float v_speed, float v_min, float v_max);
+	template bool DragFloat3Multi<RswSound>(BrowEdit* browEdit, Map* map, const std::vector<RswSound*>& data, const char* label, const std::function<glm::vec3* (RswSound*)>& getProp, float v_speed, float v_min, float v_max);
+	template bool DragFloat3Multi<RswLight>(BrowEdit* browEdit, Map* map, const std::vector<RswLight*>& data, const char* label, const std::function<glm::vec3* (RswLight*)>& getProp, float v_speed, float v_min, float v_max);
+
+	template<class T>
+	bool ColorEdit3Multi(BrowEdit* browEdit, Map* map, const std::vector<T*>& data, const char* label, const std::function<glm::vec3* (T*)>& getProp)
+	{
+		static std::vector<glm::vec3> startValues;
+		glm::vec3* f = getProp(data.front());
+		std::vector<const char*> formats;
+		bool differentValues = !std::all_of(data.begin(), data.end(), [&](T* o) { return (*getProp(o)) == (*getProp(data.front())); });
+		bool ret = ImGui::ColorEdit3(label,glm::value_ptr(*f));
+		if (ImGui::IsItemActivated())
+		{
+			startValues.clear();
+			for (auto o : data)
+				startValues.push_back(*getProp(o));
+		}
+		if (ret)
+		{
+			for (auto o : data)
+				*getProp(o) = *f;
+		}
+		if (ImGui::IsItemDeactivatedAfterEdit())
+		{
+			auto ga = new GroupAction();
+			for (auto i = 0; i < data.size(); i++)
+				ga->addAction(new ObjectChangeAction(data[i]->node, getProp(data[i]), startValues[i], label));
+			map->doAction(ga, browEdit);
+		}
+		return ret;
+	}
+	template bool ColorEdit3Multi<RswObject>(BrowEdit* browEdit, Map* map, const std::vector<RswObject*>& data, const char* label, const std::function<glm::vec3* (RswObject*)>& getProp);
+	template bool ColorEdit3Multi<RswModel>(BrowEdit* browEdit, Map* map, const std::vector<RswModel*>& data, const char* label, const std::function<glm::vec3* (RswModel*)>& getProp);
+	template bool ColorEdit3Multi<RswEffect>(BrowEdit* browEdit, Map* map, const std::vector<RswEffect*>& data, const char* label, const std::function<glm::vec3* (RswEffect*)>& getProp);
+	template bool ColorEdit3Multi<RswSound>(BrowEdit* browEdit, Map* map, const std::vector<RswSound*>& data, const char* label, const std::function<glm::vec3* (RswSound*)>& getProp);
+	template bool ColorEdit3Multi<RswLight>(BrowEdit* browEdit, Map* map, const std::vector<RswLight*>& data, const char* label, const std::function<glm::vec3* (RswLight*)>& getProp);
+
+
+
+	template<class T>
+	bool CheckboxMulti(BrowEdit* browEdit, Map* map, const std::vector<T*>& data, const char* label, const std::function<bool* (T*)>& getProp)
+	{
+		static std::vector<bool> startValues;
+		bool differentValues = !std::all_of(data.begin(), data.end(), [&](T* o) { return *getProp(o) == *getProp(data.front()); });
+		bool* f = getProp(data.front());
+
+		ImGui::PushItemFlag(ImGuiItemFlags_MixedValue, differentValues);
+		bool ret = ImGui::Checkbox(label, f);
+		ImGui::PopItemFlag();
+		if (ret)
+			for (auto o : data)
+				*getProp(o) = *f;
+		if (ImGui::IsItemActivated())
+		{
+			startValues.clear();
+			for (auto o : data)
+				startValues.push_back(*getProp(o));
+		}
+		if (ImGui::IsItemDeactivatedAfterEdit())
+		{
+			auto ga = new GroupAction();
+			for (auto i = 0; i < data.size(); i++)
+				ga->addAction(new ObjectChangeAction<bool>(data[i]->node, getProp(data[i]), startValues[i], label));
+			map->doAction(ga, browEdit);
+		}
+		return ret;
+	}
+	template bool CheckboxMulti<RswObject>(BrowEdit* browEdit, Map* map, const std::vector<RswObject*>& data, const char* label, const std::function<bool* (RswObject*)>& getProp);
+	template bool CheckboxMulti<RswLight>(BrowEdit* browEdit, Map* map, const std::vector<RswLight*>& data, const char* label, const std::function<bool* (RswLight*)>& getProp);
+	template bool CheckboxMulti<RswEffect>(BrowEdit* browEdit, Map* map, const std::vector<RswEffect*>& data, const char* label, const std::function<bool* (RswEffect*)>& getProp);
+	template bool CheckboxMulti<RswSound>(BrowEdit* browEdit, Map* map, const std::vector<RswSound*>& data, const char* label, const std::function<bool* (RswSound*)>& getProp);
+
+
+
+	template<class T>
+	bool ComboBoxMulti(BrowEdit* browEdit, Map* map, const std::vector<T*>& data, const char* label, const char* items, const std::function<int* (T*)>& getProp)
+	{
+		static std::vector<bool> startValues;
+		bool differentValues = !std::all_of(data.begin(), data.end(), [&](T* o) { return *getProp(o) == *getProp(data.front()); });
+		int f = *getProp(data.front());
+		char* itemsEdited = (char*)items;
+		if (differentValues)
+		{
+			f = 0;
+			const char* p = items;
+			while (*p)
+				p += strlen(p) + 1;
+			auto len = (p - items)+1;
+			itemsEdited = new char[len + 9];
+			memcpy(itemsEdited, "Multiple\0", 9);
+			memcpy(itemsEdited+9, items, len);
+		}
+		bool ret = ImGui::Combo(label, &f, (const char*)itemsEdited);
+		if (differentValues)
+			delete[] itemsEdited;
+		if (ret)
+			for (auto o : data)
+				*getProp(o) = differentValues ? f-1 : f;
+		if (ImGui::IsItemActivated())
+		{
+			startValues.clear();
+			for (auto o : data)
+				startValues.push_back(*getProp(o));
+		}
+		if (ImGui::IsItemDeactivatedAfterEdit())
+		{
+			auto ga = new GroupAction();
+			for (auto i = 0; i < data.size(); i++)
+				ga->addAction(new ObjectChangeAction<int>(data[i]->node, getProp(data[i]), startValues[i], label));
+			map->doAction(ga, browEdit);
+		}
+		return ret;
+	}
+	template bool ComboBoxMulti<RswObject>(BrowEdit* browEdit, Map* map, const std::vector<RswObject*>& data, const char* label, const char* items, const std::function<int* (RswObject*)>& getProp);
+	template bool ComboBoxMulti<RswLight>(BrowEdit* browEdit, Map* map, const std::vector<RswLight*>& data, const char* label, const char* items, const std::function<int* (RswLight*)>& getProp);
+	template bool ComboBoxMulti<RswEffect>(BrowEdit* browEdit, Map* map, const std::vector<RswEffect*>& data, const char* label, const char* items, const std::function<int* (RswEffect*)>& getProp);
+	template bool ComboBoxMulti<RswSound>(BrowEdit* browEdit, Map* map, const std::vector<RswSound*>& data, const char* label, const char* items, const std::function<int* (RswSound*)>& getProp);
+
+
 	float interpolateSpline(const std::vector<glm::vec2>& data, float p)
 	{
 		auto n = data.size();
@@ -326,6 +556,16 @@ namespace util
 		}
 		ImGui::SetCursorScreenPos(cursorPos);
 	}
+
+	template<class T>
+	bool EditableGraphMulti(BrowEdit* browEdit, Map* map, const std::vector<T*>& data, const char* label, const std::function<std::vector<glm::vec2>* (T*)>& callback, std::function<float(const std::vector<glm::vec2>&, float)> interpolationStyle)
+	{
+		return false;
+	}
+
+	template bool EditableGraphMulti<RswLight>(BrowEdit* browEdit, Map* map, const std::vector<RswLight*>& data, const char* label, const std::function<std::vector<glm::vec2>* (RswLight*)>& callback, std::function<float(const std::vector<glm::vec2>&, float)> interpolationStyle);
+
+
 
 	void Graph(const char* label, std::function<float(float)> func)
 	{

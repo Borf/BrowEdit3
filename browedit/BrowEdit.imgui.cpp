@@ -72,7 +72,7 @@ void BrowEdit::imguiLoopBegin()
 
     auto viewport = ImGui::GetMainViewport();
     ImGui::SetNextWindowPos(ImVec2(viewport->WorkPos.x, viewport->WorkPos.y + config.toolbarHeight()));
-    ImGui::SetNextWindowSize(ImVec2(viewport->WorkSize.x, viewport->WorkSize.y - 2*config.toolbarHeight()));
+    ImGui::SetNextWindowSize(ImVec2(viewport->WorkSize.x, viewport->WorkSize.y - config.toolbarHeight() - statusBarHeight));
     ImGui::SetNextWindowViewport(viewport->ID);
     ImGuiWindowFlags host_window_flags = 0;
     host_window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDocking;
@@ -94,11 +94,6 @@ void BrowEdit::imguiLoopBegin()
 void BrowEdit::imguiLoopEnd()
 {
     ImGui::Render();
-    int display_w, display_h;
-    glfwGetFramebufferSize(window, &display_w, &display_h);
-    glViewport(0, 0, display_w, display_h);
-    glClearColor(0,0,0,1);
-    glClear(GL_COLOR_BUFFER_BIT);
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
     // Update and Render additional Platform Windows

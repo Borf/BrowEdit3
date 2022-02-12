@@ -98,7 +98,8 @@ public:
 	bool viewLightmapColor = true;
 	bool viewColors = true;
 	bool viewLighting = true;
-	bool smoothColors = true;
+	bool smoothColors = false;
+	bool viewTextures = true;
 
 
 	void focusSelection();

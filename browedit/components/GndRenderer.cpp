@@ -7,11 +7,16 @@
 #include <map>
 #include <iostream>
 
+
+const int shadowmapSize = 4096;
+const int shadowmapRowCount = shadowmapSize / 8;
+
+
 GndRenderer::GndRenderer()
 {
 	renderContext = GndRenderContext::getInstance();
 
-	gndShadow = new gl::Texture(2048, 2048);
+	gndShadow = new gl::Texture(shadowmapSize, shadowmapSize);
 	gndTileColors = new gl::Texture(1024, 1024);;
 
 	gndShadowDirty = true;
@@ -46,7 +51,7 @@ void GndRenderer::render()
 
 	if (gndShadowDirty)
 	{
-		char* data = new char[2048 * 2048 * 4];
+		char* data = new char[shadowmapSize * shadowmapSize * 4];
 		int x = 0; int y = 0;
 		for (size_t i = 0; i < gnd->lightmaps.size(); i++)
 		{
@@ -59,26 +64,26 @@ void GndRenderer::render()
 					int yyy = 8 * y + yy;
 					if (smoothColors)
 					{
-						data[4 * (xxx + 2048 * yyy) + 0] = (lightMap->data[64 + 3 * (xx + 8 * yy) + 0] >> 4) << 4;
-						data[4 * (xxx + 2048 * yyy) + 1] = (lightMap->data[64 + 3 * (xx + 8 * yy) + 1] >> 4) << 4;
-						data[4 * (xxx + 2048 * yyy) + 2] = (lightMap->data[64 + 3 * (xx + 8 * yy) + 2] >> 4) << 4;
-						data[4 * (xxx + 2048 * yyy) + 3] = lightMap->data[xx + 8 * yy];
+						data[4 * (xxx + shadowmapSize * yyy) + 0] = (lightMap->data[64 + 3 * (xx + 8 * yy) + 0] >> 4) << 4;
+						data[4 * (xxx + shadowmapSize * yyy) + 1] = (lightMap->data[64 + 3 * (xx + 8 * yy) + 1] >> 4) << 4;
+						data[4 * (xxx + shadowmapSize * yyy) + 2] = (lightMap->data[64 + 3 * (xx + 8 * yy) + 2] >> 4) << 4;
+						data[4 * (xxx + shadowmapSize * yyy) + 3] = lightMap->data[xx + 8 * yy];
 					}
 					else
 					{
-						data[4 * (xxx + 2048 * yyy) + 0] = (lightMap->data[64 + 3 * (xx + 8 * yy) + 0]);
-						data[4 * (xxx + 2048 * yyy) + 1] = (lightMap->data[64 + 3 * (xx + 8 * yy) + 1]);
-						data[4 * (xxx + 2048 * yyy) + 2] = (lightMap->data[64 + 3 * (xx + 8 * yy) + 2]);
-						data[4 * (xxx + 2048 * yyy) + 3] = lightMap->data[xx + 8 * yy];
+						data[4 * (xxx + shadowmapSize * yyy) + 0] = (lightMap->data[64 + 3 * (xx + 8 * yy) + 0]);
+						data[4 * (xxx + shadowmapSize * yyy) + 1] = (lightMap->data[64 + 3 * (xx + 8 * yy) + 1]);
+						data[4 * (xxx + shadowmapSize * yyy) + 2] = (lightMap->data[64 + 3 * (xx + 8 * yy) + 2]);
+						data[4 * (xxx + shadowmapSize * yyy) + 3] = lightMap->data[xx + 8 * yy];
 					}
 				}
 			}
 			x++;
-			if (x * 8 >= 2048)
+			if (x * 8 >= shadowmapSize)
 			{
 				x = 0;
 				y++;
-				if (y * 8 >= 2048)
+				if (y * 8 >= shadowmapSize)
 				{
 					std::cerr<< "Lightmap too big!" << std::endl;
 					y = 0;
@@ -86,7 +91,7 @@ void GndRenderer::render()
 			}
 		}
 
-		gndShadow->setSubImage(data, 0, 0, 2048, 2048);
+		gndShadow->setSubImage(data, 0, 0, shadowmapSize, shadowmapSize);
 		delete[] data;
 		gndShadowDirty = false;
 	}
@@ -136,6 +141,7 @@ void GndRenderer::render()
 	shader->setUniform(GndShader::Uniforms::lightColorToggle, viewLightmapColor ? 1.0f : 0.0f);
 	shader->setUniform(GndShader::Uniforms::lightToggle, viewLighting ? 0.0f : 1.0f);
 	shader->setUniform(GndShader::Uniforms::colorToggle, viewColors ? 0.0f : 1.0f);
+	shader->setUniform(GndShader::Uniforms::viewTextures, viewTextures ? 1.0f : 0.0f);
 
 	for (auto r : chunks)
 		for (auto c : r)
@@ -222,8 +228,8 @@ void GndRenderer::Chunk::rebuild()
 				Gnd::Tile* tile = gnd->tiles[cube->tileUp];
 				assert(tile->lightmapIndex >= 0);
 
-				glm::vec2 lm1((tile->lightmapIndex % 256) * (8.0f / 2048.0f) + 1.0f / 2048.0f, (tile->lightmapIndex / 256) * (8.0f / 2048.0f) + 1.0f / 2048.0f);
-				glm::vec2 lm2(lm1 + glm::vec2(6.0f / 2048.0f, 6.0f / 2048.0f));
+				glm::vec2 lm1((tile->lightmapIndex % shadowmapRowCount) * (8.0f / shadowmapSize) + 1.0f / shadowmapSize, (tile->lightmapIndex / shadowmapRowCount) * (8.0f / shadowmapSize) + 1.0f / shadowmapSize);
+				glm::vec2 lm2(lm1 + glm::vec2(6.0f / shadowmapSize, 6.0f / shadowmapSize));
 
 				VertexP3T2T2T2N3 v1(glm::vec3(10 * x, -cube->h3, 10 * gnd->height - 10 * y), tile->v3, glm::vec2(lm1.x, lm2.y), glm::vec2(x / 1024.0f, (y + 1) / 1024.0f), cube->normals[2]);
 				VertexP3T2T2T2N3 v2(glm::vec3(10 * x + 10, -cube->h4, 10 * gnd->height - 10 * y), tile->v4, glm::vec2(lm2.x, lm2.y), glm::vec2((x + 1) / 1024.0f, (y + 1) / 1024.0f), cube->normals[3]);
@@ -238,8 +244,8 @@ void GndRenderer::Chunk::rebuild()
 				Gnd::Tile* tile = gnd->tiles[cube->tileFront];
 				assert(tile->lightmapIndex >= 0);
 
-				glm::vec2 lm1((tile->lightmapIndex % 256) * (8.0f / 2048.0f) + 1.0f / 2048.0f, (tile->lightmapIndex / 256) * (8.0f / 2048.0f) + 1.0f / 2048.0f);
-				glm::vec2 lm2(lm1 + glm::vec2(6.0f / 2048.0f, 6.0f / 2048.0f));
+				glm::vec2 lm1((tile->lightmapIndex % shadowmapRowCount) * (8.0f / shadowmapSize) + 1.0f / shadowmapSize, (tile->lightmapIndex / shadowmapRowCount) * (8.0f / shadowmapSize) + 1.0f / shadowmapSize);
+				glm::vec2 lm2(lm1 + glm::vec2(6.0f / shadowmapSize, 6.0f / shadowmapSize));
 
 				VertexP3T2T2T2N3 v1(glm::vec3(10 * x + 10, -cube->h2, 10 * gnd->height - 10 * y + 10), tile->v2, glm::vec2(lm2.x, lm1.y), glm::vec2(x / 1024.0f, y / 1024.0f), glm::vec3(1, 0, 0));
 				VertexP3T2T2T2N3 v2(glm::vec3(10 * x + 10, -cube->h4, 10 * gnd->height - 10 * y), tile->v1, glm::vec2(lm1.x, lm1.y), glm::vec2(x / 1024.0f, y / 1024.0f), glm::vec3(1, 0, 0));
@@ -254,8 +260,8 @@ void GndRenderer::Chunk::rebuild()
 				Gnd::Tile* tile = gnd->tiles[cube->tileSide];
 				assert(tile->lightmapIndex >= 0);
 
-				glm::vec2 lm1((tile->lightmapIndex % 256) * (8.0f / 2048.0f) + 1.0f / 2048.0f, (tile->lightmapIndex / 256) * (8.0f / 2048.0f) + 1.0f / 2048.0f);
-				glm::vec2 lm2(lm1 + glm::vec2(6.0f / 2048.0f, 6.0f / 2048.0f));
+				glm::vec2 lm1((tile->lightmapIndex % shadowmapRowCount) * (8.0f / shadowmapSize) + 1.0f / shadowmapSize, (tile->lightmapIndex / shadowmapRowCount) * (8.0f / shadowmapSize) + 1.0f / shadowmapSize);
+				glm::vec2 lm2(lm1 + glm::vec2(6.0f / shadowmapSize, 6.0f / shadowmapSize));
 
 				VertexP3T2T2T2N3 v1(glm::vec3(10 * x, -cube->h3, 10 * gnd->height - 10 * y), tile->v1, glm::vec2(lm1.x, lm1.y), glm::vec2(x / 1024.0f, y / 1024.0f), glm::vec3(0, 0, 1));
 				VertexP3T2T2T2N3 v2(glm::vec3(10 * x + 10, -cube->h4, 10 * gnd->height - 10 * y), tile->v2, glm::vec2(lm2.x, lm1.y), glm::vec2(x / 1024.0f, y / 1024.0f), glm::vec3(0, 0, 1));

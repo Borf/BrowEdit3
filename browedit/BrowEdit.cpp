@@ -128,8 +128,8 @@ void BrowEdit::run()
 #ifdef _DEBUG
 	if(config.isValid() == "")
 //		loadMap("data\\comodo.rsw");
-//		loadMap("data\\guild_vs1.rsw");
-		loadMap("data\\effects_ro.rsw");
+		loadMap("data\\guild_vs1.rsw");
+//		loadMap("data\\effects_ro.rsw");
 #endif
 
 
@@ -237,8 +237,28 @@ void BrowEdit::run()
 				}
 			}
 		}
-
-
+		int display_w, display_h;
+		glfwGetFramebufferSize(window, &display_w, &display_h);
+		float ratio = display_w / (float)display_h;
+		glViewport(0, 0, display_w, display_h);
+		glClearColor(config.backgroundColor.r, config.backgroundColor.g, config.backgroundColor.b, 1);
+		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+		glUseProgram(0);
+		glMatrixMode(GL_PROJECTION);
+		glLoadIdentity();
+		glOrtho(-1*ratio, 1 * ratio, -1, 1, -100, 100);
+		glMatrixMode(GL_MODELVIEW);
+		glLoadIdentity();
+		glColor3f(1, 1, 1);
+		backgroundTexture->bind();
+		glEnable(GL_TEXTURE_2D);
+		glDisable(GL_DEPTH_TEST);
+		glBegin(GL_QUADS);
+		glTexCoord2f(0, 1);		glVertex3f(-1, -1, 0);
+		glTexCoord2f(1, 1);		glVertex3f(1, -1, 0);
+		glTexCoord2f(1, 0);		glVertex3f(1, 1, 0);
+		glTexCoord2f(0, 0);		glVertex3f(-1, 1, 0);
+		glEnd();
 		imguiLoopEnd();
 		glfwLoopEnd();
 	}
@@ -362,7 +382,7 @@ void BrowEdit::showMapWindow(MapView& mapView)
 void BrowEdit::saveMap(Map* map)
 {
 	map->rootNode->getComponent<Rsw>()->save(config.ropath + map->name);
-	map->rootNode->getComponent<Gnd>()->save(config.ropath + map->name + ".gnd");
+	map->rootNode->getComponent<Gnd>()->save(config.ropath + map->name.substr(map->name.size()-4) + ".gnd");
 }
 
 void BrowEdit::loadMap(const std::string& file)

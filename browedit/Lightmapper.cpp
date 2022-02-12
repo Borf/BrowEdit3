@@ -10,6 +10,10 @@
 
 #include <glm/glm.hpp>
 #include <iostream>
+#include <imgui_internal.h>
+
+extern std::mutex debugPointMutex;
+extern std::vector<glm::vec3> debugPoints;
 
 Lightmapper::Lightmapper(Map* map, BrowEdit* browEdit) : map(map), browEdit(browEdit)
 {
@@ -17,15 +21,16 @@ Lightmapper::Lightmapper(Map* map, BrowEdit* browEdit) : map(map), browEdit(brow
 
 void Lightmapper::begin()
 {
+	debugPoints.clear();
 	if (browEdit->windowData.progressWindowVisible)
 		return;
 	browEdit->windowData.progressWindowVisible = true;
 	browEdit->windowData.progressWindowProgres = 0;
 	browEdit->windowData.progressWindowText = "Calculating lightmaps";
-	browEdit->windowData.progressWindowOnDone = std::bind(&Lightmapper::onDone, this);
 	mainThread = std::thread(&Lightmapper::run, this);
 	browEdit->windowData.progressWindowOnDone = [&]()
 	{
+		onDone();
 		auto be = browEdit;
 		be->lightmapper->mainThread.join();
 		delete be->lightmapper;
@@ -70,39 +75,39 @@ void Lightmapper::run()
 	setProgressText("Calculating map quads");
 	mapQuads = gnd->getMapQuads();
 
+/*	debugPointMutex.lock();
+	for (auto i = 0; i < mapQuads.size(); i += 4)
+	{
+		glm::vec3 v1 = mapQuads[i];
+		glm::vec3 v2 = mapQuads[i+1];
+		glm::vec3 v3 = mapQuads[i+2];
+		glm::vec3 v4 = mapQuads[i+3];
+
+		for (float x = 0; x < 1; x += 0.05f)
+		{
+			for (float y = 0; y < 1; y += 0.05f)
+			{
+				glm::vec3 p1 = glm::mix(v1, v2, x);
+				glm::vec3 p2 = glm::mix(v4, v3, x);
+				debugPoints.push_back(glm::mix(p1, p2, y));
+			}
+		}
+
+	}
+	debugPointMutex.unlock();*/
+
+
+
 	setProgressText("Calculating lightmaps");
 	std::vector<std::thread> threads;
 	std::atomic<int> finishedX(0);
 	std::mutex progressMutex;
 
-	for (int t = 0; t < threadCount; t++)
-	{
-		threads.push_back(std::thread([&]()
-			{
-				for (int x; (x = finishedX++) < gnd->width;)
-				{
-					std::cout << "Row " << x << std::endl;
-
-					progressMutex.lock();
-					browEdit->windowData.progressWindowProgres = x / (float)gnd->width;
-					progressMutex.unlock();
-
-					for (int y = 0; y < gnd->height; y++)
-						//for (int y = 0; y < 10; y++)
-					{
-						Gnd::Cube* cube = gnd->cubes[x][y];
-
-						for (int i = 0; i < 3; i++)
-							if (cube->tileIds[i] != -1)
-								calcPos(i, cube->tileIds[i], x, y);
-					}
-				}
-			}));
-	}
 
 	threads.push_back(std::thread([&]()
 		{
 			while (finishedX < gnd->width)
+			//while (finishedX < 25)
 			{
 				std::this_thread::sleep_for(std::chrono::seconds(2));
 				progressMutex.lock();
@@ -113,10 +118,36 @@ void Lightmapper::run()
 			progressMutex.lock();
 			browEdit->windowData.progressWindowProgres = 1.0f;
 			browEdit->windowData.progressWindowVisible = false;
-			gnd->makeLightmapBorders();
-			map->rootNode->getComponent<GndRenderer>()->gndShadowDirty = true;
 			progressMutex.unlock();
 		}));
+	for (int t = 0; t < threadCount; t++)
+	{
+		threads.push_back(std::thread([&, t]()
+			{
+				for (int x; (x = finishedX++) < gnd->width;)
+				//for (int x; (x = finishedX++) < 25;)
+				{
+					std::cout << "Row " << x << std::endl;
+
+					progressMutex.lock();
+					browEdit->windowData.progressWindowProgres = x / (float)gnd->width;
+					progressMutex.unlock();
+
+					for (int y = 0; y < gnd->height; y++)
+//					for (int y = 24; y < 25; y++)
+					{
+						Gnd::Cube* cube = gnd->cubes[x][y];
+
+						for (int i = 0; i < 3; i++)
+							if (cube->tileIds[i] != -1)
+								calcPos(i, cube->tileIds[i], x, y);
+					}
+				}
+				std::cout << "Thread " << t << " finished" << std::endl;
+			}));
+	}
+
+
 
 
 
@@ -128,7 +159,7 @@ void Lightmapper::run()
 
 bool Lightmapper::collidesMap(const math::Ray& ray)
 {
-	static std::vector<glm::vec3> quad;
+	std::vector<glm::vec3> quad;
 	quad.resize(4);
 	float t;
 	for (std::size_t i = 0; i < mapQuads.size(); i += 4)
@@ -136,7 +167,7 @@ bool Lightmapper::collidesMap(const math::Ray& ray)
 		for (int ii = 0; ii < 4; ii++)
 			quad[ii] = mapQuads[i + ii];
 		if (ray.LineIntersectPolygon(quad, t))
-			if (t > 0)
+			if (t > 0.05)
 				return true;
 	}
 	return false;
@@ -152,7 +183,8 @@ std::pair<glm::vec3, int> Lightmapper::calculateLight(const glm::vec3& groundPos
 		intensity = (int)(rsw->light.lightmapAmbient * 255);
 
 	//sunlight calculation
-	if (rsw->light.lightmapIntensity > 0 && glm::dot(normal, lightDirection) > 0)
+	float dotProd = glm::dot(normal, lightDirection);
+	if (rsw->light.lightmapIntensity > 0 && dotProd > 0)
 	{
 		math::Ray ray(groundPos, glm::normalize(lightDirection));
 		bool collides = false;
@@ -167,16 +199,15 @@ std::pair<glm::vec3, int> Lightmapper::calculateLight(const glm::vec3& groundPos
 				if (collider->getCollisions(ray).size() > 0)
 					collides = true;
 			}
-			});
-		//check floor
-		//if (!collides && collidesMap(ray)) //TODO: this makes the lightmap not work
-		//	collides = true;
-		//check walls
+		});
+		
+		if (!collides && collidesMap(ray))
+			collides = true;
 
 
 		if (!collides)
 		{
-			intensity += (int)(rsw->light.lightmapIntensity * 255);
+			intensity += (int)(dotProd * rsw->light.lightmapIntensity * 255);
 		}
 	}
 
@@ -247,6 +278,26 @@ std::pair<glm::vec3, int> Lightmapper::calculateLight(const glm::vec3& groundPos
 };
 
 
+void TriangleBarycentricCoords(const glm::vec2& a, const glm::vec2& b, const glm::vec2& c, const glm::vec2& p, float& out_u, float& out_v, float& out_w)
+{
+	glm::vec2 v0 = b - a;
+	glm::vec2 v1 = c - a;
+	glm::vec2 v2 = p - a;
+	const float denom = v0.x * v1.y - v1.x * v0.y;
+	out_v = (v2.x * v1.y - v1.x * v2.y) / denom;
+	out_w = (v0.x * v2.y - v2.x * v0.y) / denom;
+	out_u = 1.0f - out_v - out_w;
+}
+
+bool TriangleContainsPoint(const glm::vec2 &a, const glm::vec2& b, const glm::vec2& c, const glm::vec2& p)
+{
+	bool b1 = ((p.x - b.x) * (a.y - b.y) - (p.y - b.y) * (a.x - b.x)) <= 0.0f;
+	bool b2 = ((p.x - c.x) * (b.y - c.y) - (p.y - c.y) * (b.x - c.x)) <= 0.0f;
+	bool b3 = ((p.x - a.x) * (c.y - a.y) - (p.y - a.y) * (c.x - a.x)) <= 0.0f;
+	return ((b1 == b2) && (b2 == b3));
+}
+
+
 void Lightmapper::calcPos(int direction, int tileId, int x, int y)
 {
 	float qualityStep = 1.0f / quality;
@@ -276,14 +327,41 @@ void Lightmapper::calcPos(int direction, int tileId, int x, int y)
 					//todo: use proper height using barycentric coordinats
 					if (direction == 0)
 					{
-						groundPos = glm::vec3(10 * x + s * ((xx + xxx) - 1), -(cube->h1 + cube->h2 + cube->h3 + cube->h4) / 4.0f, 10 * height + 10 - 10 * y - s * ((yy + yyy) - 1));
-						normal = glm::vec3(0, 1, 0);
+						glm::vec2 v1((x + 0) * 10, 10 * height - (y + 1) * 10 + 10);//1 , -cube->heights[2]
+						glm::vec2 v2((x + 0) * 10, 10 * height - (y + 0) * 10 + 10);//2 , -cube->heights[0]
+						glm::vec2 v3((x + 1) * 10, 10 * height - (y + 0) * 10 + 10);//3 , -cube->heights[1]
+						glm::vec2 v4((x + 1) * 10, 10 * height - (y + 1) * 10 + 10);//4 , -cube->heights[3]
+						glm::vec2 p(10 * x + s * ((xx + xxx) - 1), 10 * height + 10 - 10 * y - s * ((yy + yyy) - 1));
+
+						float h = (v1.y + v2.y + v3.y + v4.y) / 4.0f;
+						
+						if (TriangleContainsPoint(v1, v2, v3, p))
+						{
+							float u, v, w;
+							TriangleBarycentricCoords(v1,v2,v3, p, u, v, w);
+							h = u * -cube->heights[2] + v * -cube->heights[0] + w * -cube->heights[1];
+						}
+						else if(TriangleContainsPoint(v3, v4, v1, p))
+						{
+							float u, v, w;
+							TriangleBarycentricCoords(v3, v4, v1, p, u, v, w);
+							h = u * -cube->heights[1] + v * -cube->heights[3] + w * -cube->heights[2];
+						}
+						else
+						{
+							std::cout << "uhoh";
+						}
+
+						groundPos = glm::vec3(p.x, h, p.y);
+						normal = glm::normalize(glm::cross(
+							glm::vec3(v3.x, -cube->heights[1], v3.y) - glm::vec3(v2.x, -cube->heights[0], v2.y),
+							glm::vec3(v1.x, -cube->heights[2], v1.y) - glm::vec3(v2.x, -cube->heights[0], v2.y)));
 					}
 					else if (direction == 1) //side
 					{
 						auto otherCube = gnd->cubes[x][y + 1];
 						float h1 = glm::mix(cube->h3, cube->h4, ((xx + xxx) - 1) / 6.0f);
-						float h2 = glm::mix(otherCube->h2, otherCube->h1, ((xx + xxx) - 1) / 6.0f);
+						float h2 = glm::mix(otherCube->h1, otherCube->h2, ((xx + xxx) - 1) / 6.0f);
 						float h = glm::mix(h1, h2, ((yy + yyy) - 1) / 6.0f);
 
 						groundPos = glm::vec3(10 * x + s * ((xx + xxx) - 1), -h, 10 * height - 10 * y);
@@ -291,21 +369,27 @@ void Lightmapper::calcPos(int direction, int tileId, int x, int y)
 
 						if (h1 < h2)
 							normal = -normal;
+
 					}
 					else if (direction == 2) //front
 					{
 						auto otherCube = gnd->cubes[x + 1][y];
-						float h1 = glm::mix(cube->h2, cube->h4, ((xx + xxx) - 1) / 6.0f);
-						float h2 = glm::mix(otherCube->h1, otherCube->h3, ((xx + xxx) - 1) / 6.0f);
+						float h1 = glm::mix(cube->h4, cube->h2, ((xx + xxx) - 1) / 6.0f);
+						float h2 = glm::mix(otherCube->h3, otherCube->h1, ((xx + xxx) - 1) / 6.0f);
 						float h = glm::mix(h1, h2, ((yy + yyy) - 1) / 6.0f);
 
-						groundPos = glm::vec3(10 * x, -h, 10 * height + 10 - 10 * y + s * ((xx + xxx) - 1));
+						groundPos = glm::vec3(10 * x+10, -h, 10 * height - 10 * y + s * ((xx + xxx) - 1));
 						normal = glm::vec3(-1, 0, 0);
 
 						if (h1 < h2)
 							normal = -normal;
 
 					}
+
+					//debugPointMutex.lock();
+					//debugPoints.push_back(groundPos);
+					//debugPointMutex.unlock();
+
 					auto light = calculateLight(groundPos, normal);
 					totalIntensity += glm::min(255, light.second);
 					totalColor += glm::min(glm::vec3(1.0f, 1.0f, 1.0f), light.first);
@@ -332,4 +416,7 @@ void Lightmapper::calcPos(int direction, int tileId, int x, int y)
 void Lightmapper::onDone()
 {
 	std::cout << "Done!" << std::endl;
+	gnd->makeLightmapBorders();
+	map->rootNode->getComponent<GndRenderer>()->gndShadowDirty = true;
+
 }

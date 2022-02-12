@@ -3,12 +3,15 @@
 #include <browedit/BrowEdit.h>
 #include <browedit/Node.h>
 #include <browedit/util/FileIO.h>
+#include <browedit/util/Util.h>
 
 #include <iostream>
 #include <fstream>
 #include <json.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <misc/cpp/imgui_stdlib.h>
+#include <ranges>
+#include <algorithm>
 
 
 void RswLight::load(std::istream* is)
@@ -109,7 +112,7 @@ void RswLight::buildImGui(BrowEdit* browEdit)
 	util::Checkbox(browEdit, browEdit->activeMapView->map, node, "Affects Shadowmap", &affectShadowMap);
 	util::Checkbox(browEdit, browEdit->activeMapView->map, node, "Affects Colormap", &affectLightmap);
 
-	ImGui::Combo("Falloff style", &falloffStyle, "magic\0spline tweak\0lagrange tweak\0linear tweak\0exponential\0");
+	ImGui::Combo("Falloff style", &falloffStyle, "exponential\0spline tweak\0lagrange tweak\0linear tweak\0magic\0");
 
 	if (falloffStyle == FalloffStyle::Magic)
 	{
@@ -140,4 +143,50 @@ void RswLight::buildImGui(BrowEdit* browEdit)
 		file << std::setw(2) << out;
 	}
 
+}
+
+
+
+void RswLight::buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>& nodes)
+{
+	std::vector<RswLight*> rswLights;
+	std::ranges::copy(nodes | std::ranges::views::transform([](Node* n) { return n->getComponent<RswLight>(); }) | std::ranges::views::filter([](RswLight* r) { return r != nullptr; }), std::back_inserter(rswLights));
+	if (rswLights.size() == 0)
+		return;
+
+	ImGui::Text("Light");
+	util::ColorEdit3Multi<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Color", [](RswLight* l) { return &l->color; });
+	util::DragFloatMulti<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Range", [](RswLight* l) { return &l->range; }, 1.0f, 0.0f, 1000.0f);
+	util::CheckboxMulti<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Gives Shadows", [](RswLight* l) { return &l->givesShadow; });
+	util::CheckboxMulti<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Affects Shadowmap", [](RswLight* l) { return &l->affectShadowMap; });
+	util::CheckboxMulti<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Affects Colormap", [](RswLight* l) { return &l->affectLightmap; });
+
+	util::ComboBoxMulti<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Falloff style", "exponential\0spline tweak\0lagrange tweak\0linear tweak\0magic\0", [](RswLight* l) { return &l->falloffStyle; });
+
+	bool differentValues = !std::all_of(rswLights.begin(), rswLights.end(), [&](RswLight* o) { return o->falloffStyle == rswLights.front()->falloffStyle; });
+	if (!differentValues)
+	{
+		auto falloffStyle = rswLights.front()->falloffStyle;
+
+		if (falloffStyle == FalloffStyle::Magic)
+		{
+			util::DragFloatMulti<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Intensity", [](RswLight* l) { return &l->intensity; }, 1.00f, 0.0f, 100000.0f);
+			util::DragFloatMulti<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Cutoff", [](RswLight* l) { return &l->cutOff; }, 0.01f, 0.0f, 1.0f);
+		}
+		else if (falloffStyle == FalloffStyle::SplineTweak)
+			util::EditableGraphMulti<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Light Falloff", [](RswLight* l) {return &l->falloff; }, util::interpolateSpline);
+		else if (falloffStyle == FalloffStyle::LagrangeTweak)
+			;//util::EditableGraph("Light Falloff", &falloff, util::interpolateLagrange);
+		else if (falloffStyle == FalloffStyle::LinearTweak)
+			;//			util::EditableGraph("Light Falloff", &falloff, util::interpolateLinear);
+		else if (falloffStyle == FalloffStyle::Exponential)
+		{
+			bool differentFalloff = !std::all_of(rswLights.begin(), rswLights.end(), [&](RswLight* o) { return o->falloffStyle == rswLights.front()->falloffStyle; });
+			util::DragFloatMulti<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Cutoff", [](RswLight* l) { return &l->cutOff; }, 0.01f, 0.0f, 1.0f);
+			if(differentFalloff)
+				util::Graph("Light Falloff", [&](float x) { return 0.0f; });
+			else
+				util::Graph("Light Falloff", [&](float x) { return 1.0f - glm::pow(x, rswLights.front()->cutOff); });
+		}
+	}
 }
