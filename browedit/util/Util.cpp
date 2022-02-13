@@ -457,7 +457,6 @@ namespace util
 		}
 		return result;
 	}
-	
 	float interpolateLinear(const std::vector<glm::vec2>& f, float x) {
 		glm::vec2 before(-9999,-9999), after(9999,9999);
 		for (const auto& p : f)
@@ -471,12 +470,12 @@ namespace util
 		return before.y + diff * (after.y - before.y);
 	}
 
-	void EditableGraph(const char* label, std::vector<glm::vec2>* points, std::function<float(const std::vector<glm::vec2>&, float)> interpolationStyle)
+	bool EditableGraph(const char* label, std::vector<glm::vec2>* points, std::function<float(const std::vector<glm::vec2>&, float)> interpolationStyle)
 	{
 		bool changed = false;
 		auto window = ImGui::GetCurrentWindow();
 		if (window->SkipItems)
-			return;
+			return false;
 		const ImGuiStyle& style = ImGui::GetStyle();
 		const ImGuiIO& IO = ImGui::GetIO();
 		ImDrawList* DrawList = ImGui::GetWindowDrawList();
@@ -494,7 +493,7 @@ namespace util
 		ImRect bb(window->DC.CursorPos, window->DC.CursorPos + Canvas);
 		ImGui::ItemSize(bb);
 		if (!ImGui::ItemAdd(bb, NULL))
-			return;
+			return false;
 
 		const ImGuiID id = window->GetID(label);
 		//hovered |= 0 != ImGui::IsItemHovered(ImRect(bb.Min, bb.Min + ImVec2(avail, dim)), id);
@@ -514,6 +513,8 @@ namespace util
 		}
 		ImVec2 cursorPos = ImGui::GetCursorScreenPos();
 		int i = 0;
+		static bool c = false;
+		static bool dragged = false;
 		for (auto it = points->begin(); it != points->end(); )
 		{
 			auto& v = *it;
@@ -529,6 +530,7 @@ namespace util
 			if (ImGui::IsItemClicked(1))
 			{
 				it = points->erase(it); ImGui::PopID();
+				changed = true;
 				continue;
 			}
 			if (ImGui::IsItemActive() && ImGui::IsMouseDragging(0))
@@ -537,6 +539,11 @@ namespace util
 					v.x += ImGui::GetIO().MouseDelta.x / Canvas.x;
 				v.y -= ImGui::GetIO().MouseDelta.y / Canvas.y;
 				v = glm::clamp(v, 0.0f, 1.0f);
+				dragged = true;
+			}
+			else if (ImGui::IsMouseReleased(0) && dragged)
+			{
+				dragged = false;
 				changed = true;
 			}
 			ImGui::PopID();
@@ -553,14 +560,41 @@ namespace util
 			pos.y = 1.0f - pos.y;
 			points->push_back(glm::vec2(pos.x, pos.y));
 			std::sort(points->begin(), points->end(), [](const glm::vec2& a, const glm::vec2& b){ return std::signbit(a.x - b.x);});
+			changed = true;
 		}
 		ImGui::SetCursorScreenPos(cursorPos);
+		return changed;
 	}
 
 	template<class T>
-	bool EditableGraphMulti(BrowEdit* browEdit, Map* map, const std::vector<T*>& data, const char* label, const std::function<std::vector<glm::vec2>* (T*)>& callback, std::function<float(const std::vector<glm::vec2>&, float)> interpolationStyle)
+	bool EditableGraphMulti(BrowEdit* browEdit, Map* map, const std::vector<T*>& data, const char* label, const std::function<std::vector<glm::vec2>* (T*)>& getProp, std::function<float(const std::vector<glm::vec2>&, float)> interpolationStyle)
 	{
-		return false;
+		static std::vector<std::vector<glm::vec2>> startValues;
+		bool differentValues = !std::all_of(data.begin(), data.end(), [&](T* o) { return *getProp(o) == *getProp(data.front()); });
+		std::vector<glm::vec2>* f = getProp(data.front());
+		if (differentValues)
+		{
+			ImGui::TextColored(ImVec4(1,0,0,1), "MULTIPLE VALUES");
+			ImGui::SameLine();
+		}
+		bool ret = EditableGraph(label, f, interpolationStyle);
+		if (ret)
+			for (auto o : data)
+				*getProp(o) = *f;
+		if (ImGui::IsItemActivated())
+		{
+			startValues.clear();
+			for (auto o : data)
+				startValues.push_back(*getProp(o));
+		}
+		if (ret)
+		{
+			auto ga = new GroupAction();
+			for (auto i = 0; i < data.size(); i++)
+				ga->addAction(new ObjectChangeAction(data[i]->node, getProp(data[i]), startValues[i], label));
+			map->doAction(ga, browEdit);
+		}
+		return ret;
 	}
 
 	template bool EditableGraphMulti<RswLight>(BrowEdit* browEdit, Map* map, const std::vector<RswLight*>& data, const char* label, const std::function<std::vector<glm::vec2>* (RswLight*)>& callback, std::function<float(const std::vector<glm::vec2>&, float)> interpolationStyle);

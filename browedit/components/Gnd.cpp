@@ -379,11 +379,15 @@ void Gnd::makeLightmapsUnique()
 	std::set<int> taken;
 	for (Tile* t : tiles)
 	{
-		if (taken.find(t->lightmapIndex) == taken.end())
+		if (t->lightmapIndex != -1 && taken.find(t->lightmapIndex) == taken.end())
 			taken.insert(t->lightmapIndex);
 		else
 		{
-			Lightmap* l = new Lightmap(*lightmaps[t->lightmapIndex]);
+			Lightmap* l;
+			if(t->lightmapIndex == -1)
+				l = new Lightmap();
+			else
+				l = new Lightmap(*lightmaps[t->lightmapIndex]);
 			t->lightmapIndex = (unsigned short)lightmaps.size();
 			lightmaps.push_back(l);
 		}
@@ -394,8 +398,6 @@ void Gnd::makeLightmapsClear()
 {
 	lightmaps.clear();
 	Lightmap* l = new Lightmap();
-	memset(l->data, 255, 64);
-	memset(l->data + 64, 0, 256 - 64);
 	lightmaps.push_back(l);
 
 	for (Tile* t : tiles)
@@ -783,15 +785,18 @@ void Gnd::makeTilesUnique()
 	{
 		for (int x = 0; x < width; x++)
 		{
-			if (cubes[x][y]->tileUp == -1)
-				continue;
-			if (taken.find(cubes[x][y]->tileUp) == taken.end())
-				taken.insert(cubes[x][y]->tileUp);
-			else
+			for (int c = 0; c < 3; c++)
 			{
-				Tile* t = new Tile(*tiles[cubes[x][y]->tileUp]);
-				cubes[x][y]->tileUp = (int)tiles.size();
-				tiles.push_back(t);
+				if (cubes[x][y]->tileIds[c] == -1)
+					continue;
+				if (taken.find(cubes[x][y]->tileIds[c]) == taken.end())
+					taken.insert(cubes[x][y]->tileIds[c]);
+				else
+				{
+					Tile* t = new Tile(*tiles[cubes[x][y]->tileIds[c]]);
+					cubes[x][y]->tileIds[c] = (int)tiles.size();
+					tiles.push_back(t);
+				}
 			}
 		}
 	}

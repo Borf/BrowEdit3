@@ -43,7 +43,10 @@ public:
 	class Lightmap
 	{
 	public:
-		Lightmap() { memset(data, 0, 256 * sizeof(unsigned char)); };
+		Lightmap() { 
+			memset(data, 255, 64);
+			memset(data + 64, 0, 256 - 64);
+		};
 		Lightmap(const Lightmap& other)
 		{
 			memcpy(data, other.data, 256 * sizeof(unsigned char));

@@ -240,6 +240,8 @@ void BrowEdit::run()
 		int display_w, display_h;
 		glfwGetFramebufferSize(window, &display_w, &display_h);
 		float ratio = display_w / (float)display_h;
+		if (display_h == 0)
+			ratio = 1.0f;
 		glViewport(0, 0, display_w, display_h);
 		glClearColor(config.backgroundColor.r, config.backgroundColor.g, config.backgroundColor.b, 1);
 		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);

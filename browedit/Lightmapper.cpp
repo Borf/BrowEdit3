@@ -13,7 +13,7 @@
 #include <imgui_internal.h>
 
 extern std::mutex debugPointMutex;
-extern std::vector<glm::vec3> debugPoints;
+extern std::vector<std::vector<glm::vec3>> debugPoints;
 
 Lightmapper::Lightmapper(Map* map, BrowEdit* browEdit) : map(map), browEdit(browEdit)
 {
@@ -22,8 +22,23 @@ Lightmapper::Lightmapper(Map* map, BrowEdit* browEdit) : map(map), browEdit(brow
 void Lightmapper::begin()
 {
 	debugPoints.clear();
+	debugPoints.resize(2);
 	if (browEdit->windowData.progressWindowVisible)
 		return;
+
+	gnd = map->rootNode->getComponent<Gnd>();
+	rsw = map->rootNode->getComponent<Rsw>();
+
+	setProgressText("Making lightmaps unique");
+	std::cout << "Before:\t" << gnd->tiles.size() << " tiles, " << gnd->lightmaps.size() << " lightmaps" << std::endl;
+	gnd->makeLightmapsUnique();
+	std::cout << "After:\t" << gnd->tiles.size() << " tiles, " << gnd->lightmaps.size() << " lightmaps" << std::endl;
+
+	map->rootNode->getComponent<GndRenderer>()->gndShadowDirty = true;
+	for (auto& cc : map->rootNode->getComponent<GndRenderer>()->chunks)
+		for (auto c : cc)
+			c->dirty = true;
+
 	browEdit->windowData.progressWindowVisible = true;
 	browEdit->windowData.progressWindowProgres = 0;
 	browEdit->windowData.progressWindowText = "Calculating lightmaps";
@@ -53,14 +68,6 @@ void Lightmapper::setProgress(float progress)
 
 void Lightmapper::run()
 {
-	gnd = map->rootNode->getComponent<Gnd>();
-	rsw = map->rootNode->getComponent<Rsw>();
-
-	setProgressText("Making lightmaps unique");
-	std::cout << "Before:\t" << gnd->tiles.size() << " tiles, " << gnd->lightmaps.size() << " lightmaps" << std::endl;
-	gnd->makeLightmapsUnique();
-	std::cout << "After:\t" << gnd->tiles.size() << " tiles, " << gnd->lightmaps.size() << " lightmaps" << std::endl;
-
 	setProgressText("Gathering Lights");
 	map->rootNode->traverse([&](Node* n) {
 		if (n->getComponent<RswLight>())
@@ -75,7 +82,7 @@ void Lightmapper::run()
 	setProgressText("Calculating map quads");
 	mapQuads = gnd->getMapQuads();
 
-/*	debugPointMutex.lock();
+	debugPointMutex.lock();
 	for (auto i = 0; i < mapQuads.size(); i += 4)
 	{
 		glm::vec3 v1 = mapQuads[i];
@@ -89,12 +96,12 @@ void Lightmapper::run()
 			{
 				glm::vec3 p1 = glm::mix(v1, v2, x);
 				glm::vec3 p2 = glm::mix(v4, v3, x);
-				debugPoints.push_back(glm::mix(p1, p2, y));
+				debugPoints[0].push_back(glm::mix(p1, p2, y));
 			}
 		}
 
 	}
-	debugPointMutex.unlock();*/
+	debugPointMutex.unlock();
 
 
 
@@ -265,6 +272,8 @@ std::pair<glm::vec3, int> Lightmapper::calculateLight(const glm::vec3& groundPos
 					}
 					});
 			}
+			if (!collides && collidesMap(ray))
+				collides = true;
 			if (!collides)
 			{
 				if (rswLight->affectShadowMap)
@@ -386,9 +395,9 @@ void Lightmapper::calcPos(int direction, int tileId, int x, int y)
 
 					}
 
-					//debugPointMutex.lock();
-					//debugPoints.push_back(groundPos);
-					//debugPointMutex.unlock();
+					debugPointMutex.lock();
+					debugPoints[1].push_back(groundPos);
+					debugPointMutex.unlock();
 
 					auto light = calculateLight(groundPos, normal);
 					totalIntensity += glm::min(255, light.second);

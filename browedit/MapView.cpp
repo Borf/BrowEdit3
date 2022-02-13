@@ -30,7 +30,7 @@
 
 #include <iostream>
 
-std::vector<glm::vec3> debugPoints;
+std::vector<std::vector<glm::vec3>> debugPoints;
 std::mutex debugPointMutex;
 
 MapView::MapView(Map* map, const std::string &viewName) : map(map), viewName(viewName), mouseRay(glm::vec3(0,0,0), glm::vec3(0,0,0))
@@ -269,6 +269,8 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 	glLoadMatrixf(glm::value_ptr(nodeRenderContext.viewMatrix));
 	glColor3f(1, 0, 0);
 	fbo->bind();
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glDisable(GL_TEXTURE_2D);
 
 	glPushMatrix();
 	glScalef(1, -1, -1);
@@ -277,12 +279,17 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 	map->rootNode->getComponent<Rsw>()->quadtree->draw(quadTreeMaxLevel);
 	glPopMatrix();
 
+	static glm::vec4 color[] = { glm::vec4(1,0,0,1), glm::vec4(0,1,0,1), glm::vec4(0,0,1,1) };
 	debugPointMutex.lock();
-	glPointSize(2.0f);
-	glBegin(GL_POINTS);
-	for (auto& v : debugPoints)
-		glVertex3fv(glm::value_ptr(v));
-	glEnd();
+	glPointSize(10.0f);
+	for (auto i = 0; i < debugPoints.size(); i++)
+	{
+		glColor4fv(glm::value_ptr(color[i]));
+		glBegin(GL_POINTS);
+		for (auto& v : debugPoints[i])
+			glVertex3fv(glm::value_ptr(v));
+		glEnd();
+	}
 	glPointSize(1.0f);
 	debugPointMutex.unlock();
 
