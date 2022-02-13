@@ -37,6 +37,7 @@
     <ClCompile Include="browedit\gl\FBO.cpp" />
     <ClCompile Include="browedit\gl\Shader.cpp" />
     <ClCompile Include="browedit\gl\Texture.cpp" />
+    <ClCompile Include="browedit\Image.cpp" />
     <ClCompile Include="browedit\Lightmapper.cpp" />
     <ClCompile Include="browedit\Map.cpp" />
     <ClCompile Include="browedit\MapView.cpp" />
@@ -116,6 +117,7 @@
     <ClInclude Include="browedit\gl\VBO.h" />
     <ClInclude Include="browedit\gl\Vertex.h" />
     <ClInclude Include="browedit\gl\VIO.h" />
+    <ClInclude Include="browedit\Image.h" />
     <ClInclude Include="browedit\Lightmapper.h" />
     <ClInclude Include="browedit\Map.h" />
     <ClInclude Include="browedit\MapView.h" />

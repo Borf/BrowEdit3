@@ -201,6 +201,9 @@ class RswModelCollider : public Collider
 	RsmRenderer* rsmRenderer = nullptr;
 public:
 	void begin();
+	bool collidesTexture(const math::Ray& ray);
+	bool collidesTexture(Rsm::Mesh* mesh, const math::Ray& ray, const glm::mat4& matrix);
+
 	std::vector<glm::vec3> getCollisions(const math::Ray& ray);
 	std::vector<glm::vec3> getCollisions(Rsm::Mesh* mesh, const math::Ray& ray, const glm::mat4 &matrix);
 };

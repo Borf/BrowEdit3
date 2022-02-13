@@ -4,6 +4,7 @@
 #include <vector>
 #include <map>
 #include <iostream>
+#include <mutex>
 
 namespace util
 {
@@ -12,10 +13,12 @@ namespace util
 	{
 		static inline std::vector<T*> resources;
 		static inline std::map<std::string, T*> resmap;
+		static inline std::mutex loadMutex;
 	public:
 		template<class R = T>
 		static R* load()
 		{
+			const std::lock_guard<std::mutex> lock(loadMutex);
 			for (auto r : resources)
 			{
 				R* rr = dynamic_cast<R*>(r);
@@ -29,6 +32,7 @@ namespace util
 		template<class R = T>
 		static R* load(const std::string &str)
 		{
+			const std::lock_guard<std::mutex> lock(loadMutex);
 			auto it = resmap.find(str);
 			if(it != resmap.end())
 				return dynamic_cast<R*>(it->second);

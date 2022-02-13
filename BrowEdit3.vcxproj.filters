@@ -272,6 +272,9 @@
     <ClCompile Include="browedit\components\Rsw.Object.cpp">
       <Filter>browedit\components</Filter>
     </ClCompile>
+    <ClCompile Include="browedit\Image.cpp">
+      <Filter>browedit</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="lib\imgui\imgui.h">
@@ -467,6 +470,9 @@
       <Filter>browedit\components</Filter>
     </ClInclude>
     <ClInclude Include="browedit\Lightmapper.h">
+      <Filter>browedit</Filter>
+    </ClInclude>
+    <ClInclude Include="browedit\Image.h">
       <Filter>browedit</Filter>
     </ClInclude>
   </ItemGroup>

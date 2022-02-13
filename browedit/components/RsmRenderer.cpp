@@ -32,10 +32,10 @@ void RsmRenderer::begin()
 
 void RsmRenderer::render()
 {
-	if (!this->rsm)
+	if (!this->rsm || !this->rsm->loaded)
 	{
 		this->rsm = node->getComponent<Rsm>();
-		if (this->rsm)
+		if (this->rsm && this->rsm->loaded)
 		{//init
 			for (const auto& textureFilename : rsm->textures)
 				textures.push_back(util::ResourceManager<gl::Texture>::load("data\\texture\\" + textureFilename));
@@ -52,7 +52,7 @@ void RsmRenderer::render()
 		this->gnd = node->root->getComponent<Gnd>(); //TODO: remove parent->parent
 	if (!this->rsw)
 		this->rsw = node->root->getComponent<Rsw>();
-	if (!this->rsm)
+	if (!this->rsm || !this->rsm->loaded)
 		return;
 
 	if (!matrixCached && this->rswModel && this->gnd && this->rsw)
