@@ -12,6 +12,7 @@ class Image
 	int width;
 	int height;
 public:
+	bool hasAlpha = false;
 	Image(const std::string& fileName);
 	float get(const glm::vec2& uv);
 };

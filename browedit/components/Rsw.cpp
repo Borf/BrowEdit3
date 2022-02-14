@@ -467,33 +467,6 @@ bool RswModelCollider::collidesTexture(Rsm::Mesh* mesh, const math::Ray& ray, co
 
 		if (newRay.LineIntersectPolygon(verts, t))
 		{
-			glm::vec3 hitPoint = newRay.origin + newRay.dir * t;
-			auto f1 = verts[0] - hitPoint;
-			auto f2 = verts[1] - hitPoint;
-			auto f3 = verts[2] - hitPoint;
-
-			float a = glm::length(glm::cross(verts[0] - verts[1], verts[0] - verts[2]));
-			float a1 = glm::length(glm::cross(f2, f3)) / a;
-			float a2 = glm::length(glm::cross(f3, f1)) / a;
-			float a3 = glm::length(glm::cross(f1, f2)) / a;
-
-			glm::vec2 uv1 = mesh->texCoords[mesh->faces[i]->texCoordIds[0]];
-			glm::vec2 uv2 = mesh->texCoords[mesh->faces[i]->texCoordIds[1]];
-			glm::vec2 uv3 = mesh->texCoords[mesh->faces[i]->texCoordIds[2]];
-
-			glm::vec2 uv = uv1 * a1 + uv2 * a2 + uv3 * a3;
-
-			if (uv.x > 1 || uv.x < 0)
-				uv.x -= glm::floor(uv.x);
-			if (uv.y > 1 || uv.y < 0)
-				uv.y -= glm::floor(uv.y);
-
-			if (std::isnan(uv.x))
-			{
-				std::cerr<< "Error calculating lightmap for model " << node->name << ", " << rswModel->fileName << std::endl;
-				return false;
-			}
-			
 			Image* img = nullptr;
 			auto rsmMesh = dynamic_cast<Rsm::Mesh*>(mesh);
 			if (rsmMesh)
@@ -502,10 +475,38 @@ bool RswModelCollider::collidesTexture(Rsm::Mesh* mesh, const math::Ray& ray, co
 				if (rsm)
 					img = util::ResourceManager<Image>::load("data/texture/" + rsm->textures[mesh->faces[i]->texId]);
 			}
-			if (img && img->get(uv) < 0.01)
-				continue;
+			if (img->hasAlpha)
+			{
+				glm::vec3 hitPoint = newRay.origin + newRay.dir * t;
+				auto f1 = verts[0] - hitPoint;
+				auto f2 = verts[1] - hitPoint;
+				auto f3 = verts[2] - hitPoint;
 
-			return true;
+				float a = glm::length(glm::cross(verts[0] - verts[1], verts[0] - verts[2]));
+				float a1 = glm::length(glm::cross(f2, f3)) / a;
+				float a2 = glm::length(glm::cross(f3, f1)) / a;
+				float a3 = glm::length(glm::cross(f1, f2)) / a;
+
+				glm::vec2 uv1 = mesh->texCoords[mesh->faces[i]->texCoordIds[0]];
+				glm::vec2 uv2 = mesh->texCoords[mesh->faces[i]->texCoordIds[1]];
+				glm::vec2 uv3 = mesh->texCoords[mesh->faces[i]->texCoordIds[2]];
+
+				glm::vec2 uv = uv1 * a1 + uv2 * a2 + uv3 * a3;
+
+				if (uv.x > 1 || uv.x < 0)
+					uv.x -= glm::floor(uv.x);
+				if (uv.y > 1 || uv.y < 0)
+					uv.y -= glm::floor(uv.y);
+
+				if (std::isnan(uv.x))
+				{
+					std::cerr << "Error calculating lightmap for model " << node->name << ", " << rswModel->fileName << std::endl;
+					return false;
+				}
+
+				if (img && img->get(uv) > 0.01)
+					return true;
+			}
 		}
 	}
 

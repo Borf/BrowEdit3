@@ -1,12 +1,15 @@
+#include <Windows.h>
 #include "Lightmapper.h"
 #include <browedit/BrowEdit.h>
 #include <browedit/Map.h>
 #include <browedit/Node.h>
+#include <browedit/Image.h>
 #include <browedit/components/Gnd.h>
 #include <browedit/components/GndRenderer.h>
 #include <browedit/components/Gnd.h>
 #include <browedit/components/Rsw.h>
 #include <browedit/math/Ray.h>
+#include <browedit/util/ResourceManager.h>
 
 #include <glm/glm.hpp>
 #include <iostream>
@@ -14,6 +17,8 @@
 
 extern std::mutex debugPointMutex;
 extern std::vector<std::vector<glm::vec3>> debugPoints;
+
+
 
 Lightmapper::Lightmapper(Map* map, BrowEdit* browEdit) : map(map), browEdit(browEdit)
 {
@@ -443,5 +448,5 @@ void Lightmapper::onDone()
 	std::cout << "Done!" << std::endl;
 	gnd->makeLightmapBorders();
 	map->rootNode->getComponent<GndRenderer>()->gndShadowDirty = true;
-
+	util::ResourceManager<Image>::clear();
 }

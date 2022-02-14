@@ -41,6 +41,16 @@ namespace util
 			return r;
 		}
 
+		static void clear()
+		{
+			for (auto it : resmap)
+				delete it.second;
+			for (auto res : resources)
+				delete res;
+			resmap.clear();
+			resources.clear();
+		}
+
 		static std::size_t count()
 		{
 			return resources.size() + resmap.size();

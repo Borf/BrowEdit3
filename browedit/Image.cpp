@@ -31,11 +31,16 @@ Image::Image(const std::string& fileName)
 	{
 		for (int x = 0; x < width; x++)
 		{
-			data[x + width * y] = 255;
+			data[x + width * y] = tmpData[3 * (x + width * y) + 3];
 			if (tmpData[3 * (x + width * y) + 0] > 253 &&
 				tmpData[3 * (x + width * y) + 1] < 2 &&
 				tmpData[3 * (x + width * y) + 2] > 253)
+			{
 				data[x + width * y] = 0;
+				hasAlpha = true;
+			}
+			if (tmpData[3 * (x + width * y) + 3] != 255)
+				hasAlpha = true;
 		}
 	}
 	stbi_image_free(tmpData);
@@ -43,8 +48,9 @@ Image::Image(const std::string& fileName)
 
 float Image::get(const glm::vec2& uv)
 {
-	if (!data)
+	if (!data || !hasAlpha)
 		return 1;
+
 	int x1 = (int)floor(uv.x * width);
 	int y1 = (int)floor(uv.y * height);
 	int x2 = (int)ceil(uv.x * width);
