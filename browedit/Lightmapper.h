@@ -11,7 +11,6 @@ class Node;
 namespace math { class Ray; }
 class Lightmapper
 {
-	Map* map;
 	BrowEdit* browEdit;
 	Gnd* gnd;
 	Rsw* rsw;
@@ -21,6 +20,7 @@ class Lightmapper
 
 	std::thread mainThread;
 public:
+	Map* map;
 	int quality = 1;
 	bool sunLight = true;
 	int threadCount = 4;

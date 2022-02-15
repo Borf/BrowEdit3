@@ -108,6 +108,7 @@ public:
 	void save(std::ofstream &file, int version);
 	nlohmann::json saveExtra();
 	void buildImGui(BrowEdit* browEdit) override;
+	static void buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>&);
 
 	NLOHMANN_DEFINE_TYPE_INTRUSIVE(RswModel, animType, animSpeed, blockType, fileName, givesShadow);
 };
@@ -167,6 +168,8 @@ public:
 	void load(std::istream* is);
 	void save(std::ofstream& file);
 	void buildImGui(BrowEdit* browEdit) override;
+	static void buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>&);
+
 	NLOHMANN_DEFINE_TYPE_INTRUSIVE(RswEffect, id, loop, param1, param2, param3, param4);
 };
 
@@ -188,9 +191,12 @@ public:
 
 	RswSound() {}
 	RswSound(const std::string &fileName) : fileName(fileName) {}
+	void play();
 	void load(std::istream* is, int version);
 	void save(std::ofstream& file, int version);
 	void buildImGui(BrowEdit* browEdit) override;
+	static void buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>&);
+	
 	NLOHMANN_DEFINE_TYPE_INTRUSIVE(RswSound, fileName, vol, width, height, range, cycle, unknown6, unknown7, unknown8);
 };
 

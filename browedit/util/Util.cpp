@@ -157,6 +157,43 @@ namespace util
 		return ret;
 	}
 	
+
+	template<class T>
+	bool InputTextMulti(BrowEdit* browEdit, Map* map, const std::vector<T*>& data, const char* label, const std::function<std::string* (T*)>& getProp)
+	{
+		static std::vector<std::string> startValues;
+		bool differentValues = !std::all_of(data.begin(), data.end(), [&](T* o) { return *getProp(o) == *getProp(data.front()); });
+		std::string f = *getProp(data.front());
+		if (differentValues)
+			f = "multiple";
+		bool ret = ImGui::InputText(label, &f);
+		if (ret)
+			for (auto o : data)
+				*getProp(o) = f;
+		if (ImGui::IsItemActivated())
+		{
+			startValues.clear();
+			for (auto o : data)
+				startValues.push_back(*getProp(o));
+		}
+		if (ImGui::IsItemDeactivatedAfterEdit())
+		{
+			auto ga = new GroupAction();
+			for (auto i = 0; i < data.size(); i++)
+				ga->addAction(new ObjectChangeAction(data[i]->node, getProp(data[i]), startValues[i], label));
+			map->doAction(ga, browEdit);
+		}
+		return ret;
+	}
+	template bool InputTextMulti<RswObject>(BrowEdit* browEdit, Map* map, const std::vector<RswObject*>& data, const char* label, const std::function<std::string* (RswObject*)>& getProp);
+	template bool InputTextMulti<RswLight>(BrowEdit* browEdit, Map* map, const std::vector<RswLight*>& data, const char* label, const std::function<std::string* (RswLight*)>& getProp);
+	template bool InputTextMulti<RswEffect>(BrowEdit* browEdit, Map* map, const std::vector<RswEffect*>& data, const char* label, const std::function<std::string* (RswEffect*)>& getProp);
+	template bool InputTextMulti<RswSound>(BrowEdit* browEdit, Map* map, const std::vector<RswSound*>& data, const char* label, const std::function<std::string* (RswSound*)>& getProp);
+	template bool InputTextMulti<RswModel>(BrowEdit* browEdit, Map* map, const std::vector<RswModel*>& data, const char* label, const std::function<std::string* (RswModel*)>& getProp);
+
+
+
+
 	const ImGuiDataTypeInfo* ImGui::DataTypeGetInfo(ImGuiDataType data_type);
 	bool DragScalarNMultiLabel(const char* label, ImGuiDataType data_type, void* p_data, int components, float v_speed, const void* p_min, const void* p_max, const std::vector<const char*> &formats, ImGuiSliderFlags flags)
 	{
@@ -222,6 +259,41 @@ namespace util
 	template bool DragFloatMulti<RswLight>(BrowEdit* browEdit, Map* map, const std::vector<RswLight*>& data, const char* label, const std::function<float* (RswLight*)>& getProp, float v_speed, float v_min, float v_max);
 	template bool DragFloatMulti<RswEffect>(BrowEdit* browEdit, Map* map, const std::vector<RswEffect*>& data, const char* label, const std::function<float* (RswEffect*)>& getProp, float v_speed, float v_min, float v_max);
 	template bool DragFloatMulti<RswSound>(BrowEdit* browEdit, Map* map, const std::vector<RswSound*>& data, const char* label, const std::function<float* (RswSound*)>& getProp, float v_speed, float v_min, float v_max);
+	template bool DragFloatMulti<RswModel>(BrowEdit* browEdit, Map* map, const std::vector<RswModel*>& data, const char* label, const std::function<float* (RswModel*)>& getProp, float v_speed, float v_min, float v_max);
+
+
+	template<class T>
+	bool DragIntMulti(BrowEdit* browEdit, Map* map, const std::vector<T*>& data, const char* label, const std::function<int* (T*)>& getProp, int v_speed, int v_min, int v_max)
+	{
+		static std::vector<int> startValues;
+		bool differentValues = !std::all_of(data.begin(), data.end(), [&](T* o) { return *getProp(o) == *getProp(data.front()); });
+		int* f = getProp(data.front());
+		bool ret = ImGui::DragInt(label, f, (float)v_speed, v_min, v_max, differentValues ? "multiple" : nullptr);
+		if (ret)
+			for (auto o : data)
+				*getProp(o) = *f;
+		if (ImGui::IsItemActivated())
+		{
+			startValues.clear();
+			for (auto o : data)
+				startValues.push_back(*getProp(o));
+		}
+		if (ImGui::IsItemDeactivatedAfterEdit())
+		{
+			auto ga = new GroupAction();
+			for (auto i = 0; i < data.size(); i++)
+				ga->addAction(new ObjectChangeAction(data[i]->node, getProp(data[i]), startValues[i], label));
+			map->doAction(ga, browEdit);
+		}
+		return ret;
+	}
+	template bool DragIntMulti<RswObject>(BrowEdit* browEdit, Map* map, const std::vector<RswObject*>& data, const char* label, const std::function<int* (RswObject*)>& getProp, int v_speed, int v_min, int v_max);
+	template bool DragIntMulti<RswLight>(BrowEdit* browEdit, Map* map, const std::vector<RswLight*>& data, const char* label, const std::function<int* (RswLight*)>& getProp, int v_speed, int v_min, int v_max);
+	template bool DragIntMulti<RswEffect>(BrowEdit* browEdit, Map* map, const std::vector<RswEffect*>& data, const char* label, const std::function<int* (RswEffect*)>& getProp, int v_speed, int v_min, int v_max);
+	template bool DragIntMulti<RswSound>(BrowEdit* browEdit, Map* map, const std::vector<RswSound*>& data, const char* label, const std::function<int* (RswSound*)>& getProp, int v_speed, int v_min, int v_max);
+	template bool DragIntMulti<RswModel>(BrowEdit* browEdit, Map* map, const std::vector<RswModel*>& data, const char* label, const std::function<int* (RswModel*)>& getProp, int v_speed, int v_min, int v_max);
+
+
 
 	template<class T>
 	bool DragFloat3Multi(BrowEdit* browEdit, Map* map, const std::vector<T*>& data, const char* label, const std::function<glm::vec3* (T*)>& getProp, float v_speed, float v_min, float v_max)
@@ -336,6 +408,7 @@ namespace util
 	template bool CheckboxMulti<RswLight>(BrowEdit* browEdit, Map* map, const std::vector<RswLight*>& data, const char* label, const std::function<bool* (RswLight*)>& getProp);
 	template bool CheckboxMulti<RswEffect>(BrowEdit* browEdit, Map* map, const std::vector<RswEffect*>& data, const char* label, const std::function<bool* (RswEffect*)>& getProp);
 	template bool CheckboxMulti<RswSound>(BrowEdit* browEdit, Map* map, const std::vector<RswSound*>& data, const char* label, const std::function<bool* (RswSound*)>& getProp);
+	template bool CheckboxMulti<RswModel>(BrowEdit* browEdit, Map* map, const std::vector<RswModel*>& data, const char* label, const std::function<bool* (RswModel*)>& getProp);
 
 
 
@@ -382,6 +455,7 @@ namespace util
 	template bool ComboBoxMulti<RswLight>(BrowEdit* browEdit, Map* map, const std::vector<RswLight*>& data, const char* label, const char* items, const std::function<int* (RswLight*)>& getProp);
 	template bool ComboBoxMulti<RswEffect>(BrowEdit* browEdit, Map* map, const std::vector<RswEffect*>& data, const char* label, const char* items, const std::function<int* (RswEffect*)>& getProp);
 	template bool ComboBoxMulti<RswSound>(BrowEdit* browEdit, Map* map, const std::vector<RswSound*>& data, const char* label, const char* items, const std::function<int* (RswSound*)>& getProp);
+	template bool ComboBoxMulti<RswModel>(BrowEdit* browEdit, Map* map, const std::vector<RswModel*>& data, const char* label, const char* items, const std::function<int* (RswModel*)>& getProp);
 
 
 	float interpolateSpline(const std::vector<glm::vec2>& data, float p)

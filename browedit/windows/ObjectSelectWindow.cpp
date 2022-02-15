@@ -252,7 +252,7 @@ void BrowEdit::showObjectWindow()
 						newNode->addComponent(util::ResourceManager<Rsm>::load(path));
 						newNode->addComponent(new RsmRenderer());
 						newNode->addComponent(new RswObject());
-						newNode->addComponent(new RswModel(util::iso_8859_1_to_utf8(path)));
+						newNode->addComponent(new RswModel(util::iso_8859_1_to_utf8(path.substr(11)))); //remove data\model\ 
 						newNode->addComponent(new RsmRenderer());
 						newNode->addComponent(new RswModelCollider());
 						newNodes.push_back(std::pair<Node*, glm::vec3>(newNode, glm::vec3(0, 0, 0)));
@@ -288,7 +288,7 @@ void BrowEdit::showObjectWindow()
 					}
 					else if (file.substr(file.size() - 4) == ".wav")
 					{
-						auto s = new RswSound(util::iso_8859_1_to_utf8(path));
+						auto s = new RswSound(util::iso_8859_1_to_utf8(path.substr(9))); //remove data\wav\ 
 						Node* newNode = new Node(file);
 						newNode->addComponent(new RswObject());
 						newNode->addComponent(s);
@@ -301,6 +301,22 @@ void BrowEdit::showObjectWindow()
 			}
 			if (ImGui::BeginPopupContextWindow("Object Tags"))
 			{
+				if (file.substr(file.size() - 4) == ".wav")
+				{
+					if (ImGui::Button("Play"))
+					{
+						auto is = util::FileIO::open(path);
+						is->seekg(0, std::ios_base::end);
+						std::size_t len = is->tellg();
+						char* buffer = new char[len];
+						is->seekg(0, std::ios_base::beg);
+						is->read(buffer, len);
+						delete is;
+
+						PlaySound(buffer, NULL, SND_MEMORY);
+						delete[] buffer;
+					}
+				}
 				if (ImGui::CollapsingHeader("Actions", ImGuiTreeNodeFlags_DefaultOpen))
 				{
 					if (ImGui::Button("Add to map"))

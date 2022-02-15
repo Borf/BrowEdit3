@@ -26,6 +26,9 @@ void BrowEdit::showObjectProperties()
 	{
 		RswObject::buildImGuiMulti(this, activeMapView->map->selectedNodes);
 		RswLight::buildImGuiMulti(this, activeMapView->map->selectedNodes);
+		RswModel::buildImGuiMulti(this, activeMapView->map->selectedNodes);
+		RswEffect::buildImGuiMulti(this, activeMapView->map->selectedNodes);
+		RswSound::buildImGuiMulti(this, activeMapView->map->selectedNodes);
 	}
 
 

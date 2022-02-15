@@ -9,6 +9,7 @@
 #include <iostream>
 #include <fstream>
 #include <json.hpp>
+#include <ranges>
 #include <glm/gtc/type_ptr.hpp>
 
 RswModel::RswModel(RswModel* other) : aabb(other->aabb), animType(other->animType), animSpeed(other->animSpeed), blockType(other->blockType), fileName(other->fileName)
@@ -88,5 +89,20 @@ void RswModel::buildImGui(BrowEdit* browEdit)
 	util::InputText(browEdit, browEdit->activeMapView->map, node, "Filename", &fileName);
 
 	util::Checkbox(browEdit, browEdit->activeMapView->map, node, "Cast Shadow", &givesShadow);
+}
 
+void RswModel::buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>& nodes)
+{
+	std::vector<RswModel*> rswModels;
+	std::ranges::copy(nodes | std::ranges::views::transform([](Node* n) { return n->getComponent<RswModel>(); }) | std::ranges::views::filter([](RswModel* r) { return r != nullptr; }), std::back_inserter(rswModels));
+	if (rswModels.size() == 0)
+		return;
+
+	ImGui::Text("Model");
+	util::DragIntMulti<RswModel>(browEdit, browEdit->activeMapView->map, rswModels, "Animation Type", [](RswModel* m) { return &m->animType; }, 1, 0, 100);
+	util::DragFloatMulti<RswModel>(browEdit, browEdit->activeMapView->map, rswModels, "Animation Speed", [](RswModel* m) { return &m->animSpeed; }, 0.01f, 0.0f, 100.0f);
+	util::DragIntMulti<RswModel>(browEdit, browEdit->activeMapView->map, rswModels, "Block Type", [](RswModel* m) { return &m->blockType; }, 1, 0, 100);
+	util::InputTextMulti<RswModel>(browEdit, browEdit->activeMapView->map, rswModels, "Filename", [](RswModel* m) { return &m->fileName; });
+
+	util::CheckboxMulti<RswModel>(browEdit, browEdit->activeMapView->map, rswModels, "Cast Shadow", [](RswModel* m) { return &m->givesShadow; });
 }

@@ -44,6 +44,9 @@
     <Filter Include="browedit\windows">
       <UniqueIdentifier>{74f0a97e-2bd6-4a0a-8c84-ce3a6ea8c82b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="doc">
+      <UniqueIdentifier>{6937a0c7-581a-45a1-ace2-1ef984d7823a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="lib\imgui\imgui.cpp">
@@ -485,6 +488,9 @@
     <Image Include="icon.ico">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="doc\banner.png">
+      <Filter>doc</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <None Include="data\shaders\simple.fs">
@@ -510,6 +516,18 @@
     </None>
     <None Include="data\shaders\billboard.vs">
       <Filter>data\shaders</Filter>
+    </None>
+    <None Include="doc\Configuration.md">
+      <Filter>doc</Filter>
+    </None>
+    <None Include="doc\Lightmapping.md">
+      <Filter>doc</Filter>
+    </None>
+    <None Include="doc\ObjectEdit.md">
+      <Filter>doc</Filter>
+    </None>
+    <None Include="doc\Readme.md">
+      <Filter>doc</Filter>
     </None>
   </ItemGroup>
 </Project>

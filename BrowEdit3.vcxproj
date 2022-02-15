@@ -161,6 +161,7 @@
     <ResourceCompile Include="BrowEdit3.rc" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="doc\banner.png" />
     <Image Include="icon.ico" />
   </ItemGroup>
   <ItemGroup>
@@ -172,6 +173,10 @@
     <None Include="data\shaders\rsm.vs" />
     <None Include="data\shaders\simple.fs" />
     <None Include="data\shaders\simple.vs" />
+    <None Include="doc\Configuration.md" />
+    <None Include="doc\Lightmapping.md" />
+    <None Include="doc\ObjectEdit.md" />
+    <None Include="doc\Readme.md" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
@@ -227,7 +232,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>lib/glfw-3.3.6/lib;lib/bugtrap</AdditionalLibraryDirectories>
-      <AdditionalDependencies>opengl32.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>winmm.lib;opengl32.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>MSVCRT</IgnoreSpecificDefaultLibraries>
     </Link>
     <PostBuildEvent>
@@ -255,7 +260,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>lib/glfw-3.3.6/lib;lib/bugtrap</AdditionalLibraryDirectories>
-      <AdditionalDependencies>opengl32.lib;glfw3_mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>winmm.lib;opengl32.lib;glfw3_mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>MSVCRT</IgnoreSpecificDefaultLibraries>
     </Link>
     <PostBuildEvent>

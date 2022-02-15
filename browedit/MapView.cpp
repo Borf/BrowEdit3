@@ -303,7 +303,7 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 			});
 
 
-	if (ImGui::IsMouseReleased(1) && ImGui::GetIO().MouseDragMaxDistanceSqr[1] < 5)
+	if (hovered && ImGui::IsMouseReleased(1) && ImGui::GetIO().MouseDragMaxDistanceSqr[1] < 5)
 		ImGui::OpenPopup("Object Rightclick");
 	if (ImGui::BeginPopup("Object Rightclick"))
 	{
@@ -317,8 +317,6 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 			map->selectSameModels(browEdit);
 		if (ImGui::MenuItem("Select Same near"))
 			map->selectNear(50.0f, browEdit);
-
-
 		ImGui::EndPopup();
 	}
 

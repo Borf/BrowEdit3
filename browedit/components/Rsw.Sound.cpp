@@ -7,6 +7,7 @@
 #include <iostream>
 #include <fstream>
 #include <json.hpp>
+#include <ranges>
 #include <glm/gtc/type_ptr.hpp>
 
 
@@ -70,6 +71,10 @@ void RswSound::buildImGui(BrowEdit* browEdit)
 {
 	ImGui::Text("Sound");
 	util::InputText(browEdit, browEdit->activeMapView->map, node, "Filename", &fileName);
+	if (ImGui::Button("Play Sound"))
+	{
+		play();
+	}
 	util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Volume", &vol, 0.01f, 0.0f, 100.0f);
 
 	util::DragInt(browEdit, browEdit->activeMapView->map, node, "Width", (int*)&width, 1, 0, 10000); //TODO: remove cast
@@ -81,4 +86,41 @@ void RswSound::buildImGui(BrowEdit* browEdit)
 
 	util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Unknown7", &unknown7, 0.01f, 0.0f, 100.0f);
 	util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Unknown8", &unknown8, 0.01f, 0.0f, 100.0f);
+}
+
+void RswSound::buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>& nodes)
+{
+	std::vector<RswSound*> rswSounds;
+	std::ranges::copy(nodes | std::ranges::views::transform([](Node* n) { return n->getComponent<RswSound>(); }) | std::ranges::views::filter([](RswSound* r) { return r != nullptr; }), std::back_inserter(rswSounds));
+	if (rswSounds.size() == 0)
+		return;
+
+	ImGui::Text("Sound");
+	util::InputTextMulti<RswSound>(browEdit, browEdit->activeMapView->map, rswSounds, "Filename", [](RswSound* s) { return &s->fileName; });
+	util::DragFloatMulti<RswSound>(browEdit, browEdit->activeMapView->map, rswSounds, "Volume", [](RswSound* s) { return &s->vol; }, 0.01f, 0.0f, 100.0f);
+
+	util::DragIntMulti<RswSound>(browEdit, browEdit->activeMapView->map, rswSounds, "Width", [](RswSound* s) { return (int*)&s->width; }, 1, 0, 10000); //TODO: remove cast
+	util::DragIntMulti<RswSound>(browEdit, browEdit->activeMapView->map, rswSounds, "Height", [](RswSound* s) { return (int*)&s->height; }, 1, 0, 10000); //TODO: remove cast
+	util::DragFloatMulti<RswSound>(browEdit, browEdit->activeMapView->map, rswSounds, "Range", [](RswSound* s) { return &s->range; }, 0.01f, 0.0f, 100.0f);
+	util::DragFloatMulti<RswSound>(browEdit, browEdit->activeMapView->map, rswSounds, "Cycle", [](RswSound* s) { return &s->cycle; }, 0.01f, 0.0f, 100.0f);
+	//no undo for this
+	//ImGui::InputTextMulti("unknown6", unknown6, 8, ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_CharsUppercase);
+
+	util::DragFloatMulti<RswSound>(browEdit, browEdit->activeMapView->map, rswSounds, "Unknown7", [](RswSound* s) { return &s->unknown7; }, 0.01f, 0.0f, 100.0f);
+	util::DragFloatMulti<RswSound>(browEdit, browEdit->activeMapView->map, rswSounds, "Unknown8", [](RswSound* s) { return &s->unknown8; }, 0.01f, 0.0f, 100.0f);
+}
+
+
+void RswSound::play()
+{
+	auto is = util::FileIO::open("data\\wav\\" + fileName);
+	is->seekg(0, std::ios_base::end);
+	std::size_t len = is->tellg();
+	char* buffer = new char[len];
+	is->seekg(0, std::ios_base::beg);
+	is->read(buffer, len);
+	delete is;
+
+	PlaySound(buffer, NULL, SND_MEMORY);
+	delete[] buffer;
 }
