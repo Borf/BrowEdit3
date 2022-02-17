@@ -75,7 +75,8 @@ public:
 	{
 		Translate,
 		Rotate,
-		Scale
+		Scale,
+		TranslateY,
 	} mode = Mode::Translate;
 	enum Axis
 	{
@@ -89,6 +90,8 @@ public:
 	bool axisReleased = false;
 	bool axisDragged = false;
 	int selectedAxis = 0;
+	bool isMouseJustPressed = true;
+
 	int selectedAxisIndex();
 
 	void draw(const math::Ray& mouseRay, const glm::mat4& modelMatrix);

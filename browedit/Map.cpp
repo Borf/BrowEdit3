@@ -210,7 +210,7 @@ void Map::selectAll(BrowEdit* browEdit)
 		if (rswModel)
 		{
 			auto sa = new SelectAction(this, n, true, false);
-			sa->perform(this, browEdit);
+			selectedNodes.push_back(n);
 			ga->addAction(sa);
 		}
 		});

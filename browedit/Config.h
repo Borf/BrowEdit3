@@ -20,6 +20,7 @@ public:
 	bool closeObjectWindowOnAdd = false;
 	float toolbarButtonSize = 32;
 	ImVec4 toolbarButtonTint = ImVec4(1, 1, 1, 1);
+	bool backup = true;
 
 	float toolbarHeight() { return toolbarButtonSize + 8; }
 
@@ -38,5 +39,6 @@ public:
 		thumbnailSize,
 		closeObjectWindowOnAdd,
 		toolbarButtonSize,
-		toolbarButtonTint);
+		toolbarButtonTint,
+		backup);
 };

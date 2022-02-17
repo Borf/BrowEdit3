@@ -3,6 +3,7 @@
 #include "components/Renderer.h"
 #include "components/Collider.h"
 #include <browedit/util/Util.h>
+#include <browedit/Map.h>
 
 Node::Node(const std::string& name, Node* parent) : name(name), parent(parent)
 {
@@ -21,9 +22,9 @@ void Node::addComponent(Component* component)
 }
 
 
-void Node::onRename()
+void Node::onRename(Map* map)
 {
-	this->traverse([&](Node* n)
+	this->traverse([&](Node* n) //rename all nodes under this one to have the proper name
 		{
 			int level = 0;
 			Node* nn = n;
@@ -40,6 +41,7 @@ void Node::onRename()
 			}
 		});
 
+	//check if this node has to be moved
 	std::vector<std::string> parts = util::split(this->name, "\\");
 	bool positionOk = true;
 	Node* nn = this->parent;
@@ -97,9 +99,29 @@ void Node::onRename()
 			else
 				nn = nn->parent;
 		}
-
-
 	}
+	//now check for duplicates
+	root->traverse([&map](Node* n)
+	{
+		for (auto i = 0; i < n->children.size(); i++)
+		{
+			for (auto ii = i + 1; ii < n->children.size();)
+			{
+				if (n->children[i]->name == n->children[ii]->name)
+				{ // we found a duplicate!
+					for (auto nn : n->children[ii]->children)
+						nn->setParent(n->children[i]);
+					//TODO: check if it can safely be removed
+					//delete n->children[ii]; //MEMORY LEAK
+					n->children.erase(n->children.begin() + ii);
+					map->selectedNodes.clear(); //just remove this
+				}
+				else
+					ii++;
+			}
+		}
+	});
+
 }
 
 

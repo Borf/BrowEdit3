@@ -50,6 +50,9 @@ MapView::MapView(Map* map, const std::string &viewName) : map(map), viewName(vie
 		sphereMesh.init();
 	if (!simpleShader)
 		simpleShader = util::ResourceManager<gl::Shader>::load<Gadget::SimpleShader>();
+
+	for(int i = 0; i < 5; i++)
+		gadgetHeight[i].mode = Gadget::Mode::TranslateY;
 }
 
 void MapView::toolbar(BrowEdit* browEdit)
@@ -69,6 +72,9 @@ void MapView::toolbar(BrowEdit* browEdit)
 	ImGui::SameLine();
 	browEdit->toolBarToggleButton("smoothColors", 63, &smoothColors, "Smooth colormap");
 	ImGui::SameLine();
+	browEdit->toolBarToggleButton("viewEmptyTiles", 63, &viewEmptyTiles, "View empty tiles");
+	ImGui::SameLine();
+
 	ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 	ImGui::SameLine();
 	browEdit->toolBarToggleButton("showAllLights", 63, &showAllLights, "Show all lights");
@@ -162,7 +168,14 @@ void MapView::render(BrowEdit* browEdit)
 	map->rootNode->getComponent<GndRenderer>()->viewColors = viewColors;
 	map->rootNode->getComponent<GndRenderer>()->viewLighting = viewLighting;
 	map->rootNode->getComponent<GndRenderer>()->viewTextures = viewTextures;
-
+	if (map->rootNode->getComponent<GndRenderer>()->viewEmptyTiles != viewEmptyTiles)
+	{
+		map->rootNode->getComponent<GndRenderer>()->viewEmptyTiles = viewEmptyTiles;
+		auto gnd = map->rootNode->getComponent<Gnd>();
+		for (int x = 0; x < gnd->width; x++)
+			for (int y = 0; y < gnd->height - 15; y++)
+				map->rootNode->getComponent<GndRenderer>()->setChunkDirty(x,y);
+	}
 	if (map->rootNode->getComponent<GndRenderer>()->smoothColors != smoothColors)
 	{
 		map->rootNode->getComponent<GndRenderer>()->smoothColors = smoothColors;
@@ -177,12 +190,12 @@ void MapView::render(BrowEdit* browEdit)
 
 	if (browEdit->newNodes.size() > 0)
 	{
+		auto gnd = map->rootNode->getComponent<Gnd>();
+		auto rayCast = gnd->rayCast(mouseRay);
 		for (auto newNode : browEdit->newNodes)
 		{
 			auto rswObject = newNode.first->getComponent<RswObject>();
-			auto gnd = map->rootNode->getComponent<Gnd>();
-			auto rayCast = gnd->rayCast(mouseRay);
-			rswObject->position = glm::vec3(rayCast.x - 5 * gnd->width, -rayCast.y, -(rayCast.z + (-10 - 5 * gnd->height))) + newNode.second;
+			rswObject->position = glm::vec3(rayCast.x - 5 * gnd->width, rayCast.y, -(rayCast.z + (-10 - 5 * gnd->height))) + newNode.second;
 
 			bool snap = snapToGrid;
 			if (ImGui::GetIO().KeyShift)
@@ -191,8 +204,15 @@ void MapView::render(BrowEdit* browEdit)
 				rayCast = glm::round(rayCast / (float)gridSize) * (float)gridSize;
 			if (newNode.first->getComponent<RsmRenderer>())
 			{
-				newNode.first->getComponent<RsmRenderer>()->matrixCache = glm::translate(glm::mat4(1.0f), rayCast + newNode.second);
-				newNode.first->getComponent<RsmRenderer>()->matrixCache = glm::scale(newNode.first->getComponent<RsmRenderer>()->matrixCache, glm::vec3(1, -1, 1));
+				glm::mat4 matrix = glm::mat4(1.0f);
+				matrix = glm::translate(matrix, rayCast + newNode.second * glm::vec3(1,1,-1));
+				matrix = glm::scale(matrix, glm::vec3(1, -1, 1));
+				matrix = glm::rotate(matrix, -glm::radians(rswObject->rotation.z), glm::vec3(0, 0, 1));
+				matrix = glm::rotate(matrix, -glm::radians(rswObject->rotation.x), glm::vec3(1, 0, 0));
+				matrix = glm::rotate(matrix, glm::radians(rswObject->rotation.y), glm::vec3(0, 1, 0));
+				matrix = glm::scale(matrix, rswObject->scale);
+				matrix = glm::scale(matrix, glm::vec3(1, 1, -1));
+				newNode.first->getComponent<RsmRenderer>()->matrixCache = matrix;
 			}
 			if (newNode.first->getComponent<BillboardRenderer>())
 				newNode.first->getComponent<BillboardRenderer>()->gnd = gnd;
@@ -315,8 +335,11 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 			map->pasteSelection(browEdit);
 		if (ImGui::MenuItem("Select Same"))
 			map->selectSameModels(browEdit);
-		if (ImGui::MenuItem("Select Same near"))
-			map->selectNear(50.0f, browEdit);
+		static float distance = 50.0f;
+		ImGui::PushItemWidth(75.0f);
+		ImGui::DragFloat("Near Distance", &distance, 1.0f, 0.0f, 1000.0f);
+		if (ImGui::MenuItem("Select near"))
+			map->selectNear(distance, browEdit);
 		ImGui::EndPopup();
 	}
 
@@ -531,36 +554,263 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 		if (ImGui::IsMouseClicked(0))
 		{
 			auto collisions = map->rootNode->getCollisions(mouseRay);
-
+			std::cout << "Collision count: " << collisions.size() << std::endl;
 			if (collisions.size() > 0)
 			{
 				std::size_t closest = 0;
 				float closestDistance = 999999;
 				for(std::size_t i = 0; i < collisions.size(); i++)
-					for(const auto &pos : collisions[i].second)
+					for (const auto& pos : collisions[i].second)
 						if (glm::distance(mouseRay.origin, pos) < closestDistance)
 						{
 							closest = i;
-							closestDistance = glm::distance(mouseRay.origin, pos) < closestDistance;
+							closestDistance = glm::distance(mouseRay.origin, pos);
 						}
 				map->doAction(new SelectAction(map, collisions[closest].first, ImGui::GetIO().KeyShift, std::find(map->selectedNodes.begin(), map->selectedNodes.end(), collisions[closest].first) != map->selectedNodes.end() && ImGui::GetIO().KeyShift), browEdit);
 			}
 		}
 	}
-
-	//glBegin(GL_LINES);
-	//glVertex3f(0, 0, 0);
-	//glVertex3f(100, 0, 0);
-	//glVertex3f(0, 0, 0);
-	//glVertex3f(0, 100, 0);
-	//glVertex3f(0, 0, 0);
-	//glVertex3f(0, 0, 100);
-	//glEnd();
-
 	fbo->unbind();
 }
 
 
+void MapView::postRenderHeightMode(BrowEdit* browEdit)
+{
+	glUseProgram(0);
+	glMatrixMode(GL_PROJECTION);
+	glLoadMatrixf(glm::value_ptr(nodeRenderContext.projectionMatrix));
+	glMatrixMode(GL_MODELVIEW);
+	glLoadMatrixf(glm::value_ptr(nodeRenderContext.viewMatrix));
+	glColor3f(1, 0, 0);
+	fbo->bind();
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glDisable(GL_TEXTURE_2D);
+
+	simpleShader->use();
+	simpleShader->setUniform(Gadget::SimpleShader::Uniforms::projectionMatrix, nodeRenderContext.projectionMatrix);
+	simpleShader->setUniform(Gadget::SimpleShader::Uniforms::viewMatrix, nodeRenderContext.viewMatrix);
+	simpleShader->setUniform(Gadget::SimpleShader::Uniforms::modelMatrix, glm::mat4(1.0f));
+	simpleShader->setUniform(Gadget::SimpleShader::Uniforms::textureFac, 0.0f);
+	glEnable(GL_BLEND);
+	glDepthMask(0);
+	auto gnd = map->rootNode->getComponent<Gnd>();
+	auto gndRenderer = map->rootNode->getComponent<GndRenderer>();
+
+	bool canSelect = true;
+
+	//draw selection
+	if (tileSelection.size() > 0)
+	{
+		std::vector<VertexP3T2N3> verts;
+		float dist = 0.002f * cameraDistance;
+		for (auto& tile : tileSelection)
+		{
+			auto cube = gnd->cubes[tile.x][tile.y];
+			verts.push_back(VertexP3T2N3(glm::vec3(10 * tile.x, -cube->h3 + dist, 10 * gnd->height - 10 * tile.y), glm::vec2(0), cube->normals[2]));
+			verts.push_back(VertexP3T2N3(glm::vec3(10 * tile.x, -cube->h1 + dist, 10 * gnd->height - 10 * tile.y + 10), glm::vec2(0), cube->normals[0]));
+			verts.push_back(VertexP3T2N3(glm::vec3(10 * tile.x + 10, -cube->h4 + dist, 10 * gnd->height - 10 * tile.y), glm::vec2(0), cube->normals[3]));
+
+			verts.push_back(VertexP3T2N3(glm::vec3(10 * tile.x, -cube->h1 + dist, 10 * gnd->height - 10 * tile.y + 10), glm::vec2(0), cube->normals[0]));
+			verts.push_back(VertexP3T2N3(glm::vec3(10 * tile.x + 10, -cube->h4 + dist, 10 * gnd->height - 10 * tile.y), glm::vec2(0), cube->normals[3]));
+			verts.push_back(VertexP3T2N3(glm::vec3(10 * tile.x + 10, -cube->h2 + dist, 10 * gnd->height - 10 * tile.y + 10), glm::vec2(0), cube->normals[1]));
+		}
+		glEnableVertexAttribArray(0);
+		glEnableVertexAttribArray(1);
+		glEnableVertexAttribArray(2);
+		glDisableVertexAttribArray(3);
+		glDisableVertexAttribArray(4); //TODO: vao
+		glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexP3T2N3), verts[0].data);
+		glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexP3T2N3), verts[0].data + 3);
+		glVertexAttribPointer(2, 3, GL_FLOAT, false, sizeof(VertexP3T2N3), verts[0].data + 5);
+
+		glLineWidth(1.0f);
+		simpleShader->setUniform(Gadget::SimpleShader::Uniforms::color, glm::vec4(1, 0, 0, 1.0f));
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		glDrawArrays(GL_TRIANGLES, 0, (int)verts.size());
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+		simpleShader->setUniform(Gadget::SimpleShader::Uniforms::color, glm::vec4(1, 0, 0, 0.25f));
+		glDrawArrays(GL_TRIANGLES, 0, (int)verts.size());
+
+
+		Gadget::setMatrices(nodeRenderContext.projectionMatrix, nodeRenderContext.viewMatrix);
+		glDepthMask(1);
+
+		glm::ivec2 maxValues(-99999, -99999), minValues(999999, 9999999);
+		for (auto& s : tileSelection)
+		{
+			maxValues = glm::max(maxValues, s);
+			minValues = glm::min(minValues, s);
+		}
+		maxValues.x++;
+		minValues.y--;
+		static std::map<Gnd::Cube*, float[4]> originalValues;
+		glm::mat4 mat;
+
+
+
+		mat = glm::translate(glm::mat4(1.0f), glm::vec3(10 * minValues.x, 0, 10 * gnd->height - 10 * minValues.y));
+		gadgetHeight[0].draw(mouseRay, mat);
+
+		mat = glm::translate(glm::mat4(1.0f), glm::vec3(10 * minValues.x, 0, 10 * gnd->height - 10 * maxValues.y));
+		gadgetHeight[1].draw(mouseRay, mat);
+
+		mat = glm::translate(glm::mat4(1.0f), glm::vec3(10 * maxValues.x, 0, 10 * gnd->height - 10 * maxValues.y));
+		gadgetHeight[2].draw(mouseRay, mat);
+
+		mat = glm::translate(glm::mat4(1.0f), glm::vec3(10 * maxValues.x, 0, 10 * gnd->height - 10 * minValues.y));
+		gadgetHeight[3].draw(mouseRay, mat);
+
+
+		auto pos = glm::vec3(10 * (minValues.x + maxValues.x) / 2.0f, 0, 10 * gnd->height - 10 * (minValues.y + maxValues.y) / 2.0f);
+		mat = glm::translate(glm::mat4(1.0f), pos);
+		gadgetHeight[4].draw(mouseRay, mat);
+		if (gadgetHeight[4].axisClicked)
+		{
+			mouseDragPlane.normal = glm::normalize(glm::vec3(nodeRenderContext.viewMatrix * glm::vec4(0, 0, 1, 1)) - glm::vec3(nodeRenderContext.viewMatrix * glm::vec4(0, 0, 0, 1))) * glm::vec3(1, 1, -1);
+			mouseDragPlane.normal.y = 0;
+			mouseDragPlane.normal = glm::normalize(mouseDragPlane.normal);
+			mouseDragPlane.D = -glm::dot(glm::vec3(5 * gnd->width + pos.x, -pos.y, -(-10 - 5 * gnd->height + pos.z)), mouseDragPlane.normal);
+
+			float f;
+			mouseRay.planeIntersection(mouseDragPlane, f);
+			mouseDragStart = mouseRay.origin + f * mouseRay.dir;
+			mouseDragStart2D = mouseState.position;
+
+			originalValues.clear();
+			for (auto& t : tileSelection)
+				for (int i = 0; i < 4; i++)
+					originalValues[gnd->cubes[t.x][t.y]][i] = gnd->cubes[t.x][t.y]->heights[i];
+			canSelect = false;
+		}
+		else if (gadgetHeight[4].axisReleased)
+		{
+			canSelect = false;
+		}
+		else if (gadgetHeight[4].axisDragged)
+		{
+			float f;
+			mouseRay.planeIntersection(mouseDragPlane, f);
+			glm::vec3 mouseOffset = (mouseRay.origin + f * mouseRay.dir) - mouseDragStart;
+			bool snap = snapToGrid;
+			if (ImGui::GetIO().KeyShift)
+				snap = !snap;
+			if (snap && gridLocal)
+				mouseOffset = glm::round(mouseOffset / (float)gridSize) * (float)gridSize;
+
+			ImGui::Begin("Statusbar");
+			ImGui::SetNextItemWidth(200.0f);
+			ImGui::InputFloat3("Drag Offset", glm::value_ptr(mouseOffset));
+			ImGui::SameLine();
+			ImGui::End();
+
+			float mouseOffset2D = glm::length(mouseDragStart2D - mouseState.position);
+			if (snap && gridLocal)
+				mouseOffset2D = glm::round(mouseOffset2D / (float)gridSize) * (float)gridSize;
+			float pos = glm::sign(mouseState.position.x - mouseDragStart2D.x);
+			if (pos == 0)
+				pos = 1;
+			canSelect = false;
+
+			for (auto& t : tileSelection)
+			{
+				if(gndRenderer)
+					gndRenderer->setChunkDirty(t.x, t.y);
+				for (int i = 0; i < 4; i++)
+					gnd->cubes[t.x][t.y]->heights[i] = originalValues[gnd->cubes[t.x][t.y]][i] - mouseOffset.y;
+			}
+		}
+
+
+		simpleShader->setUniform(Gadget::SimpleShader::Uniforms::modelMatrix, glm::mat4(1.0f));
+		glDepthMask(0);
+	}
+
+
+
+
+	if (hovered && canSelect)
+	{
+		if (ImGui::IsMouseDown(0))
+		{
+			if (!mouseDown)
+				mouseDragStart = gnd->rayCast(mouseRay, viewEmptyTiles);
+			mouseDown = true;
+		}
+
+		if (ImGui::IsMouseReleased(0))
+		{
+			auto mouseDragEnd = gnd->rayCast(mouseRay, viewEmptyTiles);
+			mouseDown = false;
+			tileSelection.clear();
+
+			int tileMinX = (int)glm::floor(glm::min(mouseDragStart.x, mouseDragEnd.x) / 10);
+			int tileMaxX = (int)glm::ceil(glm::max(mouseDragStart.x, mouseDragEnd.x) / 10);
+
+			int tileMaxY = gnd->height - (int)glm::floor(glm::min(mouseDragStart.z, mouseDragEnd.z) / 10) + 1;
+			int tileMinY = gnd->height - (int)glm::ceil(glm::max(mouseDragStart.z, mouseDragEnd.z) / 10) + 1;
+
+			if (tileMinX >= 0 && tileMaxX < gnd->width - 1 && tileMinY >= 0 && tileMaxY < gnd->height - 1)
+				for (int x = tileMinX; x < tileMaxX; x++)
+					for (int y = tileMinY; y < tileMaxY; y++)
+						tileSelection.push_back(glm::ivec2(x, y));
+
+		}
+	}
+	if (mouseDown)
+	{
+		auto mouseDragEnd = gnd->rayCast(mouseRay, viewEmptyTiles);
+		std::vector<VertexP3T2N3> verts;
+		float dist = 0.002f * cameraDistance;
+
+		int tileMinX = (int)glm::floor(glm::min(mouseDragStart.x, mouseDragEnd.x) / 10);
+		int tileMaxX = (int)glm::ceil(glm::max(mouseDragStart.x, mouseDragEnd.x) / 10);
+
+		int tileMaxY = gnd->height - (int)glm::floor(glm::min(mouseDragStart.z, mouseDragEnd.z) / 10)+1;
+		int tileMinY = gnd->height - (int)glm::ceil(glm::max(mouseDragStart.z, mouseDragEnd.z) / 10)+1;
+
+
+		ImGui::Begin("Statusbar");
+		ImGui::Text("Selection: (%d,%d) - (%d,%d)", tileMinX, tileMinY, tileMaxX, tileMaxY);
+		ImGui::End();
+
+		if(tileMinX >= 0 && tileMaxX < gnd->width-1 && tileMinY >= 0 && tileMaxY < gnd->height-1)
+			for (int x = tileMinX; x < tileMaxX; x++)
+			{
+				for (int y = tileMinY; y < tileMaxY; y++)
+				{
+					auto cube = gnd->cubes[x][y];
+					verts.push_back(VertexP3T2N3(glm::vec3(10 * x, -cube->h3 + dist, 10 * gnd->height - 10 * y), glm::vec2(0), cube->normals[2]));
+					verts.push_back(VertexP3T2N3(glm::vec3(10 * x, -cube->h1 + dist, 10 * gnd->height - 10 * y + 10), glm::vec2(0), cube->normals[0]));
+					verts.push_back(VertexP3T2N3(glm::vec3(10 * x + 10, -cube->h4 + dist, 10 * gnd->height - 10 * y), glm::vec2(0), cube->normals[3]));
+
+					verts.push_back(VertexP3T2N3(glm::vec3(10 * x, -cube->h1 + dist, 10 * gnd->height - 10 * y + 10), glm::vec2(0), cube->normals[0]));
+					verts.push_back(VertexP3T2N3(glm::vec3(10 * x + 10, -cube->h4 + dist, 10 * gnd->height - 10 * y), glm::vec2(0), cube->normals[3]));
+					verts.push_back(VertexP3T2N3(glm::vec3(10 * x + 10, -cube->h2 + dist, 10 * gnd->height - 10 * y + 10), glm::vec2(0), cube->normals[1]));
+				}
+			}
+
+		if (verts.size() > 0)
+		{
+			glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexP3T2N3), verts[0].data);
+			glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexP3T2N3), verts[0].data + 3);
+			glVertexAttribPointer(2, 3, GL_FLOAT, false, sizeof(VertexP3T2N3), verts[0].data + 5);
+			simpleShader->setUniform(Gadget::SimpleShader::Uniforms::color, glm::vec4(1, 0, 0, 0.5f));
+			glDrawArrays(GL_TRIANGLES, 0, (int)verts.size());
+		}
+
+
+	}
+
+	glDepthMask(1);
+
+
+
+
+
+
+	fbo->unbind();
+}
 
 void MapView::focusSelection()
 {

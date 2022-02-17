@@ -192,12 +192,21 @@ void GndRenderer::Chunk::render()
 
 	if (vbo.size() > 0)
 	{
+		auto shader = dynamic_cast<GndRenderContext*>(renderer->renderContext)->shader;
+
 		//TODO: vao
 		vbo.bind();
 		for (VboIndex& it : vertIndices)
 		{
-			renderer->textures[it.texture]->bind();
-
+			if(it.texture != -1)
+				renderer->textures[it.texture]->bind();
+			else
+			{
+				shader->setUniform(GndShader::Uniforms::shadowMapToggle, 0.0f);
+				shader->setUniform(GndShader::Uniforms::lightColorToggle, 0.0f);
+				shader->setUniform(GndShader::Uniforms::colorToggle, 0.0f);
+				shader->setUniform(GndShader::Uniforms::viewTextures, 0.0f);
+			}
 			//VertexP3T2T2T2N3
 			glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(Vertex), (void*)(0 * sizeof(float)));
 			glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(Vertex), (void*)(3 * sizeof(float)));
@@ -205,6 +214,13 @@ void GndRenderer::Chunk::render()
 			glVertexAttribPointer(3, 2, GL_FLOAT, false, sizeof(Vertex), (void*)(7 * sizeof(float)));
 			glVertexAttribPointer(4, 3, GL_FLOAT, false, sizeof(Vertex), (void*)(9 * sizeof(float)));
 			glDrawArrays(GL_TRIANGLES, (int)it.begin, (int)it.count);
+			if (it.texture == -1)
+			{
+				shader->setUniform(GndShader::Uniforms::shadowMapToggle, renderer->viewLightmapShadow ? 0.0f : 1.0f);
+				shader->setUniform(GndShader::Uniforms::lightColorToggle, renderer->viewLightmapColor ? 1.0f : 0.0f);
+				shader->setUniform(GndShader::Uniforms::colorToggle, renderer->viewColors ? 0.0f : 1.0f);
+				shader->setUniform(GndShader::Uniforms::viewTextures, renderer->viewTextures ? 1.0f : 0.0f);
+			}
 		}
 		vbo.unBind();
 	}
@@ -238,6 +254,16 @@ void GndRenderer::Chunk::rebuild()
 
 				verts[tile->textureIndex].push_back(v3); verts[tile->textureIndex].push_back(v2); verts[tile->textureIndex].push_back(v1);
 				verts[tile->textureIndex].push_back(v4); verts[tile->textureIndex].push_back(v2); verts[tile->textureIndex].push_back(v3);
+			}
+			else if (renderer->viewEmptyTiles)
+			{
+				VertexP3T2T2T2N3 v1(glm::vec3(10 * x, -cube->h3, 10 * gnd->height - 10 * y), glm::vec2(0), glm::vec2(0), glm::vec2(x / 1024.0f, (y + 1) / 1024.0f), cube->normals[2]);
+				VertexP3T2T2T2N3 v2(glm::vec3(10 * x + 10, -cube->h4, 10 * gnd->height - 10 * y), glm::vec2(0), glm::vec2(0), glm::vec2((x + 1) / 1024.0f, (y + 1) / 1024.0f), cube->normals[3]);
+				VertexP3T2T2T2N3 v3(glm::vec3(10 * x, -cube->h1, 10 * gnd->height - 10 * y + 10), glm::vec2(0), glm::vec2(0), glm::vec2(x / 1024.0f, (y) / 1024.0f), cube->normals[0]);
+				VertexP3T2T2T2N3 v4(glm::vec3(10 * x + 10, -cube->h2, 10 * gnd->height - 10 * y + 10), glm::vec2(0), glm::vec2(0), glm::vec2((x + 1) / 1024.0f, (y) / 1024.0f), cube->normals[1]);
+
+				verts[-1].push_back(v3); verts[-1].push_back(v2); verts[-1].push_back(v1);
+				verts[-1].push_back(v4); verts[-1].push_back(v2); verts[-1].push_back(v3);
 			}
 			if (cube->tileFront != -1 && x < gnd->width - 1)
 			{

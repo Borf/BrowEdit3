@@ -77,7 +77,9 @@ void BrowEdit::buildObjectTree(Node* node, Map* map)
 		}
 		if (ImGui::IsItemClicked())
 		{
-			map->doAction(new SelectAction(map, node, false, false), this);
+			bool ctrl = ImGui::GetIO().KeyCtrl;
+			bool selected = std::find(map->selectedNodes.begin(), map->selectedNodes.end(), node) != map->selectedNodes.end();
+			map->doAction(new SelectAction(map, node, ctrl, ctrl && selected), this);
 		}
 	}
 }

@@ -127,4 +127,6 @@ public:
 	bool viewLighting = true;
 	bool smoothColors = false;
 	bool viewTextures = true;
+
+	bool viewEmptyTiles = true;
 };

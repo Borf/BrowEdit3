@@ -30,6 +30,8 @@ void BrowEdit::toolbar()
 
 		if (editMode == EditMode::Texture)
 		ImGui::Text("Texture");
+	else if (editMode == EditMode::Height)
+		ImGui::Text("Height");
 	else if (editMode == EditMode::Object)
 		ImGui::Text("Object");
 	else if (editMode == EditMode::Wall)
@@ -40,7 +42,7 @@ void BrowEdit::toolbar()
 	ImGui::SetCursorPosX(125);
 
 	if (toolBarToggleButton("heightmode", 0, editMode == EditMode::Height, "Height edit mode"))
-		editMode = EditMode::Texture;
+		editMode = EditMode::Height;
 	ImGui::SameLine();
 	if (toolBarToggleButton("texturemode", 1, editMode == EditMode::Texture, "Texture edit mode"))
 		editMode = EditMode::Texture;
@@ -157,5 +159,6 @@ void BrowEdit::toolbar()
 		ImGui::Text(txt);
 	}
 	ImGui::PopStyleVar();
+	ImGui::SameLine(150);
 	ImGui::End();
 }

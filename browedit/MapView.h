@@ -40,6 +40,7 @@ public:
 
 	NodeRenderContext nodeRenderContext;
 	Gadget gadget;
+	Gadget gadgetHeight[5];
 	BillboardRenderer::BillboardShader* billboardShader;
 	Gadget::SimpleShader* simpleShader = nullptr;
 	static inline SphereMesh sphereMesh;
@@ -70,9 +71,13 @@ public:
 	} pivotPoint = PivotPoint::Local;
 
 
+	//height edit mode
+	std::vector<glm::ivec2> tileSelection;
+	bool mouseDown = false;
+
+
 
 	math::Ray mouseRay;
-
 	math::Plane mouseDragPlane;
 	glm::vec3 mouseDragStart;
 	glm::vec2 mouseDragStart2D;
@@ -91,6 +96,7 @@ public:
 	void updateObjectMode(BrowEdit* browEdit);
 	void render(BrowEdit* browEdit);
 	void postRenderObjectMode(BrowEdit* browEdit);
+	void postRenderHeightMode(BrowEdit* browEdit);
 
 
 
@@ -100,6 +106,7 @@ public:
 	bool viewLighting = true;
 	bool smoothColors = false;
 	bool viewTextures = true;
+	bool viewEmptyTiles = true;
 
 
 	void focusSelection();

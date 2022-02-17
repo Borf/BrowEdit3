@@ -322,7 +322,7 @@ void BrowEdit::showObjectWindow()
 					if (ImGui::Button("Add to map"))
 						std::cout << "Just click the thing" << std::endl;
 					ImGui::SameLine();
-					if (ImGui::Button("Replace selected models") && activeMapView)
+					if (file.substr(file.size() - 4) == ".rsm" && ImGui::Button("Replace selected models") && activeMapView)
 					{
 						auto ga = new GroupAction();
 						for (auto n : activeMapView->map->selectedNodes)

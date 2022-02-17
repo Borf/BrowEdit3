@@ -176,9 +176,9 @@ void RswLight::buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>& nod
 		else if (falloffStyle == FalloffStyle::SplineTweak)
 			util::EditableGraphMulti<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Light Falloff", [](RswLight* l) {return &l->falloff; }, util::interpolateSpline);
 		else if (falloffStyle == FalloffStyle::LagrangeTweak)
-			;//util::EditableGraph("Light Falloff", &falloff, util::interpolateLagrange);
+			util::EditableGraphMulti<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Light Falloff", [](RswLight* l) {return &l->falloff; }, util::interpolateLagrange);
 		else if (falloffStyle == FalloffStyle::LinearTweak)
-			;//			util::EditableGraph("Light Falloff", &falloff, util::interpolateLinear);
+			util::EditableGraphMulti<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Light Falloff", [](RswLight* l) {return &l->falloff; }, util::interpolateLinear);
 		else if (falloffStyle == FalloffStyle::Exponential)
 		{
 			bool differentFalloff = !std::all_of(rswLights.begin(), rswLights.end(), [&](RswLight* o) { return o->falloffStyle == rswLights.front()->falloffStyle; });

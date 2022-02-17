@@ -8,6 +8,7 @@
 
 namespace math { class Ray; }
 class Component;
+class Map;
 
 class Node
 {
@@ -26,7 +27,7 @@ public:
 
 
 
-	void onRename();
+	void onRename(Map* map);
 	
 	template<class T>
 	T* getComponent()

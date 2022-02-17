@@ -187,6 +187,7 @@ bool Config::showWindow(BrowEdit* browEdit)
 		ImGui::Checkbox("Close object window when adding a model", &closeObjectWindowOnAdd);
 		ImGui::DragFloat("Toolbar Button Size", &toolbarButtonSize, 1, 1, 100);
 		ImGui::ColorEdit4("Toolbar Button Tint", &toolbarButtonTint.x);
+		ImGui::Checkbox("Save a backup of maps when saving", &backup);
 
 
 		if (ImGui::Button("Save"))

@@ -545,7 +545,7 @@ std::vector<glm::vec3> CubeCollider::getCollisions(const math::Ray& ray)
 
 	std::vector<glm::vec3> ret;
 	if (aabb.hasRayCollision(newRay, 0, 100000))
-		ret.push_back(glm::vec3(5 * gnd->width + rswObject->position.x, -rswObject->position.y, -10 - 5 * gnd->height + rswObject->position.z));
+		ret.push_back(glm::vec3(5 * gnd->width + rswObject->position.x, -rswObject->position.y, -(- 10 - 5 * gnd->height + rswObject->position.z)));
 	return ret;
 }
 

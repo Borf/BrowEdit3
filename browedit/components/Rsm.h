@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Component.h"
+#include "ImguiProps.h"
 #include <string>
 #include <map>
 #include <vector>
@@ -10,7 +11,7 @@
 #include <glm/gtc/quaternion.hpp>
 
 
-class Rsm : public Component
+class Rsm : public Component, public ImguiProps
 {
 public:
 	class Mesh
@@ -123,4 +124,5 @@ public:
 		SHADE_BLACK,
 	} shadeType;
 
+	void buildImGui(BrowEdit* browEdit) override;
 };

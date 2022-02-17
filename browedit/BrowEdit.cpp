@@ -6,6 +6,7 @@
 #include <iostream>
 #include <fstream>
 #include <thread>
+#include <filesystem>
 
 #include <imgui.h>
 #include <imgui_internal.h>
@@ -128,8 +129,9 @@ void BrowEdit::run()
 #ifdef _DEBUG
 	if(config.isValid() == "")
 //		loadMap("data\\comodo.rsw");
-		loadMap("data\\guild_vs1.rsw");
+//		loadMap("data\\guild_vs1.rsw");
 //		loadMap("data\\effects_ro.rsw");
+		loadMap("data\\prt_in.rsw");
 #endif
 
 
@@ -353,7 +355,9 @@ void BrowEdit::showMapWindow(MapView& mapView)
 		{
 			mapView.update(this, size);
 			mapView.render(this);
-			if (editMode == EditMode::Object)
+			if (editMode == EditMode::Height)
+				mapView.postRenderHeightMode(this);
+			else if (editMode == EditMode::Object)
 				mapView.postRenderObjectMode(this);
 			mapView.prevMouseState = mapView.mouseState; //meh
 		}
@@ -378,13 +382,43 @@ void BrowEdit::showMapWindow(MapView& mapView)
 
 
 
-
+void fixBackup(const std::string& fileName)
+{
+	std::ifstream is(fileName, std::ios_base::binary | std::ios_base::in);
+	if (is.is_open())
+	{
+		int c = 0;
+		for(int i = 0; i < 999; i++)
+			if (!std::filesystem::exists(fileName + "." + std::to_string(i)))
+			{
+				c = i;
+					break;
+			}
+		std::ofstream os((fileName + "." + std::to_string(c)));
+		char buf[1024];
+		while (!is.eof())
+		{
+			is.read(buf, 1024);
+			auto count = is.gcount();
+			os.write(buf, count);
+		}
+	}
+}
 
 
 void BrowEdit::saveMap(Map* map)
 {
-	map->rootNode->getComponent<Rsw>()->save(config.ropath + map->name);
-	map->rootNode->getComponent<Gnd>()->save(config.ropath + map->name.substr(map->name.size()-4) + ".gnd");
+	std::string rswName = config.ropath + map->name;
+	std::string gndName = config.ropath + map->name.substr(0, map->name.size() - 4) + ".gnd";
+
+	if (config.backup)
+	{
+		fixBackup(rswName);
+		fixBackup(gndName);
+	}
+
+	map->rootNode->getComponent<Rsw>()->save(rswName);
+	map->rootNode->getComponent<Gnd>()->save(gndName);
 }
 
 void BrowEdit::loadMap(const std::string& file)

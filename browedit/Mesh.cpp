@@ -31,6 +31,7 @@ void Mesh::draw()
 	glVertexAttribPointer(2, 3, GL_FLOAT, false, sizeof(VertexP3T2N3), (void*)(5 * sizeof(float)));
 
 	glDrawArrays(GL_TRIANGLES, 0, (int)vbo->size());
+	vbo->unBind();
 }
 
 

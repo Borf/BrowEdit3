@@ -195,7 +195,7 @@ void RsmRenderer::RsmRenderContext::preFrame(const glm::mat4& projectionMatrix, 
 	shader->setUniform(RsmShader::Uniforms::cameraMatrix, viewMatrix);
 	shader->setUniform(RsmShader::Uniforms::lightToggle, viewLighting);
 	shader->setUniform(RsmShader::Uniforms::viewTextures, viewTextures);
-	
+
 
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
