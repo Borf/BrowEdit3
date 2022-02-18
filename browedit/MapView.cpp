@@ -697,13 +697,14 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 
 			if (gadgetHeight[i].axisClicked)
 			{
-				mouseDragPlane.normal = glm::normalize(glm::vec3(nodeRenderContext.viewMatrix * glm::vec4(0, 0, 1, 1)) - glm::vec3(nodeRenderContext.viewMatrix * glm::vec4(0, 0, 0, 1))) * glm::vec3(1, 1, -1);
+				mouseDragPlane.normal = glm::normalize(glm::vec3(nodeRenderContext.viewMatrix * glm::vec4(0, 0, 1, 1)) - glm::vec3(nodeRenderContext.viewMatrix * glm::vec4(0, 0, 0, 1)));
 				mouseDragPlane.normal.y = 0;
 				mouseDragPlane.normal = glm::normalize(mouseDragPlane.normal);
-				mouseDragPlane.D = -glm::dot(glm::vec3(5 * gnd->width + pos[i].x, -pos[i].y, -(-10 - 5 * gnd->height + pos[i].z)), mouseDragPlane.normal);
+				mouseDragPlane.D = -glm::dot(pos[i], mouseDragPlane.normal);
 
 				float f;
 				mouseRay.planeIntersection(mouseDragPlane, f);
+				std::cout << "F: " << f << std::endl;
 				mouseDragStart = mouseRay.origin + f * mouseRay.dir;
 
 				originalValues.clear();
@@ -733,11 +734,14 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 
 				ImGui::Begin("Statusbar");
 				ImGui::SetNextItemWidth(200.0f);
+				ImGui::InputFloat3("Drag Plane Normal", glm::value_ptr(mouseDragPlane.normal));
+				ImGui::SameLine();
+				ImGui::SetNextItemWidth(50.0f);
+				ImGui::InputFloat("Drag Plane D", &mouseDragPlane.D);
+				ImGui::SameLine();
+
+				ImGui::SetNextItemWidth(200.0f);
 				ImGui::InputFloat3("Drag start", glm::value_ptr(mouseDragStart));
-				ImGui::SetNextItemWidth(200.0f);
-				ImGui::InputFloat3("Drag end", glm::value_ptr(mouse3D));
-				ImGui::SetNextItemWidth(200.0f);
-				ImGui::InputFloat3("Drag Offset", glm::value_ptr(mouseOffset));
 				ImGui::SameLine();
 				ImGui::End();
 
