@@ -51,7 +51,7 @@ MapView::MapView(Map* map, const std::string &viewName) : map(map), viewName(vie
 	if (!simpleShader)
 		simpleShader = util::ResourceManager<gl::Shader>::load<Gadget::SimpleShader>();
 
-	for(int i = 0; i < 5; i++)
+	for(int i = 0; i < 9; i++)
 		gadgetHeight[i].mode = Gadget::Mode::TranslateY;
 }
 
@@ -574,6 +574,27 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 }
 
 
+float TriangleHeight(const glm::vec3& a, const glm::vec3& b, const glm::vec3& c, const glm::vec3& p)
+{
+	glm::vec3 v0 = b - a;
+	glm::vec3 v1 = c - a;
+	glm::vec3 v2 = p - a;
+	const float denom = v0.x * v1.z - v1.x * v0.z;
+	float v = (v2.x * v1.z - v1.x * v2.z) / denom;
+	float w = (v0.x * v2.z - v2.x * v0.z) / denom;
+	float u = 1.0f - v - w;
+	return a.y * u + b.y * v + c.y * w;
+}
+
+bool TriangleContainsPoint(const glm::vec3& a, const glm::vec3& b, const glm::vec3& c, const glm::vec3& p)
+{
+	bool b1 = ((p.x - b.x) * (a.z - b.z) - (p.z - b.z) * (a.x - b.x)) <= 0.0f;
+	bool b2 = ((p.x - c.x) * (b.z - c.z) - (p.z - c.z) * (b.x - c.x)) <= 0.0f;
+	bool b3 = ((p.x - a.x) * (c.z - a.z) - (p.z - a.z) * (c.x - a.x)) <= 0.0f;
+	return ((b1 == b2) && (b2 == b3));
+}
+
+
 void MapView::postRenderHeightMode(BrowEdit* browEdit)
 {
 	glUseProgram(0);
@@ -595,8 +616,18 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 	glDepthMask(0);
 	auto gnd = map->rootNode->getComponent<Gnd>();
 	auto gndRenderer = map->rootNode->getComponent<GndRenderer>();
-
 	bool canSelect = true;
+
+
+	auto mouse3D = gnd->rayCast(mouseRay, viewEmptyTiles);
+	glm::ivec2 tileHovered((int)glm::floor(mouse3D.x / 10), (gnd->height - (int)glm::floor(mouse3D.z) / 10));
+
+	ImGui::Begin("Statusbar");
+	ImGui::SetNextItemWidth(100.0f);
+	ImGui::InputInt2("Cursor:", glm::value_ptr(tileHovered));
+	ImGui::SameLine();
+	ImGui::End();
+
 
 	//draw selection
 	if (tileSelection.size() > 0)
@@ -642,85 +673,111 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 			maxValues = glm::max(maxValues, s);
 			minValues = glm::min(minValues, s);
 		}
-		maxValues.x++;
-		minValues.y--;
 		static std::map<Gnd::Cube*, float[4]> originalValues;
-		glm::mat4 mat;
+		static glm::vec3 originalCorners[4];
+
+		glm::vec3 pos[9];// gnd->getPos();
+		pos[0] = gnd->getPos(minValues.x, minValues.y, 0);
+		pos[1] = gnd->getPos(maxValues.x, minValues.y, 1);
+		pos[2] = gnd->getPos(minValues.x, maxValues.y, 2);
+		pos[3] = gnd->getPos(maxValues.x, maxValues.y, 3);
+		pos[4] = (pos[0] + pos[1] + pos[2] + pos[3])/4.0f;
+		pos[5] = (pos[0] + pos[1]) / 2.0f;
+		pos[6] = (pos[2] + pos[3]) / 2.0f;
+		pos[7] = (pos[0] + pos[2]) / 2.0f;
+		pos[8] = (pos[1] + pos[3]) / 2.0f;
 
 
-
-		mat = glm::translate(glm::mat4(1.0f), glm::vec3(10 * minValues.x, 0, 10 * gnd->height - 10 * minValues.y));
-		gadgetHeight[0].draw(mouseRay, mat);
-
-		mat = glm::translate(glm::mat4(1.0f), glm::vec3(10 * minValues.x, 0, 10 * gnd->height - 10 * maxValues.y));
-		gadgetHeight[1].draw(mouseRay, mat);
-
-		mat = glm::translate(glm::mat4(1.0f), glm::vec3(10 * maxValues.x, 0, 10 * gnd->height - 10 * maxValues.y));
-		gadgetHeight[2].draw(mouseRay, mat);
-
-		mat = glm::translate(glm::mat4(1.0f), glm::vec3(10 * maxValues.x, 0, 10 * gnd->height - 10 * minValues.y));
-		gadgetHeight[3].draw(mouseRay, mat);
-
-
-		auto pos = glm::vec3(10 * (minValues.x + maxValues.x) / 2.0f, 0, 10 * gnd->height - 10 * (minValues.y + maxValues.y) / 2.0f);
-		mat = glm::translate(glm::mat4(1.0f), pos);
-		gadgetHeight[4].draw(mouseRay, mat);
-		if (gadgetHeight[4].axisClicked)
+		for (int i = 0; i < 9; i++)
 		{
-			mouseDragPlane.normal = glm::normalize(glm::vec3(nodeRenderContext.viewMatrix * glm::vec4(0, 0, 1, 1)) - glm::vec3(nodeRenderContext.viewMatrix * glm::vec4(0, 0, 0, 1))) * glm::vec3(1, 1, -1);
-			mouseDragPlane.normal.y = 0;
-			mouseDragPlane.normal = glm::normalize(mouseDragPlane.normal);
-			mouseDragPlane.D = -glm::dot(glm::vec3(5 * gnd->width + pos.x, -pos.y, -(-10 - 5 * gnd->height + pos.z)), mouseDragPlane.normal);
+			glm::mat4 mat = glm::translate(glm::mat4(1.0f), pos[i]);
+			if (maxValues.x - minValues.x <= 1 || maxValues.y - minValues.y <= 1)
+				mat = glm::scale(mat, glm::vec3(0.5f, 0.5f, 0.5f));
+			gadgetHeight[i].draw(mouseRay, mat);
 
-			float f;
-			mouseRay.planeIntersection(mouseDragPlane, f);
-			mouseDragStart = mouseRay.origin + f * mouseRay.dir;
-			mouseDragStart2D = mouseState.position;
-
-			originalValues.clear();
-			for (auto& t : tileSelection)
-				for (int i = 0; i < 4; i++)
-					originalValues[gnd->cubes[t.x][t.y]][i] = gnd->cubes[t.x][t.y]->heights[i];
-			canSelect = false;
-		}
-		else if (gadgetHeight[4].axisReleased)
-		{
-			canSelect = false;
-		}
-		else if (gadgetHeight[4].axisDragged)
-		{
-			float f;
-			mouseRay.planeIntersection(mouseDragPlane, f);
-			glm::vec3 mouseOffset = (mouseRay.origin + f * mouseRay.dir) - mouseDragStart;
-			bool snap = snapToGrid;
-			if (ImGui::GetIO().KeyShift)
-				snap = !snap;
-			if (snap && gridLocal)
-				mouseOffset = glm::round(mouseOffset / (float)gridSize) * (float)gridSize;
-
-			ImGui::Begin("Statusbar");
-			ImGui::SetNextItemWidth(200.0f);
-			ImGui::InputFloat3("Drag Offset", glm::value_ptr(mouseOffset));
-			ImGui::SameLine();
-			ImGui::End();
-
-			float mouseOffset2D = glm::length(mouseDragStart2D - mouseState.position);
-			if (snap && gridLocal)
-				mouseOffset2D = glm::round(mouseOffset2D / (float)gridSize) * (float)gridSize;
-			float pos = glm::sign(mouseState.position.x - mouseDragStart2D.x);
-			if (pos == 0)
-				pos = 1;
-			canSelect = false;
-
-			for (auto& t : tileSelection)
+			if (gadgetHeight[i].axisClicked)
 			{
-				if(gndRenderer)
-					gndRenderer->setChunkDirty(t.x, t.y);
-				for (int i = 0; i < 4; i++)
-					gnd->cubes[t.x][t.y]->heights[i] = originalValues[gnd->cubes[t.x][t.y]][i] - mouseOffset.y;
+				mouseDragPlane.normal = glm::normalize(glm::vec3(nodeRenderContext.viewMatrix * glm::vec4(0, 0, 1, 1)) - glm::vec3(nodeRenderContext.viewMatrix * glm::vec4(0, 0, 0, 1))) * glm::vec3(1, 1, -1);
+				mouseDragPlane.normal.y = 0;
+				mouseDragPlane.normal = glm::normalize(mouseDragPlane.normal);
+				mouseDragPlane.D = -glm::dot(glm::vec3(5 * gnd->width + pos[i].x, -pos[i].y, -(-10 - 5 * gnd->height + pos[i].z)), mouseDragPlane.normal);
+
+				float f;
+				mouseRay.planeIntersection(mouseDragPlane, f);
+				mouseDragStart = mouseRay.origin + f * mouseRay.dir;
+
+				originalValues.clear();
+				for (auto& t : tileSelection)
+					for (int ii = 0; ii < 4; ii++)
+						originalValues[gnd->cubes[t.x][t.y]][ii] = gnd->cubes[t.x][t.y]->heights[ii];
+				
+				for (int ii = 0; ii < 4; ii++)
+					originalCorners[ii] = pos[ii];
+
+				canSelect = false;
+			}
+			else if (gadgetHeight[i].axisReleased)
+			{
+				canSelect = false;
+			}
+			else if (gadgetHeight[i].axisDragged)
+			{
+				float f;
+				mouseRay.planeIntersection(mouseDragPlane, f);
+				glm::vec3 mouseOffset = (mouseRay.origin + f * mouseRay.dir) - mouseDragStart;
+				bool snap = snapToGrid;
+				if (ImGui::GetIO().KeyShift)
+					snap = !snap;
+				if (snap && gridLocal)
+					mouseOffset = glm::round(mouseOffset / (float)gridSize) * (float)gridSize;
+
+				ImGui::Begin("Statusbar");
+				ImGui::SetNextItemWidth(200.0f);
+				ImGui::InputFloat3("Drag start", glm::value_ptr(mouseDragStart));
+				ImGui::SetNextItemWidth(200.0f);
+				ImGui::InputFloat3("Drag end", glm::value_ptr(mouse3D));
+				ImGui::SetNextItemWidth(200.0f);
+				ImGui::InputFloat3("Drag Offset", glm::value_ptr(mouseOffset));
+				ImGui::SameLine();
+				ImGui::End();
+
+				canSelect = false;
+
+				static int masks[] = {
+					0b0001,
+					0b0010,
+					0b0100,
+					0b1000,
+					0b1111,
+					0b0011,
+					0b1100,
+					0b0101,
+					0b1010
+				};
+				int mask = masks[i];
+
+				for (int ii = 0; ii < 4; ii++)
+					pos[ii] = originalCorners[ii] - ((((mask>>ii)&1) != 0) ? glm::vec3(0,mouseOffset.y,0) : glm::vec3(0.0f));
+
+
+				for (auto& t : tileSelection)
+				{
+					if (gndRenderer)
+						gndRenderer->setChunkDirty(t.x, t.y);
+					for (int ii = 0; ii < 4; ii++)
+					{
+						glm::vec3 p = gnd->getPos(t.x, t.y, ii);
+						if (TriangleContainsPoint(pos[0], pos[1], pos[2], p))
+							gnd->cubes[t.x][t.y]->heights[ii] = originalValues[gnd->cubes[t.x][t.y]][ii] + (TriangleHeight(pos[0], pos[1], pos[2], p) - TriangleHeight(originalCorners[0], originalCorners[1], originalCorners[2], p));
+						if (TriangleContainsPoint(pos[1], pos[3], pos[2], p))
+							gnd->cubes[t.x][t.y]->heights[ii] = originalValues[gnd->cubes[t.x][t.y]][ii] + (TriangleHeight(pos[1], pos[3], pos[2], p) - TriangleHeight(originalCorners[1], originalCorners[3], originalCorners[2], p));
+					}
+					gnd->cubes[t.x][t.y]->calcNormal();
+				}
+				for (auto& t : tileSelection)
+					gnd->cubes[t.x][t.y]->calcNormals(gnd, t.x, t.y);
 			}
 		}
-
 
 		simpleShader->setUniform(Gadget::SimpleShader::Uniforms::modelMatrix, glm::mat4(1.0f));
 		glDepthMask(0);
@@ -734,13 +791,13 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 		if (ImGui::IsMouseDown(0))
 		{
 			if (!mouseDown)
-				mouseDragStart = gnd->rayCast(mouseRay, viewEmptyTiles);
+				mouseDragStart = mouse3D;
 			mouseDown = true;
 		}
 
 		if (ImGui::IsMouseReleased(0))
 		{
-			auto mouseDragEnd = gnd->rayCast(mouseRay, viewEmptyTiles);
+			auto mouseDragEnd = mouse3D;
 			mouseDown = false;
 			tileSelection.clear();
 
@@ -759,7 +816,7 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 	}
 	if (mouseDown)
 	{
-		auto mouseDragEnd = gnd->rayCast(mouseRay, viewEmptyTiles);
+		auto mouseDragEnd = mouse3D;
 		std::vector<VertexP3T2N3> verts;
 		float dist = 0.002f * cameraDistance;
 

@@ -202,9 +202,9 @@ void GndRenderer::Chunk::render()
 				renderer->textures[it.texture]->bind();
 			else
 			{
-				shader->setUniform(GndShader::Uniforms::shadowMapToggle, 0.0f);
+				shader->setUniform(GndShader::Uniforms::shadowMapToggle, 1.0f);
 				shader->setUniform(GndShader::Uniforms::lightColorToggle, 0.0f);
-				shader->setUniform(GndShader::Uniforms::colorToggle, 0.0f);
+				shader->setUniform(GndShader::Uniforms::colorToggle, 1.0f);
 				shader->setUniform(GndShader::Uniforms::viewTextures, 0.0f);
 			}
 			//VertexP3T2T2T2N3

@@ -27,6 +27,8 @@ public:
 	void cleanLightmaps();
 	void cleanTiles();
 
+	glm::vec3 getPos(int cubeX, int cubeY, int index);
+
 	std::vector<glm::vec3> getMapQuads();
 
 	class Texture

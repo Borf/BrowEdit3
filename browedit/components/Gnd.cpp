@@ -931,3 +931,19 @@ bool Gnd::Tile::operator==(const Gnd::Tile& o) const
 		lightmapIndex == o.lightmapIndex &&
 		color == o.color;
 }
+
+
+glm::vec3 Gnd::getPos(int x, int y, int index)
+{
+	auto cube = cubes[x][y];
+	if (index == 0)
+		return glm::vec3((x + 0) * 10, -cube->heights[0], 10 * height - (y + 0) * 10 + 10);//2
+	if (index == 1)
+		return glm::vec3((x + 1) * 10, -cube->heights[1], 10 * height - (y + 0) * 10 + 10);//3
+	if(index == 2)
+		return glm::vec3((x + 0) * 10, -cube->heights[2], 10 * height - (y + 1) * 10 + 10);//1
+	if(index == 3)
+		return glm::vec3((x + 1) * 10, -cube->heights[3], 10 * height - (y + 1) * 10 + 10);//4
+
+	return glm::vec3(0, 0,0);
+}

@@ -91,6 +91,7 @@ public:
 	bool axisDragged = false;
 	int selectedAxis = 0;
 	bool isMouseJustPressed = true;
+	bool axisHovered;
 
 	int selectedAxisIndex();
 

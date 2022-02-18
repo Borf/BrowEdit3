@@ -40,7 +40,7 @@ public:
 
 	NodeRenderContext nodeRenderContext;
 	Gadget gadget;
-	Gadget gadgetHeight[5];
+	Gadget gadgetHeight[9];
 	BillboardRenderer::BillboardShader* billboardShader;
 	Gadget::SimpleShader* simpleShader = nullptr;
 	static inline SphereMesh sphereMesh;

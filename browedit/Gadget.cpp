@@ -25,7 +25,6 @@ void Gadget::draw(const math::Ray& mouseRay, const glm::mat4& modelMatrix)
 {
 	axisClicked = false;
 	axisReleased = false;
-	static bool axisHovered;
 	axisHovered = false;
 
 	shader->use();
