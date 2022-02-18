@@ -3,6 +3,7 @@
 #include "Rsw.h"
 #include <browedit/util/ResourceManager.h>
 #include <browedit/Node.h>
+#include <browedit/shaders/GndShader.h>
 #include <browedit/gl/Texture.h>
 #include <map>
 #include <iostream>

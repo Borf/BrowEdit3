@@ -41,6 +41,8 @@
     <ClCompile Include="browedit\Lightmapper.cpp" />
     <ClCompile Include="browedit\Map.cpp" />
     <ClCompile Include="browedit\MapView.cpp" />
+    <ClCompile Include="browedit\MapView.Heightmode.cpp" />
+    <ClCompile Include="browedit\MapView.Objectmode.cpp" />
     <ClCompile Include="browedit\math\AABB.cpp" />
     <ClCompile Include="browedit\math\Plane.cpp" />
     <ClCompile Include="browedit\math\Ray.cpp" />
@@ -127,6 +129,9 @@
     <ClInclude Include="browedit\Mesh.h" />
     <ClInclude Include="browedit\Node.h" />
     <ClInclude Include="browedit\NodeRenderer.h" />
+    <ClInclude Include="browedit\shaders\GndShader.h" />
+    <ClInclude Include="browedit\shaders\RsmShader.h" />
+    <ClInclude Include="browedit\shaders\SimpleShader.h" />
     <ClInclude Include="browedit\util\FileIO.h" />
     <ClInclude Include="browedit\util\ResourceManager.h" />
     <ClInclude Include="browedit\util\Tree.h" />

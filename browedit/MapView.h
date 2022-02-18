@@ -42,7 +42,7 @@ public:
 	Gadget gadget;
 	Gadget gadgetHeight[9];
 	BillboardRenderer::BillboardShader* billboardShader;
-	Gadget::SimpleShader* simpleShader = nullptr;
+	SimpleShader* simpleShader = nullptr;
 	static inline SphereMesh sphereMesh;
 	gl::Texture* whiteTexture;
 
@@ -93,7 +93,6 @@ public:
 	void toolbar(BrowEdit* browEdit);
 
 	void update(BrowEdit* browEdit, const ImVec2& size);
-	void updateObjectMode(BrowEdit* browEdit);
 	void render(BrowEdit* browEdit);
 	void postRenderObjectMode(BrowEdit* browEdit);
 	void postRenderHeightMode(BrowEdit* browEdit);

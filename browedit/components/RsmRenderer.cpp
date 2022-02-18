@@ -5,6 +5,7 @@
 #include <browedit/Node.h>
 #include <browedit/util/ResourceManager.h>
 #include <browedit/gl/Texture.h>
+#include <browedit/shaders/RsmShader.h>
 #include <glm/glm.hpp>
 
 RsmRenderer::RsmRenderer()

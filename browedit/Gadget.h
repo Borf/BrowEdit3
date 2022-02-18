@@ -5,39 +5,12 @@
 #include <browedit/gl/Vertex.h>
 #include <browedit/gl/VBO.h>
 #include "Mesh.h"
-
 #include <vector>
+
+class SimpleShader;
 
 class Gadget
 {
-public:
-	class SimpleShader : public gl::Shader
-	{
-	public:
-		SimpleShader() : gl::Shader("data/shaders/simple", Uniforms::End) { bindUniforms(); }
-		struct Uniforms
-		{
-			enum
-			{
-				projectionMatrix,
-				viewMatrix,
-				modelMatrix,
-				s_texture,
-				textureFac,
-				color,
-				End
-			};
-		};
-		void bindUniforms() override
-		{
-			bindUniform(Uniforms::projectionMatrix, "projectionMatrix");
-			bindUniform(Uniforms::viewMatrix, "viewMatrix");
-			bindUniform(Uniforms::modelMatrix, "modelMatrix");
-			bindUniform(Uniforms::s_texture, "s_texture");
-			bindUniform(Uniforms::textureFac, "textureFac");
-			bindUniform(Uniforms::color, "color");
-		}
-	};
 private:
 	class ArrowMesh : public Mesh
 	{

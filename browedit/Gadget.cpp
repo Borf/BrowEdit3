@@ -1,5 +1,6 @@
 #include "Gadget.h"
 #include <browedit/math/AABB.h>
+#include <browedit/shaders/SimpleShader.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include <imgui.h>
 
