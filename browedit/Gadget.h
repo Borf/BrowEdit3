@@ -59,6 +59,7 @@ public:
 	};
 	static void setMode(Mode mode);
 	
+	bool disabled = false;
 	bool axisClicked = false;
 	bool axisReleased = false;
 	bool axisDragged = false;

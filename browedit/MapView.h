@@ -38,6 +38,8 @@ public:
 	int id;
 	std::string viewName;
 
+	gl::VBO<VertexP3T2>* gridVbo = nullptr;
+
 	NodeRenderContext nodeRenderContext;
 	Gadget gadget;
 	Gadget gadgetHeight[9];
@@ -98,6 +100,7 @@ public:
 	void postRenderHeightMode(BrowEdit* browEdit);
 
 
+	void rebuildObjectModeGrid();
 
 	bool viewLightmapShadow = true;
 	bool viewLightmapColor = true;

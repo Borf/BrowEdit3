@@ -114,13 +114,18 @@ void RswSound::buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>& nod
 void RswSound::play()
 {
 	auto is = util::FileIO::open("data\\wav\\" + fileName);
-	is->seekg(0, std::ios_base::end);
-	std::size_t len = is->tellg();
-	char* buffer = new char[len];
-	is->seekg(0, std::ios_base::beg);
-	is->read(buffer, len);
-	delete is;
+	if (is != nullptr)
+	{
+		is->seekg(0, std::ios_base::end);
+		std::size_t len = is->tellg();
+		char* buffer = new char[len];
+		is->seekg(0, std::ios_base::beg);
+		is->read(buffer, len);
+		delete is;
 
-	PlaySound(buffer, NULL, SND_MEMORY);
-	delete[] buffer;
+		PlaySound(buffer, NULL, SND_MEMORY);
+		delete[] buffer;
+	}
+	else
+		std::cerr << "Error opening data\\wav\\" << fileName << std::endl;
 }

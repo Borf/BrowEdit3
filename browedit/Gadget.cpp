@@ -45,7 +45,7 @@ void Gadget::draw(const math::Ray& mouseRay, const glm::mat4& modelMatrix)
 		if (mode == Mode::Scale && index != 0 && (index & (index - 1)) != 0)		mesh = &scaleCubeMesh;
 
 		shader->setUniform(SimpleShader::Uniforms::modelMatrix, matrix);
-		if ((mesh->collision(mouseRay, matrix) || selectedAxis == index) && !axisHovered)
+		if ((mesh->collision(mouseRay, matrix) || selectedAxis == index) && !axisHovered && !disabled)
 		{
 			if(selectedAxis == 0)
 				shader->setUniform(SimpleShader::Uniforms::color, glm::vec4(1, 1, 0.25f, 1));
@@ -58,7 +58,8 @@ void Gadget::draw(const math::Ray& mouseRay, const glm::mat4& modelMatrix)
 				selectedAxis = index;
 			}
 			axisHovered = true;
-		}
+		} else if(disabled)
+			shader->setUniform(SimpleShader::Uniforms::color, glm::vec4(0.5f, 0.5f, 0.5f, 0.5f));
 		else
 			shader->setUniform(SimpleShader::Uniforms::color, color);
 		mesh->draw();

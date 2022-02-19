@@ -6,10 +6,12 @@
 #include <browedit/Map.h>
 #include <browedit/Node.h>
 #include <browedit/gl/FBO.h>
+#include <browedit/gl/VBO.h>
 #include <browedit/actions/GroupAction.h>
 #include <browedit/actions/SelectAction.h>
 #include <browedit/actions/NewObjectAction.h>
 #include <browedit/actions/ObjectChangeAction.h>
+#include <browedit/shaders/SimpleShader.h>
 
 #include <glm/gtc/type_ptr.hpp>
 #include <mutex>
@@ -20,6 +22,13 @@ extern std::mutex debugPointMutex;
 
 void MapView::postRenderObjectMode(BrowEdit* browEdit)
 {
+	simpleShader->use();
+	simpleShader->setUniform(SimpleShader::Uniforms::projectionMatrix, nodeRenderContext.projectionMatrix);
+	simpleShader->setUniform(SimpleShader::Uniforms::viewMatrix, nodeRenderContext.viewMatrix);
+	simpleShader->setUniform(SimpleShader::Uniforms::modelMatrix, glm::mat4(1.0f));
+	simpleShader->setUniform(SimpleShader::Uniforms::textureFac, 0.0f);
+
+
 	glUseProgram(0);
 	glMatrixMode(GL_PROJECTION);
 	glLoadMatrixf(glm::value_ptr(nodeRenderContext.projectionMatrix));
@@ -29,6 +38,7 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 	fbo->bind();
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glDisable(GL_TEXTURE_2D);
+
 
 	glPushMatrix();
 	glScalef(1, -1, -1);
@@ -50,6 +60,41 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 	}
 	glPointSize(1.0f);
 	debugPointMutex.unlock();
+
+	bool snap = snapToGrid;
+	if (ImGui::GetIO().KeyShift)
+		snap = !snap;
+	if (map->selectedNodes.size() > 0 && snap)
+	{
+		simpleShader->use();
+		simpleShader->setUniform(SimpleShader::Uniforms::color, glm::vec4(0, 0, 0, 1));
+
+		glm::vec3 avgPos = map->getSelectionCenter();
+		avgPos.y -= 0.1f;
+		if (!gridLocal)
+		{
+			avgPos.x = glm::floor(avgPos.x / gridSize) * gridSize;
+			avgPos.z = glm::floor(avgPos.z / gridSize) * gridSize;
+		}
+
+		glm::mat4 mat = glm::scale(glm::mat4(1.0f), glm::vec3(1, 1, -1));
+		mat = glm::translate(mat, glm::vec3(5 * gnd->width + avgPos.x, -avgPos.y, (-10 - 5 * gnd->height + avgPos.z)));
+
+//		glDisable(GL_DEPTH_TEST);
+		simpleShader->setUniform(SimpleShader::Uniforms::modelMatrix, mat);
+		glLineWidth(2);
+		gridVbo->bind();
+		glEnableVertexAttribArray(0);
+		glEnableVertexAttribArray(1);
+		glDisableVertexAttribArray(2);
+		glDisableVertexAttribArray(3);
+		glDisableVertexAttribArray(4); //TODO: vao
+		glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexP3T2), (void*)(0 * sizeof(float)));
+		glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexP3T2), (void*)(3 * sizeof(float)));
+		glDrawArrays(GL_LINES, 0, (int)gridVbo->size());
+//		glEnable(GL_DEPTH_TEST);
+		gridVbo->unBind();
+	}
 
 
 	if (showAllLights)
@@ -308,4 +353,24 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 		}
 	}
 	fbo->unbind();
+}
+
+
+ 
+
+void MapView::rebuildObjectModeGrid()
+{
+	std::vector<VertexP3T2> verts;
+	if (gridSize > 0)
+	{
+		for (float i = -10 * gridSize; i <= 10 * gridSize; i += gridSize)
+		{
+			verts.push_back(VertexP3T2(glm::vec3(-10 * gridSize, 0, i), glm::vec2(0)));
+			verts.push_back(VertexP3T2(glm::vec3(10 * gridSize, 0, i), glm::vec2(0)));
+
+			verts.push_back(VertexP3T2(glm::vec3(i, 0, -10 * gridSize), glm::vec2(0)));
+			verts.push_back(VertexP3T2(glm::vec3(i, 0, 10 * gridSize), glm::vec2(0)));
+		}
+	}
+	gridVbo->setData(verts, GL_STATIC_DRAW);
 }

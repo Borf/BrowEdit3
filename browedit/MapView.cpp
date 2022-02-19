@@ -50,6 +50,10 @@ MapView::MapView(Map* map, const std::string &viewName) : map(map), viewName(vie
 
 	for(int i = 0; i < 9; i++)
 		gadgetHeight[i].mode = Gadget::Mode::TranslateY;
+
+	gridVbo = new gl::VBO<VertexP3T2>();
+	rebuildObjectModeGrid();
+
 }
 
 void MapView::toolbar(BrowEdit* browEdit)
@@ -95,7 +99,8 @@ void MapView::toolbar(BrowEdit* browEdit)
 	{
 		ImGui::SameLine();
 		ImGui::SetNextItemWidth(50);
-		ImGui::DragFloat("##gridSize", &gridSize, 1.0f, 0.1f, 100.0f, "%.2f", ImGuiSliderFlags_Logarithmic);
+		if (ImGui::DragFloat("##gridSize", &gridSize, 1.0f, 0.1f, 100.0f, "%.2f", ImGuiSliderFlags_Logarithmic))
+			rebuildObjectModeGrid();
 		if (ImGui::IsItemHovered())
 			ImGui::SetTooltip("Grid size. Doubleclick or ctrl+click to type a number");
 		ImGui::SameLine();
@@ -376,8 +381,6 @@ std::vector<glm::vec3> MapView::SphereMesh::buildVertices()
 			verts.push_back(ico.first[triangle.vertex[i]]);
 	return verts;
 }
-
-
 
 void MapView::drawLight(Node* n)
 {

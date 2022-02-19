@@ -97,7 +97,7 @@ void Map::undo(BrowEdit* browEdit)
 glm::vec3 Map::getSelectionCenter()
 {
 	int count = 0;
-	glm::vec3 center;
+	glm::vec3 center(0.0f);
 	for (auto n : selectedNodes)
 		if (n->getComponent<RswObject>())
 		{
