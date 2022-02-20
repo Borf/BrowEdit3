@@ -299,6 +299,7 @@ void Gnd::save(const std::string& fileName)
 
 glm::vec3 Gnd::rayCast(const math::Ray& ray, bool emptyTiles)
 {
+	std::vector<glm::vec3> collisions;
 	float f = 0;
 	for (auto x = 0; x < cubes.size(); x++)
 	{
@@ -316,12 +317,12 @@ glm::vec3 Gnd::rayCast(const math::Ray& ray, bool emptyTiles)
 				{
 					std::vector<glm::vec3> v{ v3, v2, v1 };
 					if (ray.LineIntersectPolygon(v, f))
-						return ray.origin + f * ray.dir;
+						collisions.push_back(ray.origin + f * ray.dir);
 				}
 				{
 					std::vector<glm::vec3> v{ v4, v2, v3 };
 					if (ray.LineIntersectPolygon(v, f))
-						return ray.origin + f * ray.dir;
+						collisions.push_back(ray.origin + f * ray.dir);
 				}
 			}
 			if (cube->tileFront != -1 && x < width - 1)
@@ -334,12 +335,12 @@ glm::vec3 Gnd::rayCast(const math::Ray& ray, bool emptyTiles)
 				{
 					std::vector<glm::vec3> v{ v3, v2, v1 };
 					if (ray.LineIntersectPolygon(v, f))
-						return ray.origin + f * ray.dir;
+						collisions.push_back(ray.origin + f * ray.dir);
 				}
 				{
 					std::vector<glm::vec3> v{ v4, v2, v3 };
 					if (ray.LineIntersectPolygon(v, f))
-						return ray.origin + f * ray.dir;
+						collisions.push_back(ray.origin + f * ray.dir);
 				}
 			}
 			if (cube->tileSide != -1 && y < height - 1)
@@ -352,17 +353,23 @@ glm::vec3 Gnd::rayCast(const math::Ray& ray, bool emptyTiles)
 				{
 					std::vector<glm::vec3> v{ v3, v2, v1 };
 					if (ray.LineIntersectPolygon(v, f))
-						return ray.origin + f * ray.dir;
+						collisions.push_back(ray.origin + f * ray.dir);
 				}
 				{
 					std::vector<glm::vec3> v{ v4, v2, v3 };
 					if (ray.LineIntersectPolygon(v, f))
-						return ray.origin + f * ray.dir;
+						collisions.push_back(ray.origin + f * ray.dir);
 				}
 			}
 		}
 	}
-	return glm::vec3(0, 0, 0);
+	if(collisions.size() == 0)
+		return glm::vec3(0, 0, 0);
+
+	std::sort(collisions.begin(), collisions.end(), [&ray](const glm::vec3& a, const glm::vec3& b) {
+		return glm::distance(a, ray.origin) < glm::distance(b, ray.origin);
+		});
+	return collisions[0];
 }
 
 
