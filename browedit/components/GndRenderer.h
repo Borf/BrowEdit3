@@ -72,6 +72,7 @@ public:
 
 
 	void setChunkDirty(int x, int y);
+	void setChunksDirty();
 	bool gndShadowDirty = true;
 	bool gndTileColorDirty = true;
 

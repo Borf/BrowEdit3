@@ -411,22 +411,23 @@ void buildTree(Rsm::Mesh* mesh)
 
 void Rsm::buildImGui(BrowEdit* browEdit)
 {
-	ImGui::Text("RSM");
-	char versionStr[10];
-	sprintf_s(versionStr, 10, "%04x", version);
-	if (ImGui::BeginCombo("Version", versionStr))
+	if (ImGui::CollapsingHeader("RSM model information"))
 	{
-		if (ImGui::Selectable("0103", version == 0x0103))
-			version = 0x0103;
-		if (ImGui::Selectable("0104", version == 0x0104))
-			version = 0x0104;
-		if (ImGui::Selectable("0108", version == 0x0108))
-			version = 0x0108;
-		if (ImGui::Selectable("0109", version == 0x0109))
-			version = 0x0109;
+		char versionStr[10];
+		sprintf_s(versionStr, 10, "%04x", version);
+		if (ImGui::BeginCombo("Version", versionStr))
+		{
+			if (ImGui::Selectable("0103", version == 0x0103))
+				version = 0x0103;
+			if (ImGui::Selectable("0104", version == 0x0104))
+				version = 0x0104;
+			if (ImGui::Selectable("0108", version == 0x0108))
+				version = 0x0108;
+			if (ImGui::Selectable("0109", version == 0x0109))
+				version = 0x0109;
+		}
+
+		buildTree(rootMesh);
 	}
-
-	buildTree(rootMesh);
-
 
 }

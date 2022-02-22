@@ -132,15 +132,15 @@ Gnd::Gnd(const std::string& fileName)
 				if (version >= 0x0106)
 				{
 					file->read(reinterpret_cast<char*>(&cube->tileUp), sizeof(int));
-					file->read(reinterpret_cast<char*>(&cube->tileSide), sizeof(int));
 					file->read(reinterpret_cast<char*>(&cube->tileFront), sizeof(int));
+					file->read(reinterpret_cast<char*>(&cube->tileSide), sizeof(int));
 				}
 				else
 				{
 					unsigned short up, side, front;
 					file->read(reinterpret_cast<char*>(&up), sizeof(unsigned short));
-					file->read(reinterpret_cast<char*>(&side), sizeof(unsigned short));
 					file->read(reinterpret_cast<char*>(&front), sizeof(unsigned short));
+					file->read(reinterpret_cast<char*>(&side), sizeof(unsigned short));
 
 					cube->tileUp = up;
 					cube->tileSide = side;

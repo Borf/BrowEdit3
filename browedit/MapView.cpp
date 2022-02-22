@@ -198,7 +198,7 @@ void MapView::render(BrowEdit* browEdit)
 		for (auto newNode : browEdit->newNodes)
 		{
 			auto rswObject = newNode.first->getComponent<RswObject>();
-			rswObject->position = glm::vec3(rayCast.x - 5 * gnd->width, rayCast.y, -(rayCast.z + (-10 - 5 * gnd->height))) + newNode.second;
+			rswObject->position = glm::vec3(rayCast.x - 5 * gnd->width, -rayCast.y, -(rayCast.z + (-10 - 5 * gnd->height))) + newNode.second;
 
 			bool snap = snapToGrid;
 			if (ImGui::GetIO().KeyShift)
@@ -210,11 +210,11 @@ void MapView::render(BrowEdit* browEdit)
 				glm::mat4 matrix = glm::mat4(1.0f);
 				matrix = glm::translate(matrix, rayCast + newNode.second * glm::vec3(1,1,-1));
 				matrix = glm::scale(matrix, glm::vec3(1, -1, 1));
+				matrix = glm::scale(matrix, rswObject->scale);
+				matrix = glm::scale(matrix, glm::vec3(1, 1, -1));
 				matrix = glm::rotate(matrix, -glm::radians(rswObject->rotation.z), glm::vec3(0, 0, 1));
 				matrix = glm::rotate(matrix, -glm::radians(rswObject->rotation.x), glm::vec3(1, 0, 0));
 				matrix = glm::rotate(matrix, glm::radians(rswObject->rotation.y), glm::vec3(0, 1, 0));
-				matrix = glm::scale(matrix, rswObject->scale);
-				matrix = glm::scale(matrix, glm::vec3(1, 1, -1));
 				newNode.first->getComponent<RsmRenderer>()->matrixCache = matrix;
 			}
 			if (newNode.first->getComponent<BillboardRenderer>())

@@ -33,7 +33,72 @@ bool TriangleContainsPoint(const glm::vec3& a, const glm::vec3& b, const glm::ve
 
 void MapView::postRenderHeightMode(BrowEdit* browEdit)
 {
+	auto gnd = map->rootNode->getComponent<Gnd>();
+	auto gndRenderer = map->rootNode->getComponent<GndRenderer>();
+
+
+	static bool showCenterArrow = true;
+	static bool showCornerArrows = true;
+	static bool showEdgeArrows = true;
+	static int edgeMode = 0;
+
 	ImGui::Begin("Height Edit");
+	if (ImGui::CollapsingHeader("Tool Options", ImGuiTreeNodeFlags_DefaultOpen))
+	{
+		ImGui::Checkbox("Show Center Arrow", &showCenterArrow);
+		ImGui::Checkbox("Show Corner Arrows", &showCornerArrows);
+		ImGui::Checkbox("Show Edge Arrows", &showEdgeArrows);
+		ImGui::RadioButton("Don't do anything with edges", &edgeMode, 0);
+		ImGui::RadioButton("Raise ground around edges", &edgeMode, 1);
+		ImGui::RadioButton("Build walls on edges", &edgeMode, 2);
+	}
+	if (tileSelection.size() == 1)
+	{
+		auto cube = gnd->cubes[tileSelection[0].x][tileSelection[0].y];
+		if (ImGui::CollapsingHeader("Tile Details", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			bool changed = false;
+			changed |= util::DragFloat(browEdit, map, map->rootNode, "H1", &cube->h1);
+			changed |= util::DragFloat(browEdit, map, map->rootNode, "H2", &cube->h2);
+			changed |= util::DragFloat(browEdit, map, map->rootNode, "H3", &cube->h3);
+			changed |= util::DragFloat(browEdit, map, map->rootNode, "H4", &cube->h4);
+
+			static const char* tileNames[] = {"Tile Up", "Tile Front", "Tile Side"};
+			for (int t = 0; t < 3; t++)
+			{
+				ImGui::PushID(t);
+				changed |= util::DragInt(browEdit, map, map->rootNode, tileNames[t], &cube->tileIds[t], 1.0f, 0, (int)gnd->tiles.size()-1);
+				if (cube->tileIds[t] >= 0)
+				{
+					if (ImGui::CollapsingHeader(("Edit " + std::string(tileNames[t])).c_str(), ImGuiTreeNodeFlags_DefaultOpen))
+					{
+						auto tile = gnd->tiles[cube->tileIds[t]];
+						int lightmapId = tile->lightmapIndex;
+						if (changed |= util::DragInt(browEdit, map, map->rootNode, "LightmapID", &lightmapId, 1.0, 0, (int)gnd->lightmaps.size() - 1))
+							tile->lightmapIndex = lightmapId;
+
+						int texIndex = tile->textureIndex;
+						if (changed |= util::DragInt(browEdit, map, map->rootNode, "TextureID", &texIndex, 1.0f, 0, (int)gnd->textures.size()-1))
+							tile->textureIndex = texIndex;
+						glm::vec4 color = glm::vec4(tile->color) / 255.0f;
+						if (changed |= util::ColorEdit4(browEdit, map, map->rootNode, "Color", &color))
+							tile->color = glm::ivec4(color * 255.0f);
+						changed |= util::DragFloat2(browEdit, map, map->rootNode, "UV1", &tile->v1, 0.01f, 0.0f, 1.0f);
+						changed |= util::DragFloat2(browEdit, map, map->rootNode, "UV2", &tile->v2, 0.01f, 0.0f, 1.0f);
+						changed |= util::DragFloat2(browEdit, map, map->rootNode, "UV3", &tile->v3, 0.01f, 0.0f, 1.0f);
+						changed |= util::DragFloat2(browEdit, map, map->rootNode, "UV4", &tile->v4, 0.01f, 0.0f, 1.0f);
+					}
+				}
+				ImGui::PopID();
+			}
+
+			if (changed)
+			{
+				gndRenderer->setChunkDirty(tileSelection[0].x, tileSelection[0].y);
+				gndRenderer->gndTileColorDirty = true;
+			}
+		}
+	}
 	ImGui::End();
 
 	glUseProgram(0);
@@ -53,8 +118,6 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 	simpleShader->setUniform(SimpleShader::Uniforms::textureFac, 0.0f);
 	glEnable(GL_BLEND);
 	glDepthMask(0);
-	auto gnd = map->rootNode->getComponent<Gnd>();
-	auto gndRenderer = map->rootNode->getComponent<GndRenderer>();
 	bool canSelect = true;
 
 
@@ -130,16 +193,25 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 		pos[8] = (pos[1] + pos[3]) / 2.0f;
 
 		ImGui::Begin("Height Edit");
-		ImGui::DragFloat("P1", &pos[0].y);
-		ImGui::DragFloat("P2", &pos[1].y);
-		ImGui::DragFloat("P3", &pos[2].y);
-		ImGui::DragFloat("P4", &pos[3].y);
+		if (ImGui::CollapsingHeader("Selection Details", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			ImGui::DragFloat("Corner 1", &pos[0].y);
+			ImGui::DragFloat("Corner 2", &pos[1].y);
+			ImGui::DragFloat("Corner 3", &pos[2].y);
+			ImGui::DragFloat("Corner 4", &pos[3].y);
+		}
 		ImGui::End();
 
 
 		static int dragIndex = -1;
 		for (int i = 0; i < 9; i++)
 		{
+			if (!showCornerArrows && i < 4)
+				continue;
+			if (!showCenterArrow && i == 4)
+				continue;
+			if (!showEdgeArrows && i > 4)
+				continue;
 			glm::mat4 mat = glm::translate(glm::mat4(1.0f), pos[i]);
 			if (maxValues.x - minValues.x <= 1 || maxValues.y - minValues.y <= 1)
 				mat = glm::scale(mat, glm::vec3(0.25f, 0.25f, 0.25f));

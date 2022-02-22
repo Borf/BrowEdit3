@@ -98,7 +98,7 @@ public:
 		{
 			struct
 			{
-				int tileUp, tileSide, tileFront;
+				int tileUp, tileFront, tileSide;
 			};
 			int tileIds[3];
 		};
