@@ -132,7 +132,7 @@ void BrowEdit::run()
 //		loadMap("data\\guild_vs1.rsw");
 //		loadMap("data\\effects_ro.rsw");
 //		loadMap("data\\prt_in.rsw");
-		loadMap("data\\c_tower1.rsw");
+		loadMap("data\\wall_colour.rsw");
 #endif
 
 

@@ -19,8 +19,6 @@ GndRenderer::GndRenderer()
 	renderContext = GndRenderContext::getInstance();
 
 	gndShadow = new gl::Texture(shadowmapSize, shadowmapSize);
-	gndTileColors = new gl::Texture(2048, 2048);
-
 	gndShadowDirty = true;
 }
 
@@ -98,51 +96,9 @@ void GndRenderer::render()
 		gndShadowDirty = false;
 	}
 
-	if (gndTileColorDirty)
-	{
-		char* data = new char[2048 * 2048 * 4];
-		memset(data, 255, 2048 * 2048 * 4);
-		for (int x = 0; x < gnd->width; x++)
-		{
-			for (int y = 0; y < gnd->height; y++)
-			{
-				if (gnd->cubes[x][y]->tileUp != -1)
-				{
-					Gnd::Tile* tile = gnd->tiles[gnd->cubes[x][y]->tileUp];
-					data[4 * (x + 2048 * y) + 0] = tile->color.r;
-					data[4 * (x + 2048 * y) + 1] = tile->color.g;
-					data[4 * (x + 2048 * y) + 2] = tile->color.b;
-					data[4 * (x + 2048 * y) + 3] = tile->color.a;
-				}
-				if (gnd->cubes[x][y]->tileFront != -1)
-				{
-					Gnd::Tile* tile = gnd->tiles[gnd->cubes[x][y]->tileFront];
-					data[4 * ((x + 0) + 2048 * (y + 1024)) + 0] = tile->color.r;
-					data[4 * ((x + 0) + 2048 * (y + 1024)) + 1] = tile->color.g;
-					data[4 * ((x + 0) + 2048 * (y + 1024)) + 2] = tile->color.b;
-					data[4 * ((x + 0) + 2048 * (y + 1024)) + 3] = tile->color.a;
-				}
-				if (gnd->cubes[x][y]->tileSide != -1)
-				{
-					Gnd::Tile* tile = gnd->tiles[gnd->cubes[x][y]->tileSide];
-					data[4 * ((y + 1024) + 2048 * (x + 0)) + 0] = tile->color.r;
-					data[4 * ((y + 1024) + 2048 * (x + 0)) + 1] = tile->color.g;
-					data[4 * ((y + 1024) + 2048 * (x + 0)) + 2] = tile->color.b;
-					data[4 * ((y + 1024) + 2048 * (x + 0)) + 3] = tile->color.a;
-				}
-			}
-		}
-//		stbi_write_png("tmp.png", 2048, 2048, 4, data, 4*2048);
-		gndTileColors->setSubImage(data, 0, 0, 2048, 2048);
-		delete[] data;
-		gndTileColorDirty = false;
-	}
 
 	glActiveTexture(GL_TEXTURE1);
 	gndShadow->bind();
-	glActiveTexture(GL_TEXTURE2);
-	gndTileColors->bind();
-
 	glActiveTexture(GL_TEXTURE0);
 	auto shader = dynamic_cast<GndRenderContext*>(renderContext)->shader;
 	shader->setUniform(GndShader::Uniforms::ModelViewMatrix, dynamic_cast<GndRenderContext*>(renderContext)->viewMatrix);
@@ -176,7 +132,6 @@ GndRenderer::GndRenderContext::GndRenderContext() : shader(util::ResourceManager
 	shader->use();
 	shader->setUniform(GndShader::Uniforms::s_texture, 0);
 	shader->setUniform(GndShader::Uniforms::s_lighting, 1);
-	shader->setUniform(GndShader::Uniforms::s_tileColor, 2);
 }
 
 
@@ -227,12 +182,12 @@ void GndRenderer::Chunk::render()
 				shader->setUniform(GndShader::Uniforms::colorToggle, 1.0f);
 				shader->setUniform(GndShader::Uniforms::viewTextures, 0.0f);
 			}
-			//VertexP3T2T2T2N3
-			glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(Vertex), (void*)(0 * sizeof(float)));
-			glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(Vertex), (void*)(3 * sizeof(float)));
-			glVertexAttribPointer(2, 2, GL_FLOAT, false, sizeof(Vertex), (void*)(5 * sizeof(float)));
-			glVertexAttribPointer(3, 2, GL_FLOAT, false, sizeof(Vertex), (void*)(7 * sizeof(float)));
-			glVertexAttribPointer(4, 3, GL_FLOAT, false, sizeof(Vertex), (void*)(9 * sizeof(float)));
+			//VertexP3T2T2C4N3
+			glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexP3T2T2C4N3), (void*)(0 * sizeof(float)));
+			glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexP3T2T2C4N3), (void*)(3 * sizeof(float)));
+			glVertexAttribPointer(2, 2, GL_FLOAT, false, sizeof(VertexP3T2T2C4N3), (void*)(5 * sizeof(float)));
+			glVertexAttribPointer(3, 4, GL_FLOAT, false, sizeof(VertexP3T2T2C4N3), (void*)(7 * sizeof(float)));
+			glVertexAttribPointer(4, 3, GL_FLOAT, false, sizeof(VertexP3T2T2C4N3), (void*)(11 * sizeof(float)));
 			glDrawArrays(GL_TRIANGLES, (int)it.begin, (int)it.count);
 			if (it.texture == -1)
 			{
@@ -249,8 +204,8 @@ void GndRenderer::Chunk::render()
 
 void GndRenderer::Chunk::rebuild()
 {
-	std::vector<VertexP3T2T2T2N3> vertices;
-	std::map<int, std::vector<VertexP3T2T2T2N3> > verts;
+	std::vector<VertexP3T2T2C4N3> vertices;
+	std::map<int, std::vector<VertexP3T2T2C4N3> > verts;
 	vertIndices.clear();
 
 	for (int x = this->x; x < glm::min(this->x + CHUNKSIZE, (int)gnd->cubes.size()); x++)
@@ -267,20 +222,31 @@ void GndRenderer::Chunk::rebuild()
 				glm::vec2 lm1((tile->lightmapIndex % shadowmapRowCount) * (8.0f / shadowmapSize) + 1.0f / shadowmapSize, (tile->lightmapIndex / shadowmapRowCount) * (8.0f / shadowmapSize) + 1.0f / shadowmapSize);
 				glm::vec2 lm2(lm1 + glm::vec2(6.0f / shadowmapSize, 6.0f / shadowmapSize));
 
-				VertexP3T2T2T2N3 v1(glm::vec3(10 * x, -cube->h3, 10 * gnd->height - 10 * y),			tile->v3, glm::vec2(lm1.x, lm2.y), glm::vec2(x / 2048.0f, (y + 1) / 2048.0f),		cube->normals[2]);
-				VertexP3T2T2T2N3 v2(glm::vec3(10 * x + 10, -cube->h4, 10 * gnd->height - 10 * y),		tile->v4, glm::vec2(lm2.x, lm2.y), glm::vec2((x + 1) / 2048.0f, (y + 1) / 2048.0f), cube->normals[3]);
-				VertexP3T2T2T2N3 v3(glm::vec3(10 * x, -cube->h1, 10 * gnd->height - 10 * y + 10),		tile->v1, glm::vec2(lm1.x, lm1.y), glm::vec2(x / 2048.0f, (y) / 2048.0f),			cube->normals[0]);
-				VertexP3T2T2T2N3 v4(glm::vec3(10 * x + 10, -cube->h2, 10 * gnd->height - 10 * y + 10),	tile->v2, glm::vec2(lm2.x, lm1.y), glm::vec2((x + 1) / 2048.0f, (y) / 2048.0f),		cube->normals[1]);
+				glm::vec4 c1(1.0);
+				if(y < gnd->height-1 && gnd->cubes[x][y + 1]->tileUp != -1)
+					c1 = glm::vec4(gnd->tiles[gnd->cubes[x][y + 1]->tileUp]->color) / 255.0f;
+				glm::vec4 c2(1.0f);
+				if (x < gnd->width - 1 && y < gnd->height - 1 && gnd->cubes[x + 1][y + 1]->tileUp != -1)
+					c2 = glm::vec4(gnd->tiles[gnd->cubes[x + 1][y + 1]->tileUp]->color) / 255.0f;
+				glm::vec4 c3 = glm::vec4(tile->color) / 255.0f;
+				glm::vec4 c4(1.0f);
+				if (x < gnd->width - 1 && gnd->cubes[x + 1][y]->tileUp != -1)
+					c4 = glm::vec4(gnd->tiles[gnd->cubes[x+1][y]->tileUp]->color) / 255.0f;
 
-				verts[tile->textureIndex].push_back(v3); verts[tile->textureIndex].push_back(v2); verts[tile->textureIndex].push_back(v1);
-				verts[tile->textureIndex].push_back(v4); verts[tile->textureIndex].push_back(v2); verts[tile->textureIndex].push_back(v3);
+				VertexP3T2T2C4N3 v1(glm::vec3(10 * x, -cube->h3, 10 * gnd->height - 10 * y),			tile->v3, glm::vec2(lm1.x, lm2.y), c1,		cube->normals[2]);
+				VertexP3T2T2C4N3 v2(glm::vec3(10 * x + 10, -cube->h4, 10 * gnd->height - 10 * y),		tile->v4, glm::vec2(lm2.x, lm2.y), c2,		cube->normals[3]);
+				VertexP3T2T2C4N3 v3(glm::vec3(10 * x, -cube->h1, 10 * gnd->height - 10 * y + 10),		tile->v1, glm::vec2(lm1.x, lm1.y), c3,		cube->normals[0]);
+				VertexP3T2T2C4N3 v4(glm::vec3(10 * x + 10, -cube->h2, 10 * gnd->height - 10 * y + 10),	tile->v2, glm::vec2(lm2.x, lm1.y), c4,		cube->normals[1]);
+
+				verts[tile->textureIndex].push_back(v4); verts[tile->textureIndex].push_back(v2); verts[tile->textureIndex].push_back(v1);
+				verts[tile->textureIndex].push_back(v4); verts[tile->textureIndex].push_back(v1); verts[tile->textureIndex].push_back(v3);
 			}
 			else if (renderer->viewEmptyTiles)
 			{
-				VertexP3T2T2T2N3 v1(glm::vec3(10 * x, -cube->h3, 10 * gnd->height - 10 * y),			glm::vec2(0), glm::vec2(0), glm::vec2(x / 2048.0f, (y + 1) / 2048.0f),			cube->normals[2]);
-				VertexP3T2T2T2N3 v2(glm::vec3(10 * x + 10, -cube->h4, 10 * gnd->height - 10 * y),		glm::vec2(0), glm::vec2(0), glm::vec2((x + 1) / 2048.0f, (y + 1) / 2048.0f),	cube->normals[3]);
-				VertexP3T2T2T2N3 v3(glm::vec3(10 * x, -cube->h1, 10 * gnd->height - 10 * y + 10),		glm::vec2(0), glm::vec2(0), glm::vec2(x / 2048.0f, (y) / 2048.0f),				cube->normals[0]);
-				VertexP3T2T2T2N3 v4(glm::vec3(10 * x + 10, -cube->h2, 10 * gnd->height - 10 * y + 10),	glm::vec2(0), glm::vec2(0), glm::vec2((x + 1) / 2048.0f, (y) / 2048.0f),		cube->normals[1]);
+				VertexP3T2T2C4N3 v1(glm::vec3(10 * x, -cube->h3, 10 * gnd->height - 10 * y),			glm::vec2(0), glm::vec2(0), glm::vec4(1.0f),	cube->normals[2]);
+				VertexP3T2T2C4N3 v2(glm::vec3(10 * x + 10, -cube->h4, 10 * gnd->height - 10 * y),		glm::vec2(0), glm::vec2(0), glm::vec4(1.0f),	cube->normals[3]);
+				VertexP3T2T2C4N3 v3(glm::vec3(10 * x, -cube->h1, 10 * gnd->height - 10 * y + 10),		glm::vec2(0), glm::vec2(0), glm::vec4(1.0f),	cube->normals[0]);
+				VertexP3T2T2C4N3 v4(glm::vec3(10 * x + 10, -cube->h2, 10 * gnd->height - 10 * y + 10),	glm::vec2(0), glm::vec2(0), glm::vec4(1.0f),	cube->normals[1]);
 
 				verts[-1].push_back(v3); verts[-1].push_back(v2); verts[-1].push_back(v1);
 				verts[-1].push_back(v4); verts[-1].push_back(v2); verts[-1].push_back(v3);
@@ -293,14 +259,23 @@ void GndRenderer::Chunk::rebuild()
 				glm::vec2 lm1((tile->lightmapIndex % shadowmapRowCount) * (8.0f / shadowmapSize) + 1.0f / shadowmapSize, (tile->lightmapIndex / shadowmapRowCount) * (8.0f / shadowmapSize) + 1.0f / shadowmapSize);
 				glm::vec2 lm2(lm1 + glm::vec2(6.0f / shadowmapSize, 6.0f / shadowmapSize));
 
+
+				glm::vec4 c1(1.0f);
+				if (x < gnd->width - 1 && gnd->cubes[x + 1][y]->tileUp != -1)
+					c1 = glm::vec4(gnd->tiles[gnd->cubes[x + 1][y]->tileUp]->color) / 255.0f;
+				glm::vec4 c2(1.0);
+				if (x < gnd->width - 1 && y < gnd->height - 1 && gnd->cubes[x + 1][y + 1]->tileUp != -1)
+					c2 = glm::vec4(gnd->tiles[gnd->cubes[x + 1][y + 1]->tileUp]->color) / 255.0f;
+
+
 				//up front
-				VertexP3T2T2T2N3 v1(glm::vec3(10 * x + 10, -cube->h2, 10 * gnd->height - 10 * y + 10),					tile->v2, glm::vec2(lm2.x, lm1.y), glm::vec2((y + 0.0f + 1024) / 2048.0f, (x + 0.5f) / 2048.0f), glm::vec3(1, 0, 0));
+				VertexP3T2T2C4N3 v1(glm::vec3(10 * x + 10, -cube->h2, 10 * gnd->height - 10 * y + 10),					tile->v2, glm::vec2(lm2.x, lm1.y), c1, glm::vec3(1, 0, 0));
 				//up back
-				VertexP3T2T2T2N3 v2(glm::vec3(10 * x + 10, -cube->h4, 10 * gnd->height - 10 * y),						tile->v1, glm::vec2(lm1.x, lm1.y), glm::vec2((y + 1.0f + 1024) / 2048.0f, (x + 0.5f) / 2048.0f), glm::vec3(1, 0, 0));
+				VertexP3T2T2C4N3 v2(glm::vec3(10 * x + 10, -cube->h4, 10 * gnd->height - 10 * y),						tile->v1, glm::vec2(lm1.x, lm1.y), c2, glm::vec3(1, 0, 0));
 				//down front
-				VertexP3T2T2T2N3 v3(glm::vec3(10 * x + 10, -gnd->cubes[x + 1][y]->h1, 10 * gnd->height - 10 * y + 10),	tile->v4, glm::vec2(lm2.x, lm2.y), glm::vec2((y + 0.0f + 1024) / 2048.0f, (x + 0.5f) / 2048.0f), glm::vec3(1, 0, 0));
+				VertexP3T2T2C4N3 v3(glm::vec3(10 * x + 10, -gnd->cubes[x + 1][y]->h1, 10 * gnd->height - 10 * y + 10),	tile->v4, glm::vec2(lm2.x, lm2.y), c1, glm::vec3(1, 0, 0));
 				//down back
-				VertexP3T2T2T2N3 v4(glm::vec3(10 * x + 10, -gnd->cubes[x + 1][y]->h3, 10 * gnd->height - 10 * y),		tile->v3, glm::vec2(lm1.x, lm2.y), glm::vec2((y + 1.0f + 1024) / 2048.0f, (x + 0.5f) / 2048.0f), glm::vec3(1, 0, 0));
+				VertexP3T2T2C4N3 v4(glm::vec3(10 * x + 10, -gnd->cubes[x + 1][y]->h3, 10 * gnd->height - 10 * y),		tile->v3, glm::vec2(lm1.x, lm2.y), c2, glm::vec3(1, 0, 0));
 
 				verts[tile->textureIndex].push_back(v3); verts[tile->textureIndex].push_back(v2); verts[tile->textureIndex].push_back(v1);
 				verts[tile->textureIndex].push_back(v4); verts[tile->textureIndex].push_back(v2); verts[tile->textureIndex].push_back(v3);
@@ -313,10 +288,17 @@ void GndRenderer::Chunk::rebuild()
 				glm::vec2 lm1((tile->lightmapIndex % shadowmapRowCount) * (8.0f / shadowmapSize) + 1.0f / shadowmapSize, (tile->lightmapIndex / shadowmapRowCount) * (8.0f / shadowmapSize) + 1.0f / shadowmapSize);
 				glm::vec2 lm2(lm1 + glm::vec2(6.0f / shadowmapSize, 6.0f / shadowmapSize));
 
-				VertexP3T2T2T2N3 v1(glm::vec3(10 * x, -cube->h3, 10 * gnd->height - 10 * y),						tile->v1, glm::vec2(lm1.x, lm1.y), glm::vec2((x) / 2048.0f, (y +0.5f+ 1024) / 2048.0f), glm::vec3(0, 0, 1));
-				VertexP3T2T2T2N3 v2(glm::vec3(10 * x + 10, -cube->h4, 10 * gnd->height - 10 * y),					tile->v2, glm::vec2(lm2.x, lm1.y), glm::vec2((x+1) / 2048.0f, (y + 0.5f + 1024) / 2048.0f), glm::vec3(0, 0, 1));
-				VertexP3T2T2T2N3 v4(glm::vec3(10 * x + 10, -gnd->cubes[x][y + 1]->h2, 10 * gnd->height - 10 * y),	tile->v4, glm::vec2(lm2.x, lm2.y), glm::vec2((x+1) / 2048.0f, (y + 0.5f + 1024) / 2048.0f), glm::vec3(0, 0, 1));
-				VertexP3T2T2T2N3 v3(glm::vec3(10 * x, -gnd->cubes[x][y + 1]->h1, 10 * gnd->height - 10 * y),		tile->v3, glm::vec2(lm1.x, lm2.y), glm::vec2((x) / 2048.0f, (y + 0.5f + 1024) / 2048.0f), glm::vec3(0, 0, 1));
+				glm::vec4 c1(1.0f);
+				if (y < gnd->height - 1 && gnd->cubes[x][y + 1]->tileUp != -1)
+					c1 = glm::vec4(gnd->tiles[gnd->cubes[x][y + 1]->tileUp]->color) / 255.0f;
+				glm::vec4 c2(1.0);
+				if (x < gnd->width - 1 && y < gnd->height - 1 && gnd->cubes[x + 1][y + 1]->tileUp != -1)
+					c2 = glm::vec4(gnd->tiles[gnd->cubes[x + 1][y + 1]->tileUp]->color) / 255.0f;
+
+				VertexP3T2T2C4N3 v1(glm::vec3(10 * x, -cube->h3, 10 * gnd->height - 10 * y),						tile->v1, glm::vec2(lm1.x, lm1.y), c1, glm::vec3(0, 0, 1));
+				VertexP3T2T2C4N3 v2(glm::vec3(10 * x + 10, -cube->h4, 10 * gnd->height - 10 * y),					tile->v2, glm::vec2(lm2.x, lm1.y), c2, glm::vec3(0, 0, 1));
+				VertexP3T2T2C4N3 v4(glm::vec3(10 * x + 10, -gnd->cubes[x][y + 1]->h2, 10 * gnd->height - 10 * y),	tile->v4, glm::vec2(lm2.x, lm2.y), c2, glm::vec3(0, 0, 1));
+				VertexP3T2T2C4N3 v3(glm::vec3(10 * x, -gnd->cubes[x][y + 1]->h1, 10 * gnd->height - 10 * y),		tile->v3, glm::vec2(lm1.x, lm2.y), c1, glm::vec3(0, 0, 1));
 
 				verts[tile->textureIndex].push_back(v3); verts[tile->textureIndex].push_back(v2); verts[tile->textureIndex].push_back(v1);
 				verts[tile->textureIndex].push_back(v4); verts[tile->textureIndex].push_back(v2); verts[tile->textureIndex].push_back(v3);

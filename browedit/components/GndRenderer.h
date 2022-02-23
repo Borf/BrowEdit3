@@ -50,7 +50,7 @@ public:
 	public:
 		bool dirty;
 		bool rebuilding;
-		gl::VBO<VertexP3T2T2T2N3> vbo;
+		gl::VBO<VertexP3T2T2C4N3> vbo;
 		std::vector<VboIndex> vertIndices;
 		int x, y;
 		GndRenderer* renderer;
@@ -68,13 +68,10 @@ public:
 	Rsw* rsw; //for lighting
 
 	gl::Texture* gndShadow;
-	gl::Texture* gndTileColors;
-
 
 	void setChunkDirty(int x, int y);
 	void setChunksDirty();
 	bool gndShadowDirty = true;
-	bool gndTileColorDirty = true;
 
 	GndRenderer();
 	void render() override;

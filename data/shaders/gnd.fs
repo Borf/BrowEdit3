@@ -2,7 +2,6 @@
 
 uniform sampler2D s_texture;
 uniform sampler2D s_lighting;
-uniform sampler2D s_tileColor;
 
 uniform vec3 lightDiffuse;
 uniform vec3 lightAmbient;
@@ -16,8 +15,8 @@ uniform float viewTextures = 1.0f;
 
 in vec2 texCoord;
 in vec2 texCoord2;
-in vec2 tileColorCoord;
 in vec3 normal;
+in vec4 color;
 
 out vec4 fragColor;
 //out vec4 fragSelection;
@@ -31,7 +30,7 @@ void main()
 	if(texture.a < 0.1)
 		discard;
 
-	texture.rgb *= max(texture2D(s_tileColor, tileColorCoord), colorToggle).rgb;
+	texture.rgb *= max(color, colorToggle).rgb;
 	texture.rgb *= max(texture2D(s_lighting, texCoord2).a, shadowMapToggle);
 
 

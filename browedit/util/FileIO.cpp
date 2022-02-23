@@ -259,7 +259,7 @@ namespace util
 				auto f = entry.path().string();
 				if (f.size() > directory.size() && directory.size() > 0 && f.find(directory) == 0)
 					f = f.substr(directory.size());
-				if (entry.is_directory() && entry.path().string().find("\\game") != std::string::npos)
+				if (entry.is_directory() && f.find("game\\") != std::string::npos)
 					continue;
 				if (entry.is_directory())
 					listFiles(f, files);

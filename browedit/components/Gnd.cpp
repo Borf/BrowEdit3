@@ -271,19 +271,21 @@ void Gnd::save(const std::string& fileName)
 				if (version >= 0x0106)
 				{
 					file.write(reinterpret_cast<char*>(&cube->tileUp), sizeof(int));
-					file.write(reinterpret_cast<char*>(&cube->tileSide), sizeof(int));
 					file.write(reinterpret_cast<char*>(&cube->tileFront), sizeof(int));
+					file.write(reinterpret_cast<char*>(&cube->tileSide), sizeof(int));
 				}
 				else
 				{
 					unsigned short up, side, front;
-					file.write(reinterpret_cast<char*>(&up), sizeof(unsigned short));
-					file.write(reinterpret_cast<char*>(&side), sizeof(unsigned short));
-					file.write(reinterpret_cast<char*>(&front), sizeof(unsigned short));
+					up = cube->tileUp;
+					front = cube->tileFront;
+					side = cube->tileSide;
 
-					cube->tileUp = up;
-					cube->tileSide = side;
-					cube->tileFront = front;
+
+					file.write(reinterpret_cast<char*>(&up), sizeof(unsigned short));
+					file.write(reinterpret_cast<char*>(&front), sizeof(unsigned short));
+					file.write(reinterpret_cast<char*>(&side), sizeof(unsigned short));
+
 				}
 			}
 		}

@@ -609,7 +609,5 @@ void Map::importTileColors(BrowEdit* browEdit, bool exportWalls)
 			}
 		}
 	}
-	rootNode->getComponent<GndRenderer>()->gndTileColorDirty = true;
-
 	stbi_image_free(img);
 }

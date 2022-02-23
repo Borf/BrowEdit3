@@ -93,10 +93,7 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 			}
 
 			if (changed)
-			{
 				gndRenderer->setChunkDirty(tileSelection[0].x, tileSelection[0].y);
-				gndRenderer->gndTileColorDirty = true;
-			}
 		}
 	}
 	ImGui::End();
