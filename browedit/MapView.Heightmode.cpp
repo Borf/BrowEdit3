@@ -340,7 +340,7 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 		{
 			auto mouseDragEnd = mouse3D;
 			mouseDown = false;
-			if(!ImGui::GetIO().KeyShift)
+			if(!ImGui::GetIO().KeyShift && !ImGui::GetIO().KeyCtrl)
 				tileSelection.clear();
 
 			int tileMinX = (int)glm::floor(glm::min(mouseDragStart.x, mouseDragEnd.x) / 10);
@@ -352,7 +352,13 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 			if (tileMinX >= 0 && tileMaxX < gnd->width + 1 && tileMinY >= 0 && tileMaxY < gnd->height + 1)
 				for (int x = tileMinX; x < tileMaxX; x++)
 					for (int y = tileMinY; y < tileMaxY; y++)
-						tileSelection.push_back(glm::ivec2(x, y));
+						if (ImGui::GetIO().KeyCtrl)
+						{
+							if(std::find(tileSelection.begin(), tileSelection.end(), glm::ivec2(x,y)) != tileSelection.end())
+								tileSelection.erase(std::remove_if(tileSelection.begin(), tileSelection.end(), [&](const glm::ivec2& el) { return el.x == x && el.y == y; }));
+						}
+						else
+							tileSelection.push_back(glm::ivec2(x, y));
 
 		}
 	}
