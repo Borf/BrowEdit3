@@ -340,7 +340,8 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 		{
 			auto mouseDragEnd = mouse3D;
 			mouseDown = false;
-			tileSelection.clear();
+			if(!ImGui::GetIO().KeyShift)
+				tileSelection.clear();
 
 			int tileMinX = (int)glm::floor(glm::min(mouseDragStart.x, mouseDragEnd.x) / 10);
 			int tileMaxX = (int)glm::ceil(glm::max(mouseDragStart.x, mouseDragEnd.x) / 10);
