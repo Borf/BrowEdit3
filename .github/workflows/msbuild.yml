@@ -52,4 +52,5 @@ jobs:
       uses: ncipollo/release-action@v1
       with:
         artifacts: "BrowEdit3.zip"
+        tag: testrelease
         token: ${{ secrets.GITHUB_TOKEN }}
