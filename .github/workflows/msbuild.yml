@@ -40,7 +40,13 @@ jobs:
     - name: UploadArtifact
       uses: actions/upload-artifact@master
       with:
-        path: BrowEdit3.zip
+        name: BrowEdit3.zip
+        path: |
+          BrowEdit3.exe
+          BrowEdit3.pdb
+          imgui.ini
+          doc/
+          data/
 
     - name: Release
       uses: ncipollo/release-action@v1
