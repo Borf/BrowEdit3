@@ -45,6 +45,7 @@
     <ClCompile Include="browedit\MapView.Objectmode.cpp" />
     <ClCompile Include="browedit\math\AABB.cpp" />
     <ClCompile Include="browedit\math\Plane.cpp" />
+    <ClCompile Include="browedit\math\Polygon.cpp" />
     <ClCompile Include="browedit\math\Ray.cpp" />
     <ClCompile Include="browedit\Mesh.cpp" />
     <ClCompile Include="browedit\Node.cpp" />
@@ -125,6 +126,7 @@
     <ClInclude Include="browedit\MapView.h" />
     <ClInclude Include="browedit\math\AABB.h" />
     <ClInclude Include="browedit\math\Plane.h" />
+    <ClInclude Include="browedit\math\Polygon.h" />
     <ClInclude Include="browedit\math\Ray.h" />
     <ClInclude Include="browedit\Mesh.h" />
     <ClInclude Include="browedit\Node.h" />
