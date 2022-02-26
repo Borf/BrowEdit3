@@ -28,8 +28,9 @@ jobs:
     - name: Fix version
       shell: cmd
       run: |
-        echo \#define VERSION {{ github.run_number }}>Version.h
+        echo #define VERSION {{ github.run_number }}>Version.h
         echo.>>Version.h
+        type Version.h
 
     - name: Build
       working-directory: ${{env.GITHUB_WORKSPACE}}
