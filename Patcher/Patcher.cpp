@@ -57,6 +57,18 @@ INT_PTR CALLBACK Wndproc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
                 txt += " (downloaded)";
             if (version == currentVersion)
                 txt += " (active)";
+
+            bool broken = true;
+            for (auto& asset : release["assets"])
+            {
+                auto name = asset["name"].get<std::string>();
+                if (name.substr(name.size() - 4) == ".zip")
+                    broken = false;
+            }
+            if (broken)
+                txt += " (broken)";
+
+
             int pos = (int)SendMessage(hwndList, LB_ADDSTRING, 0, (LPARAM)txt.c_str());
             SendMessage(hwndList, LB_SETITEMDATA, pos, (LPARAM)i++);
             
@@ -184,7 +196,21 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                     SendMessage(hwndDialogBar, PBM_SETRANGE, 0, MAKELPARAM(0, 100));
                     SendMessage(hwndDialogBar, PBM_SETSTEP, (WPARAM)1, 0);
 
-                    auto url = release["assets"][0]["browser_download_url"].get<std::string>();
+                    std::string url = "";
+                    for (auto& asset : release["assets"])
+                    {
+                        auto name = asset["name"].get<std::string>();
+                        if(name.substr(name.size()-4) == ".zip")
+                            url = asset["browser_download_url"] .get<std::string>();
+                    }
+                    if (url == "")
+                    {
+                        MessageBox(nullptr, "Error downloading asset. Make sure this release has a zipfile", "Error downloading", MB_OK);
+                        ShellExecute(nullptr, nullptr, release["html_url"].get<std::string>().c_str(), "", nullptr, SW_SHOWDEFAULT);
+                        EndDialog(hProgressDlg, 0);
+                        exit(0);
+                        return;
+                    }
                     auto data = net::fetch_request(net::url(std::wstring(url.begin(), url.end())), L"", L"", L"Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko)", [&](float p) {
                         SendMessage(hwndDialogBar, PBM_SETPOS, (int)(p*100), 0);
                         });

@@ -399,37 +399,62 @@ void Rsw::buildImGui(BrowEdit* browEdit)
 	}
 }
 
+extern std::vector<std::vector<glm::vec3>> debugPoints;
 
+std::vector<std::vector<glm::vec2>> heights;
 void Rsw::recalculateQuadtree(QuadTreeNode* node)
 {
 	static Gnd* gnd;
+//	static std::vector<std::vector<glm::vec2>> heights;
+	bool rootNode = false;
 	if (!node)
 	{
+		rootNode = true;
 		node = quadtree;
 		gnd = this->node->getComponent<Gnd>();
 
-		//this->node->traverse([&](Node* n) {
-		//	auto rswModel = n->getComponent<RswModel>();
-		//	if (rswModel)
-		//	{
-		//		auto collider = n->getComponent<RswModelCollider>();
-		//		auto collisions = collider->getCollisions(ray);
-		//		for (auto& c : collisions)
-		//		{
-		//			node->bbox.min.y = glm::min(node->bbox.min.y, -c.y);
-		//			node->bbox.max.y = glm::max(node->bbox.max.y, -c.y);
-		//		}
-		//	}
-		//	});
+		heights.clear();
+		heights.resize(gnd->width);
+		for (int i = 0; i < gnd->width; i++)
+			heights[i].resize(gnd->height, glm::vec2(99999999, -99999999));
 
-		//TODO
-		//make a 2d array with min/max height per cube
-		//iterate through all models
-		//per model, calculate world position per vertex
-		//per vertex, calculate cube and change the min/max height
-		//afterwards, for more accuracy, run raycast down for every ??? inside of the aabb
-		//AABB will not be accurate enough
-	}
+		debugPoints.clear();
+		debugPoints.resize(2);
+
+		this->node->traverse([&](Node* n) {
+			auto rswModel = n->getComponent<RswModel>();
+			auto rsmRenderer = n->getComponent<RsmRenderer>();
+			if (rswModel)
+			{
+				auto collider = n->getComponent<RswModelCollider>();
+				auto vertices = collider->getVerticesWorldSpace();
+				for (auto i = 0; i < vertices.size(); i += 3)
+				{
+					math::AABB aabb(std::span<glm::vec3>(vertices.begin() + i, 3));
+					for (int x = floor(aabb.min.x / 10); x < ceil(aabb.max.x / 10); x++)
+						for (int y = floor(aabb.min.z / 10); y < ceil(aabb.max.z / 10); y++)
+						{
+							if (x >= 0 && x < gnd->width && y >= 0 && y < gnd->height)
+							{
+								heights[x][y].x = glm::min(heights[x][y].x, aabb.min.y);
+								heights[x][y].y = glm::max(heights[x][y].y, aabb.max.y);
+							}
+						}
+
+				}
+			}
+			});
+
+
+#if 0
+		for (auto x = 0; x < heights.size(); x++)
+			for (auto y = 0; y < heights[x].size(); y++)
+			{
+				debugPoints[0].push_back(glm::vec3(10*x, heights[x][y].x, 10 * y));
+				debugPoints[1].push_back(glm::vec3(10 * x, heights[x][y].y, 10 * y));
+			}
+#endif
+	} //end startup
 
 	for (int i = 0; i < 4; i++)
 		if(node->children[i])
@@ -439,19 +464,20 @@ void Rsw::recalculateQuadtree(QuadTreeNode* node)
 	{
 		node->bbox.min.y = 99999;
 		node->bbox.max.y = -99999;
-
-
-		float steps = glm::max(2.0f, glm::ceil((node->bbox.max.x - node->bbox.min.x) / 10));
-
-		for (float x = 0; x <= 1; x += 1/steps)
+		for (int x = gnd->width / 2 + floor(node->bbox.min.x / 10); x < gnd->width / 2 + ceil(node->bbox.max.x / 10); x++)
 		{
-			for (float y = 0; y <= 1; y += 1/steps)
+			for (int y = gnd->height / 2 + floor(node->bbox.min.z / 10); y < gnd->height / 2 + ceil(node->bbox.max.z / 10); y++)
 			{
-				auto center = glm::vec3(glm::mix(node->bbox.min.x, node->bbox.max.x, x), 0, glm::mix(node->bbox.min.z, node->bbox.max.z, y));
-				math::Ray ray(glm::vec3(center.x + 5 * gnd->width, 9999, 10 * gnd->height - (center.z + 5 * gnd->height) + 10), glm::vec3(0, -1, 0));
-				auto pos = gnd->rayCast(ray, false, glm::floor(ray.origin.x/10)-2, gnd->height - glm::floor(ray.origin.z / 10) - 2, glm::ceil(ray.origin.x / 10) + 2, gnd->height - glm::ceil(ray.origin.z / 10)+2);
-				node->bbox.min.y = glm::min(node->bbox.min.y, -pos.y);
-				node->bbox.max.y = glm::max(node->bbox.max.y, -pos.y);
+				if (x >= 0 && x < gnd->width && y >= 0 && y < gnd->height)
+				{
+					for (auto i = 0; i < 4; i++)
+					{
+						node->bbox.min.y = glm::min(gnd->cubes[x][y]->heights[i], node->bbox.min.y);
+						node->bbox.max.y = glm::max(gnd->cubes[x][y]->heights[i], node->bbox.max.y);
+					}
+					node->bbox.min.y = glm::min(-heights[x][heights[x].size() - 1 - y].y, node->bbox.min.y);
+					node->bbox.max.y = glm::max(-heights[x][heights[x].size() - 1 - y].x, node->bbox.max.y);
+				}
 			}
 		}
 	}
@@ -466,6 +492,13 @@ void Rsw::recalculateQuadtree(QuadTreeNode* node)
 		}
 	}
 
+	node->range[0] = (node->bbox.max - node->bbox.min) / 2.0f;
+	node->range[1] = node->bbox.max - node->range[0];
+
+	if (rootNode)
+	{
+		heights.clear();
+	}
 
 }
 
@@ -608,6 +641,40 @@ bool RswModelCollider::collidesTexture(Rsm::Mesh* mesh, const math::Ray& ray, co
 		if(collidesTexture(mesh->children[i], ray, matrix))
 			return true;
 	return false;
+}
+
+std::vector<glm::vec3> RswModelCollider::getVerticesWorldSpace(Rsm::Mesh* mesh, const glm::mat4& matrix)
+{
+	if (!rswModel)
+		rswModel = node->getComponent<RswModel>();
+	if (!rsm)
+		rsm = node->getComponent<Rsm>();
+	if (!rsmRenderer)
+		rsmRenderer = node->getComponent<RsmRenderer>();
+	if (!rswModel || !rsm || !rsmRenderer)
+		return std::vector<glm::vec3>();
+
+	glm::mat4 mat = matrix;
+	if (mesh == nullptr)
+	{
+		mesh = rsm->rootMesh;
+		mat = rsmRenderer->matrixCache;
+	}
+
+	glm::mat4 newMatrix = mat * rsmRenderer->renderInfo[mesh->index].matrix;
+	std::vector<glm::vec3> verts;
+	for (size_t i = 0; i < mesh->faces.size(); i++)
+		for (size_t ii = 0; ii < 3; ii++)
+			verts.push_back(newMatrix * glm::vec4(mesh->vertices[mesh->faces[i]->vertexIds[ii]],1));
+
+	for (size_t i = 0; i < mesh->children.size(); i++)
+	{
+		std::vector<glm::vec3> other = getVerticesWorldSpace(mesh->children[i], mat);
+		if (!other.empty())
+			verts.insert(verts.end(), other.begin(), other.end());
+	}
+	return verts;
+
 }
 
 CubeCollider::CubeCollider(int size) : aabb(glm::vec3(-size,-size,-size), glm::vec3(size,size,size))

@@ -16,9 +16,6 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <mutex>
 
-extern std::vector<std::vector<glm::vec3>> debugPoints;
-extern std::mutex debugPointMutex;
-
 
 void MapView::postRenderObjectMode(BrowEdit* browEdit)
 {
@@ -29,23 +26,11 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 	simpleShader->setUniform(SimpleShader::Uniforms::textureFac, 0.0f);
 
 
-	glUseProgram(0);
-	glMatrixMode(GL_PROJECTION);
-	glLoadMatrixf(glm::value_ptr(nodeRenderContext.projectionMatrix));
-	glMatrixMode(GL_MODELVIEW);
-	glLoadMatrixf(glm::value_ptr(nodeRenderContext.viewMatrix));
-	glColor3f(1, 0, 0);
 	fbo->bind();
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glDisable(GL_TEXTURE_2D);
 
-	//TODO: move this code up out of object mode
-	glPushMatrix();
-	glScalef(1, -1, -1);
 	auto gnd = map->rootNode->getComponent<Gnd>();
-	glTranslatef(gnd->width * 5.0f, 0.0f, -gnd->height * 5.0f-10);
-	map->rootNode->getComponent<Rsw>()->quadtree->draw(quadTreeMaxLevel);
-	glPopMatrix();
 
 #if 0 //visualize aabb
 	glEnable(GL_BLEND);
@@ -62,20 +47,6 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 	});
 	glEnd();
 #endif
-
-	static glm::vec4 color[] = { glm::vec4(1,0,0,1), glm::vec4(0,1,0,1), glm::vec4(0,0,1,1) };
-	debugPointMutex.lock();
-	glPointSize(10.0f);
-	for (auto i = 0; i < debugPoints.size(); i++)
-	{
-		glColor4fv(glm::value_ptr(color[i]));
-		glBegin(GL_POINTS);
-		for (auto& v : debugPoints[i])
-			glVertex3fv(glm::value_ptr(v));
-		glEnd();
-	}
-	glPointSize(1.0f);
-	debugPointMutex.unlock();
 
 	bool snap = snapToGrid;
 	if (ImGui::GetIO().KeyShift)

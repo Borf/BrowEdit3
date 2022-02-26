@@ -42,7 +42,6 @@ jobs:
       run: |
         md dist
         xcopy /y /q BrowEdit3.exe dist\
-        xcopy /y /q BrowEdit3.pdb dist\
         xcopy /y /q imgui.ini dist\
         xcopy /y /q lib\bugtrap\BugTrap-x64.dll dist\
         xcopy /y /q /s data dist\data\
