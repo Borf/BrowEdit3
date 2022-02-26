@@ -68,6 +68,7 @@ jobs:
     - name: Release
       uses: ncipollo/release-action@v1
       with:
-        artifacts: "BrowEdit3_${{ github.run_number }}.zip"
+        artifacts: "BrowEdit3_${{ github.run_number }}.zip BrowEdit3.pdb"
         tag: v3.${{ github.run_number }}
         token: ${{ secrets.GITHUB_TOKEN }}
+        body: ${{ github.event.commits[0].message }}

@@ -12,6 +12,8 @@
 #define IDI_ICON1                       129
 #define IDD_DIALOG1                     130
 #define IDD_DOWNLOADING                 130
+#define IDD_DIALOG2                     131
+#define IDD_SWITCHING                   131
 #define IDC_NEXT                        1002
 #define IDC_PREV                        1003
 #define IDC_DETAILS                     1004
@@ -23,7 +25,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
-#define _APS_NEXT_RESOURCE_VALUE        131
+#define _APS_NEXT_RESOURCE_VALUE        132
 #define _APS_NEXT_COMMAND_VALUE         32771
 #define _APS_NEXT_CONTROL_VALUE         1006
 #define _APS_NEXT_SYMED_VALUE           110

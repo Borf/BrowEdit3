@@ -15,8 +15,20 @@
 
 #include "../lib/sfl/json.hpp"
 using json = nlohmann::json;
+int currentVersion = 0;
 
 json releaseInfo;
+
+
+void setDesc(HWND hDlg, int i)
+{
+    HWND hwndDetails = GetDlgItem(hDlg, IDC_DETAILS);
+    if (releaseInfo[i].find("body") != releaseInfo[i].end())
+        SendMessage(hwndDetails, WM_SETTEXT, 0, (LPARAM)releaseInfo[i]["body"].get<std::string>().c_str());
+    else
+        SendMessage(hwndDetails, WM_SETTEXT, 0, (LPARAM)"no information");
+}
+
 
 INT_PTR CALLBACK Wndproc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -38,20 +50,32 @@ INT_PTR CALLBACK Wndproc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
             bool downloaded = false;
             if (std::filesystem::exists("zips\\" + release["name"].get<std::string>() + ".zip"))
                 downloaded = true;
+            int version = std::stoi(release["name"].get<std::string>().substr(release["name"].get<std::string>().find(".") + 1));
 
-            std::string txt = release["name"].get<std::string>() + (downloaded ? " (downloaded)" : "");
+            std::string txt = release["name"].get<std::string>();
+            if (downloaded)
+                txt += " (downloaded)";
+            if (version == currentVersion)
+                txt += " (active)";
             int pos = (int)SendMessage(hwndList, LB_ADDSTRING, 0, (LPARAM)txt.c_str());
             SendMessage(hwndList, LB_SETITEMDATA, pos, (LPARAM)i++);
+            
+            if (version == currentVersion)
+            {
+                SendMessage(hwndList, LB_SETCURSEL, pos, (LPARAM)0);
+                setDesc(hDlg, pos);
+            }
         }
-        SendMessage(hwndList, LB_SETCURSEL, 0, (LPARAM)0);
     }
         return (INT_PTR)TRUE;
-
+    case WM_CLOSE:
+        EndDialog(hDlg, -1);
+        break;
     case WM_COMMAND:
         if (LOWORD(wParam) == IDOK)
         {
             HWND hwndList = GetDlgItem(hDlg, IDC_LIST);
-            EndDialog(hDlg, SendMessage(hwndList, LB_GETCURSEL, 0, 0));
+            EndDialog(hDlg, 1+SendMessage(hwndList, LB_GETCURSEL, 0, 0));
             return 0;
         }
         if (LOWORD(wParam) == IDC_LIST)
@@ -62,13 +86,7 @@ INT_PTR CALLBACK Wndproc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
                 HWND hwndList = GetDlgItem(hDlg, IDC_LIST);
                 int lbItem = (int)SendMessage(hwndList, LB_GETCURSEL, 0, 0);
                 int i = (int)SendMessage(hwndList, LB_GETITEMDATA, lbItem, 0);
-
-                HWND hwndDetails = GetDlgItem(hDlg, IDC_DETAILS);
-                if (releaseInfo[i].find("body") != releaseInfo[i].end())
-                    SendMessage(hwndDetails, WM_SETTEXT, 0, (LPARAM)releaseInfo[i]["body"].get<std::string>().c_str());
-                else
-                    SendMessage(hwndDetails, WM_SETTEXT, 0, (LPARAM)"no information");
-
+                setDesc(hDlg, i);
             }
         }
         return 0;
@@ -94,7 +112,22 @@ INT_PTR CALLBACK DownloadWndProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM 
     return DefWindowProc(hDlg, message, wParam, lParam);
 }
 
+HWND hSwitchDlg;
 
+INT_PTR CALLBACK SwitchWndProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+{
+    hSwitchDlg = hDlg;
+    UNREFERENCED_PARAMETER(lParam);
+    switch (message)
+    {
+    case WM_INITDIALOG:
+        return (INT_PTR)TRUE;
+
+    case WM_COMMAND:
+        return 0;
+    }
+    return DefWindowProc(hDlg, message, wParam, lParam);
+}
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
                      _In_ LPWSTR    lpCmdLine,
@@ -106,10 +139,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     if (!std::filesystem::exists("zips"))
         std::filesystem::create_directories("zips");
 
-    int index = (int)DialogBox(hInstance, MAKEINTRESOURCE(IDD_ABOUTBOX), nullptr, Wndproc);
-    std::string wantedVersionStr = releaseInfo[index]["name"].get<std::string>();
-    int wantedVersion = std::stoi(wantedVersionStr.substr(wantedVersionStr.find(".")+1));
-    int currentVersion = 0;
 
     DWORD  verHandle = 0;
     UINT   size = 0;
@@ -119,7 +148,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     if (verSize != NULL)
     {
         LPSTR verData = new char[verSize];
-        if(GetFileVersionInfo(".\\BrowEdit3.exe", verHandle, verSize, verData))
+        if (GetFileVersionInfo(".\\BrowEdit3.exe", verHandle, verSize, verData))
         {
             if (VerQueryValue(verData, "\\", (VOID FAR * FAR*) & lpBuffer, &size))
             {
@@ -135,6 +164,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         }
         delete[] verData;
     }
+    int index = ((int)DialogBox(hInstance, MAKEINTRESOURCE(IDD_ABOUTBOX), nullptr, Wndproc)) - 1;
+    if (index < 0)
+        return -1;
+    std::string wantedVersionStr = releaseInfo[index]["name"].get<std::string>();
+    int wantedVersion = std::stoi(wantedVersionStr.substr(wantedVersionStr.find(".")+1));
+
 
     if (wantedVersion != currentVersion)
     {
@@ -162,18 +197,18 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
             t.join();
         }
 
-        miniz_cpp::zip_file zip(zipFileName);
-        auto list = zip.infolist();
-        for (auto& l : list)
-            if (l.filename.ends_with("/"))
-                std::filesystem::create_directories(l.filename);
-        zip.extractall(".");
-
-
+        std::thread t([&]() {
+            miniz_cpp::zip_file zip(zipFileName);
+            auto list = zip.infolist();
+            for (auto& l : list)
+                if (l.filename.ends_with("/"))
+                    std::filesystem::create_directories(l.filename);
+            zip.extractall(".");
+            EndDialog(hSwitchDlg, 0);
+            });
+        DialogBox(hInstance, MAKEINTRESOURCE(IDD_SWITCHING), nullptr, SwitchWndProc);
+        t.join();
     }
-
-
-
 
     ShellExecute(nullptr, nullptr, "BrowEdit3.exe", "", nullptr, SW_SHOWDEFAULT);
 
