@@ -33,7 +33,10 @@ jobs:
     
     - name: Package
       working-directory: ${{env.GITHUB_WORKSPACE}}
-      run: .\buildpackage.bat
+      uses: papeloto/action-zip@v1
+      with:
+          files: BrowEdit3.exe BrowEdit3.pdb doc/ data/ imgui.ini
+          dest: BrowEdit3.zip
 
     - name: UploadArtifact
       uses: actions/upload-artifact@master
