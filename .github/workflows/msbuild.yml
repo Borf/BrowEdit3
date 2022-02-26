@@ -52,5 +52,5 @@ jobs:
       uses: ncipollo/release-action@v1
       with:
         artifacts: "BrowEdit3_${{ github.run_number }}.zip"
-        tag: build-${{ github.run_number }}
+        tag: v3.${{ github.run_number }}
         token: ${{ secrets.GITHUB_TOKEN }}
