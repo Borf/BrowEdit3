@@ -25,6 +25,12 @@ jobs:
     - name: Add MSBuild to PATH
       uses: microsoft/setup-msbuild@v1.0.2
 
+    - name: Fix version
+      shell: cmd
+      run: |
+        echo \#define VERSION {{ github.run_number }}>Version.h
+        echo.>>Version.h
+
     - name: Build
       working-directory: ${{env.GITHUB_WORKSPACE}}
       # Add additional options to the MSBuild command line here (like platform or verbosity level).

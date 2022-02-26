@@ -498,6 +498,9 @@
     <ClInclude Include="browedit\shaders\GndShader.h">
       <Filter>browedit\shaders</Filter>
     </ClInclude>
+    <ClInclude Include="Version.h">
+      <Filter>Resource Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="BrowEdit3.rc">

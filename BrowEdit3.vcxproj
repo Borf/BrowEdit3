@@ -161,6 +161,7 @@
     <ClInclude Include="lib\zlib\zlib.h" />
     <ClInclude Include="lib\zlib\zutil.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="Version.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="BrowEdit3.rc" />
