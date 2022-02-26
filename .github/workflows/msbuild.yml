@@ -1,4 +1,4 @@
-name: MSBuild
+name: BrowEdit3
 
 on:
   push:

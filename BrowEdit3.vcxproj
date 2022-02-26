@@ -171,6 +171,7 @@
     <Image Include="icon.ico" />
   </ItemGroup>
   <ItemGroup>
+    <None Include=".github\workflows\msbuild.yml" />
     <None Include="data\shaders\billboard.fs" />
     <None Include="data\shaders\billboard.vs" />
     <None Include="data\shaders\gnd.fs" />

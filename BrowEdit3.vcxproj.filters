@@ -552,5 +552,6 @@
     <None Include="doc\Readme.md">
       <Filter>doc</Filter>
     </None>
+    <None Include=".github\workflows\msbuild.yml" />
   </ItemGroup>
 </Project>

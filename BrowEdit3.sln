@@ -5,16 +5,32 @@ VisualStudioVersion = 17.0.31919.166
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BrowEdit3", "BrowEdit3.vcxproj", "{68A641C3-1E4B-4E70-A7D1-73DFA91441BA}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Patcher", "Patcher\Patcher.vcxproj", "{7024AA79-A4DA-43B1-AEA5-13D599818E16}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
 		Release|x64 = Release|x64
+		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{68A641C3-1E4B-4E70-A7D1-73DFA91441BA}.Debug|x64.ActiveCfg = Debug|x64
 		{68A641C3-1E4B-4E70-A7D1-73DFA91441BA}.Debug|x64.Build.0 = Debug|x64
+		{68A641C3-1E4B-4E70-A7D1-73DFA91441BA}.Debug|x86.ActiveCfg = Debug|x64
+		{68A641C3-1E4B-4E70-A7D1-73DFA91441BA}.Debug|x86.Build.0 = Debug|x64
 		{68A641C3-1E4B-4E70-A7D1-73DFA91441BA}.Release|x64.ActiveCfg = Release|x64
 		{68A641C3-1E4B-4E70-A7D1-73DFA91441BA}.Release|x64.Build.0 = Release|x64
+		{68A641C3-1E4B-4E70-A7D1-73DFA91441BA}.Release|x86.ActiveCfg = Release|x64
+		{68A641C3-1E4B-4E70-A7D1-73DFA91441BA}.Release|x86.Build.0 = Release|x64
+		{7024AA79-A4DA-43B1-AEA5-13D599818E16}.Debug|x64.ActiveCfg = Debug|x64
+		{7024AA79-A4DA-43B1-AEA5-13D599818E16}.Debug|x64.Build.0 = Debug|x64
+		{7024AA79-A4DA-43B1-AEA5-13D599818E16}.Debug|x86.ActiveCfg = Debug|Win32
+		{7024AA79-A4DA-43B1-AEA5-13D599818E16}.Debug|x86.Build.0 = Debug|Win32
+		{7024AA79-A4DA-43B1-AEA5-13D599818E16}.Release|x64.ActiveCfg = Release|x64
+		{7024AA79-A4DA-43B1-AEA5-13D599818E16}.Release|x64.Build.0 = Release|x64
+		{7024AA79-A4DA-43B1-AEA5-13D599818E16}.Release|x86.ActiveCfg = Release|Win32
+		{7024AA79-A4DA-43B1-AEA5-13D599818E16}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
