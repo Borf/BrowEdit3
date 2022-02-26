@@ -74,7 +74,6 @@ public:
 
 
 	//height edit mode
-	std::vector<glm::ivec2> tileSelection;
 	bool mouseDown = false;
 
 

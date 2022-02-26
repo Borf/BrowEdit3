@@ -17,6 +17,7 @@ public:
 	std::vector<Action*> undoStack;
 	std::vector<Action*> redoStack;
 	std::vector<Node*> selectedNodes;
+	std::vector<glm::ivec2> tileSelection;
 
 
 	Node* findAndBuildNode(const std::string &path, Node* root = nullptr);

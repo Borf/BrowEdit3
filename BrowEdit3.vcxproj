@@ -17,6 +17,8 @@
     <ClCompile Include="browedit\actions\NewObjectAction.cpp" />
     <ClCompile Include="browedit\actions\ObjectChangeAction.cpp" />
     <ClCompile Include="browedit\actions\SelectAction.cpp" />
+    <ClCompile Include="browedit\actions\TileChangeAction.cpp" />
+    <ClCompile Include="browedit\actions\TileSelectAction.cpp" />
     <ClCompile Include="browedit\BrowEdit.cpp" />
     <ClCompile Include="browedit\BrowEdit.glfw.cpp" />
     <ClCompile Include="browedit\BrowEdit.imgui.cpp" />
@@ -100,6 +102,8 @@
     <ClInclude Include="browedit\actions\NewObjectAction.h" />
     <ClInclude Include="browedit\actions\ObjectChangeAction.h" />
     <ClInclude Include="browedit\actions\SelectAction.h" />
+    <ClInclude Include="browedit\actions\TileChangeAction.h" />
+    <ClInclude Include="browedit\actions\TileSelectAction.h" />
     <ClInclude Include="browedit\BrowEdit.h" />
     <ClInclude Include="browedit\components\BillboardRenderer.h" />
     <ClInclude Include="browedit\components\Collider.h" />
