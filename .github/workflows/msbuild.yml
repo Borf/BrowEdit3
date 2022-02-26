@@ -33,10 +33,15 @@ jobs:
     
     - name: Package
       working-directory: ${{env.GITHUB_WORKSPACE}}
-      run: buildpackage.bat
+      run: .\buildpackage.bat
+
+    - name: UploadArtifact
+      uses: actions/upload-artifact@master
+      with:
+        path: BrowEdit3.zip
 
     - name: Release
       uses: ncipollo/release-action@v1
       with:
-        artifacts: "browedit3.zip"
+        artifacts: "BrowEdit3.zip"
         token: ${{ secrets.GITHUB_TOKEN }}
