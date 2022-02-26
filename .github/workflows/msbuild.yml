@@ -31,10 +31,19 @@ jobs:
       # See https://docs.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference
       run: msbuild /m /p:Configuration=${{env.BUILD_CONFIGURATION}} ${{env.SOLUTION_FILE_PATH}}
     
+    - name: BuildPackage
+      run: |
+        md dist
+        xcopy /y BrowEdit3.exe dist\
+        xcopy /y BrowEdit3.pdb dist\
+        xcopy /y imgui.ini dist\
+        xcopy /y /s data dist\data\
+        xcopy /y /s doc dist\doc\
+
     - name: Package
       uses: papeloto/action-zip@v1
       with:
-        files: BrowEdit3.exe BrowEdit3.pdb doc/ data/ imgui.ini
+        files: dist
         dest: BrowEdit3_${{ github.run_number }}.zip
 
     - name: UploadArtifact
