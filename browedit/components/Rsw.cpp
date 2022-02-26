@@ -165,7 +165,10 @@ void Rsw::load(const std::string& fileName, Map* map, bool loadModels, bool load
 		else
 			objPath = "";
 
-		object->setParent(map->findAndBuildNode(objPath));
+		if(map)
+			object->setParent(map->findAndBuildNode(objPath));
+		else
+			object->setParent(node);
 	}
 
 
@@ -308,11 +311,34 @@ Rsw::QuadTreeNode::QuadTreeNode(std::vector<glm::vec3>::const_iterator &it, int 
 	range[1] = *it;
 	it++;
 
+	for (size_t i = 0; i < 4; i++)
+		children[i] = nullptr;
 	if (level >= 5)
 		return;
 	for (size_t i = 0; i < 4; i++)
 		children[i] = new QuadTreeNode(it, level + 1);
 }
+
+Rsw::QuadTreeNode::QuadTreeNode(float x, float y, float width, float height, int level) : bbox(glm::vec3(0, 0, 0), glm::vec3(0, 0, 0))
+{
+	bbox.min.x = x;
+	bbox.max.x = x+width;
+
+	bbox.min.z = y;
+	bbox.max.z = y+height;
+
+	for (int i = 0; i < 4; i++)
+		children[i] = nullptr;
+
+	if (level >= 5)
+		return;
+	children[0] = new QuadTreeNode(x, y, width / 2, height / 2, level + 1);
+	children[1] = new QuadTreeNode(x+width/2, y, width / 2, height / 2, level + 1);
+	children[2] = new QuadTreeNode(x, y+height/2, width / 2, height / 2, level + 1);
+	children[3] = new QuadTreeNode(x+width/2, y+height/2, width / 2, height / 2, level + 1);
+
+}
+
 
 Rsw::QuadTreeNode::~QuadTreeNode()
 {
@@ -374,6 +400,74 @@ void Rsw::buildImGui(BrowEdit* browEdit)
 }
 
 
+void Rsw::recalculateQuadtree(QuadTreeNode* node)
+{
+	static Gnd* gnd;
+	if (!node)
+	{
+		node = quadtree;
+		gnd = this->node->getComponent<Gnd>();
+
+		//this->node->traverse([&](Node* n) {
+		//	auto rswModel = n->getComponent<RswModel>();
+		//	if (rswModel)
+		//	{
+		//		auto collider = n->getComponent<RswModelCollider>();
+		//		auto collisions = collider->getCollisions(ray);
+		//		for (auto& c : collisions)
+		//		{
+		//			node->bbox.min.y = glm::min(node->bbox.min.y, -c.y);
+		//			node->bbox.max.y = glm::max(node->bbox.max.y, -c.y);
+		//		}
+		//	}
+		//	});
+
+		//TODO
+		//make a 2d array with min/max height per cube
+		//iterate through all models
+		//per model, calculate world position per vertex
+		//per vertex, calculate cube and change the min/max height
+		//afterwards, for more accuracy, run raycast down for every ??? inside of the aabb
+		//AABB will not be accurate enough
+	}
+
+	for (int i = 0; i < 4; i++)
+		if(node->children[i])
+			recalculateQuadtree(node->children[i]);
+
+	if (!node->children[0]) // leaf
+	{
+		node->bbox.min.y = 99999;
+		node->bbox.max.y = -99999;
+
+
+		float steps = glm::max(2.0f, glm::ceil((node->bbox.max.x - node->bbox.min.x) / 10));
+
+		for (float x = 0; x <= 1; x += 1/steps)
+		{
+			for (float y = 0; y <= 1; y += 1/steps)
+			{
+				auto center = glm::vec3(glm::mix(node->bbox.min.x, node->bbox.max.x, x), 0, glm::mix(node->bbox.min.z, node->bbox.max.z, y));
+				math::Ray ray(glm::vec3(center.x + 5 * gnd->width, 9999, 10 * gnd->height - (center.z + 5 * gnd->height) + 10), glm::vec3(0, -1, 0));
+				auto pos = gnd->rayCast(ray, false, glm::floor(ray.origin.x/10)-2, gnd->height - glm::floor(ray.origin.z / 10) - 2, glm::ceil(ray.origin.x / 10) + 2, gnd->height - glm::ceil(ray.origin.z / 10)+2);
+				node->bbox.min.y = glm::min(node->bbox.min.y, -pos.y);
+				node->bbox.max.y = glm::max(node->bbox.max.y, -pos.y);
+			}
+		}
+	}
+	else
+	{
+		node->bbox.min.y = 9999999;
+		node->bbox.max.y = -9999999;
+		for (int i = 0; i < 4; i++)
+		{
+			node->bbox.min.y = glm::min(node->bbox.min.y, node->children[i]->bbox.min.y);
+			node->bbox.max.y = glm::max(node->bbox.max.y, node->children[i]->bbox.max.y);
+		}
+	}
+
+
+}
 
 
 void RswModelCollider::begin()
@@ -550,41 +644,42 @@ std::vector<glm::vec3> CubeCollider::getCollisions(const math::Ray& ray)
 }
 
 
-
-
 void Rsw::QuadTreeNode::draw(int levelLeft)
 {
 	if (levelLeft <= 0)
 		return;
-	glColor4f(1, 0, 0, 1);
-	glBegin(GL_LINES);
-	glVertex3f(bbox.min.x, bbox.min.y, bbox.min.z);
-	glVertex3f(bbox.min.x, bbox.min.y, bbox.max.z);
-	glVertex3f(bbox.min.x, bbox.min.y, bbox.max.z);
-	glVertex3f(bbox.min.x, bbox.max.y, bbox.max.z);
-	glVertex3f(bbox.min.x, bbox.max.y, bbox.max.z);
-	glVertex3f(bbox.min.x, bbox.max.y, bbox.min.z);
-	glVertex3f(bbox.min.x, bbox.max.y, bbox.min.z);
-	glVertex3f(bbox.min.x, bbox.min.y, bbox.min.z);
+	if (levelLeft == 1)
+	{
+		glColor4f(1, 0, 0, 1);
+		glBegin(GL_LINES);
+		glVertex3f(bbox.min.x, bbox.min.y, bbox.min.z);
+		glVertex3f(bbox.min.x, bbox.min.y, bbox.max.z);
+		glVertex3f(bbox.min.x, bbox.min.y, bbox.max.z);
+		glVertex3f(bbox.min.x, bbox.max.y, bbox.max.z);
+		glVertex3f(bbox.min.x, bbox.max.y, bbox.max.z);
+		glVertex3f(bbox.min.x, bbox.max.y, bbox.min.z);
+		glVertex3f(bbox.min.x, bbox.max.y, bbox.min.z);
+		glVertex3f(bbox.min.x, bbox.min.y, bbox.min.z);
 
-	glVertex3f(bbox.max.x, bbox.min.y, bbox.min.z);
-	glVertex3f(bbox.max.x, bbox.min.y, bbox.max.z);
-	glVertex3f(bbox.max.x, bbox.min.y, bbox.max.z);
-	glVertex3f(bbox.max.x, bbox.max.y, bbox.max.z);
-	glVertex3f(bbox.max.x, bbox.max.y, bbox.max.z);
-	glVertex3f(bbox.max.x, bbox.max.y, bbox.min.z);
-	glVertex3f(bbox.max.x, bbox.max.y, bbox.min.z);
-	glVertex3f(bbox.max.x, bbox.min.y, bbox.min.z);
+		glVertex3f(bbox.max.x, bbox.min.y, bbox.min.z);
+		glVertex3f(bbox.max.x, bbox.min.y, bbox.max.z);
+		glVertex3f(bbox.max.x, bbox.min.y, bbox.max.z);
+		glVertex3f(bbox.max.x, bbox.max.y, bbox.max.z);
+		glVertex3f(bbox.max.x, bbox.max.y, bbox.max.z);
+		glVertex3f(bbox.max.x, bbox.max.y, bbox.min.z);
+		glVertex3f(bbox.max.x, bbox.max.y, bbox.min.z);
+		glVertex3f(bbox.max.x, bbox.min.y, bbox.min.z);
 
-	glVertex3f(bbox.min.x, bbox.min.y, bbox.min.z);
-	glVertex3f(bbox.max.x, bbox.min.y, bbox.min.z);
-	glVertex3f(bbox.min.x, bbox.min.y, bbox.max.z);
-	glVertex3f(bbox.max.x, bbox.min.y, bbox.max.z);
-	glVertex3f(bbox.min.x, bbox.max.y, bbox.min.z);
-	glVertex3f(bbox.max.x, bbox.max.y, bbox.min.z);
-	glVertex3f(bbox.min.x, bbox.max.y, bbox.max.z);
-	glVertex3f(bbox.max.x, bbox.max.y, bbox.max.z);
-	glEnd();
+		glVertex3f(bbox.min.x, bbox.min.y, bbox.min.z);
+		glVertex3f(bbox.max.x, bbox.min.y, bbox.min.z);
+		glVertex3f(bbox.min.x, bbox.min.y, bbox.max.z);
+		glVertex3f(bbox.max.x, bbox.min.y, bbox.max.z);
+		glVertex3f(bbox.min.x, bbox.max.y, bbox.min.z);
+		glVertex3f(bbox.max.x, bbox.max.y, bbox.min.z);
+		glVertex3f(bbox.min.x, bbox.max.y, bbox.max.z);
+		glVertex3f(bbox.max.x, bbox.max.y, bbox.max.z);
+		glEnd();
+	}
 
 	for (int i = 0; i < 4; i++)
 		if (children[i])

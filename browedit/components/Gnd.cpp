@@ -299,13 +299,23 @@ void Gnd::save(const std::string& fileName)
 
 
 
-glm::vec3 Gnd::rayCast(const math::Ray& ray, bool emptyTiles)
+glm::vec3 Gnd::rayCast(const math::Ray& ray, bool emptyTiles, int xMin, int yMin, int xMax, int yMax)
 {
+	if (xMax == -1)
+		xMax = cubes.size();
+	if (yMax == -1)
+		yMax = cubes[0].size();
+
+	xMin = glm::max(0, xMin);
+	yMin = glm::max(0, yMin);
+	xMax = glm::min(xMax, (int)cubes.size());
+	yMax = glm::min(yMax, (int)cubes[0].size());
+
 	std::vector<glm::vec3> collisions;
 	float f = 0;
-	for (auto x = 0; x < cubes.size(); x++)
+	for (auto x = xMin; x < xMax; x++)
 	{
-		for (auto y = 0; y < cubes[x].size(); y++)
+		for (auto y = yMin; y < yMax; y++)
 		{
 			Gnd::Cube* cube = cubes[x][y];
 
@@ -880,14 +890,14 @@ std::vector<glm::vec3> Gnd::getMapQuads()
 				quads.push_back(glm::vec3((x + 1) * 10, -cube->heights[1], 10 * height - (y + 0) * 10 + 10));//3
 				quads.push_back(glm::vec3((x + 1) * 10, -cube->heights[3], 10 * height - (y + 1) * 10 + 10));//4
 			}
-			if (cube->tileSide != -1)
+			if (cube->tileSide != -1 && y < height-1)
 			{
 				quads.push_back(glm::vec3(10 * x, -cube->h3, 10 * height - 10 * y));//1
 				quads.push_back(glm::vec3(10 * x + 10, -cube->h4, 10 * height - 10 * y));//2
 				quads.push_back(glm::vec3(10 * x + 10, -cubes[x][y + 1]->h2, 10 * height - 10 * y));//3
 				quads.push_back(glm::vec3(10 * x, -cubes[x][y + 1]->h1, 10 * height - 10 * y));//4
 			}
-			if (cube->tileFront != -1)
+			if (cube->tileFront != -1 && x < width - 1)
 			{
 				quads.push_back(glm::vec3(10 * x + 10, -cube->h2, 10 * height - 10 * y + 10));//1
 				quads.push_back(glm::vec3(10 * x + 10, -cube->h4, 10 * height - 10 * y));//2

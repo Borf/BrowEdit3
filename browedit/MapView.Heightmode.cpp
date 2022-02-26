@@ -348,7 +348,7 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 			int tileMaxY = gnd->height - (int)glm::floor(glm::min(mouseDragStart.z, mouseDragEnd.z) / 10) + 1;
 			int tileMinY = gnd->height - (int)glm::ceil(glm::max(mouseDragStart.z, mouseDragEnd.z) / 10) + 1;
 
-			if (tileMinX >= 0 && tileMaxX < gnd->width - 1 && tileMinY >= 0 && tileMaxY < gnd->height - 1)
+			if (tileMinX >= 0 && tileMaxX < gnd->width + 1 && tileMinY >= 0 && tileMaxY < gnd->height + 1)
 				for (int x = tileMinX; x < tileMaxX; x++)
 					for (int y = tileMinY; y < tileMaxY; y++)
 						tileSelection.push_back(glm::ivec2(x, y));
@@ -372,7 +372,7 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 		ImGui::Text("Selection: (%d,%d) - (%d,%d)", tileMinX, tileMinY, tileMaxX, tileMaxY);
 		ImGui::End();
 
-		if (tileMinX >= 0 && tileMaxX < gnd->width - 1 && tileMinY >= 0 && tileMaxY < gnd->height - 1)
+		if (tileMinX >= 0 && tileMaxX < gnd->width+1 && tileMinY >= 0 && tileMaxY < gnd->height+1)
 			for (int x = tileMinX; x < tileMaxX; x++)
 			{
 				for (int y = tileMinY; y < tileMaxY; y++)

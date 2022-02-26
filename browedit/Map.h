@@ -48,4 +48,5 @@ public:
 	void importTileColors(BrowEdit* browEdit, bool exportWalls);
 
 	void optimizeGndTiles(BrowEdit* browEdit);
+	void recalculateQuadTree(BrowEdit* browEdit);
 };

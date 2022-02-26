@@ -209,8 +209,14 @@ Rsm::Mesh::Mesh(Rsm* model, std::istream* rsmFile)
 		rsmFile->read(reinterpret_cast<char*>(&f->smoothGroup), sizeof(int));
 
 		faces[i] = f;
-
-		f->normal = glm::normalize(glm::cross(vertices[f->vertexIds[1]] - vertices[f->vertexIds[0]], vertices[f->vertexIds[2]] - vertices[f->vertexIds[0]]));
+		bool ok = true;
+		for (int ii = 0; ii < 3; ii++)
+			if (f->vertexIds[ii] >= vertices.size())
+				ok = false;
+		if (ok)
+			f->normal = glm::normalize(glm::cross(vertices[f->vertexIds[1]] - vertices[f->vertexIds[0]], vertices[f->vertexIds[2]] - vertices[f->vertexIds[0]]));
+		else
+			std::cerr<< "There's an error in " << model->fileName << std::endl;
 	}
 
 	int frameCount;

@@ -254,6 +254,8 @@ namespace util
 	void FileIO::DirSource::listFiles(const std::string& dir, std::vector<std::string>& files)
 	{
 		try {
+			if (!std::filesystem::exists(directory + dir))
+				return;
 			for (const auto& entry : std::filesystem::directory_iterator(directory + dir))
 			{
 				auto f = entry.path().string();

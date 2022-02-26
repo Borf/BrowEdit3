@@ -39,13 +39,29 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glDisable(GL_TEXTURE_2D);
 
-
+	//TODO: move this code up out of object mode
 	glPushMatrix();
 	glScalef(1, -1, -1);
 	auto gnd = map->rootNode->getComponent<Gnd>();
-	glTranslatef(gnd->width * 5.0f, 0.0f, -gnd->height * 5.0f);
+	glTranslatef(gnd->width * 5.0f, 0.0f, -gnd->height * 5.0f-10);
 	map->rootNode->getComponent<Rsw>()->quadtree->draw(quadTreeMaxLevel);
 	glPopMatrix();
+
+#if 0 //visualize aabb
+	glEnable(GL_BLEND);
+	glColor4f(1, 0, 0, 0.3f);
+	glBegin(GL_TRIANGLES);
+	map->rootNode->traverse([](Node* n) {
+		auto rswModel = n->getComponent<RswModel>();
+		if (rswModel)
+		{
+			auto verts = math::AABB::box(rswModel->aabb.min, rswModel->aabb.max);
+			for (auto& v : verts)
+				glVertex3f(v.x, v.y, v.z);
+		}
+	});
+	glEnd();
+#endif
 
 	static glm::vec4 color[] = { glm::vec4(1,0,0,1), glm::vec4(0,1,0,1), glm::vec4(0,0,1,1) };
 	debugPointMutex.lock();

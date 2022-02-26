@@ -570,6 +570,7 @@ void Map::exportTileColors(BrowEdit* browEdit, bool exportWalls)
 	stbi_write_png((browEdit->config.ropath + name + ".tilecolor.png").c_str(), gnd->width * wallMultiplier, gnd->height * wallMultiplier, 3, img, gnd->width * wallMultiplier * 3);
 	delete[] img;
 }
+
 void Map::importTileColors(BrowEdit* browEdit, bool exportWalls)
 {
 	int wallMultiplier = 2;
@@ -610,4 +611,18 @@ void Map::importTileColors(BrowEdit* browEdit, bool exportWalls)
 		}
 	}
 	stbi_image_free(img);
+}
+
+
+
+void Map::recalculateQuadTree(BrowEdit* browEdit)
+{
+	auto rsw = rootNode->getComponent<Rsw>();
+	if (!rsw->quadtree)
+	{
+		auto gnd = rootNode->getComponent<Gnd>();
+		rsw->quadtree = new Rsw::QuadTreeNode(-gnd->width/2.0f, -gnd->height/2.0f, (float)gnd->width, (float)gnd->height, 0);
+	}
+
+	rsw->recalculateQuadtree();
 }

@@ -218,6 +218,8 @@ void BrowEdit::run()
 					saveMap(activeMapView->map);
 				if (ImGui::IsKeyPressed('O'))
 					showOpenWindow();
+				if (ImGui::IsKeyPressed('Q') && activeMapView)
+					activeMapView->map->recalculateQuadTree(this);
 				if (ImGui::IsKeyPressed('L') && activeMapView)
 				{
 					lightmapper = new Lightmapper(activeMapView->map, this);
