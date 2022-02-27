@@ -12,6 +12,7 @@
 #include <browedit/actions/TileChangeAction.h>
 
 #include <glm/gtc/type_ptr.hpp>
+#include <iostream>
 
 float TriangleHeight(const glm::vec3& a, const glm::vec3& b, const glm::vec3& c, const glm::vec3& p)
 {
@@ -71,8 +72,28 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 					ImGui::RadioButton("Nothing", &edgeMode, 0);
 					ImGui::SameLine();
 					ImGui::RadioButton("Raise ground", &edgeMode, 1);
+
+					ImGui::RadioButton("Build walls", &edgeMode, 3);
 					ImGui::SameLine();
-					ImGui::RadioButton("Build walls", &edgeMode, 2);
+					ImGui::RadioButton("Snap ground", &edgeMode, 2);
+				}
+
+				if (ImGui::Button("Smooth selection", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
+				{
+
+				}
+				if (ImGui::Button("Flatten selection", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
+				{
+
+				}
+
+				if (ImGui::Button("Remove walls from selection", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
+				{
+
+				}
+				if (ImGui::Button("Finish my map with AI", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
+				{
+					std::cout << "Coming soon®" << std::endl;
 				}
 			}
 		}
@@ -277,7 +298,6 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 					for (int ii = 0; ii < 4; ii++)
 						newValues[gnd->cubes[t.x][t.y]][ii] = gnd->cubes[t.x][t.y]->heights[ii];
 				map->doAction(new TileChangeAction(originalValues, newValues), browEdit);
-
 			}
 			else if (gadgetHeight[i].axisDragged)
 			{
@@ -333,6 +353,9 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 					}
 				}
 
+				std::vector<glm::ivec2> tilesAround;
+				auto isTileSelected = [&](int x, int y) { return std::find(map->tileSelection.begin(), map->tileSelection.end(), glm::ivec2(x, y)) != map->tileSelection.end(); };
+
 				for (auto& t : map->tileSelection)
 				{
 					if (gndRenderer)
@@ -344,10 +367,71 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 							gnd->cubes[t.x][t.y]->heights[ii] = originalValues[gnd->cubes[t.x][t.y]][ii] + (TriangleHeight(pos[0], pos[1], pos[2], p) - TriangleHeight(originalCorners[0], originalCorners[1], originalCorners[2], p));
 						if (TriangleContainsPoint(pos[1], pos[3], pos[2], p))
 							gnd->cubes[t.x][t.y]->heights[ii] = originalValues[gnd->cubes[t.x][t.y]][ii] + (TriangleHeight(pos[1], pos[3], pos[2], p) - TriangleHeight(originalCorners[1], originalCorners[3], originalCorners[2], p));
+						
+						if (edgeMode == 1 || edgeMode == 2) //smooth raise area around these tiles
+						{
+							for (int xx = -1; xx <= 1; xx++)
+								for (int yy = -1; yy <= 1; yy++)
+									if (t.x + xx >= 0 && t.x + xx < gnd->width && t.y + yy >= 0 && t.y + yy < gnd->height &&
+										std::find(tilesAround.begin(), tilesAround.end(), glm::ivec2(t.x + xx, t.y + yy)) == tilesAround.end() &&
+										!isTileSelected(t.x+xx, t.y+yy))
+										tilesAround.push_back(glm::ivec2(t.x + xx, t.y + yy));
+						}
 					}
 					gnd->cubes[t.x][t.y]->calcNormal();
 				}
+
+				auto getPointHeight = [&](int x1, int y1, int i1, int x2, int y2, int i2, int x3, int y3, int i3, float def)
+				{
+					if (x1 >= 0 && x1 < gnd->width && y1 >= 0 && y1 < gnd->height && isTileSelected(x1, y1))
+						return gnd->cubes[x1][y1]->heights[i1];
+					if (x2 >= 0 && x2 < gnd->width && y2 >= 0 && y2 < gnd->height && isTileSelected(x2, y2))
+						return gnd->cubes[x2][y2]->heights[i2];
+					if (x3 >= 0 && x3 < gnd->width && y3 >= 0 && y3 < gnd->height && isTileSelected(x3, y3))
+						return gnd->cubes[x3][y3]->heights[i3];
+					return def;
+				};
+				auto getPointHeightDiff = [&](int x1, int y1, int i1, int x2, int y2, int i2, int x3, int y3, int i3)
+				{
+					if (x1 >= 0 && x1 < gnd->width && y1 >= 0 && y1 < gnd->height && isTileSelected(x1, y1))
+						return originalValues[gnd->cubes[x1][y1]][i1] - gnd->cubes[x1][y1]->heights[i1];
+					if (x2 >= 0 && x2 < gnd->width && y2 >= 0 && y2 < gnd->height && isTileSelected(x2, y2))
+						return originalValues[gnd->cubes[x2][y2]][i2] - gnd->cubes[x2][y2]->heights[i2];
+					if (x3 >= 0 && x3 < gnd->width && y3 >= 0 && y3 < gnd->height && isTileSelected(x3, y3))
+						return originalValues[gnd->cubes[x3][y3]][i3] - gnd->cubes[x3][y3]->heights[i3];
+					return 0.0f;
+				};
+
+				for (auto a : tilesAround)
+				{
+					auto cube = gnd->cubes[a.x][a.y];
+					if (originalValues.find(cube) == originalValues.end())
+						for (int ii = 0; ii < 4; ii++)
+							originalValues[cube][ii] = cube->heights[ii];
+					//h1 bottomleft
+					//h2 bottomright
+					//h3 topleft
+					//h4 topright
+					if (edgeMode == 1) //raise ground
+					{
+						cube->heights[0] = originalValues[cube][0] - getPointHeightDiff(a.x - 1, a.y - 1, 3, a.x - 1, a.y, 1, a.x, a.y - 1, 2);
+						cube->heights[1] = originalValues[cube][1] - getPointHeightDiff(a.x + 1, a.y - 1, 2, a.x + 1, a.y, 0, a.x, a.y - 1, 3);
+						cube->heights[2] = originalValues[cube][2] - getPointHeightDiff(a.x - 1, a.y + 1, 1, a.x - 1, a.y, 3, a.x, a.y + 1, 0);
+						cube->heights[3] = originalValues[cube][3] - getPointHeightDiff(a.x + 1, a.y + 1, 0, a.x + 1, a.y, 2, a.x, a.y + 1, 1);
+					}
+					else if (edgeMode == 2) //snap ground
+					{
+						cube->heights[0] = getPointHeight(a.x - 1, a.y - 1, 3, a.x - 1, a.y, 1, a.x, a.y - 1, 2, cube->heights[0]);
+						cube->heights[1] = getPointHeight(a.x + 1, a.y - 1, 2, a.x + 1, a.y, 0, a.x, a.y - 1, 3, cube->heights[1]);
+						cube->heights[2] = getPointHeight(a.x - 1, a.y + 1, 1, a.x - 1, a.y, 3, a.x, a.y + 1, 0, cube->heights[2]);
+						cube->heights[3] = getPointHeight(a.x + 1, a.y + 1, 0, a.x + 1, a.y, 2, a.x, a.y + 1, 1, cube->heights[3]);
+					}
+					cube->calcNormal();
+				}
+
 				for (auto& t : map->tileSelection)
+					gnd->cubes[t.x][t.y]->calcNormals(gnd, t.x, t.y);
+				for (auto& t : tilesAround)
 					gnd->cubes[t.x][t.y]->calcNormals(gnd, t.x, t.y);
 			}
 		}
