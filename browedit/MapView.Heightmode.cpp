@@ -328,6 +328,39 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 				}
 
 
+				float snapHeight = 0;
+				if (ImGui::GetIO().KeyCtrl)
+				{
+					if (tileHovered.x >= 0 && tileHovered.x < gnd->width && tileHovered.y >= 0 && tileHovered.y < gnd->height)
+					{
+						glm::vec2 tileHoveredOffset((mouse3D.x / 10) - tileHovered.x, tileHovered.y - (gnd->height - mouse3D.z / 10));
+
+						ImGui::Begin("Statusbar");
+						ImGui::InputFloat2("Offset", glm::value_ptr(tileHoveredOffset));
+						ImGui::End();
+
+						int index = 0;
+						if (tileHoveredOffset.x > 0.5 && tileHoveredOffset.y > 0.5)
+							index = 0;
+						if (tileHoveredOffset.x < 0.5 && tileHoveredOffset.y > 0.5)
+							index = 1;
+						if (tileHoveredOffset.x > 0.5 && tileHoveredOffset.y < 0.5)
+							index = 2;
+						if (tileHoveredOffset.x < 0.5 && tileHoveredOffset.y < 0.5)
+							index = 3;
+
+						snapHeight = gnd->cubes[tileHovered.x][tileHovered.y]->heights[index];
+						glUseProgram(0);
+						glPointSize(10.0);
+						glBegin(GL_POINTS);
+						glVertex3f(	tileHovered.x * 10 + ((index % 2) == 0 ? 10 : 0), 
+									-snapHeight+1, 
+									(gnd->height-tileHovered.y) * 10 + ((index / 2) == 0 ? 10 : 0));
+						glEnd();
+					}
+				}
+
+
 				float f;
 				mouseRay.planeIntersection(mouseDragPlane, f);
 				glm::vec3 mouseOffset = (mouseRay.origin + f * mouseRay.dir) - mouseDragStart;
@@ -349,6 +382,10 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 							pos[ii].y += 2*mouseOffset.y;
 							pos[ii].y = glm::round(pos[ii].y / gridSize) * gridSize;
 							pos[ii].y = originalCorners[ii].y + (originalCorners[ii].y - pos[ii].y);
+						}
+						if (ImGui::GetIO().KeyCtrl)
+						{
+							pos[ii].y = originalCorners[ii].y + (originalCorners[ii].y + snapHeight);
 						}
 					}
 				}
