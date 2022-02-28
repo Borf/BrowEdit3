@@ -295,7 +295,7 @@ namespace util
 	{
 		char* buf = new char[length];
 		memset(buf, 0, length);
-		memcpy(buf, data.c_str(), std::min(data.length(), (std::size_t)length));
+		memcpy(buf, data.c_str(), std::min(data.length(), (std::size_t)length-1));
 		os.write(buf, length);
 		delete[] buf;
 	}

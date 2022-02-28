@@ -310,6 +310,7 @@ void Gnd::save(const std::string& fileName)
 
 glm::vec3 Gnd::rayCast(const math::Ray& ray, bool emptyTiles, int xMin, int yMin, int xMax, int yMax)
 {
+	//TODO: optimize this by making AABBs like a quadtree
 	if (xMax == -1)
 		xMax = cubes.size();
 	if (yMax == -1)
