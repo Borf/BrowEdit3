@@ -110,6 +110,13 @@ Gnd::Gnd(const std::string& fileName)
 				tile->lightmapIndex = 0;
 			}
 
+			if (tile->textureIndex < 0 || tile->textureIndex >= textureCount)
+			{
+				std::cout << "GND: TextureIndex < 0" << std::endl;
+				tile->textureIndex = 0;
+			}
+
+
 			tile->color.b = (unsigned char)file->get();
 			tile->color.g = (unsigned char)file->get();
 			tile->color.r = (unsigned char)file->get();
@@ -129,6 +136,8 @@ Gnd::Gnd(const std::string& fileName)
 				file->read(reinterpret_cast<char*>(&cube->h4), sizeof(float));
 				cube->calcNormal();
 
+				
+
 				if (version >= 0x0106)
 				{
 					file->read(reinterpret_cast<char*>(&cube->tileUp), sizeof(int));
@@ -147,17 +156,17 @@ Gnd::Gnd(const std::string& fileName)
 					cube->tileFront = front;
 				}
 
-				if (cube->tileUp >= (int)tiles.size())
+				if (cube->tileUp >= (int)tiles.size() || cube->tileUp < -1)
 				{
-					std::cout << "GND: Wrong value for tileup at " << x << ", " << y << "Found " << cube->tileUp << ", but only " << tiles.size() << " tiles found" << std::endl;
+					std::cout << "GND: Wrong value for tileup at " << x << ", " << y << ", Found " << cube->tileUp << ", but only " << tiles.size() << " tiles found" << std::endl;
 					cube->tileUp = -1;
 				}
-				if (cube->tileSide >= (int)tiles.size())
+				if (cube->tileSide >= (int)tiles.size() || cube->tileSide < -1)
 				{
 					std::cout << "GND: Wrong value for tileside at " << x << ", " << y << std::endl;
 					cube->tileSide = -1;
 				}
-				if (cube->tileFront >= (int)tiles.size())
+				if (cube->tileFront >= (int)tiles.size() || cube->tileFront < -1)
 				{
 					std::cout << "GND: Wrong value for tilefront at " << x << ", " << y << std::endl;
 					cube->tileFront = -1;

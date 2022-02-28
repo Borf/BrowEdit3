@@ -132,7 +132,8 @@ void BrowEdit::run()
 //		loadMap("data\\guild_vs1.rsw");
 //		loadMap("data\\effects_ro.rsw");
 //		loadMap("data\\prt_in.rsw");
-		loadMap("data\\wall_colour.rsw");
+//		loadMap("data\\wall_colour.rsw");
+		loadMap("data\\easter_la.rsw");
 #endif
 
 
@@ -397,7 +398,7 @@ void fixBackup(const std::string& fileName)
 				c = i;
 					break;
 			}
-		std::ofstream os((fileName + "." + std::to_string(c)));
+		std::ofstream os((fileName + "." + std::to_string(c)), std::ios_base::binary | std::ios_base::out);
 		char buf[1024];
 		while (!is.eof())
 		{
