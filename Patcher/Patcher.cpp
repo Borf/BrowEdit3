@@ -37,10 +37,17 @@ INT_PTR CALLBACK Wndproc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
     {
     case WM_INITDIALOG:
     {
-        auto data = net::fetch_request(net::url(L"https://api.github.com/repos/borf/browedit3/releases"));
-        std::string sdata(data.begin(), data.end());
-        OutputDebugString(sdata.c_str());
-        releaseInfo = json::parse(sdata);
+        for (int i = 0; i < 4; i++)
+        {
+            try {
+                auto data = net::fetch_request(net::url(L"https://api.github.com/repos/borf/browedit3/releases"));
+                std::string sdata(data.begin(), data.end());
+                OutputDebugString(sdata.c_str());
+                releaseInfo = json::parse(sdata);
+                break;
+            }
+            catch (...){ }
+        }
         OutputDebugString(releaseInfo.dump(2).c_str());
         HWND hwndList = GetDlgItem(hDlg, IDC_LIST);
 
@@ -211,12 +218,19 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                         exit(0);
                         return;
                     }
-                    auto data = net::fetch_request(net::url(std::wstring(url.begin(), url.end())), L"", L"", L"Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko)", [&](float p) {
-                        SendMessage(hwndDialogBar, PBM_SETPOS, (int)(p*100), 0);
-                        });
-                    std::ofstream outStream(zipFileName, std::ios_base::out | std::ios_base::binary);
-                    std::copy(data.begin(), data.end(), std::ostream_iterator<char>(outStream));
-                    outStream.close();
+                    for (int i = 0; i < 4; i++)
+                    {
+                        try {
+                            auto data = net::fetch_request(net::url(std::wstring(url.begin(), url.end())), L"", L"", L"Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko)", [&](float p) {
+                                SendMessage(hwndDialogBar, PBM_SETPOS, (int)(p * 100), 0);
+                                });
+                            std::ofstream outStream(zipFileName, std::ios_base::out | std::ios_base::binary);
+                            std::copy(data.begin(), data.end(), std::ostream_iterator<char>(outStream));
+                            outStream.close();
+                            break;
+                        }
+                        catch (...){}
+                    }
                     EndDialog(hProgressDlg, 0);
                 });
             DialogBox(hInstance, MAKEINTRESOURCE(IDD_DOWNLOADING), nullptr, DownloadWndProc);

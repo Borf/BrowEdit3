@@ -294,9 +294,9 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 				canSelect = false;
 
 				std::map<Gnd::Cube*, float[4]> newValues;
-				for (auto& t : map->tileSelection)
+				for (auto& t : originalValues)
 					for (int ii = 0; ii < 4; ii++)
-						newValues[gnd->cubes[t.x][t.y]][ii] = gnd->cubes[t.x][t.y]->heights[ii];
+						newValues[t.first][ii] = t.first->heights[ii];
 				map->doAction(new TileChangeAction(originalValues, newValues), browEdit);
 			}
 			else if (gadgetHeight[i].axisDragged)
