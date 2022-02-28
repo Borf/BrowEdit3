@@ -75,13 +75,24 @@ Rsm::Rsm(const std::string& fileName)
 		meshes[mesh->name] = mesh;
 	}
 
-	if (meshes.find(mainNodeName) == meshes.end())
+	if (meshes.size() == 0)
+	{
+		std::cerr << "RsmModel " << fileName << ": does not have any meshes in it" << std::endl;
+		return;
+	}
+	else if (meshes.find(mainNodeName) == meshes.end())
 	{
 		std::cerr << "RsmModel " << fileName << ": Could not locate root mesh" << std::endl;
 		rootMesh = meshes.begin()->second;
 	}
 	else
 		rootMesh = meshes[mainNodeName];
+
+	if (!rootMesh)
+	{
+		std::cerr << "RsmModel " << fileName << ": does not have a rootmesh? make sure this model has meshes in it" << std::endl;
+		return;
+	}
 
 	rootMesh->parent = NULL;
 	rootMesh->fetchChildren(meshes);
