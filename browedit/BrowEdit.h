@@ -22,7 +22,6 @@ namespace gl
 class BrowEdit
 {
 	gl::Texture* backgroundTexture;
-	gl::Texture* iconsTexture;
 
 	gl::Texture* lightTexture;
 	gl::Texture* effectTexture;
@@ -32,6 +31,7 @@ class BrowEdit
 	std::vector<Map*> maps;
 	std::list<MapView> mapViews; //list, because vector reallocates mapviews when pushing back, which breaks activeMapview pointer
 public:
+	gl::Texture* iconsTexture;
 	Lightmapper* lightmapper = nullptr;
 
 	struct WindowData

@@ -3,17 +3,19 @@
 #include <direct.h>
 #include <commdlg.h>
 #include "Util.h"
-#include <browedit/Map.h>
-#include <browedit/BrowEdit.h>
 #include <glm/gtc/type_ptr.hpp>
 #include <imgui.h>
 #include <misc/cpp/imgui_stdlib.h>
 #include <imgui_internal.h>
 #include <iostream>
+
+#include <browedit/Map.h>
+#include <browedit/BrowEdit.h>
 #include <browedit/components/Rsw.h>
 #include <browedit/components/RsmRenderer.h>
 #include <browedit/actions/ObjectChangeAction.h>
 #include <browedit/actions/GroupAction.h>
+#include <browedit/gl/Texture.h>
 
 namespace util
 {
@@ -130,6 +132,33 @@ namespace util
 			startValue = *ptr;
 		if (ImGui::IsItemDeactivatedAfterEdit())
 			map->doAction(new ObjectChangeAction(node, ptr, startValue, action == "" ? label : action), browEdit);
+		ImGui::PushID(label);
+		if(ImGui::BeginPopupContextItem("CopyPaste"))
+		{
+			try {
+				if (ImGui::MenuItem("Copy"))
+				{
+					json clipboard;
+					to_json(clipboard, *ptr);
+					ImGui::SetClipboardText(clipboard.dump(1).c_str());
+				}
+				if (ImGui::MenuItem("Paste"))
+				{
+					auto cb = ImGui::GetClipboardText();
+					if (cb)
+					{
+						startValue = *ptr;
+						from_json(json::parse(std::string(cb)), *ptr);
+						map->doAction(new ObjectChangeAction(node, ptr, startValue, action == "" ? label : action), browEdit);
+						ret = true;
+					}
+				}
+			}
+			catch (...) {}
+			ImGui::EndPopup();
+		}
+		ImGui::PopID();
+
 		return ret;
 	}
 
@@ -332,6 +361,8 @@ namespace util
 				ga->addAction(new ObjectChangeAction(data[i]->node, getProp(data[i]), startValues[i], label));
 			map->doAction(ga, browEdit);
 		}
+
+
 		return ret;
 	}
 	template bool DragFloat3Multi<RswObject>(BrowEdit* browEdit, Map* map, const std::vector<RswObject*>& data, const char* label, const std::function<glm::vec3* (RswObject*)>& getProp, float v_speed, float v_min, float v_max);
