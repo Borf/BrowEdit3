@@ -3,6 +3,7 @@
 #include <iostream>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <Version.h>
 
 static void glfw_error_callback(int error, const char* description)
 {
@@ -22,6 +23,8 @@ void onDebug(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei len
     std::cerr<< "OpenGL Debug\t"<<id<<"\t"<<message << std::endl;
 }
 
+#define Q(x) #x
+#define QUOTE(x) Q(x)
 
 bool BrowEdit::glfwBegin()
 {
@@ -32,7 +35,7 @@ bool BrowEdit::glfwBegin()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
 
-    window = glfwCreateWindow(1920, 1080, "NOT BrowEdit", NULL, NULL);
+    window = glfwCreateWindow(1920, 1080, "NOT BrowEdit V3." QUOTE(VERSION), NULL, NULL);
     
     if (window == nullptr)
         return false;

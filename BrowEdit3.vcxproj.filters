@@ -289,6 +289,15 @@
     <ClCompile Include="browedit\actions\GroupAction.cpp">
       <Filter>browedit\actions</Filter>
     </ClCompile>
+    <ClCompile Include="browedit\math\Polygon.cpp">
+      <Filter>browedit\math</Filter>
+    </ClCompile>
+    <ClCompile Include="browedit\actions\TileSelectAction.cpp">
+      <Filter>browedit\actions</Filter>
+    </ClCompile>
+    <ClCompile Include="browedit\actions\TileChangeAction.cpp">
+      <Filter>browedit\actions</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="lib\imgui\imgui.h">
@@ -498,6 +507,18 @@
     <ClInclude Include="browedit\shaders\GndShader.h">
       <Filter>browedit\shaders</Filter>
     </ClInclude>
+    <ClInclude Include="Version.h">
+      <Filter>Resource Files</Filter>
+    </ClInclude>
+    <ClInclude Include="browedit\math\Polygon.h">
+      <Filter>browedit\math</Filter>
+    </ClInclude>
+    <ClInclude Include="browedit\actions\TileChangeAction.h">
+      <Filter>browedit\actions</Filter>
+    </ClInclude>
+    <ClInclude Include="browedit\actions\TileSelectAction.h">
+      <Filter>browedit\actions</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="BrowEdit3.rc">
@@ -549,5 +570,6 @@
     <None Include="doc\Readme.md">
       <Filter>doc</Filter>
     </None>
+    <None Include=".github\workflows\msbuild.yml" />
   </ItemGroup>
 </Project>

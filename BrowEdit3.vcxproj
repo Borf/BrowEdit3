@@ -17,6 +17,8 @@
     <ClCompile Include="browedit\actions\NewObjectAction.cpp" />
     <ClCompile Include="browedit\actions\ObjectChangeAction.cpp" />
     <ClCompile Include="browedit\actions\SelectAction.cpp" />
+    <ClCompile Include="browedit\actions\TileChangeAction.cpp" />
+    <ClCompile Include="browedit\actions\TileSelectAction.cpp" />
     <ClCompile Include="browedit\BrowEdit.cpp" />
     <ClCompile Include="browedit\BrowEdit.glfw.cpp" />
     <ClCompile Include="browedit\BrowEdit.imgui.cpp" />
@@ -45,6 +47,7 @@
     <ClCompile Include="browedit\MapView.Objectmode.cpp" />
     <ClCompile Include="browedit\math\AABB.cpp" />
     <ClCompile Include="browedit\math\Plane.cpp" />
+    <ClCompile Include="browedit\math\Polygon.cpp" />
     <ClCompile Include="browedit\math\Ray.cpp" />
     <ClCompile Include="browedit\Mesh.cpp" />
     <ClCompile Include="browedit\Node.cpp" />
@@ -99,6 +102,8 @@
     <ClInclude Include="browedit\actions\NewObjectAction.h" />
     <ClInclude Include="browedit\actions\ObjectChangeAction.h" />
     <ClInclude Include="browedit\actions\SelectAction.h" />
+    <ClInclude Include="browedit\actions\TileChangeAction.h" />
+    <ClInclude Include="browedit\actions\TileSelectAction.h" />
     <ClInclude Include="browedit\BrowEdit.h" />
     <ClInclude Include="browedit\components\BillboardRenderer.h" />
     <ClInclude Include="browedit\components\Collider.h" />
@@ -125,6 +130,7 @@
     <ClInclude Include="browedit\MapView.h" />
     <ClInclude Include="browedit\math\AABB.h" />
     <ClInclude Include="browedit\math\Plane.h" />
+    <ClInclude Include="browedit\math\Polygon.h" />
     <ClInclude Include="browedit\math\Ray.h" />
     <ClInclude Include="browedit\Mesh.h" />
     <ClInclude Include="browedit\Node.h" />
@@ -161,6 +167,7 @@
     <ClInclude Include="lib\zlib\zlib.h" />
     <ClInclude Include="lib\zlib\zutil.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="Version.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="BrowEdit3.rc" />
@@ -170,6 +177,7 @@
     <Image Include="icon.ico" />
   </ItemGroup>
   <ItemGroup>
+    <None Include=".github\workflows\msbuild.yml" />
     <None Include="data\shaders\billboard.fs" />
     <None Include="data\shaders\billboard.vs" />
     <None Include="data\shaders\gnd.fs" />

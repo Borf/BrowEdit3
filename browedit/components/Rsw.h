@@ -27,6 +27,7 @@ public:
 	{
 	public:
 		QuadTreeNode(std::vector<glm::vec3>::const_iterator &it, int level = 0);
+		QuadTreeNode(float x, float y, float width, float height, int level);
 		~QuadTreeNode();
 		math::AABB bbox;
 		glm::vec3 range[2];
@@ -65,6 +66,7 @@ public:
 	void load(const std::string& fileName, Map* map, bool loadModels = true, bool loadGnd = true);
 	void save(const std::string& fileName);
 
+	void recalculateQuadtree(QuadTreeNode* node = nullptr);
 
 	void buildImGui(BrowEdit* browEdit) override;
 };
@@ -209,6 +211,8 @@ public:
 	void begin();
 	bool collidesTexture(const math::Ray& ray);
 	bool collidesTexture(Rsm::Mesh* mesh, const math::Ray& ray, const glm::mat4& matrix);
+
+	std::vector<glm::vec3> getVerticesWorldSpace(Rsm::Mesh* mesh = nullptr, const glm::mat4& matrix = glm::mat4(1.0f));
 
 	std::vector<glm::vec3> getCollisions(const math::Ray& ray);
 	std::vector<glm::vec3> getCollisions(Rsm::Mesh* mesh, const math::Ray& ray, const glm::mat4 &matrix);

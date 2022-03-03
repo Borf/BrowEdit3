@@ -15,7 +15,7 @@ class Gnd : public Component
 public:
 	Gnd(const std::string& fileName);
 	void save(const std::string &fileName);
-	glm::vec3 rayCast(const math::Ray& ray, bool emptyTiles = false);
+	glm::vec3 rayCast(const math::Ray& ray, bool emptyTiles = false, int xMin = 0, int yMin = 0, int xMax = -1, int yMax = -1);
 	void makeLightmapsUnique();
 	void makeLightmapsClear();
 	void makeLightmapBorders();
@@ -98,7 +98,7 @@ public:
 		{
 			struct
 			{
-				int tileUp, tileSide, tileFront;
+				int tileUp, tileFront, tileSide;
 			};
 			int tileIds[3];
 		};

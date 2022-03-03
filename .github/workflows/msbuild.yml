@@ -1,0 +1,73 @@
+name: BrowEdit3
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+env:
+  # Path to the solution file relative to the root of the project.
+  SOLUTION_FILE_PATH: .
+
+  # Configuration type to build.
+  # You can convert this to a build matrix if you need coverage of multiple configuration types.
+  # https://docs.github.com/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
+  BUILD_CONFIGURATION: Release
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Add MSBuild to PATH
+      uses: microsoft/setup-msbuild@v1.0.2
+
+    - name: Fix version
+      shell: cmd
+      run: |
+        echo #define VERSION ${{ github.run_number }}>Version.h
+        echo.>>Version.h
+        type Version.h
+
+    - name: Build
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      # Add additional options to the MSBuild command line here (like platform or verbosity level).
+      # See https://docs.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference
+      run: msbuild /m /p:Configuration=${{env.BUILD_CONFIGURATION}} ${{env.SOLUTION_FILE_PATH}}
+    
+    - name: BuildPackage
+      run: |
+        md dist
+        xcopy /y /q BrowEdit3.exe dist\
+        xcopy /y /q imgui.ini dist\
+        xcopy /y /q lib\bugtrap\BugTrap-x64.dll dist\
+        xcopy /y /q /s data dist\data\
+        xcopy /y /q /s doc dist\doc\
+
+    - name: Package
+      uses: papeloto/action-zip@v1
+      with:
+        files: dist
+        dest: BrowEdit3_${{ github.run_number }}.zip
+
+    - name: UploadArtifact
+      uses: actions/upload-artifact@master
+      with:
+        name: BrowEdit3.zip
+        path: |
+          BrowEdit3.exe
+          BrowEdit3.pdb
+          imgui.ini
+          doc/
+          data/
+
+    - name: Release
+      uses: ncipollo/release-action@v1
+      with:
+        artifacts: "BrowEdit3_${{ github.run_number }}.zip,BrowEdit3.pdb"
+        tag: v3.${{ github.run_number }}
+        token: ${{ secrets.GITHUB_TOKEN }}
+        body: ${{ github.event.commits[0].message }}

@@ -7,6 +7,18 @@ math::AABB::AABB(const glm::vec3 &min, const glm::vec3 &max) : min(bounds[0]), m
 	bounds[1] = max;
 }
 
+math::AABB::AABB(const std::span<glm::vec3>& verts) : min(bounds[0]), max(bounds[1])
+{
+	bounds[0] = verts[0];
+	bounds[1] = verts[0];
+	for (auto v : verts)
+	{
+		min = glm::min(min, v);
+		max = glm::max(max, v);
+	}
+}
+
+
 
 /*
 Check if a ray has collision with this boundingbox. Thanks to http://www.cs.utah.edu/~awilliam/box/box.pdf

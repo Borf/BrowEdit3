@@ -111,6 +111,8 @@ void BrowEdit::menuBar()
 
 					ImGui::EndMenu();
 				}
+				if(ImGui::MenuItem("Calculate Quadtree", "Ctrl+Q"))
+					map->recalculateQuadTree(this);
 				if (ImGui::MenuItem("Calculate lightmaps", "Ctrl+L") && !lightmapper)
 				{
 					lightmapper = new Lightmapper(map, this);

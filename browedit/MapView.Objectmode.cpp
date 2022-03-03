@@ -16,9 +16,6 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <mutex>
 
-extern std::vector<std::vector<glm::vec3>> debugPoints;
-extern std::mutex debugPointMutex;
-
 
 void MapView::postRenderObjectMode(BrowEdit* browEdit)
 {
@@ -29,37 +26,27 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 	simpleShader->setUniform(SimpleShader::Uniforms::textureFac, 0.0f);
 
 
-	glUseProgram(0);
-	glMatrixMode(GL_PROJECTION);
-	glLoadMatrixf(glm::value_ptr(nodeRenderContext.projectionMatrix));
-	glMatrixMode(GL_MODELVIEW);
-	glLoadMatrixf(glm::value_ptr(nodeRenderContext.viewMatrix));
-	glColor3f(1, 0, 0);
 	fbo->bind();
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glDisable(GL_TEXTURE_2D);
 
-
-	glPushMatrix();
-	glScalef(1, -1, -1);
 	auto gnd = map->rootNode->getComponent<Gnd>();
-	glTranslatef(gnd->width * 5.0f, 0.0f, -gnd->height * 5.0f);
-	map->rootNode->getComponent<Rsw>()->quadtree->draw(quadTreeMaxLevel);
-	glPopMatrix();
 
-	static glm::vec4 color[] = { glm::vec4(1,0,0,1), glm::vec4(0,1,0,1), glm::vec4(0,0,1,1) };
-	debugPointMutex.lock();
-	glPointSize(10.0f);
-	for (auto i = 0; i < debugPoints.size(); i++)
-	{
-		glColor4fv(glm::value_ptr(color[i]));
-		glBegin(GL_POINTS);
-		for (auto& v : debugPoints[i])
-			glVertex3fv(glm::value_ptr(v));
-		glEnd();
-	}
-	glPointSize(1.0f);
-	debugPointMutex.unlock();
+#if 0 //visualize aabb
+	glEnable(GL_BLEND);
+	glColor4f(1, 0, 0, 0.3f);
+	glBegin(GL_TRIANGLES);
+	map->rootNode->traverse([](Node* n) {
+		auto rswModel = n->getComponent<RswModel>();
+		if (rswModel)
+		{
+			auto verts = math::AABB::box(rswModel->aabb.min, rswModel->aabb.max);
+			for (auto& v : verts)
+				glVertex3f(v.x, v.y, v.z);
+		}
+	});
+	glEnd();
+#endif
 
 	bool snap = snapToGrid;
 	if (ImGui::GetIO().KeyShift)
@@ -140,6 +127,29 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 				if (path.find("\\") != std::string::npos)
 					path = path.substr(0, path.find("\\"));
 				newNode.first->setParent(map->findAndBuildNode(path));
+				
+				bool exists = false;
+				auto& siblings = newNode.first->parent->children;
+				for (auto s : siblings)
+					if (s->name == newNode.first->name && s != newNode.first)
+						exists = true;
+
+				if (exists)
+				{
+					std::string name = newNode.first->name;
+					int index = 0;
+					exists = true;
+					while (exists)
+					{
+						index++;
+						newNode.first->name = name + "_" + std::string(3 - std::min(3, (int)std::to_string(index).length()), '0') + std::to_string(index);
+						exists = false;
+						for (auto s : siblings)
+							if (s->name == newNode.first->name && s != newNode.first)
+								exists = true;
+					}
+				}
+
 				ga->addAction(new NewObjectAction(newNode.first));
 				auto sa = new SelectAction(map, newNode.first, first, false);
 				sa->perform(map, browEdit); // to make sure everything is selected

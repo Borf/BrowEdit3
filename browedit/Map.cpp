@@ -158,7 +158,6 @@ void Map::selectNear(float nearDistance, BrowEdit* browEdit)
 	auto selection = selectedNodes;
 	auto ga = new GroupAction();
 	rootNode->traverse([&](Node* n) {
-		auto rswModel = n->getComponent<RswModel>();
 		auto rswObject = n->getComponent<RswObject>();
 		if (!rswObject)
 			return;
@@ -206,8 +205,8 @@ void Map::selectAll(BrowEdit* browEdit)
 	rootNode->traverse([&](Node* n) {
 		if (std::find(selectedNodes.begin(), selectedNodes.end(), n) != selectedNodes.end())
 			return;
-		auto rswModel = n->getComponent<RswModel>();
-		if (rswModel)
+		auto rswObject = n->getComponent<RswObject>();
+		if (rswObject)
 		{
 			auto sa = new SelectAction(this, n, true, false);
 			selectedNodes.push_back(n);
@@ -222,8 +221,8 @@ void Map::selectInvert(BrowEdit* browEdit)
 	rootNode->traverse([&](Node* n) {
 		bool selected = std::find(selectedNodes.begin(), selectedNodes.end(), n) != selectedNodes.end();
 
-		auto rswModel = n->getComponent<RswModel>();
-		if (rswModel)
+		auto rswObject = n->getComponent<RswObject>();
+		if (rswObject)
 		{
 			auto sa = new SelectAction(this, n, true, selected);
 			sa->perform(this, browEdit);
@@ -258,7 +257,10 @@ void Map::pasteSelection(BrowEdit* browEdit)
 {
 	try
 	{
-		std::string cb = ImGui::GetClipboardText();
+		auto c = ImGui::GetClipboardText();
+		if (c == nullptr)
+			return;
+		std::string cb = c;
 		if (cb == "")
 			return;
 		json clipboard = json::parse(cb);
@@ -565,9 +567,10 @@ void Map::exportTileColors(BrowEdit* browEdit, bool exportWalls)
 	}
 
 
-	stbi_write_png((browEdit->config.ropath + name + ".tilecolor.png").c_str(), gnd->width * 2, gnd->height * 2, 3, img, gnd->width * 2 * 3);
+	stbi_write_png((browEdit->config.ropath + name + ".tilecolor.png").c_str(), gnd->width * wallMultiplier, gnd->height * wallMultiplier, 3, img, gnd->width * wallMultiplier * 3);
 	delete[] img;
 }
+
 void Map::importTileColors(BrowEdit* browEdit, bool exportWalls)
 {
 	int wallMultiplier = 2;
@@ -607,7 +610,19 @@ void Map::importTileColors(BrowEdit* browEdit, bool exportWalls)
 			}
 		}
 	}
-	rootNode->getComponent<GndRenderer>()->gndTileColorDirty = true;
-
 	stbi_image_free(img);
+}
+
+
+
+void Map::recalculateQuadTree(BrowEdit* browEdit)
+{
+	auto rsw = rootNode->getComponent<Rsw>();
+	if (!rsw->quadtree)
+	{
+		auto gnd = rootNode->getComponent<Gnd>();
+		rsw->quadtree = new Rsw::QuadTreeNode(-gnd->width/2.0f, -gnd->height/2.0f, (float)gnd->width, (float)gnd->height, 0);
+	}
+
+	rsw->recalculateQuadtree();
 }

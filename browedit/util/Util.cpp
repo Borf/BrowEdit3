@@ -99,6 +99,17 @@ namespace util
 			map->doAction(new ObjectChangeAction(node, ptr, startValue, action == "" ? label : action), browEdit);
 		return ret;
 	}
+	bool ColorEdit4(BrowEdit* browEdit, Map* map, Node* node, const char* label, glm::vec4* ptr, const std::string& action)
+	{
+		static glm::vec4 startValue;
+		bool ret = ImGui::ColorEdit4(label, glm::value_ptr(*ptr));
+
+		if (ImGui::IsItemActivated())
+			startValue = *ptr;
+		if (ImGui::IsItemDeactivatedAfterEdit())
+			map->doAction(new ObjectChangeAction(node, ptr, startValue, action == "" ? label : action), browEdit);
+		return ret;
+	}
 
 	bool DragInt(BrowEdit* browEdit, Map* map, Node* node, const char* label, int* ptr, float v_speed, int v_min, int v_max, const std::string& action)
 	{
@@ -123,10 +134,32 @@ namespace util
 		return ret;
 	}
 
-	bool DragFloat3(BrowEdit* browEdit, Map* map, Node* node, const char* label, glm::vec3* ptr, float v_speed, float v_min, float v_max, const std::string& action)
+	bool DragFloat2(BrowEdit* browEdit, Map* map, Node* node, const char* label, glm::vec2* ptr, float v_speed, float v_min, float v_max, const std::string& action)
+	{
+		static glm::vec2 startValue;
+		bool ret = ImGui::DragFloat2(label, glm::value_ptr(*ptr), v_speed, v_min, v_max);
+
+		if (ImGui::IsItemActivated())
+			startValue = *ptr;
+		if (ImGui::IsItemDeactivatedAfterEdit())
+			map->doAction(new ObjectChangeAction(node, ptr, startValue, action == "" ? label : action), browEdit);
+		return ret;
+	}
+
+	bool DragFloat3(BrowEdit* browEdit, Map* map, Node* node, const char* label, glm::vec3* ptr, float v_speed, float v_min, float v_max, const std::string& action, bool moveTogether)
 	{
 		static glm::vec3 startValue;
 		bool ret = ImGui::DragFloat3(label, glm::value_ptr(*ptr), v_speed, v_min, v_max);
+		if (ret && moveTogether)
+		{
+			if ((*ptr)[1] == (*ptr)[2])
+				(*ptr)[2] = (*ptr)[1] = (*ptr)[0];
+			else if ((*ptr)[0] == (*ptr)[1])
+				(*ptr)[0] = (*ptr)[1] = (*ptr)[2];
+			else if ((*ptr)[0] == (*ptr)[2])
+				(*ptr)[2] = (*ptr)[0] = (*ptr)[1];
+		}
+
 
 		if (ImGui::IsItemActivated())
 			startValue = *ptr;
@@ -325,7 +358,7 @@ namespace util
 
 
 	template<class T>
-	bool DragFloat3Multi(BrowEdit* browEdit, Map* map, const std::vector<T*>& data, const char* label, const std::function<glm::vec3* (T*)>& getProp, float v_speed, float v_min, float v_max)
+	bool DragFloat3Multi(BrowEdit* browEdit, Map* map, const std::vector<T*>& data, const char* label, const std::function<glm::vec3* (T*)>& getProp, float v_speed, float v_min, float v_max, bool moveTogether)
 	{
 		static std::vector<glm::vec3> startValues;
 		glm::vec3* f = getProp(data.front());
@@ -336,6 +369,15 @@ namespace util
 			formats.push_back(differentValues ? "multiple" : nullptr);
 		}
 		bool ret = DragScalarNMultiLabel(label, ImGuiDataType_Float, glm::value_ptr(*f), 3, v_speed, &v_min, &v_max, formats, 0);
+		if (ret && moveTogether)
+		{
+			if ((*f)[1] == (*f)[2])
+				(*f)[2] = (*f)[1] = (*f)[0];
+			else if ((*f)[0] == (*f)[1])
+				(*f)[0] = (*f)[1] = (*f)[2];
+			else if ((*f)[0] == (*f)[2])
+				(*f)[2] = (*f)[0] = (*f)[1];
+		}
 		if (ImGui::IsItemActivated())
 		{
 			startValues.clear();
@@ -365,11 +407,11 @@ namespace util
 
 		return ret;
 	}
-	template bool DragFloat3Multi<RswObject>(BrowEdit* browEdit, Map* map, const std::vector<RswObject*>& data, const char* label, const std::function<glm::vec3* (RswObject*)>& getProp, float v_speed, float v_min, float v_max);
-	template bool DragFloat3Multi<RswModel>(BrowEdit* browEdit, Map* map, const std::vector<RswModel*>& data, const char* label, const std::function<glm::vec3* (RswModel*)>& getProp, float v_speed, float v_min, float v_max);
-	template bool DragFloat3Multi<RswEffect>(BrowEdit* browEdit, Map* map, const std::vector<RswEffect*>& data, const char* label, const std::function<glm::vec3* (RswEffect*)>& getProp, float v_speed, float v_min, float v_max);
-	template bool DragFloat3Multi<RswSound>(BrowEdit* browEdit, Map* map, const std::vector<RswSound*>& data, const char* label, const std::function<glm::vec3* (RswSound*)>& getProp, float v_speed, float v_min, float v_max);
-	template bool DragFloat3Multi<RswLight>(BrowEdit* browEdit, Map* map, const std::vector<RswLight*>& data, const char* label, const std::function<glm::vec3* (RswLight*)>& getProp, float v_speed, float v_min, float v_max);
+	template bool DragFloat3Multi<RswObject>(BrowEdit* browEdit, Map* map, const std::vector<RswObject*>& data, const char* label, const std::function<glm::vec3* (RswObject*)>& getProp, float v_speed, float v_min, float v_max, bool moveTogether);
+	template bool DragFloat3Multi<RswModel>(BrowEdit* browEdit, Map* map, const std::vector<RswModel*>& data, const char* label, const std::function<glm::vec3* (RswModel*)>& getProp, float v_speed, float v_min, float v_max, bool moveTogether);
+	template bool DragFloat3Multi<RswEffect>(BrowEdit* browEdit, Map* map, const std::vector<RswEffect*>& data, const char* label, const std::function<glm::vec3* (RswEffect*)>& getProp, float v_speed, float v_min, float v_max, bool moveTogether);
+	template bool DragFloat3Multi<RswSound>(BrowEdit* browEdit, Map* map, const std::vector<RswSound*>& data, const char* label, const std::function<glm::vec3* (RswSound*)>& getProp, float v_speed, float v_min, float v_max, bool moveTogether);
+	template bool DragFloat3Multi<RswLight>(BrowEdit* browEdit, Map* map, const std::vector<RswLight*>& data, const char* label, const std::function<glm::vec3* (RswLight*)>& getProp, float v_speed, float v_min, float v_max, bool moveTogether);
 
 	template<class T>
 	bool ColorEdit3Multi(BrowEdit* browEdit, Map* map, const std::vector<T*>& data, const char* label, const std::function<glm::vec3* (T*)>& getProp)

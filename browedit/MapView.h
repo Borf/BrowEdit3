@@ -74,7 +74,6 @@ public:
 
 
 	//height edit mode
-	std::vector<glm::ivec2> tileSelection;
 	bool mouseDown = false;
 
 
@@ -83,6 +82,7 @@ public:
 	math::Plane mouseDragPlane;
 	glm::vec3 mouseDragStart;
 	glm::vec2 mouseDragStart2D;
+	std::vector<glm::ivec2> selectLasso;
 
 
 	MouseState mouseState;

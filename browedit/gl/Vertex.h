@@ -70,6 +70,13 @@
 			data[pos++] = v.y;
 			data[pos++] = v.z;
 		}
+		void set(const glm::vec4& v, int& pos)
+		{
+			data[pos++] = v.x;
+			data[pos++] = v.y;
+			data[pos++] = v.z;
+			data[pos++] = v.w;
+		}
 	};
 
 #define ATTR(name, size, index) \
@@ -91,6 +98,22 @@
 		}
 		ATTR(p, 3, 0);
 	};
+
+	class VertexP3T2T2C4N3 : public Vert<3 + 2 + 2 + 4 + 3>
+	{
+	public:
+		VertexP3T2T2C4N3(const glm::vec3& pos, const glm::vec2& t1, const glm::vec2& t2, const glm::vec4& c1, const glm::vec3& n)
+		{
+			int index = 0;
+			set(pos, index);
+			set(t1, index);
+			set(t2, index);
+			set(c1, index);
+			set(n, index);
+		}
+		ATTR(p, 3, 0);
+	};
+
 
 	class VertexP3T2N3 : public Vert<3 + 2 + 3>
 	{

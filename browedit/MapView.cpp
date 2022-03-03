@@ -198,7 +198,7 @@ void MapView::render(BrowEdit* browEdit)
 		for (auto newNode : browEdit->newNodes)
 		{
 			auto rswObject = newNode.first->getComponent<RswObject>();
-			rswObject->position = glm::vec3(rayCast.x - 5 * gnd->width, rayCast.y, -(rayCast.z + (-10 - 5 * gnd->height))) + newNode.second;
+			rswObject->position = glm::vec3(rayCast.x - 5 * gnd->width, -rayCast.y, -(rayCast.z + (-10 - 5 * gnd->height))) + newNode.second;
 
 			bool snap = snapToGrid;
 			if (ImGui::GetIO().KeyShift)
@@ -210,11 +210,11 @@ void MapView::render(BrowEdit* browEdit)
 				glm::mat4 matrix = glm::mat4(1.0f);
 				matrix = glm::translate(matrix, rayCast + newNode.second * glm::vec3(1,1,-1));
 				matrix = glm::scale(matrix, glm::vec3(1, -1, 1));
+				matrix = glm::scale(matrix, rswObject->scale);
+				matrix = glm::scale(matrix, glm::vec3(1, 1, -1));
 				matrix = glm::rotate(matrix, -glm::radians(rswObject->rotation.z), glm::vec3(0, 0, 1));
 				matrix = glm::rotate(matrix, -glm::radians(rswObject->rotation.x), glm::vec3(1, 0, 0));
 				matrix = glm::rotate(matrix, glm::radians(rswObject->rotation.y), glm::vec3(0, 1, 0));
-				matrix = glm::scale(matrix, rswObject->scale);
-				matrix = glm::scale(matrix, glm::vec3(1, 1, -1));
 				newNode.first->getComponent<RsmRenderer>()->matrixCache = matrix;
 			}
 			if (newNode.first->getComponent<BillboardRenderer>())
@@ -222,6 +222,41 @@ void MapView::render(BrowEdit* browEdit)
 			NodeRenderer::render(newNode.first, nodeRenderContext);
 		}
 	}
+
+	glUseProgram(0);
+	glMatrixMode(GL_PROJECTION);
+	glLoadMatrixf(glm::value_ptr(nodeRenderContext.projectionMatrix));
+	glMatrixMode(GL_MODELVIEW);
+	glLoadMatrixf(glm::value_ptr(nodeRenderContext.viewMatrix));
+	glColor3f(1, 0, 0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glDisable(GL_TEXTURE_2D);
+
+
+	glLineWidth(1.0f);
+	//draw quadtree
+	glPushMatrix();
+	glScalef(1, -1, -1);
+	auto gnd = map->rootNode->getComponent<Gnd>();
+	glTranslatef(gnd->width * 5.0f, 0.0f, -gnd->height * 5.0f - 10);
+	map->rootNode->getComponent<Rsw>()->quadtree->draw(quadTreeMaxLevel);
+	glPopMatrix();
+
+
+	//draw debug points
+	static glm::vec4 color[] = { glm::vec4(1,0,0,1), glm::vec4(0,1,0,1), glm::vec4(0,0,1,1) };
+	debugPointMutex.lock();
+	glPointSize(10.0f);
+	for (auto i = 0; i < debugPoints.size(); i++)
+	{
+		glColor4fv(glm::value_ptr(color[i]));
+		glBegin(GL_POINTS);
+		for (auto& v : debugPoints[i])
+			glVertex3fv(glm::value_ptr(v));
+		glEnd();
+	}
+	glPointSize(1.0f);
+	debugPointMutex.unlock();
 
 	fbo->unbind();
 }

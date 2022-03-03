@@ -110,6 +110,13 @@ Gnd::Gnd(const std::string& fileName)
 				tile->lightmapIndex = 0;
 			}
 
+			if (tile->textureIndex < 0 || tile->textureIndex >= textureCount)
+			{
+				std::cout << "GND: TextureIndex < 0" << std::endl;
+				tile->textureIndex = 0;
+			}
+
+
 			tile->color.b = (unsigned char)file->get();
 			tile->color.g = (unsigned char)file->get();
 			tile->color.r = (unsigned char)file->get();
@@ -129,35 +136,37 @@ Gnd::Gnd(const std::string& fileName)
 				file->read(reinterpret_cast<char*>(&cube->h4), sizeof(float));
 				cube->calcNormal();
 
+				
+
 				if (version >= 0x0106)
 				{
 					file->read(reinterpret_cast<char*>(&cube->tileUp), sizeof(int));
-					file->read(reinterpret_cast<char*>(&cube->tileSide), sizeof(int));
 					file->read(reinterpret_cast<char*>(&cube->tileFront), sizeof(int));
+					file->read(reinterpret_cast<char*>(&cube->tileSide), sizeof(int));
 				}
 				else
 				{
 					unsigned short up, side, front;
 					file->read(reinterpret_cast<char*>(&up), sizeof(unsigned short));
-					file->read(reinterpret_cast<char*>(&side), sizeof(unsigned short));
 					file->read(reinterpret_cast<char*>(&front), sizeof(unsigned short));
+					file->read(reinterpret_cast<char*>(&side), sizeof(unsigned short));
 
 					cube->tileUp = up;
 					cube->tileSide = side;
 					cube->tileFront = front;
 				}
 
-				if (cube->tileUp >= (int)tiles.size())
+				if (cube->tileUp >= (int)tiles.size() || cube->tileUp < -1)
 				{
-					std::cout << "GND: Wrong value for tileup at " << x << ", " << y << "Found " << cube->tileUp << ", but only " << tiles.size() << " tiles found" << std::endl;
+					std::cout << "GND: Wrong value for tileup at " << x << ", " << y << ", Found " << cube->tileUp << ", but only " << tiles.size() << " tiles found" << std::endl;
 					cube->tileUp = -1;
 				}
-				if (cube->tileSide >= (int)tiles.size())
+				if (cube->tileSide >= (int)tiles.size() || cube->tileSide < -1)
 				{
 					std::cout << "GND: Wrong value for tileside at " << x << ", " << y << std::endl;
 					cube->tileSide = -1;
 				}
-				if (cube->tileFront >= (int)tiles.size())
+				if (cube->tileFront >= (int)tiles.size() || cube->tileFront < -1)
 				{
 					std::cout << "GND: Wrong value for tilefront at " << x << ", " << y << std::endl;
 					cube->tileFront = -1;
@@ -271,19 +280,21 @@ void Gnd::save(const std::string& fileName)
 				if (version >= 0x0106)
 				{
 					file.write(reinterpret_cast<char*>(&cube->tileUp), sizeof(int));
-					file.write(reinterpret_cast<char*>(&cube->tileSide), sizeof(int));
 					file.write(reinterpret_cast<char*>(&cube->tileFront), sizeof(int));
+					file.write(reinterpret_cast<char*>(&cube->tileSide), sizeof(int));
 				}
 				else
 				{
 					unsigned short up, side, front;
-					file.write(reinterpret_cast<char*>(&up), sizeof(unsigned short));
-					file.write(reinterpret_cast<char*>(&side), sizeof(unsigned short));
-					file.write(reinterpret_cast<char*>(&front), sizeof(unsigned short));
+					up = cube->tileUp;
+					front = cube->tileFront;
+					side = cube->tileSide;
 
-					cube->tileUp = up;
-					cube->tileSide = side;
-					cube->tileFront = front;
+
+					file.write(reinterpret_cast<char*>(&up), sizeof(unsigned short));
+					file.write(reinterpret_cast<char*>(&front), sizeof(unsigned short));
+					file.write(reinterpret_cast<char*>(&side), sizeof(unsigned short));
+
 				}
 			}
 		}
@@ -297,13 +308,24 @@ void Gnd::save(const std::string& fileName)
 
 
 
-glm::vec3 Gnd::rayCast(const math::Ray& ray, bool emptyTiles)
+glm::vec3 Gnd::rayCast(const math::Ray& ray, bool emptyTiles, int xMin, int yMin, int xMax, int yMax)
 {
+	//TODO: optimize this by making AABBs like a quadtree
+	if (xMax == -1)
+		xMax = cubes.size();
+	if (yMax == -1)
+		yMax = cubes[0].size();
+
+	xMin = glm::max(0, xMin);
+	yMin = glm::max(0, yMin);
+	xMax = glm::min(xMax, (int)cubes.size());
+	yMax = glm::min(yMax, (int)cubes[0].size());
+
 	std::vector<glm::vec3> collisions;
 	float f = 0;
-	for (auto x = 0; x < cubes.size(); x++)
+	for (auto x = xMin; x < xMax; x++)
 	{
-		for (auto y = 0; y < cubes[x].size(); y++)
+		for (auto y = yMin; y < yMax; y++)
 		{
 			Gnd::Cube* cube = cubes[x][y];
 
@@ -878,14 +900,14 @@ std::vector<glm::vec3> Gnd::getMapQuads()
 				quads.push_back(glm::vec3((x + 1) * 10, -cube->heights[1], 10 * height - (y + 0) * 10 + 10));//3
 				quads.push_back(glm::vec3((x + 1) * 10, -cube->heights[3], 10 * height - (y + 1) * 10 + 10));//4
 			}
-			if (cube->tileSide != -1)
+			if (cube->tileSide != -1 && y < height-1)
 			{
 				quads.push_back(glm::vec3(10 * x, -cube->h3, 10 * height - 10 * y));//1
 				quads.push_back(glm::vec3(10 * x + 10, -cube->h4, 10 * height - 10 * y));//2
 				quads.push_back(glm::vec3(10 * x + 10, -cubes[x][y + 1]->h2, 10 * height - 10 * y));//3
 				quads.push_back(glm::vec3(10 * x, -cubes[x][y + 1]->h1, 10 * height - 10 * y));//4
 			}
-			if (cube->tileFront != -1)
+			if (cube->tileFront != -1 && x < width - 1)
 			{
 				quads.push_back(glm::vec3(10 * x + 10, -cube->h2, 10 * height - 10 * y + 10));//1
 				quads.push_back(glm::vec3(10 * x + 10, -cube->h4, 10 * height - 10 * y));//2

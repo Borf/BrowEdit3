@@ -254,12 +254,14 @@ namespace util
 	void FileIO::DirSource::listFiles(const std::string& dir, std::vector<std::string>& files)
 	{
 		try {
+			if (!std::filesystem::exists(directory + dir))
+				return;
 			for (const auto& entry : std::filesystem::directory_iterator(directory + dir))
 			{
 				auto f = entry.path().string();
 				if (f.size() > directory.size() && directory.size() > 0 && f.find(directory) == 0)
 					f = f.substr(directory.size());
-				if (entry.is_directory() && entry.path().string().find("\\game") != std::string::npos)
+				if (entry.is_directory() && f.find("game\\") != std::string::npos)
 					continue;
 				if (entry.is_directory())
 					listFiles(f, files);
@@ -293,7 +295,7 @@ namespace util
 	{
 		char* buf = new char[length];
 		memset(buf, 0, length);
-		memcpy(buf, data.c_str(), std::min(data.length(), (std::size_t)length));
+		memcpy(buf, data.c_str(), std::min(data.length(), (std::size_t)length-1));
 		os.write(buf, length);
 		delete[] buf;
 	}

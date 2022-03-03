@@ -91,13 +91,17 @@ void RswObject::buildImGui(BrowEdit* browEdit)
 {
 	auto renderer = node->getComponent<RsmRenderer>();
 	ImGui::Text("Object");
+	static bool scaleTogether = false;
 
 	if (util::DragFloat3(browEdit, browEdit->activeMapView->map, node, "Position", &position, 1.0f, 0.0f, 0.0f, "Moving") && renderer)
 		if(renderer)
 			renderer->setDirty();
-	if (util::DragFloat3(browEdit, browEdit->activeMapView->map, node, "Scale", &scale, 1.0f, 0.0f, 0.0f, "Resizing") && renderer)
+	if (util::DragFloat3(browEdit, browEdit->activeMapView->map, node, "Scale", &scale, 0.1f, 0.0f, 1000.0f, "Resizing", scaleTogether) && renderer)
 		if (renderer)
 			renderer->setDirty();
+	ImGui::SameLine();
+	ImGui::Checkbox("##together", &scaleTogether);
+
 	if (util::DragFloat3(browEdit, browEdit->activeMapView->map, node, "Rotation", &rotation, 1.0f, 0.0f, 0.0f, "Rotating") && renderer)
 		if (renderer)
 			renderer->setDirty();
@@ -112,12 +116,16 @@ void RswObject::buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>& no
 		return;
 	ImGui::Text("Object");
 
+	static bool scaleTogether = false;
+
 	if (util::DragFloat3Multi<RswObject>(browEdit, browEdit->activeMapView->map, rswObjects, "Position", [](RswObject* o) { return &o->position; }, 1.0f, 0.0f, 0.0f))
 		for (auto renderer : nodes | std::ranges::views::transform([](Node* n) { return n->getComponent<RsmRenderer>(); }) | std::ranges::views::filter([](RsmRenderer* r) { return r != nullptr; }))
 			renderer->setDirty();
-	if (util::DragFloat3Multi<RswObject>(browEdit, browEdit->activeMapView->map, rswObjects, "Scale", [](RswObject* o) { return &o->scale; }, .1f, 0.0f, 1000.0f))
+	if (util::DragFloat3Multi<RswObject>(browEdit, browEdit->activeMapView->map, rswObjects, "Scale", [](RswObject* o) { return &o->scale; }, .1f, 0.0f, 1000.0f, scaleTogether))
 		for (auto renderer : nodes | std::ranges::views::transform([](Node* n) { return n->getComponent<RsmRenderer>(); }) | std::ranges::views::filter([](RsmRenderer* r) { return r != nullptr; }))
 			renderer->setDirty();
+	ImGui::SameLine();
+	ImGui::Checkbox("##together", &scaleTogether);
 	if (util::DragFloat3Multi<RswObject>(browEdit, browEdit->activeMapView->map, rswObjects, "Rotation", [](RswObject* o) { return &o->rotation; }, 1.0f, 0, 360.0f))
 		for (auto renderer : nodes | std::ranges::views::transform([](Node* n) { return n->getComponent<RsmRenderer>(); }) | std::ranges::views::filter([](RsmRenderer* r) { return r != nullptr; }))
 			renderer->setDirty();

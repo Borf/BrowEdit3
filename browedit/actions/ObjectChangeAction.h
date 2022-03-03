@@ -3,6 +3,7 @@
 #include "Action.h"
 #include <browedit/Node.h>
 #include <browedit/components/RsmRenderer.h>
+#include <browedit/components/GndRenderer.h>
 
 template<class T>
 class ObjectChangeAction : public Action
@@ -28,6 +29,10 @@ public:
 		auto rsmRenderer = node->getComponent<RsmRenderer>();
 		if (rsmRenderer)
 			rsmRenderer->setDirty();
+		auto gndRenderer = node->getComponent<GndRenderer>();
+		if (gndRenderer)
+			gndRenderer->setChunksDirty(); //TODO : only set this specific chunk dirty
+
 		if ((std::string*)ptr == &(node->name))
 			node->onRename(map);
 	}
@@ -37,6 +42,9 @@ public:
 		auto rsmRenderer = node->getComponent<RsmRenderer>();
 		if (rsmRenderer)
 			rsmRenderer->setDirty();
+		auto gndRenderer = node->getComponent<GndRenderer>();
+		if (gndRenderer)
+			gndRenderer->setChunksDirty(); //TODO : only set this specific chunk dirty
 		if ((std::string*)ptr == &(node->name))
 			node->onRename(map);
 	}

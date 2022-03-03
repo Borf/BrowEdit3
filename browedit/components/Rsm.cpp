@@ -75,13 +75,24 @@ Rsm::Rsm(const std::string& fileName)
 		meshes[mesh->name] = mesh;
 	}
 
-	if (meshes.find(mainNodeName) == meshes.end())
+	if (meshes.size() == 0)
+	{
+		std::cerr << "RsmModel " << fileName << ": does not have any meshes in it" << std::endl;
+		return;
+	}
+	else if (meshes.find(mainNodeName) == meshes.end())
 	{
 		std::cerr << "RsmModel " << fileName << ": Could not locate root mesh" << std::endl;
 		rootMesh = meshes.begin()->second;
 	}
 	else
 		rootMesh = meshes[mainNodeName];
+
+	if (!rootMesh)
+	{
+		std::cerr << "RsmModel " << fileName << ": does not have a rootmesh? make sure this model has meshes in it" << std::endl;
+		return;
+	}
 
 	rootMesh->parent = NULL;
 	rootMesh->fetchChildren(meshes);
@@ -209,8 +220,14 @@ Rsm::Mesh::Mesh(Rsm* model, std::istream* rsmFile)
 		rsmFile->read(reinterpret_cast<char*>(&f->smoothGroup), sizeof(int));
 
 		faces[i] = f;
-
-		f->normal = glm::normalize(glm::cross(vertices[f->vertexIds[1]] - vertices[f->vertexIds[0]], vertices[f->vertexIds[2]] - vertices[f->vertexIds[0]]));
+		bool ok = true;
+		for (int ii = 0; ii < 3; ii++)
+			if (f->vertexIds[ii] >= vertices.size())
+				ok = false;
+		if (ok)
+			f->normal = glm::normalize(glm::cross(vertices[f->vertexIds[1]] - vertices[f->vertexIds[0]], vertices[f->vertexIds[2]] - vertices[f->vertexIds[0]]));
+		else
+			std::cerr<< "There's an error in " << model->fileName << std::endl;
 	}
 
 	int frameCount;
@@ -411,22 +428,23 @@ void buildTree(Rsm::Mesh* mesh)
 
 void Rsm::buildImGui(BrowEdit* browEdit)
 {
-	ImGui::Text("RSM");
-	char versionStr[10];
-	sprintf_s(versionStr, 10, "%04x", version);
-	if (ImGui::BeginCombo("Version", versionStr))
+	if (ImGui::CollapsingHeader("RSM model information"))
 	{
-		if (ImGui::Selectable("0103", version == 0x0103))
-			version = 0x0103;
-		if (ImGui::Selectable("0104", version == 0x0104))
-			version = 0x0104;
-		if (ImGui::Selectable("0108", version == 0x0108))
-			version = 0x0108;
-		if (ImGui::Selectable("0109", version == 0x0109))
-			version = 0x0109;
+		char versionStr[10];
+		sprintf_s(versionStr, 10, "%04x", version);
+		if (ImGui::BeginCombo("Version", versionStr))
+		{
+			if (ImGui::Selectable("0103", version == 0x0103))
+				version = 0x0103;
+			if (ImGui::Selectable("0104", version == 0x0104))
+				version = 0x0104;
+			if (ImGui::Selectable("0108", version == 0x0108))
+				version = 0x0108;
+			if (ImGui::Selectable("0109", version == 0x0109))
+				version = 0x0109;
+		}
+
+		buildTree(rootMesh);
 	}
-
-	buildTree(rootMesh);
-
 
 }
