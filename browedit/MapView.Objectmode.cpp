@@ -183,8 +183,6 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 			avgPos /= count;
 			Gnd* gnd = map->rootNode->getComponent<Gnd>();
 			Gadget::setMatrices(nodeRenderContext.projectionMatrix, nodeRenderContext.viewMatrix);
-			Gadget::opacity = gadgetOpacity;
-			Gadget::scale = gadgetScale;
 			glClear(GL_DEPTH_BUFFER_BIT);
 			glDisable(GL_CULL_FACE);
 
