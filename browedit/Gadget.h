@@ -66,8 +66,10 @@ public:
 	int selectedAxis = 0;
 	bool isMouseJustPressed = true;
 	bool axisHovered;
+	inline static float opacity = 1.0f;
+	inline static float scale = 1.0f;
 
 	int selectedAxisIndex();
 
-	void draw(const math::Ray& mouseRay, const glm::mat4& modelMatrix);
+	void draw(const math::Ray& mouseRay, glm::mat4 modelMatrix);
 };

@@ -22,11 +22,13 @@ void Gadget::setMatrices(const glm::mat4& projectionMatrix, const glm::mat4& vie
 	Gadget::viewMatrix = viewMatrix;
 }
 
-void Gadget::draw(const math::Ray& mouseRay, const glm::mat4& modelMatrix)
+void Gadget::draw(const math::Ray& mouseRay, glm::mat4 modelMatrix)
 {
 	axisClicked = false;
 	axisReleased = false;
 	axisHovered = false;
+
+	modelMatrix = glm::scale(modelMatrix, glm::vec3(scale));
 
 	shader->use();
 	shader->setUniform(SimpleShader::Uniforms::projectionMatrix, projectionMatrix);
@@ -59,7 +61,7 @@ void Gadget::draw(const math::Ray& mouseRay, const glm::mat4& modelMatrix)
 			}
 			axisHovered = true;
 		} else if(disabled)
-			shader->setUniform(SimpleShader::Uniforms::color, glm::vec4(0.5f, 0.5f, 0.5f, 0.5f));
+			shader->setUniform(SimpleShader::Uniforms::color, glm::vec4(0.5f, 0.5f, 0.5f, 0.5f * opacity));
 		else
 			shader->setUniform(SimpleShader::Uniforms::color, color);
 		mesh->draw();
@@ -74,13 +76,13 @@ void Gadget::draw(const math::Ray& mouseRay, const glm::mat4& modelMatrix)
 	};
 
 	if (mode == Mode::Scale)
-		drawDirection(modelMatrix, Axis::X | Axis::Y | Axis::Z, glm::vec4(1.0f, 0.25f, 1.0f, 1));
-
+		drawDirection(modelMatrix, Axis::X | Axis::Y | Axis::Z, glm::vec4(1.0f, 0.25f, 1.0f, opacity));
+	
 	if(mode != Mode::TranslateY)
-		drawDirection(glm::rotate(modelMatrix, glm::radians(90.0f), glm::vec3(0, 0, -1)), Axis::X, glm::vec4(1, 0.25f, 0.25f, 1));
-	drawDirection(modelMatrix, Axis::Y, glm::vec4(0.25f, 1, 0.25f, 1));
+		drawDirection(glm::rotate(modelMatrix, glm::radians(90.0f), glm::vec3(0, 0, -1)), Axis::X, glm::vec4(1, 0.25f, 0.25f, opacity));
+	drawDirection(modelMatrix, Axis::Y, glm::vec4(0.25f, 1, 0.25f, opacity));
 	if (mode != Mode::TranslateY)
-		drawDirection(glm::rotate(modelMatrix, glm::radians(90.0f), glm::vec3(1, 0, 0)), Axis::Z, glm::vec4(0.25f, 0.25f, 1, 1));
+		drawDirection(glm::rotate(modelMatrix, glm::radians(90.0f), glm::vec3(1, 0, 0)), Axis::Z, glm::vec4(0.25f, 0.25f, 1, opacity));
 
 	isMouseJustPressed = !ImGui::IsMouseDown(0);
 }

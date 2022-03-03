@@ -137,6 +137,17 @@ void MapView::toolbar(BrowEdit* browEdit)
 			}
 
 		}
+
+		ImGui::SameLine();
+		ImGui::SetNextItemWidth(50);
+		ImGui::SliderFloat("##gadgetOpacity", &gadgetOpacity, 0, 1);
+		if (ImGui::IsItemHovered())
+			ImGui::SetTooltip("Gadget Opacity");
+		ImGui::SameLine();
+		ImGui::SetNextItemWidth(50);
+		ImGui::SliderFloat("##gadgetScale", &gadgetScale, 0, 2);
+		if (ImGui::IsItemHovered())
+			ImGui::SetTooltip("Gadget scale");
 	}
 }
 
