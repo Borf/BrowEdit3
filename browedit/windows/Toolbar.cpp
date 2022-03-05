@@ -42,13 +42,13 @@ void BrowEdit::toolbar()
 	ImGui::SameLine();
 	ImGui::SetCursorPosX(125);
 
-	if (toolBarToggleButton("heightmode", 0, editMode == EditMode::Height, "Height edit mode"))
+	if (toolBarToggleButton("heightmode", 0, editMode == EditMode::Height, "Height edit mode", config.toolbarButtonsHeightEdit))
 		editMode = EditMode::Height;
 	ImGui::SameLine();
 	if (toolBarToggleButton("texturemode", 1, editMode == EditMode::Texture, "Texture edit mode"))
 		editMode = EditMode::Texture;
 	ImGui::SameLine();
-	if (toolBarToggleButton("objectmode", 2, editMode == EditMode::Object, "Object edit mode"))
+	if (toolBarToggleButton("objectmode", 2, editMode == EditMode::Object, "Object edit mode", config.toolbarButtonsObjectEdit))
 		editMode = EditMode::Object;
 	ImGui::SameLine();
 	if (toolBarToggleButton("wallmode", 3, editMode == EditMode::Wall, "Wall edit mode"))
@@ -57,7 +57,7 @@ void BrowEdit::toolbar()
 
 	if (editMode == EditMode::Object)
 	{
-		toolBarToggleButton("showObjectWindow", windowData.objectWindowVisible ? ICON_OBJECTPICKER_OPEN : ICON_OBJECTPICKER_CLOSE, &windowData.objectWindowVisible, "Toggle object window");
+		toolBarToggleButton("showObjectWindow", windowData.objectWindowVisible ? ICON_OBJECTPICKER_OPEN : ICON_OBJECTPICKER_CLOSE, &windowData.objectWindowVisible, "Toggle object window", config.toolbarButtonsObjectEdit);
 		ImGui::SameLine();
 	}
 

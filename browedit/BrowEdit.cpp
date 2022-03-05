@@ -315,8 +315,7 @@ ImVec4 disabledColor(72 / 255.0f, 96 / 255.0f, 125 / 255.0f, 0.5f);
 
 bool BrowEdit::toolBarToggleButton(const std::string_view &name, int icon, bool* status, const char* tooltip, ImVec4 tint)
 {
-	if (tint.w < 0)
-		tint = config.toolbarButtonTint;
+	tint = ImVec4(config.toolbarButtonTint.x * tint.x, config.toolbarButtonTint.y * tint.y, config.toolbarButtonTint.z * tint.z, config.toolbarButtonTint.w * tint.w);
 	ImVec2 v1((1.0f / iconsTexture->width) * (100 * (icon % 8)), //TODO: remove these hardcoded numbers
 		(1.0f / iconsTexture->height) * (100 * (icon / 8)));
 	ImVec2 v2(v1.x + (1.0f / iconsTexture->width) * 100, v1.y + (1.0f / iconsTexture->height) * 100);
@@ -333,8 +332,7 @@ bool BrowEdit::toolBarToggleButton(const std::string_view &name, int icon, bool*
 
 bool BrowEdit::toolBarToggleButton(const std::string_view& name, int icon, bool status, const char* tooltip, ImVec4 tint)
 {
-	if (tint.w < 0)
-		tint = config.toolbarButtonTint;
+	tint = ImVec4(config.toolbarButtonTint.x * tint.x, config.toolbarButtonTint.y * tint.y, config.toolbarButtonTint.z * tint.z, config.toolbarButtonTint.w * tint.w);
 	ImVec2 v1((1.0f / iconsTexture->width) * (100 * (icon % 8)), //TODO: remove these hardcoded numbers
 		(1.0f / iconsTexture->height) * (100 * (icon / 8)));
 	ImVec2 v2(v1.x + (1.0f / iconsTexture->width) * 100, v1.y + (1.0f / iconsTexture->height) * 100);
