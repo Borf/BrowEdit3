@@ -11,7 +11,7 @@ void BrowEdit::showObjectProperties()
 	ImGui::Begin("Properties");
 	if (activeMapView && activeMapView->map->selectedNodes.size() == 1)
 	{
-		if (util::InputText(this, activeMapView->map, activeMapView->map->selectedNodes[0], "Name", &activeMapView->map->selectedNodes[0]->name, 0, "Renaming"))
+		if (util::InputText(this, activeMapView->map, activeMapView->map->selectedNodes[0], "Name", &activeMapView->map->selectedNodes[0]->name, 0, "Renaming", 40))
 		{
 			activeMapView->map->selectedNodes[0]->onRename(activeMapView->map);
 		}

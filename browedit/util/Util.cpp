@@ -195,11 +195,49 @@ namespace util
 		return ret;
 	}
 
-	bool InputText(BrowEdit* browEdit, Map* map, Node* node, const char* label, std::string* ptr, ImGuiInputTextFlags flags, const std::string& action)
+	struct InputTextCallback_UserData
+	{
+		std::string* Str;
+		ImGuiInputTextCallback  ChainCallback;
+		void* ChainCallbackUserData;
+	};
+	static int InputTextCallback(ImGuiInputTextCallbackData* data)
+	{
+		InputTextCallback_UserData* user_data = (InputTextCallback_UserData*)data->UserData;
+		if (data->EventFlag == ImGuiInputTextFlags_CallbackResize)
+		{
+			// Resize string callback
+			// If for some reason we refuse the new length (BufTextLen) and/or capacity (BufSize) we need to set them back to what we want.
+			std::string* str = user_data->Str;
+			IM_ASSERT(data->Buf == str->c_str());
+			str->resize(data->BufTextLen);
+			data->Buf = (char*)str->c_str();
+		}
+		else if (user_data->ChainCallback)
+		{
+			// Forward to user callback, if any
+			data->UserData = user_data->ChainCallbackUserData;
+			return user_data->ChainCallback(data);
+		}
+		return 0;
+	}
+	bool InputText(const char* label, std::string* str, ImGuiInputTextFlags flags, unsigned long long maxLen)
+	{
+		IM_ASSERT((flags & ImGuiInputTextFlags_CallbackResize) == 0);
+		flags |= ImGuiInputTextFlags_CallbackResize;
+
+		InputTextCallback_UserData cb_user_data;
+		cb_user_data.Str = str;
+		return ImGui::InputText(label, (char*)str->c_str(), (int)glm::min(maxLen, str->capacity() + 1), flags, InputTextCallback, &cb_user_data);
+	}
+
+	bool InputText(BrowEdit* browEdit, Map* map, Node* node, const char* label, std::string* ptr, ImGuiInputTextFlags flags, const std::string& action, int maxLen)
 	{
 		static std::string startValue;
-		bool ret = ImGui::InputText(label, ptr, flags);
+		bool ret = InputText(label, ptr, flags, maxLen);
 
+		if (maxLen > 0 && ptr->size() > maxLen)
+			*ptr = ptr->substr(0, maxLen);
 		if (ImGui::IsItemActivated())
 			startValue = *ptr;
 		if (ImGui::IsItemDeactivatedAfterEdit())
