@@ -2,6 +2,7 @@
 #include "Map.h"
 #include "BrowEdit.h"
 #include "Node.h"
+#include "Icons.h"
 #include "Gadget.h"
 #include "components/Rsw.h"
 #include "components/Gnd.h"
@@ -58,29 +59,29 @@ MapView::MapView(Map* map, const std::string &viewName) : map(map), viewName(vie
 
 void MapView::toolbar(BrowEdit* browEdit)
 {
-	browEdit->toolBarToggleButton("ortho", ortho ? 24 : 25, &ortho, "Toggle between ortho and perspective camera");
+	browEdit->toolBarToggleButton("ortho", ortho ? ICON_ORTHO : ICON_PERSPECTIVE, &ortho, "Toggle between ortho and perspective camera");
 	ImGui::SameLine();
 
-	browEdit->toolBarToggleButton("viewLightMapShadow", 8, &viewLightmapShadow, "Toggle shadowmap");
+	browEdit->toolBarToggleButton("viewLightMapShadow", viewLightmapShadow ? ICON_SHADOWMAP_ON : ICON_SHADOWMAP_OFF, &viewLightmapShadow, "Toggle shadowmap");
 	ImGui::SameLine();
-	browEdit->toolBarToggleButton("viewLightmapColor", 9, &viewLightmapColor, "Toggle colormap");
+	browEdit->toolBarToggleButton("viewLightmapColor", viewLightmapColor ? ICON_COLORMAP_ON : ICON_COLORMAP_OFF, &viewLightmapColor, "Toggle colormap");
 	ImGui::SameLine();
-	browEdit->toolBarToggleButton("viewColors", 11, &viewColors, "Toggle tile colors");
+	browEdit->toolBarToggleButton("viewColors", viewColors ? ICON_TILECOLOR_ON : ICON_TILECOLOR_OFF, &viewColors, "Toggle tile colors");
 	ImGui::SameLine();
-	browEdit->toolBarToggleButton("viewLighting", 12, &viewLighting, "Toggle lighting");
+	browEdit->toolBarToggleButton("viewLighting", viewLighting ? ICON_LIGHTING_ON : ICON_LIGHTING_OFF, &viewLighting, "Toggle lighting");
 	ImGui::SameLine();
-	browEdit->toolBarToggleButton("viewTextures", 10, &viewTextures, "Toggle textures");
+	browEdit->toolBarToggleButton("viewTextures", viewTextures ? ICON_TEXTURE_ON : ICON_TEXTURE_OFF, &viewTextures, "Toggle textures");
 	ImGui::SameLine();
-	browEdit->toolBarToggleButton("smoothColors", 63, &smoothColors, "Smooth colormap");
+	browEdit->toolBarToggleButton("smoothColors", smoothColors ? ICON_SMOOTH_COLOR_ON : ICON_SMOOTH_COLOR_OFF, &smoothColors, "Smooth colormap");
 	ImGui::SameLine();
-	browEdit->toolBarToggleButton("viewEmptyTiles", 63, &viewEmptyTiles, "View empty tiles");
+	browEdit->toolBarToggleButton("viewEmptyTiles", viewEmptyTiles ? ICON_EMPTYTILE_ON : ICON_EMPTYTILE_OFF, &viewEmptyTiles, "View empty tiles");
 	ImGui::SameLine();
 
 	ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 	ImGui::SameLine();
-	browEdit->toolBarToggleButton("showAllLights", 63, &showAllLights, "Show all lights");
+	browEdit->toolBarToggleButton("showAllLights", showAllLights ? ICON_ALL_LIGHTS_ON : ICON_ALL_LIGHTS_OFF, &showAllLights, "Show all lights");
 	ImGui::SameLine();
-	browEdit->toolBarToggleButton("showLightSphere", 63, &showLightSphere, "Show light sphere");
+	browEdit->toolBarToggleButton("showLightSphere", showLightSphere ? ICON_LIGHTSPHERE_ON : ICON_LIGHTSPHERE_OFF, &showLightSphere, "Show light sphere");
 	ImGui::SameLine();
 	ImGui::SetNextItemWidth(50);
 	ImGui::DragInt("##quadTreeMaxLevel", &quadTreeMaxLevel, 1, 0, 6);
@@ -115,20 +116,20 @@ void MapView::toolbar(BrowEdit* browEdit)
 		ImGui::SameLine();
 		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 		ImGui::SameLine();
-		if (browEdit->toolBarToggleButton("translate", 20, gadget.mode == Gadget::Mode::Translate, "Move"))
+		if (browEdit->toolBarToggleButton("translate", ICON_MOVE, gadget.mode == Gadget::Mode::Translate, "Move"))
 			gadget.mode = Gadget::Mode::Translate;
 		ImGui::SameLine();
-		if (browEdit->toolBarToggleButton("rotate", 21, gadget.mode == Gadget::Mode::Rotate, "Rotate"))
+		if (browEdit->toolBarToggleButton("rotate", ICON_ROTATE, gadget.mode == Gadget::Mode::Rotate, "Rotate"))
 			gadget.mode = Gadget::Mode::Rotate;
 		ImGui::SameLine();
-		if (browEdit->toolBarToggleButton("scale", 22, gadget.mode == Gadget::Mode::Scale, "Scale"))
+		if (browEdit->toolBarToggleButton("scale", ICON_SCALE, gadget.mode == Gadget::Mode::Scale, "Scale"))
 			gadget.mode = Gadget::Mode::Scale;
 
 
 		if (gadget.mode == Gadget::Mode::Rotate || gadget.mode == Gadget::Mode::Scale)
 		{
 			ImGui::SameLine();
-			if (browEdit->toolBarToggleButton("localglobal", pivotPoint == MapView::PivotPoint::Local ? MISSING : MISSING, false, "Changes the pivot point for rotations"))
+			if (browEdit->toolBarToggleButton("localglobal", pivotPoint == MapView::PivotPoint::Local ? ICON_PIVOT_ROT_LOCAL : ICON_PIVOT_ROT_GLOBAL, false, "Changes the pivot point for rotations"))
 			{
 				if (pivotPoint == MapView::PivotPoint::Local)
 					pivotPoint = MapView::PivotPoint::GroupCenter;

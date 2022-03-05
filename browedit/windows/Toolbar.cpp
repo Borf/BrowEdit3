@@ -1,4 +1,5 @@
 #include <Windows.h>
+#include <browedit/Icons.h>
 #include <browedit/BrowEdit.h>
 #include <browedit/MapView.h>
 #include <browedit/Map.h>
@@ -52,25 +53,25 @@ void BrowEdit::toolbar()
 	ImGui::SameLine();
 	if (toolBarToggleButton("wallmode", 3, editMode == EditMode::Wall, "Wall edit mode"))
 		editMode = EditMode::Wall;
-	ImGui::SameLine();
+	ImGui::SameLine(300);
 
 	if (editMode == EditMode::Object)
 	{
-		toolBarToggleButton("showObjectWindow", 2, &windowData.objectWindowVisible, "Toggle object window", ImVec4(1, 0, 0, 1));
+		toolBarToggleButton("showObjectWindow", windowData.objectWindowVisible ? ICON_OBJECTPICKER_OPEN : ICON_OBJECTPICKER_CLOSE, &windowData.objectWindowVisible, "Toggle object window");
 		ImGui::SameLine();
 	}
 
 
-	if (toolBarToggleButton("undo", 16, false, "Undo") && activeMapView)
+	if (toolBarToggleButton("undo", ICON_UNDO, false, "Undo") && activeMapView)
 		activeMapView->map->undo(this);
 	ImGui::SameLine();
-	if (toolBarToggleButton("redo", 17, false, "Redo") && activeMapView)
+	if (toolBarToggleButton("redo", ICON_REDO, false, "Redo") && activeMapView)
 		activeMapView->map->undo(this);
 	ImGui::SameLine();
-	if (toolBarToggleButton("copy", 18, false, "Copy") && activeMapView)
+	if (toolBarToggleButton("copy", ICON_COPY, false, "Copy") && activeMapView)
 		activeMapView->map->copySelection();
 	ImGui::SameLine();
-	if (toolBarToggleButton("paste", 19, false, "Paste") && activeMapView)
+	if (toolBarToggleButton("paste", ICON_PASTE, false, "Paste") && activeMapView)
 		activeMapView->map->pasteSelection(this);
 	ImGui::SameLine();
 

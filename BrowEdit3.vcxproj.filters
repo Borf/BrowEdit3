@@ -519,6 +519,9 @@
     <ClInclude Include="browedit\actions\TileSelectAction.h">
       <Filter>browedit\actions</Filter>
     </ClInclude>
+    <ClInclude Include="browedit\Icons.h">
+      <Filter>browedit</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="BrowEdit3.rc">

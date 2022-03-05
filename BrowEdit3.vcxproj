@@ -124,6 +124,7 @@
     <ClInclude Include="browedit\gl\VBO.h" />
     <ClInclude Include="browedit\gl\Vertex.h" />
     <ClInclude Include="browedit\gl\VIO.h" />
+    <ClInclude Include="browedit\Icons.h" />
     <ClInclude Include="browedit\Image.h" />
     <ClInclude Include="browedit\Lightmapper.h" />
     <ClInclude Include="browedit\Map.h" />
