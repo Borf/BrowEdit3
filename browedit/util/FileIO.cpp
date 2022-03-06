@@ -247,6 +247,7 @@ namespace util
 		}
 		catch (...)
 		{
+			std::cerr << "Error checking if file exists" << std::endl;
 			return false;
 		}
 	}

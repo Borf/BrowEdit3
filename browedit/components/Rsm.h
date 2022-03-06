@@ -94,6 +94,7 @@ public:
 	void updateMatrices();
 public:
 	Rsm(const std::string& fileName);
+	void reload();
 
 	std::string fileName;
 	bool loaded;

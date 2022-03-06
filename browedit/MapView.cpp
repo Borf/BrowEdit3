@@ -284,10 +284,7 @@ void MapView::render(BrowEdit* browEdit)
 void MapView::update(BrowEdit* browEdit, const ImVec2 &size)
 {
 	if (fbo->getWidth() != (int)size.x || fbo->getHeight() != (int)size.y)
-	{
-		std::cout << "FBO is wrong size, resizing..." << std::endl;
 		fbo->resize((int)size.x, (int)size.y);
-	}
 	mouseState.position = glm::vec2(ImGui::GetMousePos().x - ImGui::GetCursorScreenPos().x, ImGui::GetMousePos().y - ImGui::GetCursorScreenPos().y);
 	mouseState.buttons = (ImGui::IsMouseDown(0) ? 0x01 : 0x00) | 
 		(ImGui::IsMouseDown(1) ? 0x02 : 0x00) |

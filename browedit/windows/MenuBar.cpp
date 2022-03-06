@@ -4,14 +4,16 @@
 #include <browedit/Map.h>
 #include <browedit/Node.h>
 #include <browedit/gl/FBO.h>
+#include <browedit/gl/Texture.h>
 #include <browedit/util/FileIO.h>
 #include <browedit/util/Util.h>
 #include <browedit/Lightmapper.h>
 #include <browedit/components/Gnd.h>
 #include <browedit/components/GndRenderer.h>
+#include <browedit/components/RsmRenderer.h>
 #include <browedit/components/Rsw.h>
-#include <browedit/components/GndRenderer.h>
 #include <browedit/components/BillboardRenderer.h>
+#include <browedit/util/ResourceManager.h>
 #include <GLFW/glfw3.h>
 #include <imgui_internal.h>
 
@@ -41,6 +43,20 @@ void BrowEdit::menuBar()
 			windowData.configVisible = true;
 		if (ImGui::MenuItem("Demo Window", nullptr, windowData.demoWindowVisible))
 			windowData.demoWindowVisible = !windowData.demoWindowVisible;
+		if (ImGui::MenuItem("Reload Textures", "Ctrl+R"))
+			for (auto t : util::ResourceManager<gl::Texture>::getAll())
+				t->reload();
+		if (ImGui::MenuItem("Reload Models", "Shift+R"))
+		{
+			for (auto rsm : util::ResourceManager<Rsm>::getAll())
+				rsm->reload();
+			for (auto m : maps)
+				m->rootNode->traverse([](Node* n) {
+					auto rsmRenderer = n->getComponent<RsmRenderer>();
+					if(rsmRenderer)
+						rsmRenderer->begin();
+				});
+		}
 		ImGui::EndMenu();
 	}
 	if (editMode == EditMode::Object && activeMapView && ImGui::BeginMenu("Selection"))

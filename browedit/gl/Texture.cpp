@@ -8,8 +8,29 @@
 
 namespace gl
 {
-	Texture::Texture(const std::string& fileName, bool flipSelection) : fileName(fileName)
+	Texture::Texture(const std::string& fileName, bool flipSelection) : fileName(fileName), flipSelection(flipSelection)
 	{
+		id = 0;
+		reload();
+	}
+
+
+	Texture::Texture(int width, int height) : width(width), height(height), fileName("")
+	{
+		glGenTextures(1, &id);
+		glBindTexture(GL_TEXTURE_2D, id);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	}
+
+	void Texture::reload()
+	{
+		if (fileName == "")
+			return;
 		int comp;
 		stbi_set_flip_vertically_on_load(flipSelection);
 
@@ -30,7 +51,7 @@ namespace gl
 		unsigned char* data = stbi_load_from_memory((stbi_uc*)buffer, (int)len, &width, &height, &comp, 4);
 		if (!data)
 		{
-			std::cerr<<"Texture: "<<fileName<<" could not load; error: "<<stbi_failure_reason()<<std::endl;
+			std::cerr << "Texture: " << fileName << " could not load; error: " << stbi_failure_reason() << std::endl;
 			return;
 		}
 
@@ -85,7 +106,8 @@ namespace gl
 
 
 		//std::cout << "Texture: loaded " << fileName << std::endl;;
-		glGenTextures(1, &id);
+		if(id == 0)
+			glGenTextures(1, &id);
 		glBindTexture(GL_TEXTURE_2D, id);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 		glGenerateMipmap(GL_TEXTURE_2D);
@@ -94,19 +116,6 @@ namespace gl
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 		stbi_image_free(data);
-	}
-
-
-	Texture::Texture(int width, int height) : width(width), height(height)
-	{
-		glGenTextures(1, &id);
-		glBindTexture(GL_TEXTURE_2D, id);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
-
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	}
 
 	void Texture::setSubImage(char* data, int x, int y, int width, int height)

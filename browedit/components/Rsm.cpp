@@ -14,6 +14,18 @@ Rsm::Rsm(const std::string& fileName)
 	if (fileName.length() > 2 && fileName.substr(fileName.size() - 5) == ".rsm2")
 		return;
 
+	reload();
+}
+void Rsm::reload()
+{
+	rootMesh = NULL;
+	loaded = false;
+	textures.clear();
+	if (rootMesh)
+		delete rootMesh;
+	rootMesh = nullptr;
+
+
 	std::istream* rsmFile = util::FileIO::open(fileName);
 	if (!rsmFile)
 	{
@@ -245,6 +257,17 @@ Rsm::Mesh::Mesh(Rsm* model, std::istream* rsmFile)
 		rsmFile->read(reinterpret_cast<char*>(&w), sizeof(float));
 		frames[i]->quaternion = glm::quat(w, x, y, z);
 	}
+}
+
+Rsm::Mesh::~Mesh()
+{
+	for (auto face : faces)
+		delete face;
+	for (auto child : children)
+		delete child;
+	faces.clear();
+	children.clear();
+
 }
 
 void Rsm::Mesh::fetchChildren(std::map<std::string, Mesh* > meshes)

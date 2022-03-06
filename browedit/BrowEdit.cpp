@@ -1,5 +1,6 @@
 #include <Windows.h> //to remove ugly warning :(
 #include "BrowEdit.h"
+#include "Version.h"
 #include <GLFW/glfw3.h>
 #include <BugTrap.h>
 
@@ -21,9 +22,13 @@
 #include <browedit/Lightmapper.h>
 #include <browedit/components/Rsw.h>
 #include <browedit/components/Gnd.h>
+#include <browedit/components/RsmRenderer.h>
 #include <browedit/util/FileIO.h>
 #include <browedit/util/Util.h>
 #include <browedit/util/ResourceManager.h>
+
+#define Q(x) #x
+#define QUOTE(x) Q(x)
 
 
 #ifdef _WIN32
@@ -39,6 +44,7 @@ static void SetupExceptionHandler()
 {
 	BT_InstallSehFilter();
 	BT_SetAppName("Browedit");
+	BT_SetAppVersion("V3." QUOTE(VERSION));
 	BT_SetFlags(BTF_DETAILEDMODE | BTF_SCREENCAPTURE);
 	BT_SetSupportURL("https://discord.gg/bQaj5dKtbV");
 }
@@ -225,6 +231,23 @@ void BrowEdit::run()
 				{
 					lightmapper = new Lightmapper(activeMapView->map, this);
 					windowData.openLightmapSettings = true;
+				}
+				if(ImGui::IsKeyPressed('R'))
+					for (auto t : util::ResourceManager<gl::Texture>::getAll())
+						t->reload();
+			}
+			if (ImGui::GetIO().KeyShift)
+			{
+				if (ImGui::IsKeyPressed('R'))
+				{
+					for (auto rsm : util::ResourceManager<Rsm>::getAll())
+						rsm->reload();
+					for (auto m : maps)
+						m->rootNode->traverse([](Node* n) {
+						auto rsmRenderer = n->getComponent<RsmRenderer>();
+						if (rsmRenderer)
+							rsmRenderer->begin();
+							});
 				}
 			}
 			if (editMode == EditMode::Object && activeMapView)

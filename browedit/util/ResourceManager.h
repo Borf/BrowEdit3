@@ -51,6 +51,17 @@ namespace util
 			resources.clear();
 		}
 
+
+		static std::vector<T*> getAll()
+		{
+			std::vector<T*> ret;
+			for (auto it : resmap)
+				ret.push_back(it.second);
+			for (auto res : resources)
+				ret.push_back(res); //TODO: do this with iterator insert
+			return ret;
+		}
+
 		static std::size_t count()
 		{
 			return resources.size() + resmap.size();
