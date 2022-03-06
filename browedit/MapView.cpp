@@ -97,7 +97,7 @@ void MapView::toolbar(BrowEdit* browEdit)
 	bool snapping = snapToGrid;
 	if (ImGui::GetIO().KeyShift)
 		snapping = !snapping;
-	bool ret = browEdit->toolBarToggleButton("snapToGrid", 14, snapping, "Snap to grid");
+	bool ret = browEdit->toolBarToggleButton("snapToGrid", snapping ? ICON_GRID_SNAP_ON : ICON_GRID_SNAP_OFF, snapping, "Snap to grid");
 	if (!ImGui::GetIO().KeyShift && ret)
 		snapToGrid = !snapToGrid;
 	if (snapping || snapToGrid)

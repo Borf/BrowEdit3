@@ -19,6 +19,10 @@
 #define ICON_LIGHTSPHERE_ON		24
 #define ICON_LIGHTSPHERE_OFF	25
 
+#define ICON_GRID_SNAP_ON		32
+#define ICON_GRID_SNAP_OFF		33
+
+
 #define ICON_UNDO				36
 #define ICON_REDO				37
 #define ICON_COPY				38

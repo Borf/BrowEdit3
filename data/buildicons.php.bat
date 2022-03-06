@@ -18,7 +18,7 @@ $order = array(
 		"emptytile_on.png", "emptytile_off.png", "all_lights_on.png", "all_lights_off.png",				//20-
 	"lightsphere_on.png", "lightsphere_off.png", "","",													//24-
 		"","","","",																					//28-
-	"grid.png","show_object.png","","",																	//32-
+	"snap_grid_on.png","snap_grid_off.png","","",														//32-
 		"undo.png", "redo.png", "copy.png", "paste.png",												//36-
 	"move.png", "rotate.png", "scale.png", "",															//40-
 		"camera_ortho.png","camera_perspective.png","","",												//44-
