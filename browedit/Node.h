@@ -25,7 +25,7 @@ public:
 	void setParent(Node* newParent);
 	void removeChild(Node* child);
 
-
+	void makeNameUnique(Node* rootNode);
 
 	void onRename(Map* map);
 	

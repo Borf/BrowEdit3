@@ -31,7 +31,7 @@ namespace util
 	bool Checkbox(BrowEdit* browEdit, Map* map, Node* node, const char* label, bool* ptr, const std::string& action = "");
 
 	template<class T>
-	bool InputTextMulti(BrowEdit* browEdit, Map* map, const std::vector<T*>& data, const char* label, const std::function<std::string* (T*)>& getProp);
+	bool InputTextMulti(BrowEdit* browEdit, Map* map, const std::vector<T*>& data, const char* label, const std::function<std::string* (T*)>& getProp, int maxLen = 999999);
 
 	template<class T>
 	bool DragIntMulti(BrowEdit* browEdit, Map* map, const std::vector<T*>& data, const char* label, const std::function<int* (T*)>& callback, int v_speed, int v_min, int v_max);

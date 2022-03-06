@@ -16,6 +16,8 @@ void NewObjectAction::perform(Map* map, BrowEdit* browEdit)
 	std::string path = node->name;
 	if (path.find("\\") != std::string::npos)
 		path = path.substr(0, path.find("\\"));
+	else
+		path = "";
 	node->setParent(map->findAndBuildNode(path));
 }
 

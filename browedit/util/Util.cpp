@@ -259,14 +259,14 @@ namespace util
 	
 
 	template<class T>
-	bool InputTextMulti(BrowEdit* browEdit, Map* map, const std::vector<T*>& data, const char* label, const std::function<std::string* (T*)>& getProp)
+	bool InputTextMulti(BrowEdit* browEdit, Map* map, const std::vector<T*>& data, const char* label, const std::function<std::string* (T*)>& getProp, int maxLen)
 	{
 		static std::vector<std::string> startValues;
 		bool differentValues = !std::all_of(data.begin(), data.end(), [&](T* o) { return *getProp(o) == *getProp(data.front()); });
 		std::string f = *getProp(data.front());
 		if (differentValues)
 			f = "multiple";
-		bool ret = ImGui::InputText(label, &f);
+		bool ret = InputText(label, &f, 0, maxLen);
 		if (ret)
 			for (auto o : data)
 				*getProp(o) = f;
@@ -285,11 +285,11 @@ namespace util
 		}
 		return ret;
 	}
-	template bool InputTextMulti<RswObject>(BrowEdit* browEdit, Map* map, const std::vector<RswObject*>& data, const char* label, const std::function<std::string* (RswObject*)>& getProp);
-	template bool InputTextMulti<RswLight>(BrowEdit* browEdit, Map* map, const std::vector<RswLight*>& data, const char* label, const std::function<std::string* (RswLight*)>& getProp);
-	template bool InputTextMulti<RswEffect>(BrowEdit* browEdit, Map* map, const std::vector<RswEffect*>& data, const char* label, const std::function<std::string* (RswEffect*)>& getProp);
-	template bool InputTextMulti<RswSound>(BrowEdit* browEdit, Map* map, const std::vector<RswSound*>& data, const char* label, const std::function<std::string* (RswSound*)>& getProp);
-	template bool InputTextMulti<RswModel>(BrowEdit* browEdit, Map* map, const std::vector<RswModel*>& data, const char* label, const std::function<std::string* (RswModel*)>& getProp);
+	template bool InputTextMulti<RswObject>(BrowEdit* browEdit, Map* map, const std::vector<RswObject*>& data, const char* label, const std::function<std::string* (RswObject*)>& getProp, int maxLen);
+	template bool InputTextMulti<RswLight>(BrowEdit* browEdit, Map* map, const std::vector<RswLight*>& data, const char* label, const std::function<std::string* (RswLight*)>& getProp, int maxLen);
+	template bool InputTextMulti<RswEffect>(BrowEdit* browEdit, Map* map, const std::vector<RswEffect*>& data, const char* label, const std::function<std::string* (RswEffect*)>& getProp, int maxLen);
+	template bool InputTextMulti<RswSound>(BrowEdit* browEdit, Map* map, const std::vector<RswSound*>& data, const char* label, const std::function<std::string* (RswSound*)>& getProp, int maxLen);
+	template bool InputTextMulti<RswModel>(BrowEdit* browEdit, Map* map, const std::vector<RswModel*>& data, const char* label, const std::function<std::string* (RswModel*)>& getProp, int maxLen);
 
 
 

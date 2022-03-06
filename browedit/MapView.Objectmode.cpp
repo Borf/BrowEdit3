@@ -126,29 +126,10 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 				std::string path = newNode.first->name;
 				if (path.find("\\") != std::string::npos)
 					path = path.substr(0, path.find("\\"));
+				else
+					path = "";
 				newNode.first->setParent(map->findAndBuildNode(path));
-				
-				bool exists = false;
-				auto& siblings = newNode.first->parent->children;
-				for (auto s : siblings)
-					if (s->name == newNode.first->name && s != newNode.first)
-						exists = true;
-
-				if (exists)
-				{
-					std::string name = newNode.first->name;
-					int index = 0;
-					exists = true;
-					while (exists)
-					{
-						index++;
-						newNode.first->name = name + "_" + std::string(3 - std::min(3, (int)std::to_string(index).length()), '0') + std::to_string(index);
-						exists = false;
-						for (auto s : siblings)
-							if (s->name == newNode.first->name && s != newNode.first)
-								exists = true;
-					}
-				}
+				newNode.first->makeNameUnique(map->rootNode);
 
 				ga->addAction(new NewObjectAction(newNode.first));
 				auto sa = new SelectAction(map, newNode.first, first, false);

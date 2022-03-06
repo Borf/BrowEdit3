@@ -18,12 +18,44 @@ void Node::addComponent(Component* component)
 {
 	component->node = this;
 	components.push_back(component);
+}
 
+void Node::makeNameUnique(Node* rootNode)
+{
+
+	bool exists = false;
+	auto& siblings = parent->children;
+	for (auto s : siblings)
+		if (s->name == name && s != this)
+			exists = true;
+
+	if (exists)
+	{
+		std::string name_ = name;
+		if (name.size() > 4 && name[name.size() - 4] == '_' && std::stoi(name.substr(name.size() - 3)) > 0)
+			name_ = name_.substr(0, name.size() - 4);
+
+		int index = 0;
+		exists = true;
+		while (exists)
+		{
+			index++;
+			name = name_ + "_" + std::string(3 - std::min(3, (int)std::to_string(index).length()), '0') + std::to_string(index);
+			exists = false;
+			for (auto s : siblings)
+				if (s->name == name && s != this)
+					exists = true;
+		}
+	}
 }
 
 
 void Node::onRename(Map* map)
 {
+	if (this->parent != this->root && util::split(name, "\\").size() == 1)
+	{
+		this->setParent(this->root);
+	}
 	this->traverse([&](Node* n) //rename all nodes under this one to have the proper name
 		{
 			int level = 0;
@@ -36,7 +68,8 @@ void Node::onRename(Map* map)
 			if (level != 0)
 			{
 				std::vector<std::string> parts = util::split(n->name, "\\");
-				parts[parts.size() - 1 - level] = this->name;
+				if(parts.size() > 0)
+					parts[parts.size() - 1 - level] = this->name;
 				n->name = util::combine(parts, "\\");
 			}
 		});
