@@ -1,15 +1,19 @@
+#define IMGUI_DEFINE_MATH_OPERATORS
 #include "MapView.h"
 
 #include <browedit/BrowEdit.h>
 #include <browedit/Map.h>
 #include <browedit/Node.h>
 #include <browedit/gl/FBO.h>
+#include <browedit/gl/Texture.h>
 #include <browedit/shaders/SimpleShader.h>
 #include <browedit/components/Gnd.h>
 #include <browedit/components/GndRenderer.h>
 #include <browedit/math/Polygon.h>
 #include <browedit/actions/TileSelectAction.h>
 #include <browedit/actions/TileChangeAction.h>
+#include <imgui.h>
+#include <imgui_internal.h>
 
 #include <glm/gtc/type_ptr.hpp>
 #include <iostream>
@@ -133,6 +137,74 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 						changed |= util::DragFloat2(browEdit, map, map->rootNode, "UV2", &tile->v2, 0.01f, 0.0f, 1.0f);
 						changed |= util::DragFloat2(browEdit, map, map->rootNode, "UV3", &tile->v3, 0.01f, 0.0f, 1.0f);
 						changed |= util::DragFloat2(browEdit, map, map->rootNode, "UV4", &tile->v4, 0.01f, 0.0f, 1.0f);
+						{ //UV editor
+							ImGuiWindow* window = ImGui::GetCurrentWindow();
+							const ImGuiStyle& style = ImGui::GetStyle();
+							const ImGuiIO& IO = ImGui::GetIO();
+							ImDrawList* DrawList = ImGui::GetWindowDrawList();
+
+							ImGui::Text("Texture Edit");
+							const float avail = ImGui::GetContentRegionAvailWidth();
+							const float dim = ImMin(avail, 300.0f);
+							ImVec2 Canvas(dim, dim);
+
+							ImRect bb(window->DC.CursorPos, window->DC.CursorPos + Canvas);
+							ImGui::ItemSize(bb);
+							ImGui::ItemAdd(bb, NULL);
+							const ImGuiID id = window->GetID("Texture Edit");
+							//hovered |= 0 != ImGui::IsItemHovered(ImRect(bb.Min, bb.Min + ImVec2(avail, dim)), id);
+							ImGuiContext& g = *GImGui;
+
+							ImGui::RenderFrame(bb.Min, bb.Max, ImGui::GetColorU32(ImGuiCol_FrameBg, 1), true, style.FrameRounding);
+							window->DrawList->AddImage((ImTextureID)gndRenderer->textures[tile->textureIndex]->id, bb.Min + ImVec2(1, 1), bb.Max - ImVec2(1, 1), ImVec2(0,0), ImVec2(1,1));
+
+							for (int i = 0; i < 4; i++)
+							{
+								int ii = (i + 1) % 4;
+								window->DrawList->AddLine(
+									ImVec2(bb.Min.x + tile->texCoords[i].x * bb.GetWidth(), bb.Max.y - tile->texCoords[i].y * bb.GetHeight()),
+									ImVec2(bb.Min.x + tile->texCoords[ii].x * bb.GetWidth(), bb.Max.y - tile->texCoords[ii].y * bb.GetHeight()), ImGui::GetColorU32(ImGuiCol_Text, 1), 2.0f);
+							}
+							ImVec2 cursorPos = ImGui::GetCursorScreenPos();
+							int i = 0;
+							static bool c = false;
+							static bool dragged = false;
+							for (int i = 0; i < 4; i++)
+							{
+								ImVec2 pos = ImVec2(bb.Min.x + tile->texCoords[i].x * bb.GetWidth(), bb.Max.y - tile->texCoords[i].y * bb.GetHeight());
+								window->DrawList->AddCircle(pos, 5, ImGui::GetColorU32(ImGuiCol_Text, 1), 0, 2.0f);
+								ImGui::PushID(i);
+								ImGui::SetCursorScreenPos(pos - ImVec2(5, 5));
+								ImGui::InvisibleButton("button", ImVec2(2 * 5, 2 * 5));
+								if (ImGui::IsItemActive() || ImGui::IsItemHovered())
+									ImGui::SetTooltip("(%4.3f, %4.3f)", tile->texCoords[i].x, tile->texCoords[i].y);
+								if (ImGui::IsItemActive() && ImGui::IsMouseDragging(0))
+								{
+									tile->texCoords[i].x = (ImGui::GetIO().MousePos.x - bb.Min.x) / Canvas.x;
+									tile->texCoords[i].y = 1 - (ImGui::GetIO().MousePos.y - bb.Min.y) / Canvas.y;
+									bool snap = snapToGrid;
+									if (ImGui::GetIO().KeyShift)
+										snap = !snap;
+
+									if (snap)
+									{
+										tile->texCoords[i] = glm::round(tile->texCoords[i] / gridSize) * gridSize;
+									}
+									gndRenderer->setChunkDirty(map->tileSelection[0].x, map->tileSelection[0].y);
+									tile->texCoords[i] = glm::clamp(tile->texCoords[i], 0.0f, 1.0f);
+									dragged = true;
+								}
+								else if (ImGui::IsMouseReleased(0) && dragged)
+								{
+									dragged = false;
+									changed = true;
+								}
+								ImGui::PopID();
+							}
+							ImGui::SetCursorScreenPos(cursorPos);
+						}
+
+
 					}
 				}
 				ImGui::PopID();

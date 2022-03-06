@@ -71,7 +71,14 @@ public:
 			lightmapIndex = o.lightmapIndex;
 			color = o.color;
 		}
-		glm::vec2 v1, v2, v3, v4;
+		union
+		{
+			struct
+			{
+				glm::vec2 v1, v2, v4, v3; //cheating the order here to get them 'in order' for a quad
+			};
+			glm::vec2 texCoords[4];
+		};
 		short textureIndex;
 		unsigned short lightmapIndex;
 		glm::ivec4 color;
