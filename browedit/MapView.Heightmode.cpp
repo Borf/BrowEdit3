@@ -45,6 +45,7 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 	auto gndRenderer = map->rootNode->getComponent<GndRenderer>();
 
 
+	static bool splitTriangleFlip = false;
 	static bool showCenterArrow = true;
 	static bool showCornerArrows = true;
 	static bool showEdgeArrows = true;
@@ -54,6 +55,8 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 	ImGui::Begin("Height Edit");
 	if (ImGui::CollapsingHeader("Tool Options", ImGuiTreeNodeFlags_DefaultOpen))
 	{
+		ImGui::Checkbox("Triangle Split", &splitTriangleFlip);
+
 		if (ImGui::CollapsingHeader("Tool", ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			ImGui::RadioButton("Rectangle", &tool, 0);
@@ -160,7 +163,7 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 							ImGuiContext& g = *GImGui;
 
 							ImGui::RenderFrame(bb.Min, bb.Max, ImGui::GetColorU32(ImGuiCol_FrameBg, 1), true, style.FrameRounding);
-							window->DrawList->AddImage((ImTextureID)gndRenderer->textures[tile->textureIndex]->id, bb.Min + ImVec2(1, 1), bb.Max - ImVec2(1, 1), ImVec2(0,0), ImVec2(1,1));
+							window->DrawList->AddImage((ImTextureID)(long long)gndRenderer->textures[tile->textureIndex]->id, bb.Min + ImVec2(1, 1), bb.Max - ImVec2(1, 1), ImVec2(0,0), ImVec2(1,1));
 
 							for (int i = 0; i < 4; i++)
 							{
@@ -431,7 +434,7 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 						glBegin(GL_POINTS);
 						glVertex3f(	tileHovered.x * 10 + ((index % 2) == 0 ? 10 : 0), 
 									-snapHeight+1, 
-									(gnd->height-tileHovered.y) * 10 + ((index / 2) == 0 ? 10 : 0));
+									(gnd->height-tileHovered.y) * 10.0f + ((index / 2) == 0 ? 10.0f : 0.0f));
 						glEnd();
 					}
 				}
@@ -475,12 +478,23 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 						gndRenderer->setChunkDirty(t.x, t.y);
 					for (int ii = 0; ii < 4; ii++)
 					{
+						// 0 1
+						// 2 3
 						glm::vec3 p = gnd->getPos(t.x, t.y, ii);
-						if (TriangleContainsPoint(pos[0], pos[1], pos[2], p))
-							gnd->cubes[t.x][t.y]->heights[ii] = originalValues[gnd->cubes[t.x][t.y]][ii] + (TriangleHeight(pos[0], pos[1], pos[2], p) - TriangleHeight(originalCorners[0], originalCorners[1], originalCorners[2], p));
-						if (TriangleContainsPoint(pos[1], pos[3], pos[2], p))
-							gnd->cubes[t.x][t.y]->heights[ii] = originalValues[gnd->cubes[t.x][t.y]][ii] + (TriangleHeight(pos[1], pos[3], pos[2], p) - TriangleHeight(originalCorners[1], originalCorners[3], originalCorners[2], p));
-						
+						if (!splitTriangleFlip)	// /
+						{
+							if (TriangleContainsPoint(pos[0], pos[1], pos[2], p))
+								gnd->cubes[t.x][t.y]->heights[ii] = originalValues[gnd->cubes[t.x][t.y]][ii] + (TriangleHeight(pos[0], pos[1], pos[2], p) - TriangleHeight(originalCorners[0], originalCorners[1], originalCorners[2], p));
+							if (TriangleContainsPoint(pos[1], pos[3], pos[2], p))
+								gnd->cubes[t.x][t.y]->heights[ii] = originalValues[gnd->cubes[t.x][t.y]][ii] + (TriangleHeight(pos[1], pos[3], pos[2], p) - TriangleHeight(originalCorners[1], originalCorners[3], originalCorners[2], p));
+						}
+						else // \ 
+						{
+							if (TriangleContainsPoint(pos[0], pos[3], pos[2], p))
+								gnd->cubes[t.x][t.y]->heights[ii] = originalValues[gnd->cubes[t.x][t.y]][ii] + (TriangleHeight(pos[0], pos[3], pos[2], p) - TriangleHeight(originalCorners[0], originalCorners[3], originalCorners[2], p));
+							if (TriangleContainsPoint(pos[0], pos[1], pos[3], p))
+								gnd->cubes[t.x][t.y]->heights[ii] = originalValues[gnd->cubes[t.x][t.y]][ii] + (TriangleHeight(pos[0], pos[1], pos[3], p) - TriangleHeight(originalCorners[0], originalCorners[1], originalCorners[3], p));
+						}
 						if (edgeMode == 1 || edgeMode == 2) //smooth raise area around these tiles
 						{
 							for (int xx = -1; xx <= 1; xx++)
