@@ -95,6 +95,10 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 				{
 
 				}
+				if (ImGui::Button("Add walls to selection", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
+				{
+
+				}
 				if (ImGui::Button("Finish my map with AI", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
 				{
 					std::cout << "Coming soon®" << std::endl;
@@ -537,6 +541,42 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 					}
 					cube->calcNormal();
 				}
+
+				if (edgeMode == 3) // add walls
+				{
+					for (auto t : map->tileSelection)
+					{
+						//h1 bottomleft
+						//h2 bottomright
+						//h3 topleft
+						//h4 topright
+						if (t.x > 0 && !isTileSelected(t.x - 1, t.y) && (
+							gnd->cubes[t.x][t.y]->h1 != gnd->cubes[t.x - 1][t.y]->h2 || 
+							gnd->cubes[t.x][t.y]->h3 != gnd->cubes[t.x - 1][t.y]->h4) &&
+							gnd->cubes[t.x - 1][t.y]->tileSide == -1)
+							gnd->cubes[t.x - 1][t.y]->tileSide = 1;
+
+						if (t.x < gnd->width-1 && !isTileSelected(t.x + 1, t.y) && (
+							gnd->cubes[t.x][t.y]->h2 != gnd->cubes[t.x + 1][t.y]->h1 ||
+							gnd->cubes[t.x][t.y]->h4 != gnd->cubes[t.x + 1][t.y]->h3) &&
+							gnd->cubes[t.x][t.y]->tileSide == -1)
+							gnd->cubes[t.x][t.y]->tileSide = 1;
+
+						if (t.y > 0 && !isTileSelected(t.x, t.y - 1) && (
+							gnd->cubes[t.x][t.y]->h1 != gnd->cubes[t.x][t.y - 1]->h3 ||
+							gnd->cubes[t.x][t.y]->h2 != gnd->cubes[t.x][t.y - 1]->h4) &&
+							gnd->cubes[t.x][t.y - 1]->tileFront == -1)
+							gnd->cubes[t.x][t.y - 1]->tileFront = 1;
+
+						if (t.y < gnd->height-1 && !isTileSelected(t.x, t.y + 1) && (
+							gnd->cubes[t.x][t.y]->h3 != gnd->cubes[t.x][t.y + 1]->h1 ||
+							gnd->cubes[t.x][t.y]->h4 != gnd->cubes[t.x][t.y + 1]->h2) &&
+							gnd->cubes[t.x][t.y]->tileFront == -1)
+							gnd->cubes[t.x][t.y]->tileFront = 1;
+
+					}
+				}
+
 
 				for (auto& t : map->tileSelection)
 					gnd->cubes[t.x][t.y]->calcNormals(gnd, t.x, t.y);
