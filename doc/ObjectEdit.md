@@ -40,14 +40,31 @@ By rightclicking certain properties, you can copy the values of a single propert
 #### Models
 Models have a few properties
 * **Animation Type**: no idea what this does
-* **Animation Speed**: Never tested
+* **Animation Speed**: Never tested, but should set the animation speed?
 * **Block type**: no idea what this does
 * **filename**: The filename stored in the rsw file. This can be changed, but it won't be visualized in browedit (for now)
 * **Cast Shadow**: This is a browedit custom property, and is not saved in the .rsw file but in the .extra.json file. Indicates if this model should be used in shadow casting
 
 #### Effects
+Effects are used by RO to show certain effects ingame. There are only a limited number of effects actually used by RO's maps. See [Object Picker](#Object_Picker) for information about the effect IDs. 
+* **Type**: The ID of the effect
+* **Loop**: time in milliseconds for it to loop
+* **Param 1**: no idea what this does
+* **Param 2**: no idea what this does
+* **Param 3**: no idea what this does
+* **Param 4**: no idea what this does
 
 #### Sounds
+Sounds are played by RO and can be used to give some more atmosphere to your maps. 
+* **Filename**: The filename of the audio file. Should be a wav-file
+* **Volume**: The volume of this audio effect. Is a value between 0 and 1, where 1 is the maximum volume
+* **Width**: no idea what this does
+* **Height**: no idea what this does
+* **Range**: no idea what this does
+* **Cycle**: no idea what this does
+* **Unknown6**: no idea what this does
+* **Unknown7**: no idea what this does
+* **Unknown8**: no idea what this does
 
 #### Lights
 
@@ -55,6 +72,16 @@ See [Lightmapping](Lightmapping.md)
 
 ### Object Picker
 
+The object picker is a window used to place new objects on the map. The object picker can be opened using the ![ObjectPicker](../data/icons/object_window_closed.png) button in the toolbar. Browedit will automatically scan your rsm and wav files. For lights and effects, BrowEdit has a set of json files in the browedit folder that get scanned to easily add effects and sounds. The folders are scanned on startup for efficiency, so placing new files won't show up immediately. The tree on the left shows different categories and some structured folders, as they are structured in your grf files / data. Objects can be right-clicked for a popup with more information and some options to use these models.
+
+To quickly find models, a filter and tagging-system is used. Every object can have tags attached to them, and the tags can be searched through quickly. To edit tags, rightclick the object, type the tag in the inputbox and hit the add button. 
+Objects can automatically be tagged, based on the map. The button 'Rescan map filters', will open all maps in your grf/datafolder, scan which objects are used on them, and tag these objects with the map:\<name\> tag. This way, when searching for the map:prontera tag, you get all objects used on the prontera map. Rescanning the maps with the 'rescan map filters' button will remove all map:\<name\> tags, but it will keep all your custom tags.
+
+Rightclicking will give some options
+
+* **Add to map**: Add this object to the map
+* **Replace selected models**: Replaces all selected rsm models with this model. You can use this to quickly replace a big number of models
+* **Select this model**: Selects all of this model on the map. Used to easily find models
 
 ### Main Menu
 
