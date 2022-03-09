@@ -162,7 +162,8 @@ void Node::setParent(Node* newParent)
 {
 	if (parent)
 	{
-		parent->children.erase(std::remove_if(parent->children.begin(), parent->children.end(), [this](Node* n) { return n == this; }));
+		if(std::find(parent->children.begin(), parent->children.end(), this) != parent->children.end())
+			parent->children.erase(std::remove_if(parent->children.begin(), parent->children.end(), [this](Node* n) { return n == this; }));
 	}
 	parent = newParent;
 	if (parent)
