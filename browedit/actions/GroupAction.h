@@ -33,8 +33,8 @@ public:
 	}
 	virtual void undo(Map* map, BrowEdit* browEdit) override
 	{
-		for (auto a : actions)
-			a->undo(map, browEdit);
+		for (auto it = actions.rbegin(); it != actions.rend(); it++)
+			(*it)->undo(map, browEdit);
 	}
 	virtual std::string str()
 	{

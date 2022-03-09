@@ -7,6 +7,7 @@ class Node;
 class Action;
 class Rsw;
 class BrowEdit;
+class GroupAction;
 namespace gl { class FBO; }
 
 class Map
@@ -19,6 +20,8 @@ public:
 	std::vector<Node*> selectedNodes;
 	std::vector<glm::ivec2> tileSelection;
 
+	std::vector<glm::ivec2> getSelectionAroundTiles();
+
 
 	Node* findAndBuildNode(const std::string &path, Node* root = nullptr);
 
@@ -26,6 +29,11 @@ public:
 	void doAction(Action* action, BrowEdit* browEdit);
 	void undo(BrowEdit* browEdit);
 	void redo(BrowEdit* browEdit);
+
+	GroupAction* tempGroupAction = nullptr;
+	void beginGroupAction(const std::string &title = "");
+	void endGroupAction(BrowEdit* browEdit);
+
 
 	glm::vec3 getSelectionCenter();
 

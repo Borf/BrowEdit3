@@ -1,6 +1,9 @@
 #include "Gnd.h"
 #include <browedit/util/Util.h>
 #include <browedit/util/FileIO.h>
+#include <browedit/Node.h>
+#include <browedit/components/GndRenderer.h>
+#include <browedit/actions/TileChangeAction.h>
 #include <iostream>
 #include <fstream>
 
@@ -312,9 +315,9 @@ glm::vec3 Gnd::rayCast(const math::Ray& ray, bool emptyTiles, int xMin, int yMin
 {
 	//TODO: optimize this by making AABBs like a quadtree
 	if (xMax == -1)
-		xMax = cubes.size();
+		xMax = (int)cubes.size();
 	if (yMax == -1)
-		yMax = cubes[0].size();
+		yMax = (int)cubes[0].size();
 
 	xMin = glm::max(0, xMin);
 	yMin = glm::max(0, yMin);
@@ -799,6 +802,55 @@ void Gnd::cleanTiles()
 	std::cout<< "Tiles cleanup, ending with " << tiles.size() << " tiles" << std::endl;
 }
 
+void Gnd::addRandomHeight(Map* map, BrowEdit* browEdit, const std::vector<glm::ivec2>& tiles, float min, float max)
+{
+	TileChangeAction* action = new TileChangeAction(this, tiles);
+	auto gndRenderer = node->getComponent<GndRenderer>();
+	for (auto tile : tiles)
+	{
+		for (int i = 0; i < 4; i++)
+			cubes[tile.x][tile.y]->heights[i] -= min + (rand() / (RAND_MAX / (max-min)));
+		gndRenderer->setChunkDirty(tile.x, tile.y);
+	}
+	action->setNewHeights(this, tiles);
+	map->doAction(action, browEdit);
+}
+
+void Gnd::connectHigh(Map* map, BrowEdit* browEdit, const std::vector<glm::ivec2>& tiles)
+{
+	TileChangeAction* action = new TileChangeAction(this, tiles);
+	auto gndRenderer = node->getComponent<GndRenderer>();
+	for (auto t : tiles)
+		for (int i = 0; i < 4; i++)
+		{
+			float h = 9999999;
+			for (int ii = 0; ii < 4; ii++)
+				if(inMap(glm::ivec2(t.x + connectInfo[i][ii].x, t.y + connectInfo[i][ii].y)))
+					h = glm::min(h, cubes[t.x + connectInfo[i][ii].x][t.y + connectInfo[i][ii].y]->heights[connectInfo[i][ii].z]);
+			cubes[t.x][t.y]->heights[connectInfo[i][0].z] = h;
+			gndRenderer->setChunkDirty(t.x, t.y);
+		}
+	action->setNewHeights(this, tiles);
+	map->doAction(action, browEdit);
+}
+
+void Gnd::connectLow(Map* map, BrowEdit* browEdit, const std::vector<glm::ivec2>& tiles)
+{
+	TileChangeAction* action = new TileChangeAction(this, tiles);
+	auto gndRenderer = node->getComponent<GndRenderer>();
+	for (auto t : tiles)
+		for (int i = 0; i < 4; i++)
+		{
+			float h = 9999999;
+			for (int ii = 0; ii < 4; ii++)
+				if (inMap(glm::ivec2(t.x + connectInfo[i][ii].x, t.y + connectInfo[i][ii].y)))
+					h = glm::min(h, cubes[t.x + connectInfo[i][ii].x][t.y + connectInfo[i][ii].y]->heights[connectInfo[i][ii].z]);
+			cubes[t.x][t.y]->heights[connectInfo[i][0].z] = h;
+			gndRenderer->setChunkDirty(t.x, t.y);
+		}
+	action->setNewHeights(this, tiles);
+	map->doAction(action, browEdit);
+}
 
 void Gnd::makeTilesUnique()
 {

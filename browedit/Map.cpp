@@ -32,6 +32,22 @@ Map::Map(const std::string& name) : name(name)
 }
 
 
+std::vector<glm::ivec2> Map::getSelectionAroundTiles()
+{
+	auto gnd = rootNode->getComponent<Gnd>();
+	std::vector<glm::ivec2> tilesAround;
+	auto isTileSelected = [&](int x, int y) { return std::find(tileSelection.begin(), tileSelection.end(), glm::ivec2(x, y)) != tileSelection.end(); };
+
+	for (auto& t : tileSelection)
+		for (int xx = -1; xx <= 1; xx++)
+			for (int yy = -1; yy <= 1; yy++)
+				if (gnd->inMap(t + glm::ivec2(xx, yy)) &&
+					std::find(tilesAround.begin(), tilesAround.end(), glm::ivec2(t.x + xx, t.y + yy)) == tilesAround.end() &&
+					!isTileSelected(t.x + xx, t.y + yy))
+					tilesAround.push_back(t + glm::ivec2(xx, yy));
+	return tilesAround;
+}
+
 Node* Map::findAndBuildNode(const std::string& path, Node* root)
 {
 	if (!root)
@@ -55,6 +71,12 @@ Node* Map::findAndBuildNode(const std::string& path, Node* root)
 
 void Map::doAction(Action* action, BrowEdit* browEdit)
 {
+	if (tempGroupAction)
+	{
+		tempGroupAction->addAction(action);
+		return;
+	}
+
 	auto ga = dynamic_cast<GroupAction*>(action);
 	if (ga && ga->isEmpty())
 		return;
@@ -81,6 +103,18 @@ void Map::redo(BrowEdit* browEdit)
 		undoStack.push_back(redoStack.front());
 		redoStack.erase(redoStack.begin());
 	}
+}
+void Map::beginGroupAction(const std::string &title)
+{
+	assert(!tempGroupAction);
+	tempGroupAction = new GroupAction(title);
+}
+void Map::endGroupAction(BrowEdit* browEdit)
+{
+	assert(tempGroupAction);
+	auto action = tempGroupAction;
+	tempGroupAction = nullptr;
+	doAction(action, browEdit);
 }
 void Map::undo(BrowEdit* browEdit)
 {

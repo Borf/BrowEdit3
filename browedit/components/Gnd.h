@@ -6,6 +6,9 @@
 #include <glm/glm.hpp>
 #include <browedit/math/Ray.h>
 
+class Map;
+class BrowEdit;
+
 namespace gl {
 	class Texture;
 }
@@ -27,7 +30,12 @@ public:
 	void cleanLightmaps();
 	void cleanTiles();
 
+	void addRandomHeight(Map* map, BrowEdit* browEdit, const std::vector<glm::ivec2> &tiles, float min, float max);
+	void connectHigh(Map* map, BrowEdit* browEdit, const std::vector<glm::ivec2>& tiles);
+	void connectLow(Map* map, BrowEdit* browEdit, const std::vector<glm::ivec2>& tiles);
+
 	glm::vec3 getPos(int cubeX, int cubeY, int index);
+	inline bool inMap(const glm::ivec2& t) { return t.x >= 0 && t.x < width&& t.y >= 0 && t.y < width; }
 
 	std::vector<glm::vec3> getMapQuads();
 
@@ -131,5 +139,13 @@ public:
 	std::vector<Lightmap*> lightmaps;
 	std::vector<Tile*> tiles;
 	std::vector<std::vector<Cube*> > cubes;
+
+
+	static inline 	glm::ivec3 connectInfo[4][4] = {
+		{	glm::ivec3(0,0, 0),			glm::ivec3(-1,0, 1),		glm::ivec3(0,-1, 2),		glm::ivec3(-1,-1, 3),	},
+		{	glm::ivec3(0,0, 1),			glm::ivec3(1,0, 0),			glm::ivec3(0,-1, 3),		glm::ivec3(1,-1, 2),	},
+		{	glm::ivec3(0,0, 2),			glm::ivec3(-1,0, 3),		glm::ivec3(0,1, 0),			glm::ivec3(-1,1, 1),	},
+		{	glm::ivec3(0,0, 3),			glm::ivec3(1,0, 2),			glm::ivec3(0,1, 1),			glm::ivec3(1,1, 0),		}
+	};
 
 };

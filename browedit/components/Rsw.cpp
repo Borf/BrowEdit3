@@ -431,8 +431,8 @@ void Rsw::recalculateQuadtree(QuadTreeNode* node)
 				for (auto i = 0; i < vertices.size(); i += 3)
 				{
 					math::AABB aabb(std::span<glm::vec3>(vertices.begin() + i, 3));
-					for (int x = floor(aabb.min.x / 10); x < ceil(aabb.max.x / 10); x++)
-						for (int y = floor(aabb.min.z / 10); y < ceil(aabb.max.z / 10); y++)
+					for (int x = (int)glm::floor(aabb.min.x / 10); x < (int)glm::ceil(aabb.max.x / 10); x++)
+						for (int y = (int)glm::floor(aabb.min.z / 10); y < (int)glm::ceil(aabb.max.z / 10); y++)
 						{
 							if (x >= 0 && x < gnd->width && y >= 0 && y < gnd->height)
 							{
@@ -464,9 +464,9 @@ void Rsw::recalculateQuadtree(QuadTreeNode* node)
 	{
 		node->bbox.min.y = 99999;
 		node->bbox.max.y = -99999;
-		for (int x = gnd->width / 2 + floor(node->bbox.min.x / 10); x < gnd->width / 2 + ceil(node->bbox.max.x / 10); x++)
+		for (int x = gnd->width / 2 + (int)floor(node->bbox.min.x / 10); x < gnd->width / 2 + (int)ceil(node->bbox.max.x / 10); x++)
 		{
-			for (int y = gnd->height / 2 + floor(node->bbox.min.z / 10); y < gnd->height / 2 + ceil(node->bbox.max.z / 10); y++)
+			for (int y = gnd->height / 2 + (int)floor(node->bbox.min.z / 10); y < gnd->height / 2 + (int)ceil(node->bbox.max.z / 10); y++)
 			{
 				if (x >= 0 && x < gnd->width && y >= 0 && y < gnd->height)
 				{

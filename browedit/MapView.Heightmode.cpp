@@ -93,7 +93,10 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 				{
 
 				}
-
+				if (ImGui::Button("Connect tiles high", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
+					gnd->connectHigh(map, browEdit, map->tileSelection);
+				if (ImGui::Button("Connect tiles low", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
+					gnd->connectLow(map, browEdit, map->tileSelection);
 				if (ImGui::Button("Remove walls from selection", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
 				{
 
@@ -101,6 +104,40 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 				if (ImGui::Button("Add walls to selection", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
 				{
 
+				}
+				if (ImGui::CollapsingHeader("Random Generation", ImGuiTreeNodeFlags_DefaultOpen))
+				{
+					static float maxHeight = 1;
+					static float minHeight = 0;
+					static int raiseMode = 1;
+					static bool edges = false;
+					ImGui::SliderFloat("Min Random Value", &minHeight, -100, maxHeight);
+					ImGui::SliderFloat("Max Random Value", &maxHeight, minHeight, 100);
+					ImGui::Combo("Connect tiles", &raiseMode, "none\0high\0low\0");
+					ImGui::Checkbox("Connect tiles around selection", &edges);
+					if (ImGui::Button("Add random values to selection", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
+					{
+						map->beginGroupAction("Random Tile Generation");
+						gnd->addRandomHeight(map, browEdit, map->tileSelection, minHeight, maxHeight);
+						if (raiseMode == 1)
+							gnd->connectHigh(map, browEdit, map->tileSelection);
+						else if (raiseMode == 2)
+							gnd->connectLow(map, browEdit, map->tileSelection);
+						if (edges)
+						{
+							if (raiseMode == 1)
+								gnd->connectHigh(map, browEdit, map->getSelectionAroundTiles());
+							else if (raiseMode == 2)
+								gnd->connectLow(map, browEdit, map->getSelectionAroundTiles());
+						}
+						map->endGroupAction(browEdit);
+
+					}
+
+					if (ImGui::Button("Perlin Noise selection", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
+					{
+
+					}
 				}
 				if (ImGui::Button("Finish my map with AI", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
 				{
@@ -432,7 +469,7 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 						glUseProgram(0);
 						glPointSize(10.0);
 						glBegin(GL_POINTS);
-						glVertex3f(	tileHovered.x * 10 + ((index % 2) == 0 ? 10 : 0), 
+						glVertex3f(	tileHovered.x * 10.0f + ((index % 2) == 0 ? 10.0f : 0.0f), 
 									-snapHeight+1, 
 									(gnd->height-tileHovered.y) * 10.0f + ((index / 2) == 0 ? 10.0f : 0.0f));
 						glEnd();
