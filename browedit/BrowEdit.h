@@ -49,6 +49,7 @@ public:
 		bool helpWindowVisible = false;
 
 		bool objectWindowVisible = true; //TODO: load from config
+		util::FileIO::Node* objectWindowSelectedTreeNode = nullptr;
 
 		bool demoWindowVisible = false;
 

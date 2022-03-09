@@ -155,7 +155,6 @@ void BrowEdit::showObjectWindow()
 		progressThread.detach();
 	}
 
-	static util::FileIO::Node* selectedNode = nullptr;
 	std::function<void(util::FileIO::Node*)> buildTreeNodes;
 	buildTreeNodes = [&](util::FileIO::Node* node)
 	{
@@ -164,7 +163,7 @@ void BrowEdit::showObjectWindow()
 			int flags = ImGuiTreeNodeFlags_OpenOnDoubleClick;
 			if (f.second->directories.size() == 0)
 				flags |= ImGuiTreeNodeFlags_Bullet;
-			if (f.second == selectedNode)
+			if (f.second == windowData.windowData.objectWindowSelectedTreeNode)
 				flags |= ImGuiTreeNodeFlags_Selected;
 
 			if (ImGui::TreeNodeEx(f.second->name.c_str(), flags))
@@ -173,7 +172,7 @@ void BrowEdit::showObjectWindow()
 				ImGui::TreePop();
 			}
 			if (ImGui::IsItemClicked())
-				selectedNode = f.second;
+				windowData.objectWindowSelectedTreeNode = f.second;
 		}
 	};
 	
@@ -187,12 +186,12 @@ void BrowEdit::showObjectWindow()
 		if (ImGui::TreeNodeEx(nodeName, ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_OpenOnDoubleClick))
 		{
 			if (ImGui::IsItemClicked())
-				selectedNode = root;
+				windowData.objectWindowSelectedTreeNode = root;
 			buildTreeNodes(root);
 			ImGui::TreePop();
 		}
 		else if (ImGui::IsItemClicked())
-			selectedNode = root;
+			windowData.objectWindowSelectedTreeNode = root;
 	};
 	startTree("Models", "data\\model\\");
 	startTree("Sounds", "data\\wav\\");
@@ -211,7 +210,7 @@ void BrowEdit::showObjectWindow()
 			std::string path = util::utf8_to_iso_8859_1(file);
 			if (!fullPath)
 			{
-				auto n = selectedNode;
+				auto n = windowData.objectWindowSelectedTreeNode;
 				while (n)
 				{
 					if (n->name != "")
@@ -415,10 +414,10 @@ void BrowEdit::showObjectWindow()
 
 	if (ImGui::BeginChild("right pane", ImVec2(ImGui::GetContentRegionAvail().x, 0), true))
 	{
-		if (selectedNode != nullptr && filter == "")
+		if (windowData.objectWindowSelectedTreeNode != nullptr && filter == "")
 		{
 			window_visible_x2 = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
-			for (auto file : selectedNode->files)
+			for (auto file : windowData.objectWindowSelectedTreeNode->files)
 			{
 				if (file.find(".rsm") == std::string::npos && 
 					file.find(".rsm2") == std::string::npos &&

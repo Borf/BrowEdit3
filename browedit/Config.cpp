@@ -204,6 +204,7 @@ bool Config::showWindow(BrowEdit* browEdit)
 				configFile << std::setw(2)<<configJson;
 				close = true;
 
+				browEdit->windowData.objectWindowSelectedTreeNode = nullptr;
 				setupFileIO();
 			}
 		}
