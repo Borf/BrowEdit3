@@ -803,6 +803,27 @@ void Gnd::cleanTiles()
 	std::cout<< "Tiles cleanup, ending with " << tiles.size() << " tiles" << std::endl;
 }
 
+void Gnd::flattenTiles(Map* map, BrowEdit* browEdit, const std::vector<glm::ivec2>& tiles)
+{
+	TileChangeAction* action = new TileChangeAction(this, tiles);
+	float avg = 0;
+	for (auto& t : map->tileSelection)
+		for (int i = 0; i < 4; i++)
+			avg += cubes[t.x][t.y]->heights[i];
+	avg /= map->tileSelection.size() * 4;
+	for (auto& t : map->tileSelection)
+		for (int i = 0; i < 4; i++)
+			cubes[t.x][t.y]->heights[i] = avg;
+	node->getComponent<GndRenderer>()->setChunksDirty();
+	action->setNewHeights(this, tiles);
+	map->doAction(action, browEdit);
+}
+
+void Gnd::smoothTiles(Map* map, BrowEdit* browEdit, const std::vector<glm::ivec2>& tiles)
+{
+	std::cout << "TODO" << std::endl;
+}
+
 void Gnd::addRandomHeight(Map* map, BrowEdit* browEdit, const std::vector<glm::ivec2>& tiles, float min, float max)
 {
 	TileChangeAction* action = new TileChangeAction(this, tiles);

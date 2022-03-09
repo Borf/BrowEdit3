@@ -92,17 +92,7 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 
 				}
 				if (ImGui::Button("Flatten selection", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
-				{
-					float avg = 0;
-					for (auto& t : map->tileSelection)
-						for (int i = 0; i < 4; i++)
-							avg += gnd->cubes[t.x][t.y]->heights[i];
-					avg /= map->tileSelection.size() * 4;
-					for (auto& t : map->tileSelection)
-						for (int i = 0; i < 4; i++)
-							gnd->cubes[t.x][t.y]->heights[i] = avg;
-					gndRenderer->setChunksDirty();
-				}
+					gnd->flattenTiles(map, browEdit, map->tileSelection);
 				if (ImGui::Button("Connect tiles high", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
 					gnd->connectHigh(map, browEdit, map->tileSelection);
 				if (ImGui::Button("Connect tiles low", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))

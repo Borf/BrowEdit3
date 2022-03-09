@@ -30,6 +30,8 @@ public:
 	void cleanLightmaps();
 	void cleanTiles();
 
+	void flattenTiles(Map* map, BrowEdit* browEdit, const std::vector<glm::ivec2>& tiles);
+	void smoothTiles(Map* map, BrowEdit* browEdit, const std::vector<glm::ivec2>& tiles);
 	void addRandomHeight(Map* map, BrowEdit* browEdit, const std::vector<glm::ivec2> &tiles, float min, float max);
 	void connectHigh(Map* map, BrowEdit* browEdit, const std::vector<glm::ivec2>& tiles);
 	void connectLow(Map* map, BrowEdit* browEdit, const std::vector<glm::ivec2>& tiles);
