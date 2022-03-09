@@ -20,19 +20,19 @@ std::string Config::isValid() const
 	if (ropath == "")
 		return "Ro path is empty";
 
-	if (!std::filesystem::exists(ropath))
+	if (!std::filesystem::exists(util::utf8_to_iso_8859_1(ropath)))
 		return "Ro path does not exist";
 
 	if (ropath[ropath.size() - 1] != '\\')
 		return "Ro path should end with a \\";
 
-	if (!std::filesystem::exists(ropath + "data"))
+	if (!std::filesystem::exists(util::utf8_to_iso_8859_1(ropath) + "data"))
 		return "Please create a data directory in your RO directory";
 
 
 	for (const auto& grf : grfs)
 	{
-		if (!std::filesystem::exists(grf))
+		if (!std::filesystem::exists(util::utf8_to_iso_8859_1(grf)))
 			return "Grf " + grf + " does not exist";
 		if (grf.substr(std::max(0, (int)grf.size() - 4), 4) != ".grf")
 			return "Grf " + grf + " does not end with .grf";
