@@ -34,6 +34,8 @@ public:
 	void connectHigh(Map* map, BrowEdit* browEdit, const std::vector<glm::ivec2>& tiles);
 	void connectLow(Map* map, BrowEdit* browEdit, const std::vector<glm::ivec2>& tiles);
 
+	void perlinNoise(const std::vector<glm::ivec2>& tiles);
+
 	glm::vec3 getPos(int cubeX, int cubeY, int index);
 	inline bool inMap(const glm::ivec2& t) { return t.x >= 0 && t.x < width&& t.y >= 0 && t.y < width; }
 

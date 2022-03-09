@@ -6,6 +6,7 @@
 #include <browedit/actions/TileChangeAction.h>
 #include <iostream>
 #include <fstream>
+#include <FastNoiseLite.h>
 
 Gnd::Gnd(const std::string& fileName)
 {
@@ -850,6 +851,32 @@ void Gnd::connectLow(Map* map, BrowEdit* browEdit, const std::vector<glm::ivec2>
 		}
 	action->setNewHeights(this, tiles);
 	map->doAction(action, browEdit);
+}
+
+
+void Gnd::perlinNoise(const std::vector<glm::ivec2>& tiles)
+{
+	TileChangeAction* action = new TileChangeAction(this, tiles);
+	auto gndRenderer = node->getComponent<GndRenderer>();
+
+	FastNoiseLite noise;
+	noise.SetNoiseType(FastNoiseLite::NoiseType::NoiseType_Perlin);
+	noise.SetFractalType(FastNoiseLite::FractalType::FractalType_FBm);
+	noise.SetFractalOctaves(5);
+	noise.SetSeed(0);
+
+	for (auto tile : tiles)
+	{
+		for (int i = 0; i < 4; i++)
+		{
+			float x = (tile.x + i % 2) * 10.0f;
+			float y = (tile.y + i / 2) * 10.0f;
+			cubes[tile.x][tile.y]->heights[i] -= 20 * noise.GetNoise(x,y);
+		}
+		gndRenderer->setChunkDirty(tile.x, tile.y);
+	}
+	action->setNewHeights(this, tiles);
+//	map->doAction(action, browEdit);
 }
 
 void Gnd::makeTilesUnique()
