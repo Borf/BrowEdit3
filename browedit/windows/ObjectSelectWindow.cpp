@@ -328,7 +328,7 @@ void BrowEdit::showObjectWindow()
 					{
 						auto ga = new GroupAction();
 						for (auto n : activeMapView->map->selectedNodes)
-							ga->addAction(new ModelChangeAction(n, path));
+							ga->addAction(new ModelChangeAction(n, path)); //path is in ISO
 						activeMapView->map->doAction(ga, this);
 					}
 					ImGui::SameLine();

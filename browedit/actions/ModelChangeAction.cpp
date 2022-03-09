@@ -16,7 +16,7 @@ ModelChangeAction::ModelChangeAction(Node* node, const std::string& newFileName)
 void ModelChangeAction::perform(Map* map, BrowEdit* browEdit)
 {
 	auto rswModel = node->getComponent<RswModel>();
-	rswModel->fileName = util::iso_8859_1_to_utf8(newFileName);
+	rswModel->fileName = util::iso_8859_1_to_utf8(newFileName.substr(11));
 	auto removed = node->removeComponent<Rsm>();
 	for (auto r : removed)
 		util::ResourceManager<Rsm>::unload(r);
