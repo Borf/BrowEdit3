@@ -326,5 +326,5 @@ void GndRenderer::setChunksDirty()
 {
 	for (auto y = 0; y < chunks.size(); y++)
 		for (auto x = 0; x < chunks[y].size(); x++)
-			chunks[y / CHUNKSIZE][x / CHUNKSIZE]->dirty = true;
+			chunks[y][x]->dirty = true;
 }

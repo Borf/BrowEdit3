@@ -53,6 +53,7 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 	static int tool = 0;
 
 	ImGui::Begin("Height Edit");
+	ImGui::PushItemWidth(-200);
 	if (ImGui::TreeNodeEx("Tool Options", ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed))
 	{
 		ImGui::Checkbox("Triangle Split", &splitTriangleFlip);
@@ -267,6 +268,7 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 			ImGui::TreePop();
 		}
 	}
+	ImGui::PopItemWidth();
 	ImGui::End();
 
 	glUseProgram(0);

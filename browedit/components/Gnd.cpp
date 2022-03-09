@@ -814,9 +814,9 @@ void Gnd::flattenTiles(Map* map, BrowEdit* browEdit, const std::vector<glm::ivec
 	for (auto& t : map->tileSelection)
 		for (int i = 0; i < 4; i++)
 			cubes[t.x][t.y]->heights[i] = avg;
-	node->getComponent<GndRenderer>()->setChunksDirty();
 	action->setNewHeights(this, tiles);
 	map->doAction(action, browEdit);
+	node->getComponent<GndRenderer>()->setChunksDirty();
 }
 
 void Gnd::smoothTiles(Map* map, BrowEdit* browEdit, const std::vector<glm::ivec2>& tiles)
@@ -890,9 +890,9 @@ void Gnd::perlinNoise(const std::vector<glm::ivec2>& tiles)
 	{
 		for (int i = 0; i < 4; i++)
 		{
-			float x = (tile.x + i % 2) * 10.0f;
-			float y = (tile.y + i / 2) * 10.0f;
-			cubes[tile.x][tile.y]->heights[i] -= 20 * noise.GetNoise(x,y);
+			float x = (tile.x + i % 2);
+			float y = (tile.y + i / 2);
+			cubes[tile.x][tile.y]->heights[i] -= 1000 * noise.GetNoise(x,y);
 		}
 		gndRenderer->setChunkDirty(tile.x, tile.y);
 	}
