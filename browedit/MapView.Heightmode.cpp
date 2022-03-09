@@ -53,28 +53,29 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 	static int tool = 0;
 
 	ImGui::Begin("Height Edit");
-	if (ImGui::CollapsingHeader("Tool Options", ImGuiTreeNodeFlags_DefaultOpen))
+	if (ImGui::TreeNodeEx("Tool Options", ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed))
 	{
 		ImGui::Checkbox("Triangle Split", &splitTriangleFlip);
 
-		if (ImGui::CollapsingHeader("Tool", ImGuiTreeNodeFlags_DefaultOpen))
+		if (ImGui::TreeNodeEx("Tool", ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed))
 		{
 			ImGui::RadioButton("Rectangle", &tool, 0);
 			ImGui::SameLine();
 			ImGui::RadioButton("Lasso", &tool, 1);
 			ImGui::SameLine();
 			ImGui::RadioButton("Doodle", &tool, 2);
+			ImGui::TreePop();
 		}
 
 		if (tool == 0 || tool == 1)
 		{
-			if (ImGui::CollapsingHeader("Selection Options", ImGuiTreeNodeFlags_DefaultOpen))
+			if (ImGui::TreeNodeEx("Selection Options", ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed))
 			{
 				ImGui::Checkbox("Show Center Arrow", &showCenterArrow);
 				ImGui::Checkbox("Show Corner Arrows", &showCornerArrows);
 				ImGui::Checkbox("Show Edge Arrows", &showEdgeArrows);
 
-				if (ImGui::CollapsingHeader("Edge handling", ImGuiTreeNodeFlags_DefaultOpen))
+				if (ImGui::TreeNodeEx("Edge handling", ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed))
 				{
 					ImGui::RadioButton("Nothing", &edgeMode, 0);
 					ImGui::SameLine();
@@ -83,6 +84,7 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 					ImGui::RadioButton("Build walls", &edgeMode, 3);
 					ImGui::SameLine();
 					ImGui::RadioButton("Snap ground", &edgeMode, 2);
+					ImGui::TreePop();
 				}
 
 				if (ImGui::Button("Smooth selection", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
@@ -105,7 +107,7 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 				{
 
 				}
-				if (ImGui::CollapsingHeader("Random Generation", ImGuiTreeNodeFlags_DefaultOpen))
+				if (ImGui::TreeNodeEx("Random Generation", ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_DefaultOpen))
 				{
 					static float maxHeight = 1;
 					static float minHeight = 0;
@@ -133,23 +135,31 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 						map->endGroupAction(browEdit);
 
 					}
+					ImGui::TreePop();
+				}
 
-					if (ImGui::Button("Perlin Noise selection", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
+				if (ImGui::TreeNodeEx("Random Generation", ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed))
+				{
+					if (ImGui::Button("Add perlin noise", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
 					{
 
 					}
+					ImGui::TreePop();
 				}
+
 				if (ImGui::Button("Finish my map with AI", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
 				{
 					std::cout << "Coming soon®" << std::endl;
 				}
+				ImGui::TreePop();
 			}
 		}
+		ImGui::TreePop();
 	}
 	if (map->tileSelection.size() == 1)
 	{
 		auto cube = gnd->cubes[map->tileSelection[0].x][map->tileSelection[0].y];
-		if (ImGui::CollapsingHeader("Tile Details", ImGuiTreeNodeFlags_DefaultOpen))
+		if (ImGui::TreeNodeEx("Tile Details", ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed))
 		{
 			bool changed = false;
 			changed |= util::DragFloat(browEdit, map, map->rootNode, "H1", &cube->h1);
@@ -164,7 +174,7 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 				changed |= util::DragInt(browEdit, map, map->rootNode, tileNames[t], &cube->tileIds[t], 1.0f, 0, (int)gnd->tiles.size()-1);
 				if (cube->tileIds[t] >= 0)
 				{
-					if (ImGui::CollapsingHeader(("Edit " + std::string(tileNames[t])).c_str(), ImGuiTreeNodeFlags_DefaultOpen))
+					if (ImGui::TreeNodeEx(("Edit " + std::string(tileNames[t])).c_str(), ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed))
 					{
 						auto tile = gnd->tiles[cube->tileIds[t]];
 						int lightmapId = tile->lightmapIndex;
@@ -248,7 +258,7 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 							ImGui::SetCursorScreenPos(cursorPos);
 						}
 
-
+						ImGui::TreePop();
 					}
 				}
 				ImGui::PopID();
@@ -256,6 +266,7 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 
 			if (changed)
 				gndRenderer->setChunkDirty(map->tileSelection[0].x, map->tileSelection[0].y);
+			ImGui::TreePop();
 		}
 	}
 	ImGui::End();
