@@ -80,7 +80,7 @@ bool Config::showWindow(BrowEdit* browEdit)
 			bInfo.lpszTitle = "Select your RO directory (not data)";
 			bInfo.ulFlags = 0;
 			bInfo.lpfn = BrowseCallBackProc;
-			std::string path = ropath;
+			std::string path = util::utf8_to_iso_8859_1(ropath);
 			if (path.find(":") == std::string::npos)
 				path = std::filesystem::current_path().string() + "\\" + path; //TODO: fix this
 
@@ -94,6 +94,7 @@ bool Config::showWindow(BrowEdit* browEdit)
 				ropath = szDir;
 				if (ropath[ropath.size() - 1] != '\\')
 					ropath += "\\";
+				ropath = util::iso_8859_1_to_utf8(ropath);
 			}
 
 		}
@@ -117,7 +118,7 @@ bool Config::showWindow(BrowEdit* browEdit)
 					ofn.lStructSize = sizeof(ofn);
 					ofn.hwndOwner = hWnd;
 
-					std::string initial = grfs[i];
+					std::string initial = util::utf8_to_iso_8859_1(grfs[i]);
 					if (initial.find(":") == std::string::npos)
 						initial = curdir + "\\" + initial;
 
@@ -139,6 +140,7 @@ bool Config::showWindow(BrowEdit* browEdit)
 					{
 						std::filesystem::current_path(curdir);
 						grfs[i] = buf;
+						grfs[i] = util::iso_8859_1_to_utf8(grfs[i]);
 					}
 					std::filesystem::current_path(curdir);
 				}
@@ -219,9 +221,9 @@ void Config::setupFileIO()
 {
 	util::FileIO::begin();
 	util::FileIO::addDirectory(".\\");
-	util::FileIO::addDirectory(ropath);
+	util::FileIO::addDirectory(util::utf8_to_iso_8859_1(ropath));
 	for (const auto& grf : grfs)
-		util::FileIO::addGrf(grf);
+		util::FileIO::addGrf(util::utf8_to_iso_8859_1(grf));
 	util::FileIO::end();
 
 	setStyle(style);
