@@ -1,11 +1,12 @@
 #pragma once
-
+#include <Windows.h>
 #include "Config.h"
 #include "MapView.h"
 #include <json.hpp>
 #include <imgui.h>
 #include <string_view>
 #include <mutex>
+#include <browedit/util/FileIO.h>
 class Action;
 class Lightmapper;
 using json = nlohmann::json;

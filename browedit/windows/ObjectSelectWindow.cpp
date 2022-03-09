@@ -163,7 +163,7 @@ void BrowEdit::showObjectWindow()
 			int flags = ImGuiTreeNodeFlags_OpenOnDoubleClick;
 			if (f.second->directories.size() == 0)
 				flags |= ImGuiTreeNodeFlags_Bullet;
-			if (f.second == windowData.windowData.objectWindowSelectedTreeNode)
+			if (f.second == windowData.objectWindowSelectedTreeNode)
 				flags |= ImGuiTreeNodeFlags_Selected;
 
 			if (ImGui::TreeNodeEx(f.second->name.c_str(), flags))
