@@ -305,9 +305,9 @@ void BrowEdit::configBegin()
 	std::ifstream configFile("config.json");
 	if (configFile.is_open())
 	{
-		configFile >> configJson;
-		configFile.close();
 		try {
+			configFile >> configJson;
+			configFile.close();
 			config = configJson.get<Config>();
 		}
 		catch (...) {
