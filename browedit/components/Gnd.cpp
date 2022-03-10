@@ -15,7 +15,7 @@ Gnd::Gnd(const std::string& fileName)
 	{
 		width = 0;
 		height = 0;
-		std::cerr << "GND: Unable to open gnd file: " << fileName << ".gnd" << std::endl;
+		std::cerr << "GND: Unable to open gnd file: " << fileName<< std::endl;
 		return;
 	}
 	std::cout<< "GND: Reading gnd file" << std::endl;
@@ -863,10 +863,10 @@ void Gnd::connectLow(Map* map, BrowEdit* browEdit, const std::vector<glm::ivec2>
 	for (auto t : tiles)
 		for (int i = 0; i < 4; i++)
 		{
-			float h = 9999999;
+			float h = -9999999;
 			for (int ii = 0; ii < 4; ii++)
 				if (inMap(glm::ivec2(t.x + connectInfo[i][ii].x, t.y + connectInfo[i][ii].y)))
-					h = glm::min(h, cubes[t.x + connectInfo[i][ii].x][t.y + connectInfo[i][ii].y]->heights[connectInfo[i][ii].z]);
+					h = glm::max(h, cubes[t.x + connectInfo[i][ii].x][t.y + connectInfo[i][ii].y]->heights[connectInfo[i][ii].z]);
 			cubes[t.x][t.y]->heights[connectInfo[i][0].z] = h;
 			gndRenderer->setChunkDirty(t.x, t.y);
 		}
