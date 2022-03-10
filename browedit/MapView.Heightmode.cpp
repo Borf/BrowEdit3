@@ -89,9 +89,7 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 				}
 
 				if (ImGui::Button("Smooth selection", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
-				{
-
-				}
+					gnd->smoothTiles(map, browEdit, map->tileSelection);
 				if (ImGui::Button("Flatten selection", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
 					gnd->flattenTiles(map, browEdit, map->tileSelection);
 				if (ImGui::Button("Connect tiles high", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))

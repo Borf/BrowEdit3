@@ -821,7 +821,42 @@ void Gnd::flattenTiles(Map* map, BrowEdit* browEdit, const std::vector<glm::ivec
 
 void Gnd::smoothTiles(Map* map, BrowEdit* browEdit, const std::vector<glm::ivec2>& tiles)
 {
-	std::cout << "TODO" << std::endl;
+	glm::ivec2 offsets[] = { glm::ivec2(0,0), glm::ivec2(1,0), glm::ivec2(0,1), glm::ivec2(1,1) };
+	auto gndRenderer = node->getComponent<GndRenderer>();
+	std::vector<std::vector<std::pair<float,int>>> heights;
+	heights.resize(width + 1, std::vector<std::pair<float, int>>());
+	for (int x = 0; x <= width; x++)
+		heights[x].resize(height + 1);
+	for (int x = 0; x < width; x++)
+		for (int y = 0; y < height; y++)
+			for (int i = 0; i < 4; i++)
+			{
+				heights[x + offsets[i].x][y + offsets[i].y].first += cubes[x][y]->heights[i];
+				heights[x + offsets[i].x][y + offsets[i].y].second++;
+			}
+
+
+	for (auto t : tiles)
+	{
+		for(int i = 0; i < 4; i++)
+		{
+			cubes[t.x][t.y]->heights[i] = 0;
+			int count = 0;
+			for (int x = -1; x <= 1; x++)
+			{
+				for (int y = -1; y <= 1; y++)
+				{
+					if (t.x + x + offsets[i].x >= 0 && t.x + x +offsets[i].x <= width && t.y + y + offsets[i].y >= 0 && t.y + y + offsets[i].y <= height)
+					{
+						cubes[t.x][t.y]->heights[i] += heights[t.x + x + offsets[i].x][t.y + y + offsets[i].y].first / heights[t.x + x + offsets[i].x][t.y + y + offsets[i].y].second;
+						count++;
+					}
+				}
+			}
+			cubes[t.x][t.y]->heights[i] /= count;
+		}
+	}
+	node->getComponent<GndRenderer>()->setChunksDirty();
 }
 
 void Gnd::addRandomHeight(Map* map, BrowEdit* browEdit, const std::vector<glm::ivec2>& tiles, float min, float max)
