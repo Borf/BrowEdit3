@@ -821,6 +821,7 @@ void Gnd::flattenTiles(Map* map, BrowEdit* browEdit, const std::vector<glm::ivec
 
 void Gnd::smoothTiles(Map* map, BrowEdit* browEdit, const std::vector<glm::ivec2>& tiles)
 {
+	TileChangeAction* action = new TileChangeAction(this, tiles);
 	glm::ivec2 offsets[] = { glm::ivec2(0,0), glm::ivec2(1,0), glm::ivec2(0,1), glm::ivec2(1,1) };
 	auto gndRenderer = node->getComponent<GndRenderer>();
 	std::vector<std::vector<std::pair<float,int>>> heights;
@@ -856,6 +857,9 @@ void Gnd::smoothTiles(Map* map, BrowEdit* browEdit, const std::vector<glm::ivec2
 			cubes[t.x][t.y]->heights[i] /= count;
 		}
 	}
+	node->getComponent<GndRenderer>()->setChunksDirty();
+	action->setNewHeights(this, tiles);
+	map->doAction(action, browEdit);
 	node->getComponent<GndRenderer>()->setChunksDirty();
 }
 
@@ -925,8 +929,8 @@ void Gnd::perlinNoise(const std::vector<glm::ivec2>& tiles)
 	{
 		for (int i = 0; i < 4; i++)
 		{
-			float x = (tile.x + i % 2);
-			float y = (tile.y + i / 2);
+			float x = (float)(tile.x + i % 2);
+			float y = (float)(tile.y + i / 2);
 			cubes[tile.x][tile.y]->heights[i] -= 1000 * noise.GetNoise(x,y);
 		}
 		gndRenderer->setChunkDirty(tile.x, tile.y);
