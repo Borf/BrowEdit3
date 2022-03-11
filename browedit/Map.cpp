@@ -1,3 +1,4 @@
+#include <Windows.h>
 #include <browedit/Map.h>
 #include <browedit/Node.h>
 #include <browedit/actions/Action.h>
@@ -5,6 +6,7 @@
 #include <browedit/actions/GroupAction.h>
 #include <browedit/actions/SelectAction.h>
 #include <browedit/actions/DeleteObjectAction.h>
+#include <browedit/actions/TileSelectAction.h>
 #include <browedit/components/Rsw.h>
 #include <browedit/components/Gnd.h>
 #include <browedit/components/GndRenderer.h>
@@ -659,4 +661,35 @@ void Map::recalculateQuadTree(BrowEdit* browEdit)
 	}
 
 	rsw->recalculateQuadtree();
+}
+
+void Map::growTileSelection(BrowEdit* browEdit)
+{
+	auto around = getSelectionAroundTiles();
+	around.insert(around.end(), tileSelection.begin(), tileSelection.end());
+	auto action = new TileSelectAction(this, around);
+	doAction(action, browEdit);
+}
+
+void Map::shrinkTileSelection(BrowEdit* browEdit)
+{
+	auto gnd = rootNode->getComponent<Gnd>();
+	std::vector<glm::ivec2> shrunk;
+	auto isTileSelected = [&](int x, int y) { return std::find(tileSelection.begin(), tileSelection.end(), glm::ivec2(x, y)) != tileSelection.end(); };
+
+	for (auto& t : tileSelection)
+	{
+		bool ok = true;
+		for (int xx = -1; xx <= 1; xx++)
+			for (int yy = -1; yy <= 1; yy++)
+				if (gnd->inMap(t + glm::ivec2(xx, yy)) &&
+					std::find(shrunk.begin(), shrunk.end(), glm::ivec2(t.x, t.y)) == shrunk.end() &&
+					!isTileSelected(t.x + xx, t.y + yy))
+					ok = false;
+		if(ok)
+			shrunk.push_back(t);
+	}
+
+	auto action = new TileSelectAction(this, shrunk);
+	doAction(action, browEdit);
 }

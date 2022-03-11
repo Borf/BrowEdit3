@@ -88,6 +88,10 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 					ImGui::TreePop();
 				}
 
+				if (ImGui::Button("Grow selection", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
+					map->growTileSelection(browEdit);
+				if (ImGui::Button("Shrink selection", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
+					map->shrinkTileSelection(browEdit);
 				if (ImGui::Button("Smooth selection", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
 					gnd->smoothTiles(map, browEdit, map->tileSelection);
 				if (ImGui::Button("Flatten selection", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))

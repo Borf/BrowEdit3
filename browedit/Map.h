@@ -58,4 +58,7 @@ public:
 
 	void optimizeGndTiles(BrowEdit* browEdit);
 	void recalculateQuadTree(BrowEdit* browEdit);
+
+	void growTileSelection(BrowEdit* browEdit);
+	void shrinkTileSelection(BrowEdit* browEdit);
 };

@@ -265,6 +265,13 @@ void BrowEdit::run()
 						activeMapView->map->pasteSelection(this);
 				}
 			}
+			if (editMode == EditMode::Height && activeMapView)
+			{
+				if (ImGui::IsKeyPressed(GLFW_KEY_KP_ADD))
+					activeMapView->map->growTileSelection(this);
+				if (ImGui::IsKeyPressed(GLFW_KEY_KP_SUBTRACT))
+					activeMapView->map->shrinkTileSelection(this);
+			}
 		}
 		int display_w, display_h;
 		glfwGetFramebufferSize(window, &display_w, &display_h);
