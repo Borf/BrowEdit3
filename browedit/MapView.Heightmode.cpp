@@ -212,7 +212,7 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 							ImGuiContext& g = *GImGui;
 
 							ImGui::RenderFrame(bb.Min, bb.Max, ImGui::GetColorU32(ImGuiCol_FrameBg, 1), true, style.FrameRounding);
-							window->DrawList->AddImage((ImTextureID)(long long)gndRenderer->textures[tile->textureIndex]->id, bb.Min + ImVec2(1, 1), bb.Max - ImVec2(1, 1), ImVec2(0,0), ImVec2(1,1));
+							window->DrawList->AddImage((ImTextureID)(long long)gndRenderer->textures[tile->textureIndex]->id, bb.Min + ImVec2(1, 1), bb.Max - ImVec2(1, 1), ImVec2(0,1), ImVec2(1,0));
 
 							for (int i = 0; i < 4; i++)
 							{
@@ -258,6 +258,23 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 								ImGui::PopID();
 							}
 							ImGui::SetCursorScreenPos(cursorPos);
+
+						}
+						if (lightmapId != -1)
+						{
+							glm::vec2 lm1((tile->lightmapIndex % GndRenderer::shadowmapRowCount) * (8.0f / GndRenderer::shadowmapSize) + 1.0f / GndRenderer::shadowmapSize, (tile->lightmapIndex / GndRenderer::shadowmapRowCount) * (8.0f / GndRenderer::shadowmapSize) + 1.0f / GndRenderer::shadowmapSize);
+							glm::vec2 lm2(lm1 + glm::vec2(6.0f / GndRenderer::shadowmapSize, 6.0f / GndRenderer::shadowmapSize));
+							ImGuiWindow* window = ImGui::GetCurrentWindow();
+							ImGui::Text("Shadow");
+							const ImGuiStyle& style = ImGui::GetStyle();
+							const float avail = ImGui::GetContentRegionAvailWidth();
+							const float dim = ImMin(avail, 300.0f);
+							ImVec2 Canvas(dim, dim);
+							ImRect bb(window->DC.CursorPos, window->DC.CursorPos + Canvas);
+							ImGui::ItemSize(bb);
+							ImGui::ItemAdd(bb, NULL);
+							ImGui::RenderFrame(bb.Min, bb.Max, ImGui::GetColorU32(ImGuiCol_FrameBg, 1), true, style.FrameRounding);
+							window->DrawList->AddImage((ImTextureID)(long long)gndRenderer->gndShadow->id, bb.Min + ImVec2(1, 1), bb.Max - ImVec2(1, 1), ImVec2(lm1.x, lm2.y), ImVec2(lm2.x, lm1.y));
 						}
 
 						ImGui::TreePop();

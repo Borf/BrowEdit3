@@ -21,6 +21,9 @@ class GndShader;
 class GndRenderer : public Renderer
 {
 public:
+	inline static const int shadowmapSize = 4096;
+	inline static const int shadowmapRowCount = shadowmapSize / 8;
+
 	class GndRenderContext : public Renderer::RenderContext, public util::Singleton<GndRenderContext>
 	{
 	public:

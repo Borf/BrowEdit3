@@ -10,8 +10,6 @@
 #include <iostream>
 
 
-const int shadowmapSize = 4096;
-const int shadowmapRowCount = shadowmapSize / 8;
 
 
 GndRenderer::GndRenderer()
