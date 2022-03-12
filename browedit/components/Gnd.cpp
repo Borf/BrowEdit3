@@ -742,6 +742,9 @@ void Gnd::cleanLightmaps()
 
 void Gnd::makeLightmapsSmooth()
 {
+	makeTilesUnique();
+	makeLightmapsUnique();
+	makeLightmapBorders();
 	std::cout << "Smoothing..." << std::endl;
 	for (int x = 0; x < width; x++)
 	{
@@ -771,7 +774,7 @@ void Gnd::makeLightmapsSmooth()
 			memcpy(lightmap->data, newData, 64 * sizeof(char));
 		}
 	}
-
+	makeLightmapBorders();
 }
 
 void Gnd::cleanTiles()
