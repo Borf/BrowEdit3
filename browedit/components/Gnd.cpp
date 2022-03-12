@@ -420,6 +420,9 @@ void Gnd::makeLightmapsUnique()
 			lightmaps.push_back(l);
 		}
 	}
+	node->getComponent<GndRenderer>()->setChunksDirty();
+	node->getComponent<GndRenderer>()->gndShadowDirty = true;
+
 }
 
 void Gnd::makeLightmapsClear()
@@ -430,6 +433,9 @@ void Gnd::makeLightmapsClear()
 
 	for (Tile* t : tiles)
 		t->lightmapIndex = 0;
+	node->getComponent<GndRenderer>()->setChunksDirty();
+	node->getComponent<GndRenderer>()->gndShadowDirty = true;
+
 }
 void Gnd::makeLightmapBorders()
 {
@@ -624,6 +630,8 @@ void Gnd::makeLightmapBorders()
 		}
 	}
 
+	node->getComponent<GndRenderer>()->setChunksDirty();
+	node->getComponent<GndRenderer>()->gndShadowDirty = true;
 
 }
 
@@ -656,6 +664,9 @@ void Gnd::makeLightmapBorders(int x, int y)
 
 		}
 	}
+	node->getComponent<GndRenderer>()->setChunksDirty();
+	node->getComponent<GndRenderer>()->gndShadowDirty = true;
+
 }
 
 
@@ -736,6 +747,8 @@ void Gnd::cleanLightmaps()
 	}
 
 	std::cout<< "Lightmap cleanup, ending with " << lightmaps.size() << " lightmaps" << std::endl;
+	node->getComponent<GndRenderer>()->setChunksDirty();
+	node->getComponent<GndRenderer>()->gndShadowDirty = true;
 
 }
 
@@ -775,6 +788,8 @@ void Gnd::makeLightmapsSmooth()
 		}
 	}
 	makeLightmapBorders();
+	node->getComponent<GndRenderer>()->setChunksDirty();
+	node->getComponent<GndRenderer>()->gndShadowDirty = true;
 }
 
 void Gnd::cleanTiles()

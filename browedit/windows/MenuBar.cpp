@@ -135,51 +135,17 @@ void BrowEdit::menuBar()
 					windowData.openLightmapSettings = true;
 				}
 				if (ImGui::MenuItem("Make tiles unique"))
-				{
 					map->rootNode->getComponent<Gnd>()->makeTilesUnique();
-					for (auto& cc : map->rootNode->getComponent<GndRenderer>()->chunks)
-						for (auto c : cc)
-							c->dirty = true;
-				}
 				if (ImGui::MenuItem("Clean Tiles"))
-				{
 					map->rootNode->getComponent<Gnd>()->cleanTiles();
-					for (auto& cc : map->rootNode->getComponent<GndRenderer>()->chunks)
-						for (auto c : cc)
-							c->dirty = true;
-				}
 				if (ImGui::MenuItem("Fix lightmap borders"))
-				{
 					map->rootNode->getComponent<Gnd>()->makeLightmapBorders();
-					map->rootNode->getComponent<GndRenderer>()->gndShadowDirty = true;
-					for (auto& cc : map->rootNode->getComponent<GndRenderer>()->chunks)
-						for (auto c : cc)
-							c->dirty = true;
-				}
 				if (ImGui::MenuItem("Clear lightmaps"))
-				{
 					map->rootNode->getComponent<Gnd>()->makeLightmapsClear();
-					map->rootNode->getComponent<GndRenderer>()->gndShadowDirty = true;
-					for (auto& cc : map->rootNode->getComponent<GndRenderer>()->chunks)
-						for (auto c : cc)
-							c->dirty = true;
-				}
 				if (ImGui::MenuItem("Smoothen lightmaps"))
-				{
 					map->rootNode->getComponent<Gnd>()->makeLightmapsSmooth();
-					map->rootNode->getComponent<GndRenderer>()->gndShadowDirty = true;
-					for (auto& cc : map->rootNode->getComponent<GndRenderer>()->chunks)
-						for (auto c : cc)
-							c->dirty = true;
-				}
 				if (ImGui::MenuItem("Make lightmaps unique"))
-				{
 					map->rootNode->getComponent<Gnd>()->makeLightmapsUnique();
-					map->rootNode->getComponent<GndRenderer>()->gndShadowDirty = true;
-					for (auto& cc : map->rootNode->getComponent<GndRenderer>()->chunks)
-						for (auto c : cc)
-							c->dirty = true;
-				}
 
 				if (map->name == "data\\effects_ro.rsw" && ImGui::MenuItem("Generate effects")) //speedrun map
 				{
