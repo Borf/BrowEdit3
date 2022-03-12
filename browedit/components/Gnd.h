@@ -18,7 +18,7 @@ class Gnd : public Component
 public:
 	Gnd(const std::string& fileName);
 	void save(const std::string &fileName);
-	glm::vec3 rayCast(const math::Ray& ray, bool emptyTiles = false, int xMin = 0, int yMin = 0, int xMax = -1, int yMax = -1);
+	glm::vec3 rayCast(const math::Ray& ray, bool emptyTiles = false, int xMin = 0, int yMin = 0, int xMax = -1, int yMax = -1, float offset = 0.0f);
 	void makeLightmapsUnique();
 	void makeLightmapsClear();
 	void makeLightmapBorders();

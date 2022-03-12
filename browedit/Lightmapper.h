@@ -16,7 +16,6 @@ class Lightmapper
 	Rsw* rsw;
 	std::vector<Node*> lights;
 	glm::vec3 lightDirection;
-	std::vector<glm::vec3> mapQuads;
 
 	std::thread mainThread;
 public:

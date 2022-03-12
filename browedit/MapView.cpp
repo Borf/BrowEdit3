@@ -1,3 +1,4 @@
+#include <Windows.h>
 #include "MapView.h"
 #include "Map.h"
 #include "BrowEdit.h"
@@ -104,7 +105,7 @@ void MapView::toolbar(BrowEdit* browEdit)
 	{
 		ImGui::SameLine();
 		ImGui::SetNextItemWidth(50);
-		if (ImGui::DragFloat("##gridSize", &gridSize, 1.0f, 0.1f, 100.0f, "%.2f", ImGuiSliderFlags_Logarithmic))
+		if (ImGui::DragFloat("##gridSize", &gridSize, 1.0f, 0.1f, 100.0f, "%.2f"))
 			rebuildObjectModeGrid();
 		if (ImGui::IsItemHovered())
 			ImGui::SetTooltip("Grid size. Doubleclick or ctrl+click to type a number");
@@ -112,6 +113,14 @@ void MapView::toolbar(BrowEdit* browEdit)
 		ImGui::Checkbox("##gridLocal", &gridLocal);
 		if (ImGui::IsItemHovered())
 			ImGui::SetTooltip("Local or Global grid. Either makes the movement rounded off, or the final position");
+		if (!gridLocal)
+		{
+			ImGui::SameLine();
+			ImGui::SetNextItemWidth(50);
+			ImGui::DragFloat("##gridSize", &gridOffset, 1.0f, 0, gridSize, "%.2f");
+			if (ImGui::IsItemHovered())
+				ImGui::SetTooltip("Grid Offset");
+		}
 	}
 
 

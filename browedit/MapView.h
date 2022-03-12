@@ -61,6 +61,7 @@ public:
 	bool snapToGrid = false;
 	float gridSize = 5;
 	bool gridLocal = true;
+	float gridOffset = 0;
 
 	bool showAllLights = false;
 	bool showLightSphere = false;

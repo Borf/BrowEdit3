@@ -898,7 +898,7 @@ void from_json(const nlohmann::json& j, ImVec4& v) {
 	j[0].get_to(v.x);
 	j[1].get_to(v.y);
 	j[2].get_to(v.z);
-	j[2].get_to(v.w);
+	j[3].get_to(v.w);
 }
 void to_json(nlohmann::json& j, const ImVec2& v) {
 	j = nlohmann::json{ v.x, v.y };

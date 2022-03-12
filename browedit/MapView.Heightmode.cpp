@@ -1,4 +1,5 @@
 #define IMGUI_DEFINE_MATH_OPERATORS
+#include <Windows.h>
 #include "MapView.h"
 
 #include <browedit/BrowEdit.h>

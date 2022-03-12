@@ -1,6 +1,7 @@
 #include "Gnd.h"
 #include <browedit/util/Util.h>
 #include <browedit/util/FileIO.h>
+#include <browedit/math/AABB.h>
 #include <browedit/Node.h>
 #include <browedit/components/GndRenderer.h>
 #include <browedit/actions/TileChangeAction.h>
@@ -312,7 +313,7 @@ void Gnd::save(const std::string& fileName)
 
 
 
-glm::vec3 Gnd::rayCast(const math::Ray& ray, bool emptyTiles, int xMin, int yMin, int xMax, int yMax)
+glm::vec3 Gnd::rayCast(const math::Ray& ray, bool emptyTiles, int xMin, int yMin, int xMax, int yMax, float rayOffset)
 {
 	if (cubes.size() == 0)
 		return glm::vec3(0,0,0);
@@ -327,68 +328,88 @@ glm::vec3 Gnd::rayCast(const math::Ray& ray, bool emptyTiles, int xMin, int yMin
 	xMax = glm::min(xMax, (int)cubes.size());
 	yMax = glm::min(yMax, (int)cubes[0].size());
 
+	const int chunkSize = 10;
+
+
 	std::vector<glm::vec3> collisions;
 	float f = 0;
-	for (auto x = xMin; x < xMax; x++)
+	for (auto xx = xMin; xx < xMax; xx+= chunkSize)
 	{
-		for (auto y = yMin; y < yMax; y++)
+		for (auto yy = yMin; yy < yMax; yy+= chunkSize)
 		{
-			Gnd::Cube* cube = cubes[x][y];
-
-			if (cube->tileUp != -1 || emptyTiles)
+			math::AABB box(glm::vec3(10*xx, -999999, 10*height - 10*(yy+chunkSize)), glm::vec3(10*(xx + chunkSize), 999999, 10*height - (10 * yy)));
+			if (!box.hasRayCollision(ray, -999999, 9999999))
+				continue;
+			for (int x = xx; x < glm::min(width, xx + chunkSize); x++)
 			{
-				glm::vec3 v1(10 * x, -cube->h3, 10 * height - 10 * y);
-				glm::vec3 v2(10 * x + 10, -cube->h4, 10 * height - 10 * y);
-				glm::vec3 v3(10 * x, -cube->h1, 10 * height - 10 * y + 10);
-				glm::vec3 v4(10 * x + 10, -cube->h2, 10 * height - 10 * y + 10);
+				for (int y = yy; y < glm::min(height, yy + chunkSize); y++)
+				{
+					Gnd::Cube* cube = cubes[x][y];
 
-				{
-					std::vector<glm::vec3> v{ v3, v2, v1 };
-					if (ray.LineIntersectPolygon(v, f))
-						collisions.push_back(ray.origin + f * ray.dir);
-				}
-				{
-					std::vector<glm::vec3> v{ v4, v2, v3 };
-					if (ray.LineIntersectPolygon(v, f))
-						collisions.push_back(ray.origin + f * ray.dir);
+					if (cube->tileUp != -1 || emptyTiles)
+					{
+						glm::vec3 v1(10 * x, -cube->h3, 10 * height - 10 * y);
+						glm::vec3 v2(10 * x + 10, -cube->h4, 10 * height - 10 * y);
+						glm::vec3 v3(10 * x, -cube->h1, 10 * height - 10 * y + 10);
+						glm::vec3 v4(10 * x + 10, -cube->h2, 10 * height - 10 * y + 10);
+
+						{
+							std::vector<glm::vec3> v{ v3, v2, v1 };
+							if (ray.LineIntersectPolygon(v, f))
+								if(f >= rayOffset)
+									collisions.push_back(ray.origin + f * ray.dir);
+						}
+						{
+							std::vector<glm::vec3> v{ v4, v2, v3 };
+							if (ray.LineIntersectPolygon(v, f))
+								if (f >= rayOffset)
+									collisions.push_back(ray.origin + f * ray.dir);
+						}
+					}
+					if (cube->tileFront != -1 && x < width - 1)
+					{
+						glm::vec3 v1(10 * x + 10, -cube->h2, 10 * height - 10 * y + 10);
+						glm::vec3 v2(10 * x + 10, -cube->h4, 10 * height - 10 * y);
+						glm::vec3 v3(10 * x + 10, -cubes[x + 1][y]->h1, 10 * height - 10 * y + 10);
+						glm::vec3 v4(10 * x + 10, -cubes[x + 1][y]->h3, 10 * height - 10 * y);
+
+						{
+							std::vector<glm::vec3> v{ v3, v2, v1 };
+							if (ray.LineIntersectPolygon(v, f))
+								if (f >= rayOffset)
+									collisions.push_back(ray.origin + f * ray.dir);
+						}
+						{
+							std::vector<glm::vec3> v{ v4, v2, v3 };
+							if (ray.LineIntersectPolygon(v, f))
+								if (f >= rayOffset)
+									collisions.push_back(ray.origin + f * ray.dir);
+						}
+					}
+					if (cube->tileSide != -1 && y < height - 1)
+					{
+						glm::vec3 v1(10 * x, -cube->h3, 10 * height - 10 * y);
+						glm::vec3 v2(10 * x + 10, -cube->h4, 10 * height - 10 * y);
+						glm::vec3 v4(10 * x + 10, -cubes[x][y + 1]->h2, 10 * height - 10 * y);
+						glm::vec3 v3(10 * x, -cubes[x][y + 1]->h1, 10 * height - 10 * y);
+
+						{
+							std::vector<glm::vec3> v{ v3, v2, v1 };
+							if (ray.LineIntersectPolygon(v, f))
+								if (f >= rayOffset)
+									collisions.push_back(ray.origin + f * ray.dir);
+						}
+						{
+							std::vector<glm::vec3> v{ v4, v2, v3 };
+							if (ray.LineIntersectPolygon(v, f))
+								if (f >= rayOffset)
+									collisions.push_back(ray.origin + f * ray.dir);
+						}
+					}
+
 				}
 			}
-			if (cube->tileFront != -1 && x < width - 1)
-			{
-				glm::vec3 v1(10 * x + 10, -cube->h2, 10 * height - 10 * y + 10);
-				glm::vec3 v2(10 * x + 10, -cube->h4, 10 * height - 10 * y);
-				glm::vec3 v3(10 * x + 10, -cubes[x + 1][y]->h1, 10 * height - 10 * y + 10);
-				glm::vec3 v4(10 * x + 10, -cubes[x + 1][y]->h3, 10 * height - 10 * y);
 
-				{
-					std::vector<glm::vec3> v{ v3, v2, v1 };
-					if (ray.LineIntersectPolygon(v, f))
-						collisions.push_back(ray.origin + f * ray.dir);
-				}
-				{
-					std::vector<glm::vec3> v{ v4, v2, v3 };
-					if (ray.LineIntersectPolygon(v, f))
-						collisions.push_back(ray.origin + f * ray.dir);
-				}
-			}
-			if (cube->tileSide != -1 && y < height - 1)
-			{
-				glm::vec3 v1(10 * x, -cube->h3, 10 * height - 10 * y);
-				glm::vec3 v2(10 * x + 10, -cube->h4, 10 * height - 10 * y);
-				glm::vec3 v4(10 * x + 10, -cubes[x][y + 1]->h2, 10 * height - 10 * y);
-				glm::vec3 v3(10 * x, -cubes[x][y + 1]->h1, 10 * height - 10 * y);
-
-				{
-					std::vector<glm::vec3> v{ v3, v2, v1 };
-					if (ray.LineIntersectPolygon(v, f))
-						collisions.push_back(ray.origin + f * ray.dir);
-				}
-				{
-					std::vector<glm::vec3> v{ v4, v2, v3 };
-					if (ray.LineIntersectPolygon(v, f))
-						collisions.push_back(ray.origin + f * ray.dir);
-				}
-			}
 		}
 	}
 	if(collisions.size() == 0)

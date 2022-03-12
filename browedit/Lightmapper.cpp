@@ -89,10 +89,10 @@ void Lightmapper::run()
 	lightDirection[1] = glm::cos(glm::radians((float)rsw->light.latitude));
 	lightDirection[2] = glm::sin(glm::radians((float)rsw->light.longitude)) * glm::sin(glm::radians((float)rsw->light.latitude));
 
-	setProgressText("Calculating map quads");
-	mapQuads = gnd->getMapQuads();
+	//setProgressText("Calculating map quads");
+	//mapQuads = gnd->getMapQuads();
 
-	if (buildDebugPoints)
+	/*if (buildDebugPoints)
 	{
 		debugPointMutex.lock();
 		for (auto i = 0; i < mapQuads.size(); i += 4)
@@ -114,7 +114,7 @@ void Lightmapper::run()
 
 		}
 		debugPointMutex.unlock();
-	}
+	}*/
 
 
 	setProgressText("Calculating lightmaps");
@@ -175,6 +175,8 @@ void Lightmapper::run()
 
 bool Lightmapper::collidesMap(const math::Ray& ray)
 {
+	return gnd->rayCast(ray, false, 0,0,-1,-1,0.05f) != glm::vec3(0,0,0);
+	/*
 	std::vector<glm::vec3> quad;
 	quad.resize(3);
 	float t;
@@ -193,7 +195,7 @@ bool Lightmapper::collidesMap(const math::Ray& ray)
 			if (t > 0.05)
 				return true;
 	}
-	return false;
+	return false;*/
 };
 
 
