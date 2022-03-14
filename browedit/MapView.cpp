@@ -225,13 +225,15 @@ void MapView::render(BrowEdit* browEdit)
 		for (auto newNode : browEdit->newNodes)
 		{
 			auto rswObject = newNode.first->getComponent<RswObject>();
-			rswObject->position = glm::vec3(rayCast.x - 5 * gnd->width, -rayCast.y, -(rayCast.z + (-10 - 5 * gnd->height))) + newNode.second;
 
 			bool snap = snapToGrid;
 			if (ImGui::GetIO().KeyShift)
 				snap = !snap;
 			if(snap)
-				rayCast = glm::round(rayCast / (float)gridSize) * (float)gridSize;
+				rayCast = glm::round((rayCast - gridOffset) / (float)gridSize) * (float)gridSize + gridOffset;
+
+			rswObject->position = glm::vec3(rayCast.x - 5 * gnd->width, -rayCast.y, -(rayCast.z + (-10 - 5 * gnd->height))) + newNode.second;
+
 			if (newNode.first->getComponent<RsmRenderer>())
 			{
 				glm::mat4 matrix = glm::mat4(1.0f);

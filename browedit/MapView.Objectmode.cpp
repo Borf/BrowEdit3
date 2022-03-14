@@ -312,7 +312,7 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 								n.first->getComponent<RswObject>()->position.z = groupCenter.z + dist * glm::sin(originalAngle);
 							}
 							if (snap && !gridLocal)
-								n.first->getComponent<RswObject>()->rotation[gadget.selectedAxisIndex()] = glm::round(n.first->getComponent<RswObject>()->rotation[gadget.selectedAxisIndex()] / (float)gridSize) * (float)gridSize;
+								n.first->getComponent<RswObject>()->rotation[gadget.selectedAxisIndex()] = glm::round((n.first->getComponent<RswObject>()->rotation[gadget.selectedAxisIndex()]-gridOffset) / (float)gridSize) * (float)gridSize + gridOffset;
 						}
 						if (n.first->getComponent<RsmRenderer>())
 							n.first->getComponent<RsmRenderer>()->setDirty();
