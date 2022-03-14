@@ -61,8 +61,8 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 		avgPos.y -= 0.1f;
 		if (!gridLocal)
 		{
-			avgPos.x = glm::floor(avgPos.x / gridSize) * gridSize;
-			avgPos.z = glm::floor(avgPos.z / gridSize) * gridSize;
+			avgPos.x = glm::floor((avgPos.x-gridOffset) / gridSize) * gridSize + gridOffset;
+			avgPos.z = glm::floor((avgPos.z-gridOffset) / gridSize) * gridSize + gridOffset;
 		}
 
 		glm::mat4 mat = glm::scale(glm::mat4(1.0f), glm::vec3(1, 1, -1));
@@ -281,7 +281,7 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 						{
 							n.first->getComponent<RswObject>()->position = n.second.pos + mouseOffset * glm::vec3(1, -1, -1);
 							if (snap && !gridLocal)
-								n.first->getComponent<RswObject>()->position[gadget.selectedAxisIndex()] = glm::round(n.first->getComponent<RswObject>()->position[gadget.selectedAxisIndex()] / (float)gridSize) * (float)gridSize;
+								n.first->getComponent<RswObject>()->position[gadget.selectedAxisIndex()] = glm::round((n.first->getComponent<RswObject>()->position[gadget.selectedAxisIndex()] - gridOffset) / (float)gridSize) * (float)gridSize + gridOffset;
 						}
 						if (gadget.mode == Gadget::Mode::Scale)
 						{
@@ -313,7 +313,7 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 								n.first->getComponent<RswObject>()->position.z = groupCenter.z + dist * glm::sin(originalAngle);
 							}
 							if (snap && !gridLocal)
-								n.first->getComponent<RswObject>()->rotation[gadget.selectedAxisIndex()] = glm::round(n.first->getComponent<RswObject>()->rotation[gadget.selectedAxisIndex()] / (float)gridSize) * (float)gridSize;
+								n.first->getComponent<RswObject>()->rotation[gadget.selectedAxisIndex()] = glm::round((n.first->getComponent<RswObject>()->rotation[gadget.selectedAxisIndex()]-gridOffset) / (float)gridSize) * (float)gridSize + gridOffset;
 						}
 						if (n.first->getComponent<RsmRenderer>())
 							n.first->getComponent<RsmRenderer>()->setDirty();
