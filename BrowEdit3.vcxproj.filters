@@ -450,9 +450,6 @@
     <ClInclude Include="browedit\util\ResourceManager.h">
       <Filter>browedit\util</Filter>
     </ClInclude>
-    <ClInclude Include="browedit\components\ImguiProps.h">
-      <Filter>browedit\components</Filter>
-    </ClInclude>
     <ClInclude Include="browedit\components\Collider.h">
       <Filter>browedit\components</Filter>
     </ClInclude>
@@ -521,6 +518,9 @@
     </ClInclude>
     <ClInclude Include="browedit\Icons.h">
       <Filter>browedit</Filter>
+    </ClInclude>
+    <ClInclude Include="browedit\components\ImguiProps.h">
+      <Filter>browedit\components</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

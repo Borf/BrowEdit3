@@ -79,18 +79,6 @@ nlohmann::json RswModel::saveExtra()
 
 
 
-
-void RswModel::buildImGui(BrowEdit* browEdit)
-{
-	ImGui::Text("Model");
-	util::DragInt(browEdit, browEdit->activeMapView->map, node, "Animation Type", &animType, 1, 0, 100);
-	util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Animation Speed", &animSpeed, 0.01f, 0.0f, 100.0f);
-	util::DragInt(browEdit, browEdit->activeMapView->map, node, "Block Type", &blockType, 1, 0, 100);
-	util::InputText(browEdit, browEdit->activeMapView->map, node, "Filename", &fileName);
-
-	util::Checkbox(browEdit, browEdit->activeMapView->map, node, "Cast Shadow", &givesShadow);
-}
-
 void RswModel::buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>& nodes)
 {
 	std::vector<RswModel*> rswModels;

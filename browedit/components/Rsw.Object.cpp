@@ -84,30 +84,6 @@ void RswObject::save(std::ofstream& file, int version)
 
 
 
-
-
-
-void RswObject::buildImGui(BrowEdit* browEdit)
-{
-	auto renderer = node->getComponent<RsmRenderer>();
-	ImGui::Text("Object");
-	static bool scaleTogether = false;
-
-	if (util::DragFloat3(browEdit, browEdit->activeMapView->map, node, "Position", &position, 1.0f, 0.0f, 0.0f, "Moving") && renderer)
-		if(renderer)
-			renderer->setDirty();
-	if (util::DragFloat3(browEdit, browEdit->activeMapView->map, node, "Scale", &scale, 0.1f, 0.0f, 1000.0f, "Resizing", scaleTogether) && renderer)
-		if (renderer)
-			renderer->setDirty();
-	ImGui::SameLine();
-	ImGui::Checkbox("##together", &scaleTogether);
-
-	if (util::DragFloat3(browEdit, browEdit->activeMapView->map, node, "Rotation", &rotation, 1.0f, 0.0f, 0.0f, "Rotating") && renderer)
-		if (renderer)
-			renderer->setDirty();
-}
-
-
 void RswObject::buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>& nodes)
 {
 	std::vector<RswObject*> rswObjects;

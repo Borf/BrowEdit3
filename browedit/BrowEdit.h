@@ -72,7 +72,7 @@ public:
 		Object,
 		Wall,
 		Gat,
-	} editMode = EditMode::Height;
+	} editMode = EditMode::Object;
 
 	std::map<std::string, std::vector<std::string>> tagList; // tag -> [ file ], utf8
 	std::map<std::string, std::vector<std::string>> tagListReverse; // file -> [ tag ], kr

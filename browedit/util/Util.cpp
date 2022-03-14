@@ -97,6 +97,32 @@ namespace util
 			startValue = *ptr;
 		if (ImGui::IsItemDeactivatedAfterEdit())
 			map->doAction(new ObjectChangeAction(node, ptr, startValue, action == "" ? label : action), browEdit);
+		ImGui::PushID(label);
+		if (ImGui::BeginPopupContextItem("CopyPaste"))
+		{
+			try {
+				if (ImGui::MenuItem("Copy"))
+				{
+					json clipboard;
+					to_json(clipboard, *ptr);
+					ImGui::SetClipboardText(clipboard.dump(1).c_str());
+				}
+				if (ImGui::MenuItem("Paste"))
+				{
+					auto cb = ImGui::GetClipboardText();
+					if (cb)
+					{
+						startValue = *ptr;
+						from_json(json::parse(std::string(cb)), *ptr);
+						map->doAction(new ObjectChangeAction(node, ptr, startValue, action == "" ? label : action), browEdit);
+						ret = true;
+					}
+				}
+			}
+			catch (...) {}
+			ImGui::EndPopup();
+		}
+		ImGui::PopID();
 		return ret;
 	}
 	bool ColorEdit4(BrowEdit* browEdit, Map* map, Node* node, const char* label, glm::vec4* ptr, const std::string& action)
@@ -108,6 +134,32 @@ namespace util
 			startValue = *ptr;
 		if (ImGui::IsItemDeactivatedAfterEdit())
 			map->doAction(new ObjectChangeAction(node, ptr, startValue, action == "" ? label : action), browEdit);
+		ImGui::PushID(label);
+		if (ImGui::BeginPopupContextItem("CopyPaste"))
+		{
+			try {
+				if (ImGui::MenuItem("Copy"))
+				{
+					json clipboard;
+					to_json(clipboard, *ptr);
+					ImGui::SetClipboardText(clipboard.dump(1).c_str());
+				}
+				if (ImGui::MenuItem("Paste"))
+				{
+					auto cb = ImGui::GetClipboardText();
+					if (cb)
+					{
+						startValue = *ptr;
+						from_json(json::parse(std::string(cb)), *ptr);
+						map->doAction(new ObjectChangeAction(node, ptr, startValue, action == "" ? label : action), browEdit);
+						ret = true;
+					}
+				}
+			}
+			catch (...) {}
+			ImGui::EndPopup();
+		}
+		ImGui::PopID();
 		return ret;
 	}
 
@@ -120,6 +172,30 @@ namespace util
 			startValue = *ptr;
 		if (ImGui::IsItemDeactivatedAfterEdit())
 			map->doAction(new ObjectChangeAction(node, ptr, startValue, action == "" ? label : action), browEdit);
+		ImGui::PushID(label);
+		if (ImGui::BeginPopupContextItem("CopyPaste"))
+		{
+			try {
+				if (ImGui::MenuItem("Copy"))
+				{
+					ImGui::SetClipboardText(std::to_string(*ptr).c_str());
+				}
+				if (ImGui::MenuItem("Paste"))
+				{
+					auto cb = ImGui::GetClipboardText();
+					if (cb)
+					{
+						startValue = *ptr;
+						*ptr = std::stoi(cb);
+						map->doAction(new ObjectChangeAction(node, ptr, startValue, action == "" ? label : action), browEdit);
+						ret = true;
+					}
+				}
+			}
+			catch (...) {}
+			ImGui::EndPopup();
+		}
+		ImGui::PopID();
 		return ret;
 	}
 	bool DragFloat(BrowEdit* browEdit, Map* map, Node* node, const char* label, float* ptr, float v_speed, float v_min, float v_max, const std::string& action)
@@ -131,6 +207,30 @@ namespace util
 			startValue = *ptr;
 		if (ImGui::IsItemDeactivatedAfterEdit())
 			map->doAction(new ObjectChangeAction(node, ptr, startValue, action == "" ? label : action), browEdit);
+		ImGui::PushID(label);
+		if (ImGui::BeginPopupContextItem("CopyPaste"))
+		{
+			try {
+				if (ImGui::MenuItem("Copy"))
+				{
+					ImGui::SetClipboardText(std::to_string(*ptr).c_str());
+				}
+				if (ImGui::MenuItem("Paste"))
+				{
+					auto cb = ImGui::GetClipboardText();
+					if (cb)
+					{
+						startValue = *ptr;
+						*ptr = std::stof(cb);
+						map->doAction(new ObjectChangeAction(node, ptr, startValue, action == "" ? label : action), browEdit);
+						ret = true;
+					}
+				}
+			}
+			catch (...) {}
+			ImGui::EndPopup();
+		}
+		ImGui::PopID();		
 		return ret;
 	}
 
@@ -143,6 +243,32 @@ namespace util
 			startValue = *ptr;
 		if (ImGui::IsItemDeactivatedAfterEdit())
 			map->doAction(new ObjectChangeAction(node, ptr, startValue, action == "" ? label : action), browEdit);
+		ImGui::PushID(label);
+		if (ImGui::BeginPopupContextItem("CopyPaste"))
+		{
+			try {
+				if (ImGui::MenuItem("Copy"))
+				{
+					json clipboard;
+					to_json(clipboard, *ptr);
+					ImGui::SetClipboardText(clipboard.dump(1).c_str());
+				}
+				if (ImGui::MenuItem("Paste"))
+				{
+					auto cb = ImGui::GetClipboardText();
+					if (cb)
+					{
+						startValue = *ptr;
+						from_json(json::parse(std::string(cb)), *ptr);
+						map->doAction(new ObjectChangeAction(node, ptr, startValue, action == "" ? label : action), browEdit);
+						ret = true;
+					}
+				}
+			}
+			catch (...) {}
+			ImGui::EndPopup();
+		}
+		ImGui::PopID();
 		return ret;
 	}
 
@@ -242,6 +368,31 @@ namespace util
 			startValue = *ptr;
 		if (ImGui::IsItemDeactivatedAfterEdit())
 			map->doAction(new ObjectChangeAction(node, ptr, startValue, action == "" ? label : action), browEdit);
+		ImGui::PushID(label);
+		if (ImGui::BeginPopupContextItem("CopyPaste"))
+		{
+			try {
+				if (ImGui::MenuItem("Copy"))
+				{
+					ImGui::SetClipboardText(ptr->c_str());
+				}
+				if (ImGui::MenuItem("Paste"))
+				{
+					auto cb = ImGui::GetClipboardText();
+					if (cb)
+					{
+						startValue = *ptr;
+						*ptr = cb;
+						map->doAction(new ObjectChangeAction(node, ptr, startValue, action == "" ? label : action), browEdit);
+						ret = true;
+					}
+				}
+			}
+			catch (...) {}
+			ImGui::EndPopup();
+		}
+		ImGui::PopID();
+
 		return ret;
 	}
 
@@ -254,6 +405,33 @@ namespace util
 			startValue = *ptr;
 		if (ImGui::IsItemDeactivatedAfterEdit())
 			map->doAction(new ObjectChangeAction(node, ptr, startValue, action == "" ? label : action), browEdit);
+		ImGui::PushID(label);
+		if (ImGui::BeginPopupContextItem("CopyPaste"))
+		{
+			try {
+				if (ImGui::MenuItem("Copy"))
+				{
+					ImGui::SetClipboardText(*ptr ? "true":"false");
+				}
+				if (ImGui::MenuItem("Paste"))
+				{
+					auto cb = ImGui::GetClipboardText();
+					if (cb)
+					{
+						startValue = *ptr;
+						if (strcmp(cb, "true") == 0)
+							*ptr = true;
+						else
+							*ptr = false;
+						map->doAction(new ObjectChangeAction(node, ptr, startValue, action == "" ? label : action), browEdit);
+						ret = true;
+					}
+				}
+			}
+			catch (...) {}
+			ImGui::EndPopup();
+		}
+		ImGui::PopID();
 		return ret;
 	}
 	
@@ -282,6 +460,39 @@ namespace util
 			for (auto i = 0; i < data.size(); i++)
 				ga->addAction(new ObjectChangeAction(data[i]->node, getProp(data[i]), startValues[i], label));
 			map->doAction(ga, browEdit);
+		}
+		if (!differentValues)
+		{
+			ImGui::PushID(label);
+			if (ImGui::BeginPopupContextItem("CopyPaste"))
+			{
+				try {
+					if (ImGui::MenuItem("Copy"))
+					{
+						ImGui::SetClipboardText(getProp(data[0])->c_str());
+					}
+					if (ImGui::MenuItem("Paste"))
+					{
+						auto cb = ImGui::GetClipboardText();
+						if (cb)
+						{
+							startValues.clear();
+							for (auto o : data)
+							{
+								startValues.push_back(*getProp(o));
+								*getProp(o) = cb;
+							}
+							auto ga = new GroupAction();
+							for (auto i = 0; i < data.size(); i++)
+								ga->addAction(new ObjectChangeAction(data[i]->node, getProp(data[i]), startValues[i], label));
+							ret = true;
+						}
+					}
+				}
+				catch (...) {}
+				ImGui::EndPopup();
+			}
+			ImGui::PopID();
 		}
 		return ret;
 	}
@@ -353,6 +564,39 @@ namespace util
 				ga->addAction(new ObjectChangeAction(data[i]->node, getProp(data[i]), startValues[i], label));
 			map->doAction(ga, browEdit);
 		}
+		if (!differentValues)
+		{
+			ImGui::PushID(label);
+			if (ImGui::BeginPopupContextItem("CopyPaste"))
+			{
+				try {
+					if (ImGui::MenuItem("Copy"))
+					{
+						ImGui::SetClipboardText(std::to_string(*getProp(data[0])).c_str());
+					}
+					if (ImGui::MenuItem("Paste"))
+					{
+						auto cb = ImGui::GetClipboardText();
+						if (cb)
+						{
+							startValues.clear();
+							for (auto o : data)
+							{
+								startValues.push_back(*getProp(o));
+								*getProp(o) = std::stof(cb);
+							}
+							auto ga = new GroupAction();
+							for (auto i = 0; i < data.size(); i++)
+								ga->addAction(new ObjectChangeAction(data[i]->node, getProp(data[i]), startValues[i], label));
+							ret = true;
+						}
+					}
+				}
+				catch (...) {}
+				ImGui::EndPopup();
+			}
+			ImGui::PopID();
+		}
 		return ret;
 	}
 	template bool DragFloatMulti<RswObject>(BrowEdit* browEdit, Map* map, const std::vector<RswObject*>& data, const char* label, const std::function<float* (RswObject*)>& getProp, float v_speed, float v_min, float v_max);
@@ -385,6 +629,39 @@ namespace util
 				ga->addAction(new ObjectChangeAction(data[i]->node, getProp(data[i]), startValues[i], label));
 			map->doAction(ga, browEdit);
 		}
+		if (!differentValues)
+		{
+			ImGui::PushID(label);
+			if (ImGui::BeginPopupContextItem("CopyPaste"))
+			{
+				try {
+					if (ImGui::MenuItem("Copy"))
+					{
+						ImGui::SetClipboardText(std::to_string(*getProp(data[0])).c_str());
+					}
+					if (ImGui::MenuItem("Paste"))
+					{
+						auto cb = ImGui::GetClipboardText();
+						if (cb)
+						{
+							startValues.clear();
+							for (auto o : data)
+							{
+								startValues.push_back(*getProp(o));
+								*getProp(o) = std::stoi(cb);
+							}
+							auto ga = new GroupAction();
+							for (auto i = 0; i < data.size(); i++)
+								ga->addAction(new ObjectChangeAction(data[i]->node, getProp(data[i]), startValues[i], label));
+							ret = true;
+						}
+					}
+				}
+				catch (...) {}
+				ImGui::EndPopup();
+			}
+			ImGui::PopID();
+		}
 		return ret;
 	}
 	template bool DragIntMulti<RswObject>(BrowEdit* browEdit, Map* map, const std::vector<RswObject*>& data, const char* label, const std::function<int* (RswObject*)>& getProp, int v_speed, int v_min, int v_max);
@@ -401,10 +678,12 @@ namespace util
 		static std::vector<glm::vec3> startValues;
 		glm::vec3* f = getProp(data.front());
 		std::vector<const char*> formats;
+		bool differentValues = false;
 		for (int c = 0; c < 3; c++)
 		{
-			bool differentValues = !std::all_of(data.begin(), data.end(), [&](T* o) { return (*getProp(o))[c] == (*getProp(data.front()))[c]; });
-			formats.push_back(differentValues ? "multiple" : nullptr);
+			bool diff = !std::all_of(data.begin(), data.end(), [&](T* o) { return (*getProp(o))[c] == (*getProp(data.front()))[c]; });
+			differentValues = differentValues || diff;
+			formats.push_back(diff ? "multiple" : nullptr);
 		}
 		bool ret = DragScalarNMultiLabel(label, ImGuiDataType_Float, glm::value_ptr(*f), 3, v_speed, &v_min, &v_max, formats, 0);
 		if (ret && moveTogether)
@@ -441,7 +720,41 @@ namespace util
 				ga->addAction(new ObjectChangeAction(data[i]->node, getProp(data[i]), startValues[i], label));
 			map->doAction(ga, browEdit);
 		}
-
+		if (!differentValues)
+		{
+			ImGui::PushID(label);
+			if (ImGui::BeginPopupContextItem("CopyPaste"))
+			{
+				try {
+					if (ImGui::MenuItem("Copy"))
+					{
+						json clipboard;
+						to_json(clipboard, *getProp(data[0]));
+						ImGui::SetClipboardText(clipboard.dump(1).c_str());
+					}
+					if (ImGui::MenuItem("Paste"))
+					{
+						auto cb = ImGui::GetClipboardText();
+						if (cb)
+						{
+							startValues.clear();
+							for (auto o : data)
+							{
+								startValues.push_back(*getProp(o));
+								from_json(json::parse(std::string(cb)), *getProp(o));
+							}
+							auto ga = new GroupAction();
+							for (auto i = 0; i < data.size(); i++)
+								ga->addAction(new ObjectChangeAction(data[i]->node, getProp(data[i]), startValues[i], label));
+							ret = true;
+						}
+					}
+				}
+				catch (...) {}
+				ImGui::EndPopup();
+			}
+			ImGui::PopID();
+		}
 
 		return ret;
 	}
@@ -476,6 +789,41 @@ namespace util
 			for (auto i = 0; i < data.size(); i++)
 				ga->addAction(new ObjectChangeAction(data[i]->node, getProp(data[i]), startValues[i], label));
 			map->doAction(ga, browEdit);
+		}
+		if (!differentValues)
+		{
+			ImGui::PushID(label);
+			if (ImGui::BeginPopupContextItem("CopyPaste"))
+			{
+				try {
+					if (ImGui::MenuItem("Copy"))
+					{
+						json clipboard;
+						to_json(clipboard, *getProp(data[0]));
+						ImGui::SetClipboardText(clipboard.dump(1).c_str());
+					}
+					if (ImGui::MenuItem("Paste"))
+					{
+						auto cb = ImGui::GetClipboardText();
+						if (cb)
+						{
+							startValues.clear();
+							for (auto o : data)
+							{
+								startValues.push_back(*getProp(o));
+								from_json(json::parse(std::string(cb)), *getProp(o));
+							}
+							auto ga = new GroupAction();
+							for (auto i = 0; i < data.size(); i++)
+								ga->addAction(new ObjectChangeAction(data[i]->node, getProp(data[i]), startValues[i], label));
+							ret = true;
+						}
+					}
+				}
+				catch (...) {}
+				ImGui::EndPopup();
+			}
+			ImGui::PopID();
 		}
 		return ret;
 	}
@@ -512,6 +860,39 @@ namespace util
 			for (auto i = 0; i < data.size(); i++)
 				ga->addAction(new ObjectChangeAction<bool>(data[i]->node, getProp(data[i]), startValues[i], label));
 			map->doAction(ga, browEdit);
+		}
+		if (!differentValues)
+		{
+			ImGui::PushID(label);
+			if (ImGui::BeginPopupContextItem("CopyPaste"))
+			{
+				try {
+					if (ImGui::MenuItem("Copy"))
+					{
+						ImGui::SetClipboardText(*getProp(data[0]) ? "true" : "false");
+					}
+					if (ImGui::MenuItem("Paste"))
+					{
+						auto cb = ImGui::GetClipboardText();
+						if (cb)
+						{
+							startValues.clear();
+							for (auto o : data)
+							{
+								startValues.push_back(*getProp(o));
+								*getProp(o) = strcmp(cb, "true") == 0 ? true : false;
+							}
+							auto ga = new GroupAction();
+							for (auto i = 0; i < data.size(); i++)
+								ga->addAction(new ObjectChangeAction<bool>(data[i]->node, getProp(data[i]), startValues[i], label));
+							ret = true;
+						}
+					}
+				}
+				catch (...) {}
+				ImGui::EndPopup();
+			}
+			ImGui::PopID();
 		}
 		return ret;
 	}
@@ -559,6 +940,39 @@ namespace util
 			for (auto i = 0; i < data.size(); i++)
 				ga->addAction(new ObjectChangeAction<int>(data[i]->node, getProp(data[i]), startValues[i], label));
 			map->doAction(ga, browEdit);
+		}
+		if (!differentValues)
+		{
+			ImGui::PushID(label);
+			if (ImGui::BeginPopupContextItem("CopyPaste"))
+			{
+				try {
+					if (ImGui::MenuItem("Copy"))
+					{
+						ImGui::SetClipboardText(std::to_string(*getProp(data[0])).c_str());
+					}
+					if (ImGui::MenuItem("Paste"))
+					{
+						auto cb = ImGui::GetClipboardText();
+						if (cb)
+						{
+							startValues.clear();
+							for (auto o : data)
+							{
+								startValues.push_back(*getProp(o));
+								*getProp(o) = std::stoi(cb);
+							}
+							auto ga = new GroupAction();
+							for (auto i = 0; i < data.size(); i++)
+								ga->addAction(new ObjectChangeAction<int>(data[i]->node, getProp(data[i]), startValues[i], label));
+							ret = true;
+						}
+					}
+				}
+				catch (...) {}
+				ImGui::EndPopup();
+			}
+			ImGui::PopID();
 		}
 		return ret;
 	}
@@ -667,7 +1081,8 @@ namespace util
 		
 		int hovered = ImGui::IsItemActive() || ImGui::IsItemHovered(); // IsItemDragged() ?
 
-		ImGui::Text(label);
+		if(label != nullptr)
+			ImGui::Text(label);
 
 //		ImGui::Dummy(ImVec2(0, 3));
 		// prepare canvas
@@ -680,8 +1095,6 @@ namespace util
 		if (!ImGui::ItemAdd(bb, NULL))
 			return false;
 
-		const ImGuiID id = window->GetID(label);
-		//hovered |= 0 != ImGui::IsItemHovered(ImRect(bb.Min, bb.Min + ImVec2(avail, dim)), id);
 
 		ImGui::RenderFrame(bb.Min, bb.Max, ImGui::GetColorU32(ImGuiCol_FrameBg, 1), true, style.FrameRounding);
 		
@@ -762,7 +1175,45 @@ namespace util
 			ImGui::TextColored(ImVec4(1,0,0,1), "MULTIPLE VALUES");
 			ImGui::SameLine();
 		}
-		bool ret = EditableGraph(label, f, interpolationStyle);
+		ImGui::Text(label);
+		bool ret = false;
+		if (!differentValues)
+		{
+			ImGui::PushID(label);
+			if (ImGui::BeginPopupContextItem("CopyPaste"))
+			{
+				try {
+					if (ImGui::MenuItem("Copy"))
+					{
+						json values;
+						to_json(values, *f);
+						ImGui::SetClipboardText(values.dump(1).c_str());
+					}
+					if (ImGui::MenuItem("Paste"))
+					{
+						auto cb = ImGui::GetClipboardText();
+						if (cb)
+						{
+							startValues.clear();
+							for (auto o : data)
+							{
+								startValues.push_back(*getProp(o));
+								from_json(json::parse(std::string(cb)), *getProp(o));
+							}
+							auto ga = new GroupAction();
+							for (auto i = 0; i < data.size(); i++)
+								ga->addAction(new ObjectChangeAction(data[i]->node, getProp(data[i]), startValues[i], label));
+							ret = true;
+						}
+					}
+				}
+				catch (...) {}
+				ImGui::EndPopup();
+			}
+			ImGui::PopID();
+		}
+
+		ret = ret || EditableGraph(nullptr, f, interpolationStyle);
 		if (ret)
 			for (auto o : data)
 				*getProp(o) = *f;
@@ -873,6 +1324,15 @@ namespace util
 
 namespace glm
 {
+	void to_json(nlohmann::json& j, const glm::vec4& v) {
+		j = nlohmann::json{ v.x, v.y, v.z, v.w };
+	}
+	void from_json(const nlohmann::json& j, glm::vec4& v) {
+		j[0].get_to(v.x);
+		j[1].get_to(v.y);
+		j[2].get_to(v.z);
+		j[3].get_to(v.w);
+	}
 	void to_json(nlohmann::json& j, const glm::vec3& v) {
 		j = nlohmann::json{ v.x, v.y, v.z };
 	}

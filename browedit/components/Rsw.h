@@ -2,8 +2,8 @@
 
 #include "Component.h"
 #include "Collider.h"
-#include "Rsm.h"
 #include "ImguiProps.h"
+#include "Rsm.h"
 #include <string>
 #include <glm/glm.hpp>
 #include <browedit/util/Util.h>
@@ -65,15 +65,13 @@ public:
 
 	void load(const std::string& fileName, Map* map, bool loadModels = true, bool loadGnd = true);
 	void save(const std::string& fileName);
-
-	void recalculateQuadtree(QuadTreeNode* node = nullptr);
-
 	void buildImGui(BrowEdit* browEdit) override;
+	void recalculateQuadtree(QuadTreeNode* node = nullptr);
 };
 
 
 
-class RswObject : public Component, public ImguiProps
+class RswObject : public Component
 {
 public:
 	glm::vec3 position = glm::vec3(0,0,0);
@@ -84,12 +82,11 @@ public:
 	RswObject(RswObject* other);
 	void load(std::istream* is, int version, bool loadModel);
 	void save(std::ofstream& file, int version);
-	void buildImGui(BrowEdit* browEdit) override;
 	static void buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>&);
 	NLOHMANN_DEFINE_TYPE_INTRUSIVE(RswObject, position, rotation, scale);
 };
 
-class RswModel : public Component, public ImguiProps
+class RswModel : public Component
 {
 public:
 	math::AABB aabb;
@@ -109,13 +106,12 @@ public:
 	void loadExtra(nlohmann::json data);
 	void save(std::ofstream &file, int version);
 	nlohmann::json saveExtra();
-	void buildImGui(BrowEdit* browEdit) override;
 	static void buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>&);
 
 	NLOHMANN_DEFINE_TYPE_INTRUSIVE(RswModel, animType, animSpeed, blockType, fileName, givesShadow);
 };
 
-class RswLight : public Component, public ImguiProps
+class RswLight : public Component
 {
 public:
 	float todo[10];
@@ -151,12 +147,11 @@ public:
 	void loadExtra(nlohmann::json data);
 	void save(std::ofstream& file);
 	nlohmann::json saveExtra();
-	void buildImGui(BrowEdit* browEdit) override;
 	static void buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>&);
 	NLOHMANN_DEFINE_TYPE_INTRUSIVE(RswLight, color, range, givesShadow, cutOff, cutOff, intensity, affectShadowMap, affectLightmap, falloff, falloffStyle);
 };
 
-class RswEffect : public Component, public ImguiProps
+class RswEffect : public Component
 {
 public:
 	int	id;
@@ -169,13 +164,12 @@ public:
 	RswEffect() {}
 	void load(std::istream* is);
 	void save(std::ofstream& file);
-	void buildImGui(BrowEdit* browEdit) override;
 	static void buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>&);
 
 	NLOHMANN_DEFINE_TYPE_INTRUSIVE(RswEffect, id, loop, param1, param2, param3, param4);
 };
 
-class RswSound : public Component, public ImguiProps
+class RswSound : public Component
 {
 public:
 	std::string fileName;
@@ -196,7 +190,6 @@ public:
 	void play();
 	void load(std::istream* is, int version);
 	void save(std::ofstream& file, int version);
-	void buildImGui(BrowEdit* browEdit) override;
 	static void buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>&);
 	
 	NLOHMANN_DEFINE_TYPE_INTRUSIVE(RswSound, fileName, vol, width, height, range, cycle, unknown6, unknown7, unknown8);

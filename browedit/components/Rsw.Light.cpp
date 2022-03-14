@@ -92,61 +92,6 @@ float RswLight::realRange()
 
 
 
-void RswLight::buildImGui(BrowEdit* browEdit)
-{
-	ImGui::Text("Light");
-
-	if (ImGui::CollapsingHeader("Unknown rubbish"))
-	{
-		for (int i = 0; i < 10; i++)
-		{
-			ImGui::PushID(i);
-			util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Unknown", &todo[i], 0.01f, -100.0f, 100.0f);
-			ImGui::PopID();
-		}
-	}
-
-	util::ColorEdit3(browEdit, browEdit->activeMapView->map, node, "Color", &color);
-	util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Range", &range, 1.0f, 0.0f, 1000.0f);
-	util::Checkbox(browEdit, browEdit->activeMapView->map, node, "Gives Shadows", &givesShadow);
-	util::Checkbox(browEdit, browEdit->activeMapView->map, node, "Affects Shadowmap", &affectShadowMap);
-	util::Checkbox(browEdit, browEdit->activeMapView->map, node, "Affects Colormap", &affectLightmap);
-
-	ImGui::Combo("Falloff style", &falloffStyle, "exponential\0spline tweak\0lagrange tweak\0linear tweak\0magic\0");
-
-	if (falloffStyle == FalloffStyle::Magic)
-	{
-		util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Intensity", &intensity, 1.00f, 0.0f, 100000.0f);
-		util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Cutoff", &cutOff, 0.01f, 0.0f, 1.0f);
-	}
-	else if (falloffStyle == FalloffStyle::SplineTweak)
-		util::EditableGraph("Light Falloff", &falloff, util::interpolateSpline);
-	else if (falloffStyle == FalloffStyle::LagrangeTweak)
-		util::EditableGraph("Light Falloff", &falloff, util::interpolateLagrange);
-	else if (falloffStyle == FalloffStyle::LinearTweak)
-		util::EditableGraph("Light Falloff", &falloff, util::interpolateLinear);
-	else if (falloffStyle == FalloffStyle::Exponential)
-	{
-		util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Exponent", &cutOff, 0.01f, 0.00001f, 10.0f);
-		util::Graph("Light Falloff", [&](float x) { return 1.0f - glm::pow(x, cutOff); });
-	}
-
-	ImGui::Separator();
-	ImGui::Text("Save as template:");
-	static std::string templateName = "default";
-	ImGui::InputText("Template Name", &templateName);
-	if (ImGui::Button("Save as template"))
-	{
-		json out;
-		to_json(out, *this);
-		std::ofstream file(("data\\lights\\" + templateName).c_str());
-		file << std::setw(2) << out;
-	}
-
-}
-
-
-
 void RswLight::buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>& nodes)
 {
 	std::vector<RswLight*> rswLights;
@@ -188,5 +133,18 @@ void RswLight::buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>& nod
 			else
 				util::Graph("Light Falloff", [&](float x) { return 1.0f - glm::pow(x, rswLights.front()->cutOff); });
 		}
+	}
+
+
+	ImGui::Separator();
+	ImGui::Text("Save as template:");
+	static std::string templateName = "default";
+	ImGui::InputText("Template Name", &templateName);
+	if (ImGui::Button("Save as template"))
+	{
+		json out;
+		to_json(out, *rswLights[0]);
+		std::ofstream file(("data\\lights\\" + templateName).c_str());
+		file << std::setw(2) << out;
 	}
 }

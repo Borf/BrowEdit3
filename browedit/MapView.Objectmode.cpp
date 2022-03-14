@@ -1,3 +1,4 @@
+#include <Windows.h>
 #include "MapView.h"
 
 #include <browedit/Components/Gnd.h>

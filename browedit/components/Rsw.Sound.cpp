@@ -65,35 +65,17 @@ void RswSound::save(std::ofstream& file, int version)
 }
 
 
-
-
-void RswSound::buildImGui(BrowEdit* browEdit)
-{
-	ImGui::Text("Sound");
-	util::InputText(browEdit, browEdit->activeMapView->map, node, "Filename", &fileName);
-	if (ImGui::Button("Play Sound"))
-	{
-		play();
-	}
-	util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Volume", &vol, 0.01f, 0.0f, 100.0f);
-
-	util::DragInt(browEdit, browEdit->activeMapView->map, node, "Width", (int*)&width, 1, 0, 10000); //TODO: remove cast
-	util::DragInt(browEdit, browEdit->activeMapView->map, node, "Height", (int*)&height, 1, 0, 10000); //TODO: remove cast
-	util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Range", &range, 0.01f, 0.0f, 100.0f);
-	util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Cycle", &cycle, 0.01f, 0.0f, 100.0f);
-	//no undo for this
-	ImGui::InputText("unknown6", unknown6, 8, ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_CharsUppercase);
-
-	util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Unknown7", &unknown7, 0.01f, 0.0f, 100.0f);
-	util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Unknown8", &unknown8, 0.01f, 0.0f, 100.0f);
-}
-
 void RswSound::buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>& nodes)
 {
 	std::vector<RswSound*> rswSounds;
 	std::ranges::copy(nodes | std::ranges::views::transform([](Node* n) { return n->getComponent<RswSound>(); }) | std::ranges::views::filter([](RswSound* r) { return r != nullptr; }), std::back_inserter(rswSounds));
 	if (rswSounds.size() == 0)
 		return;
+
+	if (ImGui::Button("Play Sound"))
+	{
+		rswSounds[0]->play();
+	}
 
 	ImGui::Text("Sound");
 	util::InputTextMulti<RswSound>(browEdit, browEdit->activeMapView->map, rswSounds, "Filename", [](RswSound* s) { return &s->fileName; });

@@ -15,7 +15,7 @@ void BrowEdit::showObjectProperties()
 		{
 			activeMapView->map->selectedNodes[0]->onRename(activeMapView->map);
 		}
-		if(activeMapView->map->selectedNodes.size() == 1)
+		if (activeMapView->map->selectedNodes.size() == 1)
 			for (auto c : activeMapView->map->selectedNodes[0]->components)
 			{
 				auto props = dynamic_cast<ImguiProps*>(c);
@@ -23,7 +23,7 @@ void BrowEdit::showObjectProperties()
 					props->buildImGui(this);
 			}
 	}
-	if (activeMapView && activeMapView->map->selectedNodes.size() > 1)
+	if (activeMapView && activeMapView->map->selectedNodes.size() > 0)
 	{
 		RswObject::buildImGuiMulti(this, activeMapView->map->selectedNodes);
 		RswLight::buildImGuiMulti(this, activeMapView->map->selectedNodes);
