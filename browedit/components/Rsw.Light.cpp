@@ -100,6 +100,29 @@ void RswLight::buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>& nod
 		return;
 
 	ImGui::Text("Light");
+	ImGui::PushID("Light");
+	if (ImGui::BeginPopupContextItem("CopyPaste"))
+	{
+		try {
+			if (ImGui::MenuItem("Copy"))
+			{
+				json clipboard;
+				to_json(clipboard, *rswLights[0]);
+				ImGui::SetClipboardText(clipboard.dump(1).c_str());
+			}
+			if (ImGui::MenuItem("Paste (no undo)"))
+			{
+				auto cb = ImGui::GetClipboardText();
+				if (cb)
+					for (auto& ptr : rswLights)
+						from_json(json::parse(std::string(cb)), *ptr);
+			}
+		}
+		catch (...) {}
+		ImGui::EndPopup();
+	}
+	ImGui::PopID();
+
 	util::ColorEdit3Multi<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Color", [](RswLight* l) { return &l->color; });
 	util::DragFloatMulti<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Range", [](RswLight* l) { return &l->range; }, 1.0f, 0.0f, 1000.0f);
 	util::CheckboxMulti<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Gives Shadows", [](RswLight* l) { return &l->givesShadow; });

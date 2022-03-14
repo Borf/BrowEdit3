@@ -87,6 +87,29 @@ void RswModel::buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>& nod
 		return;
 
 	ImGui::Text("Model");
+	ImGui::PushID("Model");
+	if (ImGui::BeginPopupContextItem("CopyPaste"))
+	{
+		try {
+			if (ImGui::MenuItem("Copy"))
+			{
+				json clipboard;
+				to_json(clipboard, *rswModels[0]);
+				ImGui::SetClipboardText(clipboard.dump(1).c_str());
+			}
+			if (ImGui::MenuItem("Paste (no undo)"))
+			{
+				auto cb = ImGui::GetClipboardText();
+				if (cb)
+					for (auto& ptr : rswModels)
+						from_json(json::parse(std::string(cb)), *ptr);
+			}
+		}
+		catch (...) {}
+		ImGui::EndPopup();
+	}
+	ImGui::PopID();
+
 	util::DragIntMulti<RswModel>(browEdit, browEdit->activeMapView->map, rswModels, "Animation Type", [](RswModel* m) { return &m->animType; }, 1, 0, 100);
 	util::DragFloatMulti<RswModel>(browEdit, browEdit->activeMapView->map, rswModels, "Animation Speed", [](RswModel* m) { return &m->animSpeed; }, 0.01f, 0.0f, 100.0f);
 	util::DragIntMulti<RswModel>(browEdit, browEdit->activeMapView->map, rswModels, "Block Type", [](RswModel* m) { return &m->blockType; }, 1, 0, 100);

@@ -24,7 +24,7 @@ void RswSound::load(std::istream* is, int version)
 	is->read(reinterpret_cast<char*>(glm::value_ptr(rswObject->rotation)), sizeof(float) * 3);
 	is->read(reinterpret_cast<char*>(glm::value_ptr(rswObject->scale)), sizeof(float) * 3);
 
-	is->read(unknown6, 8);
+	is->read(reinterpret_cast<char*>(unknown6), 8);
 
 	is->read(reinterpret_cast<char*>(glm::value_ptr(rswObject->position)), sizeof(float) * 3);
 
@@ -51,7 +51,7 @@ void RswSound::save(std::ofstream& file, int version)
 	file.write(reinterpret_cast<char*>(glm::value_ptr(rswObject->rotation)), sizeof(float) * 3);
 	file.write(reinterpret_cast<char*>(glm::value_ptr(rswObject->scale)), sizeof(float) * 3);
 
-	file.write(unknown6, 8);
+	file.write(reinterpret_cast<char*>(unknown6), 8);
 
 	file.write(reinterpret_cast<char*>(glm::value_ptr(rswObject->position)), sizeof(float) * 3);
 
@@ -72,12 +72,38 @@ void RswSound::buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>& nod
 	if (rswSounds.size() == 0)
 		return;
 
+
+
+	ImGui::Text("Sound");
+	ImGui::PushID("Sound");
+	if (ImGui::BeginPopupContextItem("CopyPaste"))
+	{
+		try {
+			if (ImGui::MenuItem("Copy"))
+			{
+				json clipboard;
+				to_json(clipboard, *rswSounds[0]);
+				ImGui::SetClipboardText(clipboard.dump(1).c_str());
+			}
+			if (ImGui::MenuItem("Paste (no undo)"))
+			{
+				auto cb = ImGui::GetClipboardText();
+				if (cb)
+					for (auto& ptr : rswSounds)
+						from_json(json::parse(std::string(cb)), *ptr);
+			}
+		}
+		catch (const std::exception &e) {
+			std::cerr << e.what() << std::endl;
+		}
+		ImGui::EndPopup();
+	}
+	ImGui::PopID();
+
 	if (ImGui::Button("Play Sound"))
 	{
 		rswSounds[0]->play();
 	}
-
-	ImGui::Text("Sound");
 	util::InputTextMulti<RswSound>(browEdit, browEdit->activeMapView->map, rswSounds, "Filename", [](RswSound* s) { return &s->fileName; });
 	util::DragFloatMulti<RswSound>(browEdit, browEdit->activeMapView->map, rswSounds, "Volume", [](RswSound* s) { return &s->vol; }, 0.01f, 0.0f, 100.0f);
 
@@ -86,7 +112,8 @@ void RswSound::buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>& nod
 	util::DragFloatMulti<RswSound>(browEdit, browEdit->activeMapView->map, rswSounds, "Range", [](RswSound* s) { return &s->range; }, 0.01f, 0.0f, 100.0f);
 	util::DragFloatMulti<RswSound>(browEdit, browEdit->activeMapView->map, rswSounds, "Cycle", [](RswSound* s) { return &s->cycle; }, 0.01f, 0.0f, 100.0f);
 	//no undo for this
-	//ImGui::InputTextMulti("unknown6", unknown6, 8, ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_CharsUppercase);
+	for(int i = 0; i < 8; i++)
+		util::DragCharMulti<RswSound>(browEdit, browEdit->activeMapView->map, rswSounds, ("Unknown6["+std::to_string(i) + "]").c_str(), [i](RswSound* s) { return (char*)&s->unknown6[i]; }, 1, 0, 255);
 
 	util::DragFloatMulti<RswSound>(browEdit, browEdit->activeMapView->map, rswSounds, "Unknown7", [](RswSound* s) { return &s->unknown7; }, 0.01f, 0.0f, 100.0f);
 	util::DragFloatMulti<RswSound>(browEdit, browEdit->activeMapView->map, rswSounds, "Unknown8", [](RswSound* s) { return &s->unknown8; }, 0.01f, 0.0f, 100.0f);

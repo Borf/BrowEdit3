@@ -92,6 +92,30 @@ void RswObject::buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>& no
 		return;
 	ImGui::Text("Object");
 
+	ImGui::PushID("Object");
+	if (ImGui::BeginPopupContextItem("CopyPaste"))
+	{
+		try {
+			if (ImGui::MenuItem("Copy"))
+			{
+				json clipboard;
+				to_json(clipboard, *rswObjects[0]);
+				ImGui::SetClipboardText(clipboard.dump(1).c_str());
+			}
+			if (ImGui::MenuItem("Paste (no undo)"))
+			{
+				auto cb = ImGui::GetClipboardText();
+				if (cb)
+					for(auto& ptr : rswObjects)
+						from_json(json::parse(std::string(cb)), *ptr);
+			}
+		}
+		catch (...) {}
+		ImGui::EndPopup();
+	}
+	ImGui::PopID();
+
+
 	static bool scaleTogether = false;
 
 	if (util::DragFloat3Multi<RswObject>(browEdit, browEdit->activeMapView->map, rswObjects, "Position", [](RswObject* o) { return &o->position; }, 1.0f, 0.0f, 0.0f))

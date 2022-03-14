@@ -180,7 +180,7 @@ public:
 	float	range = 100.0f;
 	float	cycle = 4.0f;
 
-	char unknown6[8];
+	uint8_t unknown6[8];
 	float unknown7 = -45.0f;
 	float unknown8 = 0.0f;
 

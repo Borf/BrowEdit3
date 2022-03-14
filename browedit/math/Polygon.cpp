@@ -156,8 +156,8 @@ namespace math
 		bool result;
 		for (size_t i = 0; i < size(); i++)
 		{
-			int j = (i + 1) % size();
-			int k = (i + 2) % size();
+			auto j = (i + 1) % size();
+			auto k = (i + 2) % size();
 
 			float z = (at(j).x - at(i).x) * (at(k).y - at(j).y);
 			z -= (at(j).y - at(i).y) * (at(k).x - at(j).x);;

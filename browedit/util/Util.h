@@ -37,6 +37,9 @@ namespace util
 	bool DragIntMulti(BrowEdit* browEdit, Map* map, const std::vector<T*>& data, const char* label, const std::function<int* (T*)>& callback, int v_speed, int v_min, int v_max);
 
 	template<class T>
+	bool DragCharMulti(BrowEdit* browEdit, Map* map, const std::vector<T*>& data, const char* label, const std::function<char* (T*)>& callback, int v_speed, int v_min, int v_max);
+
+	template<class T>
 	bool ColorEdit3Multi(BrowEdit* browEdit, Map* map, const std::vector<T*>& data, const char* label, const std::function<glm::vec3* (T*)>& callback);
 
 	template<class T>

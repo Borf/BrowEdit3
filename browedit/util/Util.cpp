@@ -502,9 +502,6 @@ namespace util
 	template bool InputTextMulti<RswSound>(BrowEdit* browEdit, Map* map, const std::vector<RswSound*>& data, const char* label, const std::function<std::string* (RswSound*)>& getProp, int maxLen);
 	template bool InputTextMulti<RswModel>(BrowEdit* browEdit, Map* map, const std::vector<RswModel*>& data, const char* label, const std::function<std::string* (RswModel*)>& getProp, int maxLen);
 
-
-
-
 	const ImGuiDataTypeInfo* ImGui::DataTypeGetInfo(ImGuiDataType data_type);
 	bool DragScalarNMultiLabel(const char* label, ImGuiDataType data_type, void* p_data, int components, float v_speed, const void* p_min, const void* p_max, const std::vector<const char*> &formats, ImGuiSliderFlags flags)
 	{
@@ -671,6 +668,69 @@ namespace util
 	template bool DragIntMulti<RswModel>(BrowEdit* browEdit, Map* map, const std::vector<RswModel*>& data, const char* label, const std::function<int* (RswModel*)>& getProp, int v_speed, int v_min, int v_max);
 
 
+	template<class T>
+	bool DragCharMulti(BrowEdit* browEdit, Map* map, const std::vector<T*>& data, const char* label, const std::function<char* (T*)>& getProp, int v_speed, int v_min, int v_max)
+	{
+		static std::vector<char> startValues;
+		bool differentValues = !std::all_of(data.begin(), data.end(), [&](T* o) { return *getProp(o) == *getProp(data.front()); });
+		char* f = getProp(data.front());
+		bool ret = ImGui::DragScalar(label, ImGuiDataType_U8, f, (float)v_speed, &v_min, &v_max, differentValues ? "multiple" : nullptr);
+		if (ret)
+			for (auto o : data)
+				*getProp(o) = *f;
+		if (ImGui::IsItemActivated())
+		{
+			startValues.clear();
+			for (auto o : data)
+				startValues.push_back(*getProp(o));
+		}
+		if (ImGui::IsItemDeactivatedAfterEdit())
+		{
+			auto ga = new GroupAction();
+			for (auto i = 0; i < data.size(); i++)
+				ga->addAction(new ObjectChangeAction(data[i]->node, getProp(data[i]), startValues[i], label));
+			map->doAction(ga, browEdit);
+		}
+		if (!differentValues)
+		{
+			ImGui::PushID(label);
+			if (ImGui::BeginPopupContextItem("CopyPaste"))
+			{
+				try {
+					if (ImGui::MenuItem("Copy"))
+					{
+						ImGui::SetClipboardText(std::to_string(*getProp(data[0])).c_str());
+					}
+					if (ImGui::MenuItem("Paste"))
+					{
+						auto cb = ImGui::GetClipboardText();
+						if (cb)
+						{
+							startValues.clear();
+							for (auto o : data)
+							{
+								startValues.push_back(*getProp(o));
+								*getProp(o) = std::stoi(cb);
+							}
+							auto ga = new GroupAction();
+							for (auto i = 0; i < data.size(); i++)
+								ga->addAction(new ObjectChangeAction(data[i]->node, getProp(data[i]), startValues[i], label));
+							ret = true;
+						}
+					}
+				}
+				catch (...) {}
+				ImGui::EndPopup();
+			}
+			ImGui::PopID();
+		}
+		return ret;
+	}
+	template bool DragCharMulti<RswObject>(BrowEdit* browEdit, Map* map, const std::vector<RswObject*>& data, const char* label, const std::function<char* (RswObject*)>& getProp, int v_speed, int v_min, int v_max);
+	template bool DragCharMulti<RswLight>(BrowEdit* browEdit, Map* map, const std::vector<RswLight*>& data, const char* label, const std::function<char* (RswLight*)>& getProp, int v_speed, int v_min, int v_max);
+	template bool DragCharMulti<RswEffect>(BrowEdit* browEdit, Map* map, const std::vector<RswEffect*>& data, const char* label, const std::function<char* (RswEffect*)>& getProp, int v_speed, int v_min, int v_max);
+	template bool DragCharMulti<RswSound>(BrowEdit* browEdit, Map* map, const std::vector<RswSound*>& data, const char* label, const std::function<char* (RswSound*)>& getProp, int v_speed, int v_min, int v_max);
+	template bool DragCharMulti<RswModel>(BrowEdit* browEdit, Map* map, const std::vector<RswModel*>& data, const char* label, const std::function<char* (RswModel*)>& getProp, int v_speed, int v_min, int v_max);
 
 	template<class T>
 	bool DragFloat3Multi(BrowEdit* browEdit, Map* map, const std::vector<T*>& data, const char* label, const std::function<glm::vec3* (T*)>& getProp, float v_speed, float v_min, float v_max, bool moveTogether)
