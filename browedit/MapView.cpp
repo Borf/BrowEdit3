@@ -117,7 +117,7 @@ void MapView::toolbar(BrowEdit* browEdit)
 		{
 			ImGui::SameLine();
 			ImGui::SetNextItemWidth(50);
-			ImGui::DragFloat("##gridSize", &gridOffset, 1.0f, 0, gridSize, "%.2f");
+			ImGui::DragFloat("##gridOffset", &gridOffset, 1.0f, 0, gridSize, "%.2f");
 			if (ImGui::IsItemHovered())
 				ImGui::SetTooltip("Grid Offset");
 		}
