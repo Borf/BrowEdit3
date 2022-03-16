@@ -321,49 +321,12 @@ namespace util
 		return ret;
 	}
 
-	struct InputTextCallback_UserData
-	{
-		std::string* Str;
-		ImGuiInputTextCallback  ChainCallback;
-		void* ChainCallbackUserData;
-	};
-	static int InputTextCallback(ImGuiInputTextCallbackData* data)
-	{
-		InputTextCallback_UserData* user_data = (InputTextCallback_UserData*)data->UserData;
-		if (data->EventFlag == ImGuiInputTextFlags_CallbackResize)
-		{
-			// Resize string callback
-			// If for some reason we refuse the new length (BufTextLen) and/or capacity (BufSize) we need to set them back to what we want.
-			std::string* str = user_data->Str;
-			IM_ASSERT(data->Buf == str->c_str());
-			str->resize(data->BufTextLen);
-			data->Buf = (char*)str->c_str();
-		}
-		else if (user_data->ChainCallback)
-		{
-			// Forward to user callback, if any
-			data->UserData = user_data->ChainCallbackUserData;
-			return user_data->ChainCallback(data);
-		}
-		return 0;
-	}
-	bool InputText(const char* label, std::string* str, ImGuiInputTextFlags flags, unsigned long long maxLen)
-	{
-		IM_ASSERT((flags & ImGuiInputTextFlags_CallbackResize) == 0);
-		flags |= ImGuiInputTextFlags_CallbackResize;
 
-		InputTextCallback_UserData cb_user_data;
-		cb_user_data.Str = str;
-		return ImGui::InputText(label, (char*)str->c_str(), (int)glm::min(maxLen, str->capacity() + 1), flags, InputTextCallback, &cb_user_data);
-	}
-
-	bool InputText(BrowEdit* browEdit, Map* map, Node* node, const char* label, std::string* ptr, ImGuiInputTextFlags flags, const std::string& action, int maxLen)
+	bool InputText(BrowEdit* browEdit, Map* map, Node* node, const char* label, std::string* ptr, ImGuiInputTextFlags flags, const std::string& action)
 	{
 		static std::string startValue;
-		bool ret = InputText(label, ptr, flags, maxLen);
+		bool ret = ImGui::InputText(label, ptr, flags);
 
-		if (maxLen > 0 && ptr->size() > maxLen)
-			*ptr = ptr->substr(0, maxLen);
 		if (ImGui::IsItemActivated())
 			startValue = *ptr;
 		if (ImGui::IsItemDeactivatedAfterEdit())
@@ -437,14 +400,14 @@ namespace util
 	
 
 	template<class T>
-	bool InputTextMulti(BrowEdit* browEdit, Map* map, const std::vector<T*>& data, const char* label, const std::function<std::string* (T*)>& getProp, int maxLen)
+	bool InputTextMulti(BrowEdit* browEdit, Map* map, const std::vector<T*>& data, const char* label, const std::function<std::string* (T*)>& getProp)
 	{
 		static std::vector<std::string> startValues;
 		bool differentValues = !std::all_of(data.begin(), data.end(), [&](T* o) { return *getProp(o) == *getProp(data.front()); });
 		std::string f = *getProp(data.front());
 		if (differentValues)
 			f = "multiple";
-		bool ret = InputText(label, &f, 0, maxLen);
+		bool ret = ImGui::InputText(label, &f);
 		if (ret)
 			for (auto o : data)
 				*getProp(o) = f;
@@ -496,11 +459,11 @@ namespace util
 		}
 		return ret;
 	}
-	template bool InputTextMulti<RswObject>(BrowEdit* browEdit, Map* map, const std::vector<RswObject*>& data, const char* label, const std::function<std::string* (RswObject*)>& getProp, int maxLen);
-	template bool InputTextMulti<RswLight>(BrowEdit* browEdit, Map* map, const std::vector<RswLight*>& data, const char* label, const std::function<std::string* (RswLight*)>& getProp, int maxLen);
-	template bool InputTextMulti<RswEffect>(BrowEdit* browEdit, Map* map, const std::vector<RswEffect*>& data, const char* label, const std::function<std::string* (RswEffect*)>& getProp, int maxLen);
-	template bool InputTextMulti<RswSound>(BrowEdit* browEdit, Map* map, const std::vector<RswSound*>& data, const char* label, const std::function<std::string* (RswSound*)>& getProp, int maxLen);
-	template bool InputTextMulti<RswModel>(BrowEdit* browEdit, Map* map, const std::vector<RswModel*>& data, const char* label, const std::function<std::string* (RswModel*)>& getProp, int maxLen);
+	template bool InputTextMulti<RswObject>(BrowEdit* browEdit, Map* map, const std::vector<RswObject*>& data, const char* label, const std::function<std::string* (RswObject*)>& getProp);
+	template bool InputTextMulti<RswLight>(BrowEdit* browEdit, Map* map, const std::vector<RswLight*>& data, const char* label, const std::function<std::string* (RswLight*)>& getProp);
+	template bool InputTextMulti<RswEffect>(BrowEdit* browEdit, Map* map, const std::vector<RswEffect*>& data, const char* label, const std::function<std::string* (RswEffect*)>& getProp);
+	template bool InputTextMulti<RswSound>(BrowEdit* browEdit, Map* map, const std::vector<RswSound*>& data, const char* label, const std::function<std::string* (RswSound*)>& getProp);
+	template bool InputTextMulti<RswModel>(BrowEdit* browEdit, Map* map, const std::vector<RswModel*>& data, const char* label, const std::function<std::string* (RswModel*)>& getProp);
 
 	const ImGuiDataTypeInfo* ImGui::DataTypeGetInfo(ImGuiDataType data_type);
 	bool DragScalarNMultiLabel(const char* label, ImGuiDataType data_type, void* p_data, int components, float v_speed, const void* p_min, const void* p_max, const std::vector<const char*> &formats, ImGuiSliderFlags flags)
