@@ -45,15 +45,15 @@ void BrowEdit::toolbar()
 	if (toolBarToggleButton("heightmode", 0, editMode == EditMode::Height, "Height edit mode", config.toolbarButtonsHeightEdit))
 		editMode = EditMode::Height;
 	ImGui::SameLine();
-	if (toolBarToggleButton("texturemode", 1, editMode == EditMode::Texture, "Texture edit mode"))
+	if (toolBarToggleButton("texturemode", 1, editMode == EditMode::Texture, "Texture edit mode", config.toolbarButtonsTextureEdit))
 		editMode = EditMode::Texture;
 	ImGui::SameLine();
 	if (toolBarToggleButton("objectmode", 2, editMode == EditMode::Object, "Object edit mode", config.toolbarButtonsObjectEdit))
 		editMode = EditMode::Object;
 	ImGui::SameLine();
-	if (toolBarToggleButton("wallmode", 3, editMode == EditMode::Wall, "Wall edit mode"))
+	if (toolBarToggleButton("wallmode", 3, editMode == EditMode::Wall, "Wall edit mode", config.toolbarButtonsWallEdit))
 		editMode = EditMode::Wall;
-	ImGui::SameLine(300);
+	ImGui::SameLine(125 + 4 * (config.toolbarButtonSize + 5) + 20 );
 
 	if (editMode == EditMode::Object)
 	{

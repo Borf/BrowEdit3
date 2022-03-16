@@ -32,6 +32,8 @@ public:
 	ImVec4 toolbarButtonsViewOptions = ImVec4(139 / 255.0f, 233 / 255.0f, 253 / 255.0f, 1.0f); //cyan
 	ImVec4 toolbarButtonsHeightEdit = ImVec4(80 / 255.0f, 250 / 255.0f, 123 / 255.0f, 1.0f); //green
 	ImVec4 toolbarButtonsObjectEdit = ImVec4(255 / 255.0f, 184 / 255.0f, 108/ 255.0f, 1.0f); //orange
+	ImVec4 toolbarButtonsTextureEdit = ImVec4(255 / 255.0f, 121 / 255.0f, 198 / 255.0f, 1.0f); //pink
+	ImVec4 toolbarButtonsWallEdit = ImVec4(189 / 255.0f, 147 / 255.0f, 249 / 255.0f, 1.0f); //purple
 
 	float toolbarHeight() { return toolbarButtonSize + 8; }
 
@@ -54,5 +56,7 @@ public:
 		backup,
 		toolbarButtonsViewOptions,
 		toolbarButtonsHeightEdit,
-		toolbarButtonsObjectEdit);
+		toolbarButtonsObjectEdit,
+		toolbarButtonsTextureEdit,
+		toolbarButtonsWallEdit);
 };
