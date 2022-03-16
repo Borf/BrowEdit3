@@ -7,6 +7,7 @@
 #include <string_view>
 #include <mutex>
 #include <browedit/util/FileIO.h>
+#include <browedit/components/Gnd.h>
 class Action;
 class Lightmapper;
 using json = nlohmann::json;
@@ -19,6 +20,14 @@ namespace gl
 }
 
 #define MISSING 63
+
+class CopyCube : public Gnd::Cube
+{
+public:
+	glm::ivec2 pos;
+	CopyCube() {}
+	NLOHMANN_DEFINE_TYPE_INTRUSIVE(CopyCube, h1, h2, h3, h4, tileUp, tileFront, tileSide, pos, normal, normals);
+};
 
 class BrowEdit
 {
@@ -72,7 +81,7 @@ public:
 		Object,
 		Wall,
 		Gat,
-	} editMode = EditMode::Object;
+	} editMode = EditMode::Height;
 
 	std::map<std::string, std::vector<std::string>> tagList; // tag -> [ file ], utf8
 	std::map<std::string, std::vector<std::string>> tagListReverse; // file -> [ tag ], kr
@@ -80,6 +89,7 @@ public:
 	double scrollDelta = 0;
 	Config config;
 	std::vector<std::pair<Node*, glm::vec3>> newNodes;
+	std::vector<CopyCube*> newCubes;
 	MapView* activeMapView = nullptr;
 	float statusBarHeight = 10;
 
@@ -117,6 +127,8 @@ public:
 	void showHelpWindow();
 	void showLightmapSettingsWindow();
 
+	void copyTiles();
+	void pasteTiles();
 
 	bool toolBarToggleButton(const std::string_view &name, int icon, bool* status, const char* tooltip, ImVec4 tint = ImVec4(1,1,1,1));
 	bool toolBarToggleButton(const std::string_view &name, int icon, bool status, const char* tooltip, ImVec4 tint = ImVec4(1, 1, 1, 1));

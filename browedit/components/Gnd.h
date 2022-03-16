@@ -1,10 +1,12 @@
 #pragma once
 
 #include "Component.h"
+#include <browedit/util/Util.h>
 #include <string>
 #include <vector>
 #include <glm/glm.hpp>
 #include <browedit/math/Ray.h>
+#include <json.hpp>
 
 class Map;
 class BrowEdit;
@@ -103,7 +105,17 @@ public:
 	public:
 		Cube()
 		{
-			selected = rand() % 100 == 0;
+			selected = false;
+		}
+		Cube(Cube* other)
+		{
+			for (int i = 0; i < 4; i++)
+				this->heights[i] = other->heights[i];
+			for (int i = 0; i < 3; i++)
+				this->tileIds[i] = other->tileIds[i];
+			for (int i = 0; i < 4; i++)
+				this->normals[i] = other->normals[i];
+			this->normal = other->normal;
 		}
 		union
 		{
@@ -128,6 +140,8 @@ public:
 
 		void calcNormal();
 		void calcNormals(Gnd* gnd, int x, int y);
+
+		NLOHMANN_DEFINE_TYPE_INTRUSIVE(Cube, h1, h2, h3, h4, tileUp, tileFront, tileSide, normal, normals);
 	};
 
 

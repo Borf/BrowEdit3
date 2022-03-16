@@ -273,6 +273,14 @@ void BrowEdit::run()
 					activeMapView->map->growTileSelection(this);
 				if (ImGui::IsKeyPressed(GLFW_KEY_KP_SUBTRACT))
 					activeMapView->map->shrinkTileSelection(this);
+				if (ImGui::GetIO().KeyCtrl)
+				{
+					if (ImGui::IsKeyPressed('C'))
+						copyTiles();
+					if (ImGui::IsKeyPressed('V'))
+						pasteTiles();
+				}
+
 			}
 		}
 		int display_w, display_h;
@@ -475,6 +483,48 @@ void BrowEdit::loadMap(const std::string& file)
 
 
 
+void BrowEdit::copyTiles()
+{
+	auto gnd = activeMapView->map->rootNode->getComponent<Gnd>();
+	json clipboard;
+	glm::ivec2 center(0);
+	for (auto n : activeMapView->map->tileSelection)
+		center += n;
+	center /= activeMapView->map->tileSelection.size();
+	for (auto n : activeMapView->map->tileSelection)
+	{
+		json cube = *gnd->cubes[n.x][n.y];
+		cube["pos"] = n - center;
+		clipboard.push_back(cube);
+	}
+	ImGui::SetClipboardText(clipboard.dump(1).c_str());
+}
+void BrowEdit::pasteTiles()
+{
+	try
+	{
+		auto c = ImGui::GetClipboardText();
+		if (c == nullptr)
+			return;
+		std::string cb = c;
+		if (cb == "")
+			return;
+		json clipboard = json::parse(cb);
+		if (clipboard.size() > 0)
+		{
+			for (auto jsonCube : clipboard)
+			{
+				CopyCube* cube = new CopyCube();
+				from_json(jsonCube, *cube);
+				newCubes.push_back(cube);
+			}
+		}
+	}
+	catch (const std::exception &e)
+	{
+		std::cerr << e.what() << std::endl;
+	}
+}
 
 
 

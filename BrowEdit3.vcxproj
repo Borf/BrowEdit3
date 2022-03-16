@@ -11,13 +11,14 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="browedit\actions\CubeTileChangeAction.cpp" />
     <ClCompile Include="browedit\actions\DeleteObjectAction.cpp" />
     <ClCompile Include="browedit\actions\GroupAction.cpp" />
     <ClCompile Include="browedit\actions\ModelChangeAction.cpp" />
     <ClCompile Include="browedit\actions\NewObjectAction.cpp" />
     <ClCompile Include="browedit\actions\ObjectChangeAction.cpp" />
     <ClCompile Include="browedit\actions\SelectAction.cpp" />
-    <ClCompile Include="browedit\actions\TileChangeAction.cpp" />
+    <ClCompile Include="browedit\actions\CubeHeightChangeAction.cpp" />
     <ClCompile Include="browedit\actions\TileSelectAction.cpp" />
     <ClCompile Include="browedit\BrowEdit.cpp" />
     <ClCompile Include="browedit\BrowEdit.glfw.cpp" />
@@ -96,13 +97,14 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="browedit\actions\Action.h" />
+    <ClInclude Include="browedit\actions\CubeTileChangeAction.h" />
     <ClInclude Include="browedit\actions\DeleteObjectAction.h" />
     <ClInclude Include="browedit\actions\GroupAction.h" />
     <ClInclude Include="browedit\actions\ModelChangeAction.h" />
     <ClInclude Include="browedit\actions\NewObjectAction.h" />
     <ClInclude Include="browedit\actions\ObjectChangeAction.h" />
     <ClInclude Include="browedit\actions\SelectAction.h" />
-    <ClInclude Include="browedit\actions\TileChangeAction.h" />
+    <ClInclude Include="browedit\actions\CubeHeightChangeAction.h" />
     <ClInclude Include="browedit\actions\TileSelectAction.h" />
     <ClInclude Include="browedit\BrowEdit.h" />
     <ClInclude Include="browedit\components\BillboardRenderer.h" />

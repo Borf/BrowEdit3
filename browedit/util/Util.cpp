@@ -1371,7 +1371,15 @@ namespace glm
 		j[0].get_to(v.x);
 		j[1].get_to(v.y);
 	}
+	void to_json(nlohmann::json& j, const glm::ivec2& v) {
+		j = nlohmann::json{ v.x, v.y };
+	}
+	void from_json(const nlohmann::json& j, glm::ivec2& v) {
+		j[0].get_to(v.x);
+		j[1].get_to(v.y);
+	}
 }
+
 
 
 void to_json(nlohmann::json& j, const ImVec4& v) {

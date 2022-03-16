@@ -199,7 +199,7 @@ void Map::selectNear(float nearDistance, BrowEdit* browEdit)
 			return;
 		auto distance = 999999999.0f;
 		for (auto nn : selection)
-			if (glm::distance(nn->getComponent<RswObject>()->position, rswObject->position) < distance)
+			if (n != nn && glm::distance(nn->getComponent<RswObject>()->position, rswObject->position) < distance)
 				distance = glm::distance(nn->getComponent<RswObject>()->position, rswObject->position);
 		if (distance < nearDistance)
 		{

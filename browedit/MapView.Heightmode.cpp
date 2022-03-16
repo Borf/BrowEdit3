@@ -11,8 +11,10 @@
 #include <browedit/components/Gnd.h>
 #include <browedit/components/GndRenderer.h>
 #include <browedit/math/Polygon.h>
+#include <browedit/actions/GroupAction.h>
 #include <browedit/actions/TileSelectAction.h>
-#include <browedit/actions/TileChangeAction.h>
+#include <browedit/actions/CubeHeightChangeAction.h>
+#include <browedit/actions/CubeTileChangeAction.h>
 #include <imgui.h>
 #include <imgui_internal.h>
 
@@ -158,6 +160,7 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 		}
 		ImGui::TreePop();
 	}
+
 	if (map->tileSelection.size() == 1)
 	{
 		auto cube = gnd->cubes[map->tileSelection[0].x][map->tileSelection[0].y];
@@ -324,8 +327,70 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 	if (ImGui::GetIO().KeyShift)
 		snap = !snap;
 
+	//draw paste
+	if (browEdit->newCubes.size() > 0)
+	{
+		canSelect = false;
+		std::vector<VertexP3T2N3> verts;
+		float dist = 0.002f * cameraDistance;
+		for (auto cube : browEdit->newCubes)
+		{
+			verts.push_back(VertexP3T2N3(glm::vec3(10 * (tileHovered.x + cube->pos.x), -cube->h3 + dist, 10 * gnd->height - 10 * (tileHovered.y + cube->pos.y)), glm::vec2(0), cube->normals[2]));
+			verts.push_back(VertexP3T2N3(glm::vec3(10 * (tileHovered.x + cube->pos.x) + 10, -cube->h2 + dist, 10 * gnd->height - 10 * (tileHovered.y + cube->pos.y) + 10), glm::vec2(0), cube->normals[1]));
+			verts.push_back(VertexP3T2N3(glm::vec3(10 * (tileHovered.x + cube->pos.x) + 10, -cube->h4 + dist, 10 * gnd->height - 10 * (tileHovered.y + cube->pos.y)), glm::vec2(0), cube->normals[3]));
+
+			verts.push_back(VertexP3T2N3(glm::vec3(10 * (tileHovered.x + cube->pos.x), -cube->h1 + dist, 10 * gnd->height - 10 * (tileHovered.y + cube->pos.y) + 10), glm::vec2(0), cube->normals[0]));
+			verts.push_back(VertexP3T2N3(glm::vec3(10 * (tileHovered.x + cube->pos.x), -cube->h3 + dist, 10 * gnd->height - 10 * (tileHovered.y + cube->pos.y)), glm::vec2(0), cube->normals[2]));
+			verts.push_back(VertexP3T2N3(glm::vec3(10 * (tileHovered.x + cube->pos.x) + 10, -cube->h2 + dist, 10 * gnd->height - 10 * (tileHovered.y + cube->pos.y) + 10), glm::vec2(0), cube->normals[1]));
+		}
+		glEnableVertexAttribArray(0);
+		glEnableVertexAttribArray(1);
+		glEnableVertexAttribArray(2);
+		glDisableVertexAttribArray(3);
+		glDisableVertexAttribArray(4); //TODO: vao
+		glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexP3T2N3), verts[0].data);
+		glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexP3T2N3), verts[0].data + 3);
+		glVertexAttribPointer(2, 3, GL_FLOAT, false, sizeof(VertexP3T2N3), verts[0].data + 5);
+
+		simpleShader->setUniform(SimpleShader::Uniforms::color, glm::vec4(0, 1, 0, 0.25f));
+		glDrawArrays(GL_TRIANGLES, 0, (int)verts.size());
+
+
+		if (ImGui::IsMouseReleased(0))
+		{
+			std::vector<glm::ivec2> cubeSelected;
+			for (auto c : browEdit->newCubes)
+				cubeSelected.push_back(c->pos + tileHovered);
+			auto action1 = new CubeHeightChangeAction(gnd, cubeSelected);
+			auto action2 = new CubeTileChangeAction(gnd, cubeSelected);
+			for (auto cube : browEdit->newCubes)
+			{
+				for (int i = 0; i < 4; i++)
+					gnd->cubes[tileHovered.x + cube->pos.x][tileHovered.y + cube->pos.y]->heights[i] = cube->heights[i];
+				for (int i = 0; i < 3; i++)
+					gnd->cubes[tileHovered.x + cube->pos.x][tileHovered.y + cube->pos.y]->tileIds[i] = cube->tileIds[i];
+				for (int i = 0; i < 4; i++)
+					gnd->cubes[tileHovered.x + cube->pos.x][tileHovered.y + cube->pos.y]->normals[i] = cube->normals[i];
+				gnd->cubes[tileHovered.x + cube->pos.x][tileHovered.y + cube->pos.y]->normal = cube->normal;
+			}
+			action1->setNewHeights(gnd, cubeSelected);
+			action2->setNewTiles(gnd, cubeSelected);
+
+			auto ga = new GroupAction();
+			ga->addAction(action1);
+			ga->addAction(action2);
+			ga->addAction(new TileSelectAction(map, cubeSelected));
+			map->doAction(ga, browEdit);
+			for (auto c : browEdit->newCubes)
+				delete c;
+			browEdit->newCubes.clear();
+		}
+
+
+	}
+
 	//draw selection
-	if (map->tileSelection.size() > 0)
+	if (map->tileSelection.size() > 0 && canSelect)
 	{
 		std::vector<VertexP3T2N3> verts;
 		float dist = 0.002f * cameraDistance;
@@ -444,7 +509,7 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 				for (auto& t : originalValues)
 					for (int ii = 0; ii < 4; ii++)
 						newValues[t.first][ii] = t.first->heights[ii];
-				map->doAction(new TileChangeAction(originalValues, newValues), browEdit);
+				map->doAction(new CubeHeightChangeAction(originalValues, newValues), browEdit);
 			}
 			else if (gadgetHeight[i].axisDragged)
 			{

@@ -295,7 +295,10 @@
     <ClCompile Include="browedit\actions\TileSelectAction.cpp">
       <Filter>browedit\actions</Filter>
     </ClCompile>
-    <ClCompile Include="browedit\actions\TileChangeAction.cpp">
+    <ClCompile Include="browedit\actions\CubeHeightChangeAction.cpp">
+      <Filter>browedit\actions</Filter>
+    </ClCompile>
+    <ClCompile Include="browedit\actions\CubeTileChangeAction.cpp">
       <Filter>browedit\actions</Filter>
     </ClCompile>
   </ItemGroup>
@@ -510,7 +513,7 @@
     <ClInclude Include="browedit\math\Polygon.h">
       <Filter>browedit\math</Filter>
     </ClInclude>
-    <ClInclude Include="browedit\actions\TileChangeAction.h">
+    <ClInclude Include="browedit\actions\CubeHeightChangeAction.h">
       <Filter>browedit\actions</Filter>
     </ClInclude>
     <ClInclude Include="browedit\actions\TileSelectAction.h">
@@ -521,6 +524,9 @@
     </ClInclude>
     <ClInclude Include="browedit\components\ImguiProps.h">
       <Filter>browedit\components</Filter>
+    </ClInclude>
+    <ClInclude Include="browedit\actions\CubeTileChangeAction.h">
+      <Filter>browedit\actions</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
