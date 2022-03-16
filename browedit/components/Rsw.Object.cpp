@@ -108,6 +108,8 @@ void RswObject::buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>& no
 				if (cb)
 					for(auto& ptr : rswObjects)
 						from_json(json::parse(std::string(cb)), *ptr);
+				for (auto renderer : nodes | std::ranges::views::transform([](Node* n) { return n->getComponent<RsmRenderer>(); }) | std::ranges::views::filter([](RsmRenderer* r) { return r != nullptr; }))
+					renderer->setDirty();
 			}
 		}
 		catch (...) {}

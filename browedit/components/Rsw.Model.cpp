@@ -101,8 +101,17 @@ void RswModel::buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>& nod
 			{
 				auto cb = ImGui::GetClipboardText();
 				if (cb)
-					for (auto& ptr : rswModels)
-						from_json(json::parse(std::string(cb)), *ptr);
+					for (auto rswModel : rswModels)
+					{
+						from_json(json::parse(std::string(cb)), *rswModel);
+
+						auto removed = rswModel->node->removeComponent<Rsm>();
+						for (auto r : removed)
+							util::ResourceManager<Rsm>::unload(r);
+						rswModel->node->addComponent(util::ResourceManager<Rsm>::load("data\\model\\" + util::utf8_to_iso_8859_1(rswModel->fileName)));
+						rswModel->node->getComponent<RsmRenderer>()->begin();
+						rswModel->node->getComponent<RswModelCollider>()->begin();
+					}
 			}
 		}
 		catch (...) {}
