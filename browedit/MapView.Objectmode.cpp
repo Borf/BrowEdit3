@@ -120,6 +120,7 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 	{
 		if (ImGui::IsMouseClicked(0))
 		{
+			canSelectObject = false;
 			auto ga = new GroupAction("Pasting " + std::to_string(browEdit->newNodes.size()) + " objects");
 			bool first = false;
 			for (auto newNode : browEdit->newNodes)
