@@ -13,6 +13,7 @@
 #include <browedit/actions/NewObjectAction.h>
 #include <browedit/actions/ObjectChangeAction.h>
 #include <browedit/shaders/SimpleShader.h>
+#include <browedit/math/Polygon.h>
 
 #include <glm/gtc/type_ptr.hpp>
 #include <mutex>
@@ -83,7 +84,26 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 //		glEnable(GL_DEPTH_TEST);
 		gridVbo->unBind();
 	}
+	if (objectSelectLasso.size() > 0)
+	{
+		float dist = 0.002f * cameraDistance;
+		simpleShader->setUniform(SimpleShader::Uniforms::modelMatrix, glm::mat4(1.0f));
+		glLineWidth(5);
+		std::vector<VertexP3T2N3> verts;
+		for(auto& v : objectSelectLasso)
+			verts.push_back(VertexP3T2N3(v + glm::vec3(0, dist, 0), glm::vec2(0), glm::vec3(1.0f)));
+		glEnableVertexAttribArray(0);
+		glEnableVertexAttribArray(1);
+		glEnableVertexAttribArray(2);
+		glDisableVertexAttribArray(3);
+		glDisableVertexAttribArray(4); //TODO: vao
+		glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexP3T2N3), verts[0].data);
+		glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexP3T2N3), verts[0].data + 3);
+		glVertexAttribPointer(2, 3, GL_FLOAT, false, sizeof(VertexP3T2N3), verts[0].data + 5);
 
+		simpleShader->setUniform(SimpleShader::Uniforms::color, glm::vec4(1, 1, 0, 1));
+		glDrawArrays(GL_LINE_LOOP, 0, (int)verts.size());
+	}
 
 	if (showAllLights)
 		map->rootNode->traverse([&](Node* n)
@@ -343,6 +363,40 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 						}
 				map->doAction(new SelectAction(map, collisions[closest].first, ImGui::GetIO().KeyShift, std::find(map->selectedNodes.begin(), map->selectedNodes.end(), collisions[closest].first) != map->selectedNodes.end() && ImGui::GetIO().KeyShift), browEdit);
 			}
+			objectSelectLasso.clear();
+		}
+		if (ImGui::IsMouseDown(0))
+		{
+			auto ray = gnd->rayCast(mouseRay, viewEmptyTiles);
+			if (ray != glm::vec3(0, 0, 0) && (objectSelectLasso.size() == 0 || ray != objectSelectLasso.back()))
+				objectSelectLasso.push_back(ray);
+		}
+		if (ImGui::IsMouseReleased(0))
+		{
+			if (objectSelectLasso.size() > 5)
+			{
+				math::Polygon polygon;
+				for(auto& p : objectSelectLasso)
+					polygon.push_back(glm::vec2(p.x, p.z));
+
+				bool first = true;
+
+				map->rootNode->traverse([&](Node* n)
+				{
+					auto rswObject = n->getComponent<RswObject>();
+					if (!rswObject)
+						return;
+
+					glm::vec2 pos(5 * gnd->width + rswObject->position.x, -(-10 - 5 * gnd->height + rswObject->position.z));
+					if (polygon.contains(pos))
+					{
+						map->doAction(new SelectAction(map, n, ImGui::GetIO().KeyShift || !first, std::find(map->selectedNodes.begin(), map->selectedNodes.end(), n) != map->selectedNodes.end() && ImGui::GetIO().KeyShift), browEdit);
+						first = false;
+					}
+
+				});
+			}
+			objectSelectLasso.clear();
 		}
 	}
 	fbo->unbind();

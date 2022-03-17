@@ -38,6 +38,7 @@ public:
 	glm::vec3 getSelectionCenter();
 
 	void selectSameModels(BrowEdit* browEdit);
+	template<class T = RswObject>
 	void selectAll(BrowEdit* browEdit);
 	void selectInvert(BrowEdit* browEdit);
 	void selectNear(float nearDistance, BrowEdit* browEdit);

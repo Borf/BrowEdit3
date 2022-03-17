@@ -87,6 +87,7 @@ public:
 	glm::vec3 mouseDragStart;
 	glm::vec2 mouseDragStart2D;
 	std::vector<glm::ivec2> selectLasso;
+	std::vector<glm::vec3> objectSelectLasso;
 
 
 	MouseState mouseState;

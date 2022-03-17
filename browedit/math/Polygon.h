@@ -25,7 +25,7 @@ namespace math
 
 
 //			std::vector<p2t::Point*> toP2TPolygon() const;
-		bool contains(glm::vec2 point) const;
+		bool contains(const glm::vec2 &point) const;
 		bool intersects(const Line& line) const;
 		bool intersects(const Line& line, glm::vec2 &point, Line &collidedLine) const;
 		bool intersects( const Line &line, std::vector<std::pair<glm::vec2, Line> >* collisions) const;

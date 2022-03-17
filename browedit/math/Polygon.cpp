@@ -118,7 +118,7 @@ namespace math
 	//}
 
 	//TODO: unsure if this works for concave polygons properly. also check http://alienryderflex.com/polygon/
-	bool Polygon::contains(glm::vec2 point) const
+	bool Polygon::contains(const glm::vec2 &point) const
 	{
 		if (size() < 3)
 			return false;
