@@ -235,13 +235,15 @@ void Map::selectSameModels(BrowEdit* browEdit)
 		});
 	doAction(ga, browEdit);
 }
+
+template<class T>
 void Map::selectAll(BrowEdit* browEdit)
 {
 	auto ga = new GroupAction();
 	rootNode->traverse([&](Node* n) {
 		if (std::find(selectedNodes.begin(), selectedNodes.end(), n) != selectedNodes.end())
 			return;
-		auto rswObject = n->getComponent<RswObject>();
+		auto rswObject = n->getComponent<T>();
 		if (rswObject)
 		{
 			auto sa = new SelectAction(this, n, true, false);
@@ -251,6 +253,12 @@ void Map::selectAll(BrowEdit* browEdit)
 		});
 	doAction(ga, browEdit);
 }
+template void Map::selectAll<RswObject>(BrowEdit* browEdit);
+template void Map::selectAll<RswModel>(BrowEdit* browEdit);
+template void Map::selectAll<RswSound>(BrowEdit* browEdit);
+template void Map::selectAll<RswEffect>(BrowEdit* browEdit);
+template void Map::selectAll<RswLight>(BrowEdit* browEdit);
+
 void Map::selectInvert(BrowEdit* browEdit)
 {
 	auto ga = new GroupAction();

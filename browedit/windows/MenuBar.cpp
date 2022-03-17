@@ -74,8 +74,20 @@ void BrowEdit::menuBar()
 			ImGui::DragFloat("Near Distance", &nearDistance, 1.0f, 0.0f, 1000.0f);
 			if (ImGui::MenuItem("Select objects near"))
 				activeMapView->map->selectNear(nearDistance, this);
-			if (ImGui::MenuItem("Select all"))
-				activeMapView->map->selectAll(this);
+			if (ImGui::BeginMenu("Select all"))
+			{
+				if (ImGui::MenuItem("Select all"))
+					activeMapView->map->selectAll(this);
+				if (ImGui::MenuItem("Select all models"))
+					activeMapView->map->selectAll<RswModel>(this);
+				if (ImGui::MenuItem("Select all effects"))
+					activeMapView->map->selectAll<RswEffect>(this);
+				if (ImGui::MenuItem("Select all sounds"))
+					activeMapView->map->selectAll<RswSound>(this);
+				if (ImGui::MenuItem("Select all lights"))
+					activeMapView->map->selectAll<RswLight>(this);
+				ImGui::EndMenu();
+			}
 			if (ImGui::MenuItem("Invert selection"))
 				activeMapView->map->selectInvert(this);
 			ImGui::EndMenu();
