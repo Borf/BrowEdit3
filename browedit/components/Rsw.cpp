@@ -392,7 +392,11 @@ void Rsw::buildImGui(BrowEdit* browEdit)
 	}
 	if (ImGui::CollapsingHeader("Water", ImGuiTreeNodeFlags_DefaultOpen))
 	{
-		util::DragInt(browEdit, browEdit->activeMapView->map, node, "Type", &water.type, 1, 0, 1000);
+		if (util::DragInt(browEdit, browEdit->activeMapView->map, node, "Type", &water.type, 1, 0, 1000))
+		{
+			auto waterRenderer = node->getComponent<WaterRenderer>();
+			waterRenderer->reloadTextures();
+		}
 		util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Height", &water.height, 0.1f, -100, 100);
 		util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Amplitude", &water.amplitude, 0.1f, -100, 100);
 		util::DragInt(browEdit, browEdit->activeMapView->map, node, "Animation Speed", &water.animSpeed, 1, 0, 1000);

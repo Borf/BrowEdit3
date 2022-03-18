@@ -15,6 +15,8 @@ public:
 			s_texture,
 			time,
 			waterHeight,
+			amplitude,
+			animSpeed,
 			End
 		};
 	};
@@ -26,5 +28,7 @@ public:
 		bindUniform(Uniforms::s_texture, "s_texture");
 		bindUniform(Uniforms::time, "time");
 		bindUniform(Uniforms::waterHeight, "waterHeight");
+		bindUniform(Uniforms::amplitude, "amplitude");
+		bindUniform(Uniforms::animSpeed, "animSpeed");
 	}
 };

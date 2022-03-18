@@ -10,6 +10,8 @@ uniform mat4 projectionMatrix = mat4(1.0);
 
 
 uniform float waterHeight;
+uniform float amplitude = 1;
+uniform float animSpeed = 1;
 uniform float time;
 
 //out vec3 normal;
@@ -23,8 +25,8 @@ void main()
 //	normal = normalMatrix * a_normal;
 
 	float height = waterHeight;
-	height += 1*cos(time*2+a_position.x*0.05);
-	height += 1*cos(time*2+a_position.z*0.05);
+	height += amplitude*cos(animSpeed*time*2+a_position.x*0.05);
+	height += amplitude*cos(animSpeed*time*2+a_position.z*0.05);
 
 
 	gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(vec3(a_position.x, height, a_position.z),1);

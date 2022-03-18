@@ -33,4 +33,5 @@ public:
 
 	WaterRenderer();
 	void render() override;
+	void reloadTextures();
 };

@@ -24,13 +24,7 @@ void WaterRenderer::render()
 		this->rsw = node->getComponent<Rsw>();
 		if (rsw)
 		{
-			for (int i = 0; i < 32; i++)
-			{
-				char buf[128];
-				sprintf_s(buf, 128, "data/texture/워터/water%i%02i%s", rsw->water.type, i, ".jpg");
-				textures.push_back(util::ResourceManager<gl::Texture>::load(buf));
-				//textures.back()->setTextureRepeat(true);
-			}
+			reloadTextures();
 		}
 
 		if (!vbo)
@@ -57,6 +51,8 @@ void WaterRenderer::render()
 	auto shader = dynamic_cast<WaterRenderContext*>(renderContext)->shader;
 	shader->setUniform(WaterShader::Uniforms::time, (float)glfwGetTime());
 	shader->setUniform(WaterShader::Uniforms::waterHeight, -rsw->water.height);
+	shader->setUniform(WaterShader::Uniforms::amplitude, rsw->water.amplitude);
+	shader->setUniform(WaterShader::Uniforms::animSpeed, (float)rsw->water.animSpeed);
 
 	glEnable(GL_BLEND);
 
@@ -69,6 +65,21 @@ void WaterRenderer::render()
 
 
 	
+}
+
+
+void WaterRenderer::reloadTextures()
+{
+	for (auto t : textures)
+		util::ResourceManager<gl::Texture>::unload(t);
+	textures.clear();
+	for (int i = 0; i < 32; i++)
+	{
+		char buf[128];
+		sprintf_s(buf, 128, "data/texture/워터/water%i%02i%s", rsw->water.type, i, ".jpg");
+		textures.push_back(util::ResourceManager<gl::Texture>::load(buf));
+		//textures.back()->setTextureRepeat(true);
+	}
 }
 
 
