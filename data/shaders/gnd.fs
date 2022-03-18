@@ -34,7 +34,7 @@ void main()
 	texture.rgb *= max(texture2D(s_lighting, texCoord2).a, shadowMapToggle);
 
 
-	texture.rgb *= max((abs(dot(normal, lightDirection)) * lightDiffuse + lightIntensity * lightAmbient), lightToggle);
+	texture.rgb *= max((max(0.0, dot(normal, vec3(-1,-1,1)*lightDirection)) * lightDiffuse + lightIntensity * lightAmbient), lightToggle);
 	texture += clamp(vec4(texture2D(s_lighting, texCoord2).rgb,1.0), 0.0, 1.0) * lightColorToggle;
 
 

@@ -56,14 +56,14 @@ void WaterRenderer::render()
 	shader->setUniform(WaterShader::Uniforms::amplitude, rsw->water.amplitude);
 	shader->setUniform(WaterShader::Uniforms::waveSpeed, rsw->water.waveSpeed);
 	shader->setUniform(WaterShader::Uniforms::wavePitch, rsw->water.wavePitch);
-	shader->setUniform(WaterShader::Uniforms::frameTime, glm::fract(time * rsw->water.textureAnimSpeed));
+	shader->setUniform(WaterShader::Uniforms::frameTime, glm::fract(time * 60 / rsw->water.textureAnimSpeed));
 
 	glEnable(GL_BLEND);
 	vbo->bind();
 	glActiveTexture(GL_TEXTURE0);
-	textures[((int)(time*rsw->water.textureAnimSpeed)) % textures.size()]->bind();
+	textures[((int)(time*60/rsw->water.textureAnimSpeed)) % textures.size()]->bind();
 	glActiveTexture(GL_TEXTURE1);
-	textures[((int)((time * rsw->water.textureAnimSpeed))+1) % textures.size()]->bind();
+	textures[((int)((time*60 / rsw->water.textureAnimSpeed))+1) % textures.size()]->bind();
 	glActiveTexture(GL_TEXTURE0);
 
 	glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexP3T2), (void*)(0 * sizeof(float)));
