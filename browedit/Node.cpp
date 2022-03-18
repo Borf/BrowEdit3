@@ -12,12 +12,14 @@ Node::Node(const std::string& name, Node* parent) : name(name), parent(parent)
 		parent->children.push_back(this);
 		this->root = parent->root;
 	}
+	root->dirty = true;
 }
 
 void Node::addComponent(Component* component)
 {
 	component->node = this;
 	components.push_back(component);
+	root->dirty = true;
 }
 
 void Node::makeNameUnique(Node* rootNode)
@@ -173,11 +175,13 @@ void Node::setParent(Node* newParent)
 	}
 	else
 		this->root = this;
+	root->dirty = true;
 }
 
 void Node::removeChild(Node* child)
 {
 	children.erase(std::remove_if(children.begin(), children.end(), [&child](Node* n) { return n == child; }));
+	root->dirty = true;
 }
 
 void Node::traverse(const std::function<void(Node*)>& callBack)

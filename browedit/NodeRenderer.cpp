@@ -19,25 +19,26 @@ void NodeRenderer::end()
 
 void NodeRenderer::render(Node* rootNode, NodeRenderContext& context)
 {
-	//TODO: link node to the cache in this context, so that if the node changes, the context's cache invalidates
+	std::map<Renderer::RenderContext*, std::vector<Renderer*>>& renderers = context.renderers[rootNode];
+	std::vector<Renderer::RenderContext*>& ordered = context.ordered[rootNode];
+	if (rootNode->dirty)
+	{
+		renderers.clear();
+		rootNode->traverse([&renderers](Node* n) {
+			n->dirty = false;
+			for (auto c : n->components)
+			{
+				auto cc = dynamic_cast<Renderer*>(c);
+				if (cc)
+					renderers[cc->renderContext].push_back(cc);
+			}
+			});
 
-	//TODO: cache renderers
-
-	std::map<Renderer::RenderContext*, std::vector<Renderer*>> renderers;
-	rootNode->traverse([&renderers](Node* n){
-		for (auto c : n->components)
-		{
-			auto cc = dynamic_cast<Renderer*>(c);
-			if (cc)
-				renderers[cc->renderContext].push_back(cc);
-		}
-	});
-
-	std::vector<Renderer::RenderContext*> ordered;
-	for (auto r : renderers)
-		ordered.push_back(r.first);
-	std::sort(ordered.begin(), ordered.end(), [](Renderer::RenderContext* a, Renderer::RenderContext* b) { return a->order < b->order; });
-
+		ordered.clear();
+		for (auto r : renderers)
+			ordered.push_back(r.first);
+		std::sort(ordered.begin(), ordered.end(), [](Renderer::RenderContext* a, Renderer::RenderContext* b) { return a->order < b->order; });
+	}
 
 	for (auto r : ordered)
 	{

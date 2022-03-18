@@ -13,6 +13,7 @@ class Map;
 class Node
 {
 public:
+	bool dirty = true;
 	std::vector<Component*> components;
 	std::vector<Node*> children;
 	Node* parent = nullptr;
