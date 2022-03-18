@@ -347,6 +347,8 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 
 	if (canSelectObject && hovered)
 	{
+		static bool justPressed = false;
+		static glm::vec3 originalPosition;
 		if (ImGui::IsMouseClicked(0))
 		{
 			auto collisions = map->rootNode->getCollisions(mouseRay);
@@ -361,19 +363,69 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 							closest = i;
 							closestDistance = glm::distance(mouseRay.origin, pos);
 						}
+
+				if (map->selectedNodes.size() == 1 && map->selectedNodes[0] == collisions[closest].first)
+				{
+					if (map->selectedNodes[0]->getComponent<RswObject>())
+					{
+						originalPosition = map->selectedNodes[0]->getComponent<RswObject>()->position;
+						justPressed = true;
+					}
+				}
+
 				map->doAction(new SelectAction(map, collisions[closest].first, ImGui::GetIO().KeyShift, std::find(map->selectedNodes.begin(), map->selectedNodes.end(), collisions[closest].first) != map->selectedNodes.end() && ImGui::GetIO().KeyShift), browEdit);
 			}
 			objectSelectLasso.clear();
 		}
 		if (ImGui::IsMouseDown(0))
 		{
-			auto ray = gnd->rayCast(mouseRay, viewEmptyTiles);
-			if (ray != glm::vec3(0, 0, 0) && (objectSelectLasso.size() == 0 || ray != objectSelectLasso.back()))
-				objectSelectLasso.push_back(ray);
+			auto rayCast = gnd->rayCast(mouseRay, viewEmptyTiles);
+			if (justPressed)
+			{
+				if (map->selectedNodes.size() == 1 && ImGui::IsMouseDragging(0))
+				{
+					auto rswObject = map->selectedNodes[0]->getComponent<RswObject>(); 
+					if (rswObject)
+					{
+						rswObject->position = glm::vec3(rayCast.x - 5 * gnd->width, -rayCast.y, -(rayCast.z + (-10 - 5 * gnd->height)));
+						bool snap = snapToGrid;
+						if (ImGui::GetIO().KeyShift)
+							snap = !snap;
+						if (snap)
+						{
+							if (!gridLocal)
+							{
+								rswObject->position.x = glm::round((rswObject->position.x - gridOffset) / gridSize) * gridSize + gridOffset;
+								rswObject->position.z = glm::round((rswObject->position.z - gridOffset) / gridSize) * gridSize + gridOffset;
+							}
+							else
+							{
+								glm::vec3 diff = rswObject->position - originalPosition;
+								diff.x = glm::round(diff.x / gridSize) * gridSize;
+								diff.z = glm::round(diff.z / gridSize) * gridSize;
+								rswObject->position = originalPosition + diff;
+							}
+						}
+					}
+					
+					auto rsmRenderer = map->selectedNodes[0]->getComponent<RsmRenderer>();
+					if (rsmRenderer)
+						rsmRenderer->matrixCached = false;
+				}
+			}
+			else
+				if (rayCast != glm::vec3(0, 0, 0) && (objectSelectLasso.size() == 0 || rayCast != objectSelectLasso.back()))
+					objectSelectLasso.push_back(rayCast);
 		}
 		if (ImGui::IsMouseReleased(0))
 		{
-			if (objectSelectLasso.size() > 5)
+			if (justPressed && map->selectedNodes.size() > 0)
+			{
+				if(map->selectedNodes[0]->getComponent<RswObject>()->position != originalPosition)
+					map->doAction(new ObjectChangeAction(map->selectedNodes[0], &map->selectedNodes[0]->getComponent<RswObject>()->position, originalPosition, "Moved"), browEdit);
+				justPressed = false;
+			}
+			else if (objectSelectLasso.size() > 5)
 			{
 				math::Polygon polygon;
 				for(auto& p : objectSelectLasso)
