@@ -52,7 +52,7 @@ public:
 	gl::FBO* fbo;
 
 	bool ortho = false;
-	glm::vec2 cameraCenter;
+	glm::vec3 cameraCenter;
 	float cameraRotX = 45.0f;
 	float cameraRotY = 0.0f;
 	float cameraDistance = 500;

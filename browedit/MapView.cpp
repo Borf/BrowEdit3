@@ -41,7 +41,8 @@ MapView::MapView(Map* map, const std::string &viewName) : map(map), viewName(vie
 	if (gnd)
 	{
 		cameraCenter.x = gnd->width * 5.0f;
-		cameraCenter.y = gnd->height * 5.0f;
+		cameraCenter.y = 0;
+		cameraCenter.z = gnd->height * 5.0f;
 	}
 	billboardShader = util::ResourceManager<gl::Shader>::load<BillboardRenderer::BillboardShader>();
 	whiteTexture = util::ResourceManager<gl::Texture>::load("data\\white.png");
@@ -189,7 +190,7 @@ void MapView::render(BrowEdit* browEdit)
 	nodeRenderContext.viewMatrix = glm::translate(nodeRenderContext.viewMatrix, glm::vec3(0, 0, -cameraDistance));
 	nodeRenderContext.viewMatrix = glm::rotate(nodeRenderContext.viewMatrix, glm::radians(cameraRotX), glm::vec3(1, 0, 0));
 	nodeRenderContext.viewMatrix = glm::rotate(nodeRenderContext.viewMatrix, glm::radians(cameraRotY), glm::vec3(0, 1, 0));
-	nodeRenderContext.viewMatrix = glm::translate(nodeRenderContext.viewMatrix, glm::vec3(-cameraCenter.x, 0, -cameraCenter.y));
+	nodeRenderContext.viewMatrix = glm::translate(nodeRenderContext.viewMatrix, -cameraCenter);
 
 	//TODO: fix this, don't want to individually set settings
 	map->rootNode->getComponent<GndRenderer>()->viewLightmapShadow = viewLightmapShadow;
@@ -311,12 +312,21 @@ void MapView::update(BrowEdit* browEdit, const ImVec2 &size)
 				cameraRotY += (mouseState.position.x - prevMouseState.position.x) * 0.25f * browEdit->config.cameraMouseSpeed;
 				cameraRotX = glm::clamp(cameraRotX, 0.0f, 90.0f);
 			}
+			else if (ImGui::GetIO().KeyCtrl)
+			{
+				cameraCenter.y += (mouseState.position.y - prevMouseState.position.y);
+			}
 			else
 			{
-				cameraCenter -= glm::vec2(glm::vec4(
+				cameraCenter -= glm::vec3(glm::vec4(
 					(mouseState.position.x - prevMouseState.position.x) * browEdit->config.cameraMouseSpeed,
-					(mouseState.position.y - prevMouseState.position.y) * browEdit->config.cameraMouseSpeed, 0, 0)
-					* glm::rotate(glm::mat4(1.0f), -glm::radians(cameraRotY), glm::vec3(0, 0, 1)));
+					0,
+					(mouseState.position.y - prevMouseState.position.y) * browEdit->config.cameraMouseSpeed, 0)
+					* glm::rotate(glm::mat4(1.0f), glm::radians(cameraRotY), glm::vec3(0, 1, 0)));
+
+				auto rayCast = map->rootNode->getComponent<Gnd>()->rayCast(math::Ray(cameraCenter + glm::vec3(0,9999,0), glm::vec3(0,-1,0)), viewEmptyTiles);
+				if (rayCast != glm::vec3(0, 0, 0))
+					cameraCenter.y = rayCast.y;
 			}
 		}
 		cameraDistance *= (1 - (ImGui::GetIO().MouseWheel * 0.1f));
