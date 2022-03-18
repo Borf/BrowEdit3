@@ -13,10 +13,13 @@ public:
 			ViewMatrix,
 			ModelMatrix,
 			s_texture,
+			s_textureNext,
 			time,
 			waterHeight,
 			amplitude,
-			animSpeed,
+			waveSpeed,
+			wavePitch,
+			frameTime,
 			End
 		};
 	};
@@ -26,9 +29,13 @@ public:
 		bindUniform(Uniforms::ModelMatrix, "modelMatrix");
 		bindUniform(Uniforms::ViewMatrix, "viewMatrix");
 		bindUniform(Uniforms::s_texture, "s_texture");
+		bindUniform(Uniforms::s_textureNext, "s_textureNext");
 		bindUniform(Uniforms::time, "time");
 		bindUniform(Uniforms::waterHeight, "waterHeight");
 		bindUniform(Uniforms::amplitude, "amplitude");
-		bindUniform(Uniforms::animSpeed, "animSpeed");
+		bindUniform(Uniforms::waveSpeed, "waveSpeed");
+		bindUniform(Uniforms::wavePitch, "wavePitch");
+		bindUniform(Uniforms::frameTime, "frameTime");
+		
 	}
 };

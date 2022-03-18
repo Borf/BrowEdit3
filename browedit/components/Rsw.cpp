@@ -79,14 +79,14 @@ void Rsw::load(const std::string& fileName, Map* map, bool loadModels, bool load
 	{
 		file->read(reinterpret_cast<char*>(&water.type), sizeof(int));
 		file->read(reinterpret_cast<char*>(&water.amplitude), sizeof(float));
-		file->read(reinterpret_cast<char*>(&water.phase), sizeof(float));
-		file->read(reinterpret_cast<char*>(&water.surfaceCurve), sizeof(float));
+		file->read(reinterpret_cast<char*>(&water.waveSpeed), sizeof(float));
+		file->read(reinterpret_cast<char*>(&water.wavePitch), sizeof(float));
 	}
 	if (version >= 0x109)
-		file->read(reinterpret_cast<char*>(&water.animSpeed), sizeof(int));
+		file->read(reinterpret_cast<char*>(&water.textureAnimSpeed), sizeof(int));
 	else
 	{
-		water.animSpeed = 100;
+		water.textureAnimSpeed = 100;
 		throw "todo";
 	}
 
@@ -222,14 +222,14 @@ void Rsw::save(const std::string& fileName)
 	{
 		file.write(reinterpret_cast<char*>(&water.type), sizeof(int));
 		file.write(reinterpret_cast<char*>(&water.amplitude), sizeof(float));
-		file.write(reinterpret_cast<char*>(&water.phase), sizeof(float));
-		file.write(reinterpret_cast<char*>(&water.surfaceCurve), sizeof(float));
+		file.write(reinterpret_cast<char*>(&water.waveSpeed), sizeof(float));
+		file.write(reinterpret_cast<char*>(&water.wavePitch), sizeof(float));
 	}
 	if (version >= 0x109)
-		file.write(reinterpret_cast<char*>(&water.animSpeed), sizeof(int));
+		file.write(reinterpret_cast<char*>(&water.textureAnimSpeed), sizeof(int));
 	else
 	{
-		water.animSpeed = 100;
+		water.textureAnimSpeed = 100;
 		throw "todo";
 	}
 
@@ -398,10 +398,10 @@ void Rsw::buildImGui(BrowEdit* browEdit)
 			waterRenderer->reloadTextures();
 		}
 		util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Height", &water.height, 0.1f, -100, 100);
-		util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Amplitude", &water.amplitude, 0.1f, -100, 100);
-		util::DragInt(browEdit, browEdit->activeMapView->map, node, "Animation Speed", &water.animSpeed, 1, 0, 1000);
-		util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Phase", &water.phase, 0.1f, -100, 100);
-		util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Surface Curve", &water.surfaceCurve, 0.1f, -100, 100);
+		util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Wave Height", &water.amplitude, 0.1f, -100, 100);
+		util::DragInt(browEdit, browEdit->activeMapView->map, node, "Texture Animation Speed", &water.textureAnimSpeed, 1, 0, 1000);
+		util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Wave Speed", &water.waveSpeed, 0.1f, -100, 100);
+		util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Wave Pitch", &water.wavePitch, 0.1f, -100, 100);
 	}
 }
 

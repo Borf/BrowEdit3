@@ -36,10 +36,10 @@ void WaterRenderer::render()
 			{
 				for (int y = 0; y < gnd->height; y++)
 				{
-					verts.push_back(VertexP3T2(glm::vec3(10 * x,		0, 10 * y), glm::vec2(0, 0)));
-					verts.push_back(VertexP3T2(glm::vec3(10 * (x+1),	0, 10 * y), glm::vec2(1, 0)));
-					verts.push_back(VertexP3T2(glm::vec3(10 * (x+1),	0, 10 * (y+1)), glm::vec2(1, 1)));
-					verts.push_back(VertexP3T2(glm::vec3(10 * x,		0, 10 * (y+1)), glm::vec2(0, 1)));
+					verts.push_back(VertexP3T2(glm::vec3(10 * x,		0, 10 * y),		glm::vec2((x % 4) * 0.25f + 0.00f, (y % 4) * 0.25f + 0.00f)));
+					verts.push_back(VertexP3T2(glm::vec3(10 * (x+1),	0, 10 * y), 	glm::vec2((x % 4) * 0.25f + 0.25f, (y % 4) * 0.25f + 0.00f)));
+					verts.push_back(VertexP3T2(glm::vec3(10 * (x+1),	0, 10 * (y+1)), glm::vec2((x % 4) * 0.25f + 0.25f, (y % 4) * 0.25f + 0.25f)));
+					verts.push_back(VertexP3T2(glm::vec3(10 * x,		0, 10 * (y+1)), glm::vec2((x % 4) * 0.25f + 0.00f, (y % 4) * 0.25f + 0.25f)));
 				}
 			}
 			vbo->setData(verts, GL_STATIC_DRAW);
@@ -48,16 +48,24 @@ void WaterRenderer::render()
 	if (!this->rsw)
 		return;
 
+	float time = (float)glfwGetTime();
+
 	auto shader = dynamic_cast<WaterRenderContext*>(renderContext)->shader;
-	shader->setUniform(WaterShader::Uniforms::time, (float)glfwGetTime());
+	shader->setUniform(WaterShader::Uniforms::time, time);
 	shader->setUniform(WaterShader::Uniforms::waterHeight, -rsw->water.height);
 	shader->setUniform(WaterShader::Uniforms::amplitude, rsw->water.amplitude);
-	shader->setUniform(WaterShader::Uniforms::animSpeed, (float)rsw->water.animSpeed);
+	shader->setUniform(WaterShader::Uniforms::waveSpeed, rsw->water.waveSpeed);
+	shader->setUniform(WaterShader::Uniforms::wavePitch, rsw->water.wavePitch);
+	shader->setUniform(WaterShader::Uniforms::frameTime, glm::fract(time * rsw->water.textureAnimSpeed));
 
 	glEnable(GL_BLEND);
-
 	vbo->bind();
-	textures[((int)(glfwGetTime()*rsw->water.animSpeed)) % textures.size()]->bind();
+	glActiveTexture(GL_TEXTURE0);
+	textures[((int)(time*rsw->water.textureAnimSpeed)) % textures.size()]->bind();
+	glActiveTexture(GL_TEXTURE1);
+	textures[((int)((time * rsw->water.textureAnimSpeed))+1) % textures.size()]->bind();
+	glActiveTexture(GL_TEXTURE0);
+
 	glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexP3T2), (void*)(0 * sizeof(float)));
 	glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexP3T2), (void*)(3 * sizeof(float)));
 	glDrawArrays(GL_QUADS, 0, (int)vbo->size());
@@ -88,6 +96,7 @@ WaterRenderer::WaterRenderContext::WaterRenderContext() : shader(util::ResourceM
 	order = 2;
 	shader->use();
 	shader->setUniform(WaterShader::Uniforms::s_texture, 0);
+	shader->setUniform(WaterShader::Uniforms::s_textureNext, 1);
 }
 
 

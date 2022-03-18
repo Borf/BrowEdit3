@@ -40,9 +40,9 @@ public:
 		float	height;
 		int		type;
 		float	amplitude;
-		float	phase;
-		float	surfaceCurve;
-		int		animSpeed;
+		float	waveSpeed;
+		float	wavePitch;
+		int		textureAnimSpeed;
 	} water;
 
 	struct

@@ -176,8 +176,10 @@ void RsmRenderer::renderMesh(Rsm::Mesh* mesh, const glm::mat4& matrix)
 		}
 	}
 
-	for (size_t i = 0; i < mesh->children.size(); i++)
-		renderMesh(mesh->children[i], renderInfo[mesh->index].matrixSub);
+	//for (size_t i = 0; i < mesh->children.size(); i++)
+	//	renderMesh(mesh->children[i], renderInfo[mesh->index].matrixSub);
+	for (const auto& m : mesh->children)
+		renderMesh(m, renderInfo[mesh->index].matrixSub);
 }
 
 

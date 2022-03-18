@@ -11,7 +11,8 @@ uniform mat4 projectionMatrix = mat4(1.0);
 
 uniform float waterHeight;
 uniform float amplitude = 1;
-uniform float animSpeed = 1;
+uniform float waveSpeed = 1;
+uniform float wavePitch = 50;
 uniform float time;
 
 //out vec3 normal;
@@ -25,8 +26,7 @@ void main()
 //	normal = normalMatrix * a_normal;
 
 	float height = waterHeight;
-	height += amplitude*cos(animSpeed*time*2+a_position.x*0.05);
-	height += amplitude*cos(animSpeed*time*2+a_position.z*0.05);
+	height += amplitude*cos(radians((waveSpeed*16*time)+(a_position.x-a_position.z)*.05*wavePitch));
 
 
 	gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(vec3(a_position.x, height, a_position.z),1);
