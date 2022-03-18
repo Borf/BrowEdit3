@@ -11,6 +11,7 @@ public:
 	class RenderContext
 	{
 	public:
+		int order = 0;
 		virtual void preFrame(const glm::mat4& projectionMatrix, const glm::mat4& viewMatrix) = 0;
 	};
 

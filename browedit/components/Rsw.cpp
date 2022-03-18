@@ -5,6 +5,7 @@
 #include "Rsm.h"
 #include "GndRenderer.h"
 #include "RsmRenderer.h"
+#include "WaterRenderer.h"
 #include "BillboardRenderer.h"
 
 #include <imgui.h>
@@ -93,6 +94,7 @@ void Rsw::load(const std::string& fileName, Map* map, bool loadModels, bool load
 	{
 		node->addComponent(new Gnd(gndFile));
 		node->addComponent(new GndRenderer());
+		node->addComponent(new WaterRenderer());
 		//TODO: read GND & GAT here
 	}
 

@@ -185,6 +185,7 @@ void RsmRenderer::renderMesh(Rsm::Mesh* mesh, const glm::mat4& matrix)
 
 RsmRenderer::RsmRenderContext::RsmRenderContext() : shader(util::ResourceManager<gl::Shader>::load<RsmShader>())
 {
+	order = 1;
 	shader->use();
 	shader->setUniform(RsmShader::Uniforms::s_texture, 0);
 }

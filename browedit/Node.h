@@ -40,6 +40,18 @@ public:
 		}
 		return nullptr;
 	}
+
+	template<class T>
+	void addComponents(std::vector<T*> &lst)
+	{
+		for (auto c : components)
+		{
+			T* cc = dynamic_cast<T*>(c);
+			if (cc)
+				lst.push_back(cc);
+		}
+	}
+
 	template<class T>
 	std::vector<T*> removeComponent()
 	{

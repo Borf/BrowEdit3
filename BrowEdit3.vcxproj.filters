@@ -301,6 +301,9 @@
     <ClCompile Include="browedit\actions\CubeTileChangeAction.cpp">
       <Filter>browedit\actions</Filter>
     </ClCompile>
+    <ClCompile Include="browedit\components\WaterRenderer.cpp">
+      <Filter>browedit\components</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="lib\imgui\imgui.h">
@@ -528,6 +531,12 @@
     <ClInclude Include="browedit\actions\CubeTileChangeAction.h">
       <Filter>browedit\actions</Filter>
     </ClInclude>
+    <ClInclude Include="browedit\components\WaterRenderer.h">
+      <Filter>browedit\components</Filter>
+    </ClInclude>
+    <ClInclude Include="browedit\shaders\WaterShader.h">
+      <Filter>browedit\shaders</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="BrowEdit3.rc">
@@ -580,5 +589,11 @@
       <Filter>doc</Filter>
     </None>
     <None Include=".github\workflows\msbuild.yml" />
+    <None Include="data\shaders\water.vs">
+      <Filter>data\shaders</Filter>
+    </None>
+    <None Include="data\shaders\water.fs">
+      <Filter>data\shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

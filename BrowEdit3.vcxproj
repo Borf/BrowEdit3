@@ -35,6 +35,7 @@
     <ClCompile Include="browedit\components\Rsw.Model.cpp" />
     <ClCompile Include="browedit\components\Rsw.Object.cpp" />
     <ClCompile Include="browedit\components\Rsw.Sound.cpp" />
+    <ClCompile Include="browedit\components\WaterRenderer.cpp" />
     <ClCompile Include="browedit\Config.cpp" />
     <ClCompile Include="browedit\Gadget.cpp" />
     <ClCompile Include="browedit\gl\FBO.cpp" />
@@ -117,6 +118,7 @@
     <ClInclude Include="browedit\components\Rsm.h" />
     <ClInclude Include="browedit\components\RsmRenderer.h" />
     <ClInclude Include="browedit\components\Rsw.h" />
+    <ClInclude Include="browedit\components\WaterRenderer.h" />
     <ClInclude Include="browedit\Config.h" />
     <ClInclude Include="browedit\Gadget.h" />
     <ClInclude Include="browedit\gl\FBO.h" />
@@ -141,6 +143,7 @@
     <ClInclude Include="browedit\shaders\GndShader.h" />
     <ClInclude Include="browedit\shaders\RsmShader.h" />
     <ClInclude Include="browedit\shaders\SimpleShader.h" />
+    <ClInclude Include="browedit\shaders\WaterShader.h" />
     <ClInclude Include="browedit\util\FileIO.h" />
     <ClInclude Include="browedit\util\ResourceManager.h" />
     <ClInclude Include="browedit\util\Tree.h" />
@@ -189,6 +192,8 @@
     <None Include="data\shaders\rsm.vs" />
     <None Include="data\shaders\simple.fs" />
     <None Include="data\shaders\simple.vs" />
+    <None Include="data\shaders\water.fs" />
+    <None Include="data\shaders\water.vs" />
     <None Include="doc\Configuration.md" />
     <None Include="doc\Lightmapping.md" />
     <None Include="doc\ObjectEdit.md" />
