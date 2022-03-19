@@ -110,6 +110,21 @@ void MapView::toolbar(BrowEdit* browEdit)
 			rebuildObjectModeGrid();
 		if (ImGui::IsItemHovered())
 			ImGui::SetTooltip("Grid size. Doubleclick or ctrl+click to type a number");
+		if (ImGui::BeginPopupContextItem("GridSize"))
+		{
+			auto gridSizes = &browEdit->config.translateGridSizes;
+			if(gadget.mode == Gadget::Mode::Rotate)
+				gridSizes = &browEdit->config.rotateGridSizes;
+			for (auto f : *gridSizes)
+			{
+				if (ImGui::Button(std::to_string(f).c_str()))
+				{
+					gridSize = f;
+					ImGui::CloseCurrentPopup();
+				}
+			}
+			ImGui::EndPopup();
+		}
 		ImGui::SameLine();
 		ImGui::Checkbox("##gridLocal", &gridLocal);
 		if (ImGui::IsItemHovered())
