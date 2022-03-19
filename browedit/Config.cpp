@@ -197,6 +197,45 @@ bool Config::showWindow(BrowEdit* browEdit)
 			
 		ImGui::Checkbox("Save a backup of maps when saving", &backup);
 
+		ImGui::Text("Grid Sizes");
+		if (ImGui::BeginListBox("Translate Grid Sizes"))
+		{
+			for (int i = 0; i < translateGridSizes.size(); i++)
+			{
+				ImGui::PushID(i);
+				ImGui::InputFloat("##", &translateGridSizes[i]);
+				ImGui::SameLine();
+				if (ImGui::Button("-"))
+				{
+					translateGridSizes.erase(translateGridSizes.begin() + i);
+					i--;
+				}
+				ImGui::PopID();
+			}
+			ImGui::EndListBox();
+		}
+		if (ImGui::Button("+##Translate"))
+			translateGridSizes.push_back(1);
+
+		if (ImGui::BeginListBox("Rotate Grid Sizes"))
+		{
+			for (int i = 0; i < rotateGridSizes.size(); i++)
+			{
+				ImGui::PushID(i);
+				ImGui::InputFloat("##", &rotateGridSizes[i]);
+				ImGui::SameLine();
+				if (ImGui::Button("-"))
+				{
+					rotateGridSizes.erase(rotateGridSizes.begin() + i);
+					i--;
+				}
+				ImGui::PopID();
+			}
+			ImGui::EndListBox();
+		}
+		if (ImGui::Button("+##Rotate"))
+			rotateGridSizes.push_back(1);
+
 
 		if (ImGui::Button("Save"))
 		{
