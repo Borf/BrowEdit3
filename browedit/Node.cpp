@@ -162,6 +162,7 @@ void Node::onRename(Map* map)
 
 void Node::setParent(Node* newParent)
 {
+	root->dirty = true;
 	if (parent)
 	{
 		if(std::find(parent->children.begin(), parent->children.end(), this) != parent->children.end())
