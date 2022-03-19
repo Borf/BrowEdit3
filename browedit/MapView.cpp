@@ -230,8 +230,11 @@ void MapView::render(BrowEdit* browEdit)
 			bool snap = snapToGrid;
 			if (ImGui::GetIO().KeyShift)
 				snap = !snap;
-			if(snap)
-				rayCast = glm::round((rayCast - gridOffset) / (float)gridSize) * (float)gridSize + gridOffset;
+			if (snap)
+			{
+				rayCast.x = glm::round((rayCast.x - gridOffset) / (float)gridSize) * (float)gridSize + gridOffset;
+				rayCast.z = glm::round((rayCast.z - gridOffset) / (float)gridSize) * (float)gridSize + gridOffset;
+			}
 
 			rswObject->position = glm::vec3(rayCast.x - 5 * gnd->width, -rayCast.y, -(rayCast.z + (-10 - 5 * gnd->height))) + newNode.second;
 
