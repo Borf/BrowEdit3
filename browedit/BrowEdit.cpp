@@ -96,6 +96,7 @@ int main()
 	BrowEdit().run();
 }
 
+std::map<Map*, MapView*> firstRender; //DIRTY HACK
 
 void BrowEdit::run()
 {
@@ -198,7 +199,7 @@ void BrowEdit::run()
 			showObjectProperties();
 		}
 
-
+		firstRender.clear(); //DIRTY HACK
 		for (auto it = mapViews.begin(); it != mapViews.end(); )
 		{
 			showMapWindow(*it);
@@ -393,13 +394,17 @@ void BrowEdit::showMapWindow(MapView& mapView)
 	if (ImGui::Begin(mapView.viewName.c_str(), &mapView.opened))
 	{
 		mapView.toolbar(this);
-
-
 		auto size = ImGui::GetContentRegionAvail();
 		if (mapView.map->rootNode->getComponent<Gnd>())
 		{
 			mapView.update(this, size);
+			if (firstRender.find(mapView.map) != firstRender.end()) //TODO: THIS IS A DIRTY HACK
+			{
+				mapView.nodeRenderContext.renderers = firstRender[mapView.map]->nodeRenderContext.renderers;
+				mapView.nodeRenderContext.ordered = firstRender[mapView.map]->nodeRenderContext.ordered;
+			}
 			mapView.render(this);
+			firstRender[mapView.map] = &mapView;
 			if (editMode == EditMode::Height)
 				mapView.postRenderHeightMode(this);
 			else if (editMode == EditMode::Object)
