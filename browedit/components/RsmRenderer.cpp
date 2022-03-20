@@ -27,7 +27,12 @@ void RsmRenderer::begin()
 		util::ResourceManager<gl::Texture>::unload(t);
 	textures.clear();
 	for (auto ri : renderInfo)
+	{
 		delete ri.vbo;
+		if(ri.textures.size() > 0)
+			for(auto t : ri.textures)
+				util::ResourceManager<gl::Texture>::unload(t);
+	}
 	renderInfo.clear();
 }
 
@@ -40,7 +45,6 @@ void RsmRenderer::render()
 		{//init
 			for (const auto& textureFilename : rsm->textures)
 				textures.push_back(util::ResourceManager<gl::Texture>::load("data\\texture\\" + textureFilename));
-
 			renderInfo.resize(rsm->meshCount);
 			initMeshInfo(rsm->rootMesh);
 		}
@@ -143,6 +147,10 @@ void RsmRenderer::initMeshInfo(Rsm::Mesh* mesh, const glm::mat4 &matrix)
 	}
 	renderInfo[mesh->index].matrix = matrix * mesh->matrix1 * mesh->matrix2;
 	renderInfo[mesh->index].matrixSub = matrix * mesh->matrix1;
+
+	if (mesh->textureFiles.size() > 0) // 0x0203
+		for (auto& textureFilename : mesh->textureFiles)
+			renderInfo[mesh->index].textures.push_back(util::ResourceManager<gl::Texture>::load("data\\texture\\" + textureFilename));
 	
 	for (size_t i = 0; i < mesh->children.size(); i++)
 		initMeshInfo(mesh->children[i], renderInfo[mesh->index].matrixSub);
@@ -171,13 +179,14 @@ void RsmRenderer::renderMesh(Rsm::Mesh* mesh, const glm::mat4& matrix)
 
 		for (const VboIndex& it : ri.indices)
 		{
-			textures[mesh->textures[it.texture]]->bind();
+			if(ri.textures.size() > 0)
+				ri.textures[mesh->textures[it.texture]]->bind();
+			else
+				textures[mesh->textures[it.texture]]->bind();
 			glDrawArrays(GL_TRIANGLES, (int)it.begin, (int)it.count);
 		}
 	}
 
-	//for (size_t i = 0; i < mesh->children.size(); i++)
-	//	renderMesh(mesh->children[i], renderInfo[mesh->index].matrixSub);
 	for (const auto& m : mesh->children)
 		renderMesh(m, renderInfo[mesh->index].matrixSub);
 }

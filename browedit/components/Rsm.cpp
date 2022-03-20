@@ -65,7 +65,6 @@ void Rsm::reload()
 			auto rootMeshName = util::FileIO::readStringDyn(rsmFile);
 			mainNodeName = rootMeshName;
 		}
-		textures.push_back("white.png"); //TODO: this is now in the mesh
 		rsmFile->read(reinterpret_cast<char*>(&meshCount), sizeof(int));		
 	}
 	else if (version >= 0x0202)
@@ -225,7 +224,8 @@ Rsm::Mesh::Mesh(Rsm* model, std::istream* rsmFile)
 		for (int i = 0; i < textureCount; i++)
 		{
 			std::string textureFile = util::FileIO::readStringDyn(rsmFile);
-			textures.push_back(0);//TODO: make a lookup
+			textures.push_back(textureFiles.size());
+			textureFiles.push_back(textureFile);
 		}
 	}
 	else
