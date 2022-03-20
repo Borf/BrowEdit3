@@ -11,9 +11,6 @@ Rsm::Rsm(const std::string& fileName)
 	this->fileName = fileName;
 	rootMesh = NULL;
 	loaded = false;
-	if (fileName.length() > 2 && fileName.substr(fileName.size() - 5) == ".rsm2")
-		return;
-
 	reload();
 }
 void Rsm::reload()
@@ -45,7 +42,7 @@ void Rsm::reload()
 	//std::cout << "RSM: loading " << fileName << std::endl;
 	
 	rsmFile->read(reinterpret_cast<char*>(&version), sizeof(short));
-	util::swapShort(version);
+	version = util::swapShort(version);
 	rsmFile->read(reinterpret_cast<char*>(&animLen), sizeof(int));
 
 	rsmFile->read(reinterpret_cast<char*>(&shadeType), sizeof(int));
@@ -54,27 +51,74 @@ void Rsm::reload()
 		alpha = rsmFile->get();
 	else
 		alpha = 0;
-	rsmFile->read(unknown, 16);
-	for (int i = 0; i < 16; i++)
-		assert(unknown[i] == 0);
+	
+	std::string mainNodeName;
 
-	int textureCount;
-	rsmFile->read(reinterpret_cast<char*>(&textureCount), sizeof(int));;
-	if (textureCount > 100 || textureCount < 0)
+	if (version >= 0x0203)
 	{
-		std::cerr << "Invalid textureCount, aborting" << std::endl;
-		delete rsmFile;
-		return;
+		float fps;
+		rsmFile->read(reinterpret_cast<char*>(&fps), sizeof(float));
+		int rootMeshCount;
+		rsmFile->read(reinterpret_cast<char*>(&rootMeshCount), sizeof(int));
+		for (int i = 0; i < rootMeshCount; i++)
+		{
+			auto rootMeshName = util::FileIO::readStringDyn(rsmFile);
+			mainNodeName = rootMeshName;
+		}
+		textures.push_back("white.png"); //TODO: this is now in the mesh
+		rsmFile->read(reinterpret_cast<char*>(&meshCount), sizeof(int));		
+	}
+	else if (version >= 0x0202)
+	{
+		float fps;
+		rsmFile->read(reinterpret_cast<char*>(&fps), sizeof(float));
+
+		int textureCount;
+		rsmFile->read(reinterpret_cast<char*>(&textureCount), sizeof(int));;
+		if (textureCount > 100 || textureCount < 0)
+		{
+			std::cerr << "Invalid textureCount, aborting" << std::endl;
+			delete rsmFile;
+			return;
+		}
+
+		for (int i = 0; i < textureCount; i++)
+			textures.push_back(util::FileIO::readStringDyn(rsmFile));
+
+		int rootMeshCount;
+		rsmFile->read(reinterpret_cast<char*>(&rootMeshCount), sizeof(int));
+		for (int i = 0; i < rootMeshCount; i++)
+		{
+			auto rootMeshName = util::FileIO::readStringDyn(rsmFile);
+			mainNodeName = rootMeshName;
+		}
+		rsmFile->read(reinterpret_cast<char*>(&meshCount), sizeof(int));
+	}
+	else
+	{
+		rsmFile->read(unknown, 16);
+		for (int i = 0; i < 16; i++)
+			assert(unknown[i] == 0);
+
+		int textureCount;
+		rsmFile->read(reinterpret_cast<char*>(&textureCount), sizeof(int));;
+		if (textureCount > 100 || textureCount < 0)
+		{
+			std::cerr << "Invalid textureCount, aborting" << std::endl;
+			delete rsmFile;
+			return;
+		}
+
+		for (int i = 0; i < textureCount; i++)
+		{
+			std::string textureFileName = util::FileIO::readString(rsmFile, 40);;
+			textures.push_back(textureFileName);
+		}
+
+		mainNodeName = util::FileIO::readString(rsmFile, 40);
+		rsmFile->read(reinterpret_cast<char*>(&meshCount), sizeof(int));
 	}
 
-	for (int i = 0; i < textureCount; i++)
-	{
-		std::string textureFileName = util::FileIO::readString(rsmFile, 40);;
-		textures.push_back(textureFileName);
-	}
-
-	std::string mainNodeName = util::FileIO::readString(rsmFile, 40);
-	rsmFile->read(reinterpret_cast<char*>(&meshCount), sizeof(int));
 	std::map<std::string, Mesh* > meshes;
 	for (int i = 0; i < meshCount; i++)
 	{
@@ -112,14 +156,26 @@ void Rsm::reload()
 
 	updateMatrices();
 
-	int numKeyFrames;
-	rsmFile->read(reinterpret_cast<char*>(&numKeyFrames), sizeof(int));
-	//assert(numKeyFrames == 0);
+	if (version < 0x0106)
+	{
+		int numKeyFrames;
+		rsmFile->read(reinterpret_cast<char*>(&numKeyFrames), sizeof(int));
+		for (int i = 0; i < numKeyFrames; i++)
+		{
+			int frame;
+			glm::vec3 scale;
+			float data;
+
+			rsmFile->read(reinterpret_cast<char*>(&frame), sizeof(int));
+			rsmFile->read(reinterpret_cast<char*>(glm::value_ptr(scale)), sizeof(float) * 3);
+			rsmFile->read(reinterpret_cast<char*>(&data), sizeof(float));
+		}
+	}
 
 	int numVolumeBox;
 	rsmFile->read(reinterpret_cast<char*>(&numVolumeBox), sizeof(int));
-	if (numVolumeBox != 0)
-		std::cerr << "WARNING! This model has " << numVolumeBox << " volume boxes!" << std::endl;
+//	if (numVolumeBox != 0)
+//		std::cerr << "WARNING! This model has " << numVolumeBox << " volume boxes!" << std::endl;
 
 	loaded = true;
 
@@ -151,18 +207,38 @@ void Rsm::updateMatrices()
 Rsm::Mesh::Mesh(Rsm* model, std::istream* rsmFile)
 {
 	this->model = model;
-	name = util::FileIO::readString(rsmFile, 40);
-	parentName = util::FileIO::readString(rsmFile, 40);
-
-	int textureCount;
-	rsmFile->read(reinterpret_cast<char*>(&textureCount), sizeof(int));
-	for (int i = 0; i < textureCount; i++)
+	if (model->version >= 0x0202)
 	{
-		int textureId;
-		rsmFile->read(reinterpret_cast<char*>(&textureId), sizeof(int));
-		textures.push_back(textureId);
+		name = util::FileIO::readStringDyn(rsmFile);
+		parentName = util::FileIO::readStringDyn(rsmFile);
+	}
+	else
+	{
+		name = util::FileIO::readString(rsmFile, 40);
+		parentName = util::FileIO::readString(rsmFile, 40);
 	}
 
+	if (model->version >= 0x0203)
+	{
+		int textureCount;
+		rsmFile->read(reinterpret_cast<char*>(&textureCount), sizeof(int));
+		for (int i = 0; i < textureCount; i++)
+		{
+			std::string textureFile = util::FileIO::readStringDyn(rsmFile);
+			textures.push_back(0);//TODO: make a lookup
+		}
+	}
+	else
+	{
+		int textureCount;
+		rsmFile->read(reinterpret_cast<char*>(&textureCount), sizeof(int));
+		for (int i = 0; i < textureCount; i++)
+		{
+			int textureId;
+			rsmFile->read(reinterpret_cast<char*>(&textureId), sizeof(int));
+			textures.push_back(textureId);
+		}
+	}
 #if 1
 	offset = glm::mat4(1.0f);
 	rsmFile->read(reinterpret_cast<char*>(&offset[0][0]), sizeof(float));
@@ -191,11 +267,21 @@ Rsm::Mesh::Mesh(Rsm* model, std::istream* rsmFile)
 #endif
 
 	rsmFile->read(reinterpret_cast<char*>(glm::value_ptr(pos_)), sizeof(float) * 3);
-	rsmFile->read(reinterpret_cast<char*>(glm::value_ptr(pos)), sizeof(float) * 3);
-	rsmFile->read(reinterpret_cast<char*>(&rotangle), sizeof(float));
-	rsmFile->read(reinterpret_cast<char*>(glm::value_ptr(rotaxis)), sizeof(float) * 3);
-	rsmFile->read(reinterpret_cast<char*>(glm::value_ptr(scale)), sizeof(float) * 3);
 
+	if (model->version >= 0x0202)
+	{
+		pos = glm::vec3(0.0f);
+		rotangle = 0.0f;
+		rotaxis = glm::vec3(0.0f);
+		scale = glm::vec3(1.0f);
+	}
+	else
+	{
+		rsmFile->read(reinterpret_cast<char*>(glm::value_ptr(pos)), sizeof(float) * 3);
+		rsmFile->read(reinterpret_cast<char*>(&rotangle), sizeof(float));
+		rsmFile->read(reinterpret_cast<char*>(glm::value_ptr(rotaxis)), sizeof(float) * 3);
+		rsmFile->read(reinterpret_cast<char*>(glm::value_ptr(scale)), sizeof(float) * 3);
+	}
 	int vertexCount;
 	rsmFile->read(reinterpret_cast<char*>(&vertexCount), sizeof(int));
 	vertices.resize(vertexCount);
@@ -223,14 +309,34 @@ Rsm::Mesh::Mesh(Rsm* model, std::istream* rsmFile)
 	for (int i = 0; i < faceCount; i++)
 	{
 		Face* f = new Face();
+		int len = -1;
+
+		if(model->version >= 0x0202)
+			rsmFile->read(reinterpret_cast<char*>(&len), sizeof(int));
+
 		rsmFile->read(reinterpret_cast<char*>(f->vertexIds), sizeof(short) * 3);
 		rsmFile->read(reinterpret_cast<char*>(f->texCoordIds), sizeof(short) * 3);
 		rsmFile->read(reinterpret_cast<char*>(&f->texId), sizeof(short));
+		if (model->version >= 0x0202)
+			f->texId = 0;//TODO: remove this
+
 		rsmFile->read(reinterpret_cast<char*>(&f->padding), sizeof(short));
 
 		rsmFile->read(reinterpret_cast<char*>(&f->twoSided), sizeof(int));
-		rsmFile->read(reinterpret_cast<char*>(&f->smoothGroup), sizeof(int));
-
+		if (model->version >= 0x0102)
+		{
+			rsmFile->read(reinterpret_cast<char*>(&f->smoothGroup), sizeof(int));
+			if (len > 24)
+			{
+				int smoothGroup2;
+				rsmFile->read(reinterpret_cast<char*>(&smoothGroup2), sizeof(int));
+			}
+			if (len > 28)
+			{
+				int smoothGroup2;
+				rsmFile->read(reinterpret_cast<char*>(&smoothGroup2), sizeof(int));
+			}
+		}
 		faces[i] = f;
 		bool ok = true;
 		for (int ii = 0; ii < 3; ii++)
@@ -242,10 +348,28 @@ Rsm::Mesh::Mesh(Rsm* model, std::istream* rsmFile)
 			std::cerr<< "There's an error in " << model->fileName << std::endl;
 	}
 
-	int frameCount;
-	rsmFile->read(reinterpret_cast<char*>(&frameCount), sizeof(int));
-	frames.resize(frameCount);
-	for (int i = 0; i < frameCount; i++)
+	if (model->version >= 0x0106)
+	{
+		int scaleFrameCount;
+		rsmFile->read(reinterpret_cast<char*>(&scaleFrameCount), sizeof(int));
+		//frames.resize(scaleFrameCount);
+		for (int i = 0; i < scaleFrameCount; i++)
+		{
+			int frame;
+			glm::vec3 scale;
+			float data;
+
+			rsmFile->read(reinterpret_cast<char*>(&frame), sizeof(int));
+			rsmFile->read(reinterpret_cast<char*>(glm::value_ptr(scale)), sizeof(float) * 3);
+			rsmFile->read(reinterpret_cast<char*>(&data), sizeof(float));
+		}
+	}
+
+
+	int rotFrameCount;
+	rsmFile->read(reinterpret_cast<char*>(&rotFrameCount), sizeof(int));
+	frames.resize(rotFrameCount);
+	for (int i = 0; i < rotFrameCount; i++)
 	{
 		frames[i] = new Frame();
 		rsmFile->read(reinterpret_cast<char*>(&frames[i]->time), sizeof(int));
@@ -257,6 +381,46 @@ Rsm::Mesh::Mesh(Rsm* model, std::istream* rsmFile)
 		rsmFile->read(reinterpret_cast<char*>(&w), sizeof(float));
 		frames[i]->quaternion = glm::quat(w, x, y, z);
 	}
+
+	if (model->version >= 0x0202)
+	{
+		int posKeyFrameCount;
+		rsmFile->read(reinterpret_cast<char*>(&posKeyFrameCount), sizeof(int));
+		for (int i = 0; i < posKeyFrameCount; i++)
+		{
+			int frame;
+			glm::vec3 pos;
+			float data;
+
+			rsmFile->read(reinterpret_cast<char*>(&frame), sizeof(int));
+			rsmFile->read(reinterpret_cast<char*>(glm::value_ptr(pos)), sizeof(float) * 3);
+			rsmFile->read(reinterpret_cast<char*>(&data), sizeof(float));
+		}
+		if (model->version >= 0x0203)
+		{
+			int textureAnimCount;
+			rsmFile->read(reinterpret_cast<char*>(&textureAnimCount), sizeof(int));
+			for (int i = 0; i < textureAnimCount; i++)
+			{
+				int textureId;
+				rsmFile->read(reinterpret_cast<char*>(&textureId), sizeof(int));
+
+				int textureIdAnimationCount;
+				rsmFile->read(reinterpret_cast<char*>(&textureIdAnimationCount), sizeof(int));
+
+				for (int i = 0; i < textureIdAnimationCount; i++)
+				{
+					int frame;
+					rsmFile->read(reinterpret_cast<char*>(&frame), sizeof(int));
+					float offset;
+					rsmFile->read(reinterpret_cast<char*>(&offset), sizeof(float));
+				}
+			}
+
+		}
+	}
+
+
 }
 
 Rsm::Mesh::~Mesh()

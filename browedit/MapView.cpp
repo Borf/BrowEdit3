@@ -354,7 +354,7 @@ void MapView::update(BrowEdit* browEdit, const ImVec2 &size)
 
 				auto rayCast = map->rootNode->getComponent<Gnd>()->rayCast(math::Ray(cameraCenter + glm::vec3(0,9999,0), glm::vec3(0,-1,0)), viewEmptyTiles);
 				if (rayCast != glm::vec3(0, 0, 0))
-					cameraCenter.y = rayCast.y;
+					cameraCenter.y = 0.95f * cameraCenter.y + 0.05f * rayCast.y;
 			}
 		}
 		cameraDistance *= (1 - (ImGui::GetIO().MouseWheel * 0.1f));

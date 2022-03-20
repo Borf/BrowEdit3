@@ -135,7 +135,8 @@ void BrowEdit::run()
 #ifdef _DEBUG
 	if(config.isValid() == "")
 //		loadMap("data\\aldebaran.rsw");
-		loadMap("data\\prontera.rsw");
+//		loadMap("data\\prontera.rsw");
+		loadMap("data\\amicit01.rsw");
 //		loadMap("data\\comodo.rsw");
 //		loadMap("data\\guild_vs1.rsw");
 //		loadMap("data\\effects_ro.rsw");

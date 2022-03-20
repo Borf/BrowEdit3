@@ -52,13 +52,7 @@ void Rsw::load(const std::string& fileName, Map* map, bool loadModels, bool load
 	version = util::swapShort(version);
 	std::cout << std::hex<<"RSW: Version 0x" << version << std::endl <<std::dec;
 
-	if (version >= 0x0203)
-	{
-		std::cerr << "RSW: Sorry, this version is not supported yet, did not open "<<fileName<< std::endl;
-		return;
-	}
-
-	if (version == 0x0202) // ???
+	if (version >= 0x0202) // ???
 	{
 		file->get();
 	}

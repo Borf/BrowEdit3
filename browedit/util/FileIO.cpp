@@ -291,6 +291,16 @@ namespace util
 		delete[] buf;
 		return ret;
 	}
+	std::string FileIO::readStringDyn(std::istream* is)
+	{
+		int len;
+		is->read(reinterpret_cast<char*>(&len), sizeof(int));
+		char* buf = new char[len];
+		is->read(buf, len);
+		std::string ret(buf, len);
+		delete[] buf;
+		return ret;
+	}
 
 	void FileIO::writeString(std::ostream& os, const std::string& data, int length)
 	{
