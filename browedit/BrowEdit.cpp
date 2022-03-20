@@ -266,6 +266,8 @@ void BrowEdit::run()
 					if (ImGui::IsKeyPressed('V'))
 						activeMapView->map->pasteSelection(this);
 				}
+				else if (ImGui::IsKeyPressed('V') && newNodes.size() > 0)
+					newNodeHeight = !newNodeHeight;
 			}
 			if (editMode == EditMode::Height && activeMapView)
 			{

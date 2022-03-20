@@ -89,6 +89,8 @@ public:
 	double scrollDelta = 0;
 	Config config;
 	std::vector<std::pair<Node*, glm::vec3>> newNodes;
+	glm::vec3 newNodesCenter;
+	bool newNodeHeight = false;
 	std::vector<CopyCube*> newCubes;
 	MapView* activeMapView = nullptr;
 	float statusBarHeight = 10;

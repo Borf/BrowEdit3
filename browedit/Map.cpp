@@ -365,9 +365,11 @@ void Map::pasteSelection(BrowEdit* browEdit)
 			for (auto& n : browEdit->newNodes)
 				center += n.second;
 			center /= browEdit->newNodes.size();
-
+			
+			browEdit->newNodesCenter = center;
 			for (auto& n : browEdit->newNodes)
 				n.second = n.second - center;
+			browEdit->newNodeHeight = false;
 		}
 	}
 	catch (...) {

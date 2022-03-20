@@ -258,11 +258,15 @@ void MapView::render(BrowEdit* browEdit)
 			}
 
 			rswObject->position = glm::vec3(rayCast.x - 5 * gnd->width, -rayCast.y, -(rayCast.z + (-10 - 5 * gnd->height))) + newNode.second;
+			if (browEdit->newNodeHeight)
+			{
+				rswObject->position.y = newNode.second.y + browEdit->newNodesCenter.y;
+			}
 
 			if (newNode.first->getComponent<RsmRenderer>())
 			{
 				glm::mat4 matrix = glm::mat4(1.0f);
-				matrix = glm::translate(matrix, rayCast + newNode.second * glm::vec3(1,1,-1));
+				matrix = glm::translate(matrix, glm::vec3(5 * gnd->width + rswObject->position.x, -rswObject->position.y, -(- 10 - 5 * gnd->height + rswObject->position.z)));
 				matrix = glm::scale(matrix, glm::vec3(1, -1, 1));
 				matrix = glm::scale(matrix, rswObject->scale);
 				matrix = glm::scale(matrix, glm::vec3(1, 1, -1));
