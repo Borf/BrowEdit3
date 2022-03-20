@@ -17,4 +17,5 @@ public:
 
 	RenderContext* renderContext;
 	virtual void render() = 0;
+	bool enabled = true;
 };

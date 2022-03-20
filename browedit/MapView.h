@@ -109,6 +109,7 @@ public:
 
 	void rebuildObjectModeGrid();
 
+	//todo, move this to a struct for better organisation
 	bool viewLightmapShadow = true;
 	bool viewLightmapColor = true;
 	bool viewColors = true;
@@ -117,6 +118,10 @@ public:
 	bool viewTextures = true;
 	bool viewEmptyTiles = true;
 
+	bool viewModels = true;
+	bool viewEffects = true;
+	bool viewSounds = true;
+	bool viewLights = true;
 
 	void focusSelection();
 	void drawLight(Node* n);

@@ -161,6 +161,70 @@ void BrowEdit::menuBar()
 
 				if (map->name == "data\\effects_ro.rsw" && ImGui::MenuItem("Generate effects")) //speedrun map
 				{
+					auto effectsFile = util::FileIO::open("data\\EffectTable.json");
+					int braces = 0;
+					bool singleQuote = false;
+					bool doubleQuote = false;
+					int comment = 0;
+					int mlComment = 0;
+					std::string buffer = "";
+					std::set<int> ids;
+					while (!effectsFile->eof())
+					{
+						char c = effectsFile->get();
+						if (c == '{' && !singleQuote && !doubleQuote)
+							braces++;
+						else if (c == '}' && !singleQuote && !doubleQuote)
+							braces--;
+						else if (c == '[' && !singleQuote && !doubleQuote)
+							braces++;
+						else if (c == ']' && !singleQuote && !doubleQuote)
+							braces--;
+						else if (c == '\'')
+							singleQuote = !singleQuote;
+						else if (c == '\"')
+							doubleQuote = !doubleQuote;
+						else if (c == ',')
+							buffer = "";
+						else if (c == '/' && mlComment == 2)
+							mlComment = 0;
+						else if (c == '/')
+							comment++;
+						else if (c == '*' && mlComment == 1)
+							mlComment = 2;
+						else if (c == '*' && comment == 1)
+							mlComment = 1;
+						else if (c == '\t')
+							;
+						else if (c == ' ')
+							;
+						else if (c == '\r')
+							;
+						else if (c == '\n')
+						{
+							comment = 0;
+							doubleQuote = false;
+							singleQuote = false;
+						}
+						else if (c == ':')
+						{
+							if (buffer != "")
+							{
+								try
+								{
+									int id = std::stoi(buffer);
+									if (id != 0)
+										ids.insert(id);
+								}
+								catch (...) {}
+								buffer = "";
+							}
+						}
+						else if (braces == 1 && comment == 0 && mlComment == 0)
+							buffer += c;
+					}
+					delete effectsFile;
+
 					map->rootNode->children.clear(); //oops
 					auto gnd = map->rootNode->getComponent<Gnd>();
 
@@ -200,6 +264,8 @@ void BrowEdit::menuBar()
 					}
 					for (int i = 0; i < 1000; i++)
 					{
+						bool enabled = std::find(ids.begin(), ids.end(), i) != ids.end();
+
 						int xx = 5+  6 * (i % 40)-1;
 						int yy = 17+ 6 * (i / 40)-1;
 						for (int x = xx; x < xx + 6; x++)
@@ -218,27 +284,30 @@ void BrowEdit::menuBar()
 								gnd->cubes[x][gnd->height - 1 - y]->tileUp = tU[x - xx][y - yy];
 							}
 						}
-						int nr = i;
-						int len = (int)floor(log10(nr));
-						while (nr > 0)
+						if (enabled)
 						{
-							gnd->cubes[xx + 1 + len][gnd->height - 1 - (yy + 5)]->tileUp = digits[nr % 10];
-							nr /= 10;
-							len--;
-						}
+							int nr = i;
+							int len = (int)floor(log10(nr));
+							while (nr > 0)
+							{
+								gnd->cubes[xx + 1 + len][gnd->height - 1 - (yy + 5)]->tileUp = digits[nr % 10];
+								nr /= 10;
+								len--;
+							}
 
-						auto e = new RswEffect();
-						auto o = new RswObject();
-						o->position.x = -1180.0f + 60 * (i % 40);
-						o->position.y = -48.0f;
-						o->position.z = 1060.0f - 60 * (i / 40);
-						e->id = i;
-						Node* newNode = new Node("Effect" + std::to_string(i));
-						newNode->addComponent(o);
-						newNode->addComponent(e);
-						newNode->addComponent(new BillboardRenderer("data\\effect.png", "data\\effect_selected.png"));
-						newNode->addComponent(new CubeCollider(5));
-						newNode->setParent(map->rootNode);
+							auto e = new RswEffect();
+							auto o = new RswObject();
+							o->position.x = -1180.0f + 60 * (i % 40);
+							o->position.y = -48.0f;
+							o->position.z = 1060.0f - 60 * (i / 40);
+							e->id = i;
+							Node* newNode = new Node("Effect" + std::to_string(i));
+							newNode->addComponent(o);
+							newNode->addComponent(e);
+							newNode->addComponent(new BillboardRenderer("data\\effect.png", "data\\effect_selected.png"));
+							newNode->addComponent(new CubeCollider(5));
+							newNode->setParent(map->rootNode);
+						}
 					}
 
 				}

@@ -60,7 +60,7 @@ void GndRenderer::render()
 				{
 					int xxx = 8 * x + xx;
 					int yyy = 8 * y + yy;
-					if (smoothColors)
+					if (!smoothColors)
 					{
 						data[4 * (xxx + shadowmapSize * yyy) + 0] = (lightMap->data[64 + 3 * (xx + 8 * yy) + 0] >> 4) << 4;
 						data[4 * (xxx + shadowmapSize * yyy) + 1] = (lightMap->data[64 + 3 * (xx + 8 * yy) + 1] >> 4) << 4;

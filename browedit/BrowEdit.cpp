@@ -137,7 +137,7 @@ void BrowEdit::run()
 	if(config.isValid() == "")
 //		loadMap("data\\aldebaran.rsw");
 //		loadMap("data\\prontera.rsw");
-		loadMap("data\\amicit01.rsw");
+		loadMap("data\\amicit01.rsw"); //RSM2
 //		loadMap("data\\comodo.rsw");
 //		loadMap("data\\guild_vs1.rsw");
 //		loadMap("data\\effects_ro.rsw");
@@ -373,6 +373,22 @@ bool BrowEdit::toolBarToggleButton(const std::string_view &name, int icon, bool*
 	ImGui::PopID();
 	return clicked;
 }
+
+bool BrowEdit::toolBarButton(const std::string_view& name, int icon, const char* tooltip, ImVec4 tint)
+{
+	tint = ImVec4(config.toolbarButtonTint.x * tint.x, config.toolbarButtonTint.y * tint.y, config.toolbarButtonTint.z * tint.z, config.toolbarButtonTint.w * tint.w);
+	ImVec2 v1((1.0f / iconsTexture->width) * (100 * (icon % 8)), //TODO: remove these hardcoded numbers
+		(1.0f / iconsTexture->height) * (100 * (icon / 8)));
+	ImVec2 v2(v1.x + (1.0f / iconsTexture->width) * 100, v1.y + (1.0f / iconsTexture->height) * 100);
+	ImGui::PushID(name.data());
+
+	bool clicked = ImGui::ImageButton((ImTextureID)(long long)iconsTexture->id, ImVec2(config.toolbarButtonSize, config.toolbarButtonSize), v1, v2, 0, enabledColor, tint);
+	if (ImGui::IsItemHovered())
+		ImGui::SetTooltip(tooltip);
+	ImGui::PopID();
+	return clicked;
+}
+
 
 bool BrowEdit::toolBarToggleButton(const std::string_view& name, int icon, bool status, const char* tooltip, ImVec4 tint)
 {

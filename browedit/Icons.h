@@ -21,6 +21,7 @@
 
 #define ICON_GRID_SNAP_ON		32
 #define ICON_GRID_SNAP_OFF		33
+#define ICON_VIEWOPTIONS		34
 
 
 #define ICON_UNDO				36
@@ -41,4 +42,4 @@
 #define ICON_OBJECTPICKER_OPEN	52
 #define ICON_OBJECTPICKER_CLOSE	53
 
-
+#define ICON_NOICON				63
