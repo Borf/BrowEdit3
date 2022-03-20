@@ -254,7 +254,6 @@ void BrowEdit::showObjectWindow()
 						newNode->addComponent(new RsmRenderer());
 						newNode->addComponent(new RswObject());
 						newNode->addComponent(new RswModel(util::iso_8859_1_to_utf8(path.substr(11)))); //remove data\model\ 
-						newNode->addComponent(new RsmRenderer());
 						newNode->addComponent(new RswModelCollider());
 						newNodes.push_back(std::pair<Node*, glm::vec3>(newNode, glm::vec3(0, 0, 0)));
 						newNodesCenter = glm::vec3(0, 0, 0);
