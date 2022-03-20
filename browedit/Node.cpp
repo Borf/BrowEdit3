@@ -34,8 +34,12 @@ void Node::makeNameUnique(Node* rootNode)
 	if (exists)
 	{
 		std::string name_ = name;
-		if (name.size() > 4 && name[name.size() - 4] == '_' && std::stoi(name.substr(name.size() - 3)) > 0)
-			name_ = name_.substr(0, name.size() - 4);
+		try
+		{
+			if (name.size() > 4 && name[name.size() - 4] == '_' && std::stoi(name.substr(name.size() - 3)) > 0)
+				name_ = name_.substr(0, name.size() - 4);
+		}
+		catch (...) {}
 
 		int index = 0;
 		exists = true;
