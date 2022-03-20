@@ -22,9 +22,10 @@ public:
 			short vertexIds[3];
 			short texCoordIds[3];
 			glm::vec3					normal;
+			glm::vec3					vertexNormals[3];
 			short texId;
 			int twoSided;
-			int smoothGroup;
+			glm::ivec3 smoothGroups = glm::ivec3(-1);
 			short padding;
 		};
 

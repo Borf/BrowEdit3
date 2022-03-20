@@ -295,6 +295,8 @@ namespace util
 	{
 		int len;
 		is->read(reinterpret_cast<char*>(&len), sizeof(int));
+		if (len < 0 || len > 1024)
+			throw std::exception("Error loading string");
 		char* buf = new char[len];
 		is->read(buf, len);
 		std::string ret(buf, len);

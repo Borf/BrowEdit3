@@ -44,7 +44,6 @@ void Rsm::reload()
 	rsmFile->read(reinterpret_cast<char*>(&version), sizeof(short));
 	version = util::swapShort(version);
 	rsmFile->read(reinterpret_cast<char*>(&animLen), sizeof(int));
-
 	rsmFile->read(reinterpret_cast<char*>(&shadeType), sizeof(int));
 
 	if (version >= 0x0104)
@@ -121,13 +120,22 @@ void Rsm::reload()
 	std::map<std::string, Mesh* > meshes;
 	for (int i = 0; i < meshCount; i++)
 	{
-		Mesh* mesh = new Mesh(this, rsmFile);
-		mesh->index = i;
-		while(meshes.find(mesh->name) != meshes.end())
-			mesh->name += "(dup)";
-		if (mesh->name == "")
-			mesh->name = "empty";
-		meshes[mesh->name] = mesh;
+		try
+		{
+			Mesh* mesh = new Mesh(this, rsmFile);
+			mesh->index = i;
+			while(meshes.find(mesh->name) != meshes.end())
+				mesh->name += "(dup)";
+			if (mesh->name == "")
+				mesh->name = "empty";
+			meshes[mesh->name] = mesh;
+		}
+		catch (const std::exception& e)
+		{
+			std::cerr << e.what() << std::endl;
+			loaded = false;
+			return;
+		}
 	}
 
 	if (meshes.size() == 0)
@@ -224,7 +232,7 @@ Rsm::Mesh::Mesh(Rsm* model, std::istream* rsmFile)
 		for (int i = 0; i < textureCount; i++)
 		{
 			std::string textureFile = util::FileIO::readStringDyn(rsmFile);
-			textures.push_back(textureFiles.size());
+			textures.push_back((int)textureFiles.size());
 			textureFiles.push_back(textureFile);
 		}
 	}
@@ -325,17 +333,11 @@ Rsm::Mesh::Mesh(Rsm* model, std::istream* rsmFile)
 		rsmFile->read(reinterpret_cast<char*>(&f->twoSided), sizeof(int));
 		if (model->version >= 0x0102)
 		{
-			rsmFile->read(reinterpret_cast<char*>(&f->smoothGroup), sizeof(int));
+			rsmFile->read(reinterpret_cast<char*>(&f->smoothGroups[0]), sizeof(int));
 			if (len > 24)
-			{
-				int smoothGroup2;
-				rsmFile->read(reinterpret_cast<char*>(&smoothGroup2), sizeof(int));
-			}
+				rsmFile->read(reinterpret_cast<char*>(&f->smoothGroups[1]), sizeof(int));
 			if (len > 28)
-			{
-				int smoothGroup2;
-				rsmFile->read(reinterpret_cast<char*>(&smoothGroup2), sizeof(int));
-			}
+				rsmFile->read(reinterpret_cast<char*>(&f->smoothGroups[2]), sizeof(int));
 		}
 		faces[i] = f;
 		bool ok = true;
@@ -347,6 +349,33 @@ Rsm::Mesh::Mesh(Rsm* model, std::istream* rsmFile)
 		else
 			std::cerr<< "There's an error in " << model->fileName << std::endl;
 	}
+
+	std::map<int, std::map<int, glm::vec3>> vertexNormals;
+	for (auto& f : faces)
+		for (int i = 0; i < 3; i++)
+			for(int ii = 0; ii < 3; ii++)
+				if(f->smoothGroups[ii] != -1)
+					vertexNormals[f->smoothGroups[ii]][f->vertexIds[i]] += f->normal;
+
+	for (auto& f : faces)
+	{
+		for (int ii = 0; ii < 3; ii++)
+		{
+			if (f->smoothGroups[ii] != -1)
+			{
+				for (int i = 0; i < 3; i++)
+				{
+					if (ii == 0)
+						f->vertexNormals[i] = glm::vec3(0);
+					f->vertexNormals[i] += glm::normalize(vertexNormals[f->smoothGroups[0]][f->vertexIds[i]]);
+				}
+			}
+		}
+		for(int i = 0; i < 3; i++)
+			f->vertexNormals[i] = glm::normalize(f->vertexNormals[i]);
+	}
+
+
 
 	if (model->version >= 0x0106)
 	{

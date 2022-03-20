@@ -129,9 +129,8 @@ void RsmRenderer::initMeshInfo(Rsm::Mesh* mesh, const glm::mat4 &matrix)
 	std::map<int, std::vector<VertexP3T2N3> > verts;
 	for (size_t i = 0; i < mesh->faces.size(); i++)
 	{
-		glm::vec3 normal = glm::normalize(glm::cross(mesh->vertices[mesh->faces[i]->vertexIds[1]] - mesh->vertices[mesh->faces[i]->vertexIds[0]], mesh->vertices[mesh->faces[i]->vertexIds[2]] - mesh->vertices[mesh->faces[i]->vertexIds[0]]));
 		for (int ii = 0; ii < 3; ii++)
-			verts[mesh->faces[i]->texId].push_back(VertexP3T2N3(mesh->vertices[mesh->faces[i]->vertexIds[ii]], mesh->texCoords[mesh->faces[i]->texCoordIds[ii]], normal));
+			verts[mesh->faces[i]->texId].push_back(VertexP3T2N3(mesh->vertices[mesh->faces[i]->vertexIds[ii]], mesh->texCoords[mesh->faces[i]->texCoordIds[ii]], mesh->faces[i]->vertexNormals[ii]));
 	}
 
 	std::vector<VertexP3T2N3> allVerts;
