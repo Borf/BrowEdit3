@@ -21,6 +21,13 @@
 
 void MapView::postRenderObjectMode(BrowEdit* browEdit)
 {
+	float gridSize = gridSizeTranslate;
+	float gridOffset = gridOffsetTranslate;
+	if (gadget.mode == Gadget::Mode::Rotate)
+	{
+		gridSize = gridSizeRotate;
+		gridOffset = gridOffsetRotate;
+	}
 	simpleShader->use();
 	simpleShader->setUniform(SimpleShader::Uniforms::projectionMatrix, nodeRenderContext.projectionMatrix);
 	simpleShader->setUniform(SimpleShader::Uniforms::viewMatrix, nodeRenderContext.viewMatrix);
@@ -328,13 +335,13 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 								float dist = glm::length(glm::vec2(n.second.pos.z - groupCenter.z, n.second.pos.x - groupCenter.x));
 								originalAngle -= glm::radians(-pos * mouseOffset2D);
 								if (snap && !gridLocal)
-									originalAngle = glm::radians(glm::round(glm::degrees(originalAngle) / (float)gridSize) * (float)gridSize);
+									originalAngle = glm::radians(glm::round(glm::degrees(originalAngle) / (float)gridSizeRotate) * (float)gridSizeRotate);
 
 								n.first->getComponent<RswObject>()->position.x = groupCenter.x + dist * glm::cos(originalAngle);
 								n.first->getComponent<RswObject>()->position.z = groupCenter.z + dist * glm::sin(originalAngle);
 							}
 							if (snap && !gridLocal)
-								n.first->getComponent<RswObject>()->rotation[gadget.selectedAxisIndex()] = glm::round((n.first->getComponent<RswObject>()->rotation[gadget.selectedAxisIndex()]-gridOffset) / (float)gridSize) * (float)gridSize + gridOffset;
+								n.first->getComponent<RswObject>()->rotation[gadget.selectedAxisIndex()] = glm::round((n.first->getComponent<RswObject>()->rotation[gadget.selectedAxisIndex()]-gridOffset) / (float)gridSizeRotate) * (float)gridSizeRotate + gridOffset;
 						}
 						if (n.first->getComponent<RsmRenderer>())
 							n.first->getComponent<RsmRenderer>()->setDirty();
@@ -460,15 +467,15 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 void MapView::rebuildObjectModeGrid()
 {
 	std::vector<VertexP3T2> verts;
-	if (gridSize > 0)
+	if (glm::abs(gridSizeTranslate) > 0)
 	{
-		for (float i = -10 * gridSize; i <= 10 * gridSize; i += gridSize)
+		for (float i = -10 * gridSizeTranslate; i <= 10 * gridSizeTranslate; i += gridSizeTranslate)
 		{
-			verts.push_back(VertexP3T2(glm::vec3(-10 * gridSize, 0, i), glm::vec2(0)));
-			verts.push_back(VertexP3T2(glm::vec3(10 * gridSize, 0, i), glm::vec2(0)));
+			verts.push_back(VertexP3T2(glm::vec3(-10 * gridSizeTranslate, 0, i), glm::vec2(0)));
+			verts.push_back(VertexP3T2(glm::vec3(10 * gridSizeTranslate, 0, i), glm::vec2(0)));
 
-			verts.push_back(VertexP3T2(glm::vec3(i, 0, -10 * gridSize), glm::vec2(0)));
-			verts.push_back(VertexP3T2(glm::vec3(i, 0, 10 * gridSize), glm::vec2(0)));
+			verts.push_back(VertexP3T2(glm::vec3(i, 0, -10 * gridSizeTranslate), glm::vec2(0)));
+			verts.push_back(VertexP3T2(glm::vec3(i, 0, 10 * gridSizeTranslate), glm::vec2(0)));
 		}
 	}
 	gridVbo->setData(verts, GL_STATIC_DRAW);

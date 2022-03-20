@@ -106,20 +106,23 @@ void MapView::toolbar(BrowEdit* browEdit)
 	{
 		ImGui::SameLine();
 		ImGui::SetNextItemWidth(50);
-		if (ImGui::DragFloat("##gridSize", &gridSize, 1.0f, 0.1f, 100.0f, "%.2f"))
+		if (ImGui::DragFloat("##gridSize", (gadget.mode == Gadget::Mode::Translate || browEdit->editMode == BrowEdit::EditMode::Height) ? &gridSizeTranslate : &gridSizeRotate, 1.0f, 0.1f, 100.0f, "%.2f"))
 			rebuildObjectModeGrid();
 		if (ImGui::IsItemHovered())
 			ImGui::SetTooltip("Grid size. Doubleclick or ctrl+click to type a number");
 		if (ImGui::BeginPopupContextItem("GridSize"))
 		{
 			auto gridSizes = &browEdit->config.translateGridSizes;
-			if(gadget.mode == Gadget::Mode::Rotate)
+			if(gadget.mode == Gadget::Mode::Rotate && browEdit->editMode != BrowEdit::EditMode::Height)
 				gridSizes = &browEdit->config.rotateGridSizes;
 			for (auto f : *gridSizes)
 			{
 				if (ImGui::Button(std::to_string(f).c_str()))
 				{
-					gridSize = f;
+					if (gadget.mode == Gadget::Mode::Translate)
+						gridSizeTranslate = f;
+					else
+						gridSizeRotate = f;
 					ImGui::CloseCurrentPopup();
 				}
 			}
@@ -133,7 +136,10 @@ void MapView::toolbar(BrowEdit* browEdit)
 		{
 			ImGui::SameLine();
 			ImGui::SetNextItemWidth(50);
-			ImGui::DragFloat("##gridOffset", &gridOffset, 1.0f, 0, gridSize, "%.2f");
+			if (gadget.mode == Gadget::Mode::Translate)
+				ImGui::DragFloat("##gridOffset", &gridOffsetTranslate, 1.0f, 0, gridSizeTranslate, "%.2f");
+			else
+				ImGui::DragFloat("##gridOffset", &gridOffsetRotate, 1.0f, 0, gridSizeRotate, "%.2f");
 			if (ImGui::IsItemHovered())
 				ImGui::SetTooltip("Grid Offset");
 		}
@@ -247,8 +253,8 @@ void MapView::render(BrowEdit* browEdit)
 				snap = !snap;
 			if (snap)
 			{
-				rayCast.x = glm::round((rayCast.x - gridOffset) / (float)gridSize) * (float)gridSize + gridOffset;
-				rayCast.z = glm::round((rayCast.z - gridOffset) / (float)gridSize) * (float)gridSize + gridOffset;
+				rayCast.x = glm::round((rayCast.x - gridOffsetTranslate) / (float)gridSizeTranslate) * (float)gridSizeTranslate + gridOffsetTranslate;
+				rayCast.z = glm::round((rayCast.z - gridOffsetTranslate) / (float)gridSizeTranslate) * (float)gridSizeTranslate + gridOffsetTranslate;
 			}
 
 			rswObject->position = glm::vec3(rayCast.x - 5 * gnd->width, -rayCast.y, -(rayCast.z + (-10 - 5 * gnd->height))) + newNode.second;

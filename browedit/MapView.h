@@ -59,9 +59,11 @@ public:
 	bool hovered = false;
 
 	bool snapToGrid = false;
-	float gridSize = 5;
 	bool gridLocal = true;
-	float gridOffset = 0;
+	float gridSizeTranslate = 5;
+	float gridSizeRotate = 45;
+	float gridOffsetTranslate = 0;
+	float gridOffsetRotate = 0;
 
 	bool showAllLights = false;
 	bool showLightSphere = false;

@@ -44,6 +44,9 @@ bool TriangleContainsPoint(const glm::vec3& a, const glm::vec3& b, const glm::ve
 
 void MapView::postRenderHeightMode(BrowEdit* browEdit)
 {
+	float gridSize = gridSizeTranslate;
+	float gridOffset = gridOffsetTranslate;
+
 	auto gnd = map->rootNode->getComponent<Gnd>();
 	auto gndRenderer = map->rootNode->getComponent<GndRenderer>();
 
@@ -247,7 +250,7 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 
 									if (snap)
 									{
-										tile->texCoords[i] = glm::round(tile->texCoords[i] / gridSize) * gridSize;
+										tile->texCoords[i] = glm::round(tile->texCoords[i] / gridSizeTranslate) * gridSizeTranslate;
 									}
 									gndRenderer->setChunkDirty(map->tileSelection[0].x, map->tileSelection[0].y);
 									tile->texCoords[i] = glm::clamp(tile->texCoords[i], 0.0f, 1.0f);
