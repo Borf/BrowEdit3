@@ -542,7 +542,7 @@ std::vector<glm::vec3> RswModelCollider::getCollisions(Rsm::Mesh* mesh, const ma
 	for (size_t i = 0; i < mesh->faces.size(); i++)
 	{
 		for (size_t ii = 0; ii < 3; ii++)
-			verts[ii] = mesh->vertices[mesh->faces[i]->vertexIds[ii]];
+			verts[ii] = mesh->vertices[mesh->faces[i].vertexIds[ii]];
 
 		if (newRay.LineIntersectPolygon(verts, t))
 			ret.push_back(glm::vec3(matrix * rsmRenderer->renderInfo[mesh->index].matrix * glm::vec4(newRay.origin + t * newRay.dir, 1)));
@@ -590,7 +590,7 @@ bool RswModelCollider::collidesTexture(Rsm::Mesh* mesh, const math::Ray& ray, co
 	for (size_t i = 0; i < mesh->faces.size(); i++)
 	{
 		for (size_t ii = 0; ii < 3; ii++)
-			verts[ii] = mesh->vertices[mesh->faces[i]->vertexIds[ii]];
+			verts[ii] = mesh->vertices[mesh->faces[i].vertexIds[ii]];
 
 		if (newRay.LineIntersectPolygon(verts, t))
 		{
@@ -600,7 +600,7 @@ bool RswModelCollider::collidesTexture(Rsm::Mesh* mesh, const math::Ray& ray, co
 			{
 				auto rsm = dynamic_cast<Rsm*>(rsmMesh->model);
 				if (rsm)
-					img = util::ResourceManager<Image>::load("data/texture/" + rsm->textures[mesh->faces[i]->texId]);
+					img = util::ResourceManager<Image>::load("data/texture/" + rsm->textures[mesh->faces[i].texId]);
 			}
 			if (img->hasAlpha)
 			{
@@ -614,9 +614,9 @@ bool RswModelCollider::collidesTexture(Rsm::Mesh* mesh, const math::Ray& ray, co
 				float a2 = glm::length(glm::cross(f3, f1)) / a;
 				float a3 = glm::length(glm::cross(f1, f2)) / a;
 
-				glm::vec2 uv1 = mesh->texCoords[mesh->faces[i]->texCoordIds[0]];
-				glm::vec2 uv2 = mesh->texCoords[mesh->faces[i]->texCoordIds[1]];
-				glm::vec2 uv3 = mesh->texCoords[mesh->faces[i]->texCoordIds[2]];
+				glm::vec2 uv1 = mesh->texCoords[mesh->faces[i].texCoordIds[0]];
+				glm::vec2 uv2 = mesh->texCoords[mesh->faces[i].texCoordIds[1]];
+				glm::vec2 uv3 = mesh->texCoords[mesh->faces[i].texCoordIds[2]];
 
 				glm::vec2 uv = uv1 * a1 + uv2 * a2 + uv3 * a3;
 
@@ -665,7 +665,7 @@ std::vector<glm::vec3> RswModelCollider::getVerticesWorldSpace(Rsm::Mesh* mesh, 
 	std::vector<glm::vec3> verts;
 	for (size_t i = 0; i < mesh->faces.size(); i++)
 		for (size_t ii = 0; ii < 3; ii++)
-			verts.push_back(newMatrix * glm::vec4(mesh->vertices[mesh->faces[i]->vertexIds[ii]],1));
+			verts.push_back(newMatrix * glm::vec4(mesh->vertices[mesh->faces[i].vertexIds[ii]],1));
 
 	for (size_t i = 0; i < mesh->children.size(); i++)
 	{

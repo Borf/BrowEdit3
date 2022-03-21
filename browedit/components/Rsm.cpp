@@ -59,6 +59,8 @@ void Rsm::reload()
 		rsmFile->read(reinterpret_cast<char*>(&fps), sizeof(float));
 		int rootMeshCount;
 		rsmFile->read(reinterpret_cast<char*>(&rootMeshCount), sizeof(int));
+		if (rootMeshCount > 1)
+			std::cerr << "Warning: multiple root meshes, this is not supported yet" << std::endl;
 		for (int i = 0; i < rootMeshCount; i++)
 		{
 			auto rootMeshName = util::FileIO::readStringDyn(rsmFile);
@@ -85,6 +87,8 @@ void Rsm::reload()
 
 		int rootMeshCount;
 		rsmFile->read(reinterpret_cast<char*>(&rootMeshCount), sizeof(int));
+		if (rootMeshCount > 1)
+			std::cerr << "Warning: multiple root meshes, this is not supported yet" << std::endl;
 		for (int i = 0; i < rootMeshCount; i++)
 		{
 			auto rootMeshName = util::FileIO::readStringDyn(rsmFile);
@@ -281,7 +285,7 @@ Rsm::Mesh::Mesh(Rsm* model, std::istream* rsmFile)
 		pos = glm::vec3(0.0f);
 		rotangle = 0.0f;
 		rotaxis = glm::vec3(0.0f);
-		scale = glm::vec3(1.0f);
+		scale = glm::vec3(1.0f, -1.0f, 1.0f);
 	}
 	else
 	{
@@ -316,7 +320,7 @@ Rsm::Mesh::Mesh(Rsm* model, std::istream* rsmFile)
 	faces.resize(faceCount);
 	for (int i = 0; i < faceCount; i++)
 	{
-		Face* f = new Face();
+		Face* f = &faces[i];
 		int len = -1;
 
 		if(model->version >= 0x0202)
@@ -339,7 +343,6 @@ Rsm::Mesh::Mesh(Rsm* model, std::istream* rsmFile)
 			if (len > 28)
 				rsmFile->read(reinterpret_cast<char*>(&f->smoothGroups[2]), sizeof(int));
 		}
-		faces[i] = f;
 		bool ok = true;
 		for (int ii = 0; ii < 3; ii++)
 			if (f->vertexIds[ii] >= vertices.size())
@@ -354,30 +357,30 @@ Rsm::Mesh::Mesh(Rsm* model, std::istream* rsmFile)
 	for (auto& f : faces)
 		for (int i = 0; i < 3; i++)
 			for(int ii = 0; ii < 3; ii++)
-				if(f->smoothGroups[ii] != -1)
-					vertexNormals[f->smoothGroups[ii]][f->vertexIds[i]] += f->normal;
+				if(f.smoothGroups[ii] != -1)
+					vertexNormals[f.smoothGroups[ii]][f.vertexIds[i]] += f.normal;
 	if (model->shadeType == ShadeType::SHADE_FLAT)
 		for (auto& f : faces)
 			for (int ii = 0; ii < 3; ii++)
-				f->vertexNormals[ii] = f->normal;
+				f.vertexNormals[ii] = f.normal;
 	if (model->shadeType == ShadeType::SHADE_SMOOTH)
 	{
 		for (auto& f : faces)
 		{
 			for (int ii = 0; ii < 3; ii++)
 			{
-				if (f->smoothGroups[ii] != -1)
+				if (f.smoothGroups[ii] != -1)
 				{
 					for (int i = 0; i < 3; i++)
 					{
 						if (ii == 0)
-							f->vertexNormals[i] = glm::vec3(0);
-						f->vertexNormals[i] += glm::normalize(vertexNormals[f->smoothGroups[0]][f->vertexIds[i]]);
+							f.vertexNormals[i] = glm::vec3(0);
+						f.vertexNormals[i] += glm::normalize(vertexNormals[f.smoothGroups[0]][f.vertexIds[i]]);
 					}
 				}
 			}
 			for (int i = 0; i < 3; i++)
-				f->vertexNormals[i] = glm::normalize(f->vertexNormals[i]);
+				f.vertexNormals[i] = glm::normalize(f.vertexNormals[i]);
 		}
 	}
 
@@ -386,49 +389,40 @@ Rsm::Mesh::Mesh(Rsm* model, std::istream* rsmFile)
 	{
 		int scaleFrameCount;
 		rsmFile->read(reinterpret_cast<char*>(&scaleFrameCount), sizeof(int));
-		//frames.resize(scaleFrameCount);
+		scaleFrames.resize(scaleFrameCount);
 		for (int i = 0; i < scaleFrameCount; i++)
 		{
-			int frame;
-			glm::vec3 scale;
-			float data;
-
-			rsmFile->read(reinterpret_cast<char*>(&frame), sizeof(int));
-			rsmFile->read(reinterpret_cast<char*>(glm::value_ptr(scale)), sizeof(float) * 3);
-			rsmFile->read(reinterpret_cast<char*>(&data), sizeof(float));
+			rsmFile->read(reinterpret_cast<char*>(&scaleFrames[i].time), sizeof(int));
+			rsmFile->read(reinterpret_cast<char*>(glm::value_ptr(scaleFrames[i].scale)), sizeof(float) * 3);
+			rsmFile->read(reinterpret_cast<char*>(&scaleFrames[i].data), sizeof(float));
 		}
 	}
 
 
 	int rotFrameCount;
 	rsmFile->read(reinterpret_cast<char*>(&rotFrameCount), sizeof(int));
-	frames.resize(rotFrameCount);
+	rotFrames.resize(rotFrameCount);
 	for (int i = 0; i < rotFrameCount; i++)
 	{
-		frames[i] = new Frame();
-		rsmFile->read(reinterpret_cast<char*>(&frames[i]->time), sizeof(int));
-
+		rsmFile->read(reinterpret_cast<char*>(&rotFrames[i].time), sizeof(int));
 		float x, y, z, w;
 		rsmFile->read(reinterpret_cast<char*>(&x), sizeof(float));
 		rsmFile->read(reinterpret_cast<char*>(&y), sizeof(float));
 		rsmFile->read(reinterpret_cast<char*>(&z), sizeof(float));
 		rsmFile->read(reinterpret_cast<char*>(&w), sizeof(float));
-		frames[i]->quaternion = glm::quat(w, x, y, z);
+		rotFrames[i].quaternion = glm::quat(w, x, y, z);
 	}
 
 	if (model->version >= 0x0202)
 	{
 		int posKeyFrameCount;
 		rsmFile->read(reinterpret_cast<char*>(&posKeyFrameCount), sizeof(int));
+		posFrames.resize(posKeyFrameCount);
 		for (int i = 0; i < posKeyFrameCount; i++)
 		{
-			int frame;
-			glm::vec3 pos;
-			float data;
-
-			rsmFile->read(reinterpret_cast<char*>(&frame), sizeof(int));
-			rsmFile->read(reinterpret_cast<char*>(glm::value_ptr(pos)), sizeof(float) * 3);
-			rsmFile->read(reinterpret_cast<char*>(&data), sizeof(float));
+			rsmFile->read(reinterpret_cast<char*>(&posFrames[i].time), sizeof(int));
+			rsmFile->read(reinterpret_cast<char*>(glm::value_ptr(posFrames[i].position)), sizeof(float) * 3);
+			rsmFile->read(reinterpret_cast<char*>(&posFrames[i].data), sizeof(float));
 		}
 		if (model->version >= 0x0203)
 		{
@@ -459,8 +453,6 @@ Rsm::Mesh::Mesh(Rsm* model, std::istream* rsmFile)
 
 Rsm::Mesh::~Mesh()
 {
-	for (auto face : faces)
-		delete face;
 	for (auto child : children)
 		delete child;
 	faces.clear();
@@ -496,20 +488,20 @@ void Rsm::Mesh::calcMatrix1(int time)
 	else
 		matrix1 = glm::translate(matrix1, pos);
 
-	if (frames.size() == 0)
+	if (rotFrames.size() == 0)
 	{
 		if (fabs(rotangle) > 0.01)
 			matrix1 = glm::rotate(matrix1, glm::radians(rotangle * 180.0f / 3.14159f), rotaxis); //TODO: double conversion
 	}
 	else
 	{
-		if (frames[frames.size() - 1]->time != 0)
+		if (rotFrames[rotFrames.size() - 1].time != 0)
 		{
-			int tick = time % frames[frames.size() - 1]->time;
+			int tick = time % rotFrames[rotFrames.size() - 1].time;
 			int current = 0;
-			for (unsigned int i = 0; i < frames.size(); i++)
+			for (unsigned int i = 0; i < rotFrames.size(); i++)
 			{
-				if (frames[i]->time > tick)
+				if (rotFrames[i].time > tick)
 				{
 					current = i - 1;
 					break;
@@ -519,12 +511,12 @@ void Rsm::Mesh::calcMatrix1(int time)
 				current = 0;
 
 			int next = current + 1;
-			if (next >= (int)frames.size())
+			if (next >= (int)rotFrames.size())
 				next = 0;
 
-			float interval = ((float)(tick - frames[current]->time)) / ((float)(frames[next]->time - frames[current]->time));
+			float interval = ((float)(tick - rotFrames[current].time)) / ((float)(rotFrames[next].time - rotFrames[current].time));
 #if 1
-			glm::quat quat = glm::mix(frames[current]->quaternion, frames[next]->quaternion, interval);
+			glm::quat quat = glm::mix(rotFrames[current].quaternion, rotFrames[next].quaternion, interval);
 #else
 			bEngine::math::cQuaternion quat(
 				(1 - interval) * animationFrames[current].quat.x + interval * animationFrames[next].quat.x,
@@ -540,7 +532,7 @@ void Rsm::Mesh::calcMatrix1(int time)
 		}
 		else
 		{
-			matrix1 *= glm::toMat4(glm::normalize(frames[0]->quaternion));
+			matrix1 *= glm::toMat4(glm::normalize(rotFrames[0].quaternion));
 		}
 	}
 
@@ -583,7 +575,7 @@ void Rsm::Mesh::setBoundingBox(glm::vec3& _bbmin, glm::vec3& _bbmax)
 	{
 		for (int ii = 0; ii < 3; ii++)
 		{
-			glm::vec4 v = glm::vec4(vertices[faces[i]->vertexIds[ii]], 1);
+			glm::vec4 v(vertices[faces[i].vertexIds[ii]], 1);
 			v = myMat * v;
 			if (parent != NULL || children.size() != 0)
 				v += glm::vec4(pos + pos_, 1);
@@ -615,7 +607,7 @@ void Rsm::Mesh::setBoundingBox2(glm::mat4& mat, glm::vec3& bbmin_, glm::vec3& bb
 	{
 		for (int ii = 0; ii < 3; ii++)
 		{
-			glm::vec4 v = mat2 * glm::vec4(vertices[faces[i]->vertexIds[ii]], 1);
+			glm::vec4 v = mat2 * glm::vec4(vertices[faces[i].vertexIds[ii]], 1);
 			bbmin_.x = glm::min(bbmin_.x, v.x);
 			bbmin_.y = glm::min(bbmin_.y, v.y);
 			bbmin_.z = glm::min(bbmin_.z, v.z);

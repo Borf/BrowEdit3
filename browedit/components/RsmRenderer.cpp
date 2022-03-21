@@ -130,7 +130,7 @@ void RsmRenderer::initMeshInfo(Rsm::Mesh* mesh, const glm::mat4 &matrix)
 	for (size_t i = 0; i < mesh->faces.size(); i++)
 	{
 		for (int ii = 0; ii < 3; ii++)
-			verts[mesh->faces[i]->texId].push_back(VertexP3T2N3(mesh->vertices[mesh->faces[i]->vertexIds[ii]], mesh->texCoords[mesh->faces[i]->texCoordIds[ii]], mesh->faces[i]->vertexNormals[ii]));
+			verts[mesh->faces[i].texId].push_back(VertexP3T2N3(mesh->vertices[mesh->faces[i].vertexIds[ii]], mesh->texCoords[mesh->faces[i].texCoordIds[ii]], mesh->faces[i].vertexNormals[ii]));
 	}
 
 	std::vector<VertexP3T2N3> allVerts;
@@ -157,7 +157,7 @@ void RsmRenderer::initMeshInfo(Rsm::Mesh* mesh, const glm::mat4 &matrix)
 
 void RsmRenderer::renderMesh(Rsm::Mesh* mesh, const glm::mat4& matrix)
 {
-	if (mesh && (!mesh->frames.empty() || mesh->matrixDirty))
+	if (mesh && (!mesh->rotFrames.empty() || mesh->matrixDirty))
 	{
 		mesh->matrixDirty = false;
 		mesh->calcMatrix1((int)floor(glfwGetTime() * 1000));

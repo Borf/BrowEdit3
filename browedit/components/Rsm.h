@@ -29,11 +29,25 @@ public:
 			short padding;
 		};
 
-		class Frame
+		class RotFrame
 		{
 		public:
 			int							time;
 			glm::quat					quaternion;
+		};
+		class ScaleFrame
+		{
+		public:
+			int							time;
+			glm::vec3					scale;
+			float						data; //???????
+		};
+		class PosFrame
+		{
+		public:
+			int							time;
+			glm::vec3					position;
+			float						data; //???????
 		};
 
 		Mesh(Rsm* model, std::istream* rsmFile);
@@ -51,7 +65,7 @@ public:
 
 		std::vector<glm::vec3> vertices;
 		std::vector<glm::vec2> texCoords;
-		std::vector<Face*> faces;
+		std::vector<Face> faces;
 		std::vector<Mesh*> children;
 
 		glm::mat4 matrix1;
@@ -75,7 +89,9 @@ public:
 
 		std::vector<std::string> textureFiles; //for > 0203
 		std::vector<int> textures;
-		std::vector<Frame*> frames;
+		std::vector<RotFrame> rotFrames;
+		std::vector<PosFrame> posFrames;
+		std::vector<ScaleFrame> scaleFrames;
 
 
 		glm::vec3 bbmin;
