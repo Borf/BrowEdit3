@@ -118,7 +118,7 @@ public:
 	glm::vec3 bbrange;
 
 	float maxRange;
-	enum eShadeType
+	enum class ShadeType
 	{
 		SHADE_NO,
 		SHADE_FLAT,

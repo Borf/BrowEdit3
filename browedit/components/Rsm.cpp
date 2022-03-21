@@ -356,25 +356,30 @@ Rsm::Mesh::Mesh(Rsm* model, std::istream* rsmFile)
 			for(int ii = 0; ii < 3; ii++)
 				if(f->smoothGroups[ii] != -1)
 					vertexNormals[f->smoothGroups[ii]][f->vertexIds[i]] += f->normal;
-
-	for (auto& f : faces)
+	if (model->shadeType == ShadeType::SHADE_FLAT)
+		for (auto& f : faces)
+			for (int ii = 0; ii < 3; ii++)
+				f->vertexNormals[ii] = f->normal;
+	if (model->shadeType == ShadeType::SHADE_SMOOTH)
 	{
-		for (int ii = 0; ii < 3; ii++)
+		for (auto& f : faces)
 		{
-			if (f->smoothGroups[ii] != -1)
+			for (int ii = 0; ii < 3; ii++)
 			{
-				for (int i = 0; i < 3; i++)
+				if (f->smoothGroups[ii] != -1)
 				{
-					if (ii == 0)
-						f->vertexNormals[i] = glm::vec3(0);
-					f->vertexNormals[i] += glm::normalize(vertexNormals[f->smoothGroups[0]][f->vertexIds[i]]);
+					for (int i = 0; i < 3; i++)
+					{
+						if (ii == 0)
+							f->vertexNormals[i] = glm::vec3(0);
+						f->vertexNormals[i] += glm::normalize(vertexNormals[f->smoothGroups[0]][f->vertexIds[i]]);
+					}
 				}
 			}
+			for (int i = 0; i < 3; i++)
+				f->vertexNormals[i] = glm::normalize(f->vertexNormals[i]);
 		}
-		for(int i = 0; i < 3; i++)
-			f->vertexNormals[i] = glm::normalize(f->vertexNormals[i]);
 	}
-
 
 
 	if (model->version >= 0x0106)
