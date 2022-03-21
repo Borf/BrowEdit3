@@ -72,6 +72,12 @@ void RsmRenderer::render()
 		{
 			matrixCache = glm::scale(matrixCache, glm::vec3(rswObject->scale.x, -rswObject->scale.y, rswObject->scale.z));
 			matrixCache = glm::translate(matrixCache, glm::vec3(-rsm->realbbrange.x, rsm->realbbmin.y, -rsm->realbbrange.z));
+			if (rsm->version >= 0x0202)
+			{
+				matrixCache = glm::scale(matrixCache, glm::vec3(1, -1, 1));
+				matrixCache = glm::translate(matrixCache, glm::vec3(0, rsm->realbbmax.y, 0));
+			}
+
 		}
 		matrixCached = true;
 

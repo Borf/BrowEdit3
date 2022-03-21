@@ -285,7 +285,7 @@ Rsm::Mesh::Mesh(Rsm* model, std::istream* rsmFile)
 		pos = glm::vec3(0.0f);
 		rotangle = 0.0f;
 		rotaxis = glm::vec3(0.0f);
-		scale = glm::vec3(1.0f, -1.0f, 1.0f);
+		scale = glm::vec3(1.0f, 1.0f, 1.0f);
 	}
 	else
 	{
