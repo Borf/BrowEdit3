@@ -52,16 +52,13 @@ void Rsw::load(const std::string& fileName, Map* map, bool loadModels, bool load
 	version = util::swapShort(version);
 	std::cout << std::hex<<"RSW: Version 0x" << version << std::endl <<std::dec;
 
+	if (version >= 0x0202)
+		buildNumber = file->get();
 	if (version >= 0x0206)
 	{
 		int u;
 		file->read(reinterpret_cast<char*>(&u), sizeof(int));
 		std::cout << "206 unknown value: " << u << std::endl;
-	}
-	if (version >= 0x0202) // ???
-	{
-		
-		std::cout << "202 unknown value: " << file->get() << std::endl;
 	}
 
 	iniFile = util::FileIO::readString(file, 40);
@@ -150,7 +147,7 @@ void Rsw::load(const std::string& fileName, Map* map, bool loadModels, bool load
 		Node* object = new Node("");
 		auto rswObject = new RswObject();
 		object->addComponent(rswObject);
-		rswObject->load(file, version, loadModels);
+		rswObject->load(file, version, buildNumber, loadModels);
 
 		if (object->getComponent<RswLight>() && extraProperties.is_object() && extraProperties["light"].is_array())
 		{

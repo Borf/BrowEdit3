@@ -16,7 +16,7 @@ RswModel::RswModel(RswModel* other) : aabb(other->aabb), animType(other->animTyp
 {
 }
 
-void RswModel::load(std::istream* is, int version, bool loadModel)
+void RswModel::load(std::istream* is, int version, unsigned char buildNumber, bool loadModel)
 {
 	auto rswObject = node->getComponent<RswObject>();
 	if (version >= 0x103)
@@ -27,16 +27,13 @@ void RswModel::load(std::istream* is, int version, bool loadModel)
 		is->read(reinterpret_cast<char*>(&animSpeed), sizeof(float));
 		is->read(reinterpret_cast<char*>(&blockType), sizeof(int));
 	}
-	if (version >= 0x0206)
+	if (version >= 0x0206 && buildNumber == 197)
 	{
 		unsigned char c = is->get(); // unknown, 0?
-		if (c != 0) //wtf hack?
-		{
-			is->seekg(-1, std::ios_base::cur);
-		}
 	}
 
 	std::string fileNameRaw = util::FileIO::readString(is, 80);
+	//std::cout << "Model: " << node->name << "\t" << fileNameRaw << std::endl;
 	fileName = util::iso_8859_1_to_utf8(fileNameRaw);
 	assert(fileNameRaw == util::utf8_to_iso_8859_1(fileName));
 	objectName = util::iso_8859_1_to_utf8(util::FileIO::readString(is, 80)); // TODO: Unknown?

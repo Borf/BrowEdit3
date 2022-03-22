@@ -19,7 +19,7 @@ RswObject::RswObject(RswObject* other) : position(other->position), rotation(oth
 {
 }
 
-void RswObject::load(std::istream* is, int version, bool loadModel)
+void RswObject::load(std::istream* is, int version, unsigned char buildNumber, bool loadModel)
 {
 	int type;
 	is->read(reinterpret_cast<char*>(&type), sizeof(int));
@@ -28,7 +28,7 @@ void RswObject::load(std::istream* is, int version, bool loadModel)
 //		std::cout << "Loading model" << std::endl;
 		node->addComponent(new RswModel());
 		node->addComponent(new RswModelCollider());
-		node->getComponent<RswModel>()->load(is, version, loadModel);
+		node->getComponent<RswModel>()->load(is, version, buildNumber, loadModel);
 	}
 	else if (type == 2)
 	{

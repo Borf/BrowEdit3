@@ -19,6 +19,7 @@ class Rsw : public Component, public ImguiProps
 {
 public:
 	short version;
+	unsigned char buildNumber = 0;
 	std::string iniFile;
 	std::string gndFile;
 	std::string gatFile;
@@ -80,7 +81,7 @@ public:
 
 	RswObject() {}
 	RswObject(RswObject* other);
-	void load(std::istream* is, int version, bool loadModel);
+	void load(std::istream* is, int version, unsigned char buildNumber, bool loadModel);
 	void save(std::ofstream& file, int version);
 	static void buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>&);
 	NLOHMANN_DEFINE_TYPE_INTRUSIVE(RswObject, position, rotation, scale);
@@ -102,7 +103,7 @@ public:
 	RswModel() : aabb(glm::vec3(), glm::vec3()) {}
 	RswModel(const std::string &fileName) : aabb(glm::vec3(), glm::vec3()), animType(0), animSpeed(1), blockType(0), fileName(fileName) {}
 	RswModel(RswModel* other);
-	void load(std::istream* is, int version, bool loadModel);
+	void load(std::istream* is, int version, unsigned char buildNumber, bool loadModel);
 	void loadExtra(nlohmann::json data);
 	void save(std::ofstream &file, int version);
 	nlohmann::json saveExtra();
