@@ -29,6 +29,7 @@ Rsw::Rsw()
 
 void Rsw::load(const std::string& fileName, Map* map, bool loadModels, bool loadGnd)
 {
+	std::cout << "Loading " << fileName << std::endl;
 	auto file = util::FileIO::open(fileName);
 	if (!file)
 	{
@@ -53,12 +54,15 @@ void Rsw::load(const std::string& fileName, Map* map, bool loadModels, bool load
 	std::cout << std::hex<<"RSW: Version 0x" << version << std::endl <<std::dec;
 
 	if (version >= 0x0202)
+	{
 		buildNumber = file->get();
-	if (version >= 0x0206)
+		std::cout << "Build number " << (int)buildNumber << std::endl;
+	}
+	if (version >= 0x0205)
 	{
 		int u;
 		file->read(reinterpret_cast<char*>(&u), sizeof(int));
-		std::cout << "206 unknown value: " << u << std::endl;
+		std::cout << "205 unknown value: " << u << std::endl;
 	}
 
 	iniFile = util::FileIO::readString(file, 40);

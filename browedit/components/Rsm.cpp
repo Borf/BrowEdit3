@@ -357,18 +357,18 @@ Rsm::Mesh::Mesh(Rsm* model, std::istream* rsmFile)
 		}
 	}
 
-	std::map<int, std::map<int, glm::vec3>> vertexNormals;
-	for (auto& f : faces)
-		for (int i = 0; i < 3; i++)
-			for(int ii = 0; ii < 3; ii++)
-				if(f.smoothGroups[ii] != -1)
-					vertexNormals[f.smoothGroups[ii]][f.vertexIds[i]] += f.normal;
 	if (model->shadeType == ShadeType::SHADE_FLAT)
 		for (auto& f : faces)
 			for (int ii = 0; ii < 3; ii++)
 				f.vertexNormals[ii] = f.normal;
 	if (model->shadeType == ShadeType::SHADE_SMOOTH)
 	{
+		std::map<int, std::map<int, glm::vec3>> vertexNormals;
+		for (auto& f : faces)
+			for (int i = 0; i < 3; i++)
+				for (int ii = 0; ii < 3; ii++)
+					if (f.smoothGroups[ii] != -1)
+						vertexNormals[f.smoothGroups[ii]][f.vertexIds[i]] += f.normal;
 		for (auto& f : faces)
 		{
 			for (int ii = 0; ii < 3; ii++)
