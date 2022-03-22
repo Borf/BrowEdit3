@@ -52,9 +52,16 @@ void Rsw::load(const std::string& fileName, Map* map, bool loadModels, bool load
 	version = util::swapShort(version);
 	std::cout << std::hex<<"RSW: Version 0x" << version << std::endl <<std::dec;
 
+	if (version >= 0x0206)
+	{
+		int u;
+		file->read(reinterpret_cast<char*>(&u), sizeof(int));
+		std::cout << "206 unknown value: " << u << std::endl;
+	}
 	if (version >= 0x0202) // ???
 	{
-		file->get();
+		
+		std::cout << "202 unknown value: " << file->get() << std::endl;
 	}
 
 	iniFile = util::FileIO::readString(file, 40);
@@ -66,22 +73,26 @@ void Rsw::load(const std::string& fileName, Map* map, bool loadModels, bool load
 
 	iniFile = util::FileIO::readString(file, 40); // ehh...read inifile twice?
 
+	//version 0x0206
+	if (version < 0x0206)
+	{
 		//TODO: default values
-	if (version >= 0x103)
-		file->read(reinterpret_cast<char*>(&water.height), sizeof(float));
-	if (version >= 0x108)
-	{
-		file->read(reinterpret_cast<char*>(&water.type), sizeof(int));
-		file->read(reinterpret_cast<char*>(&water.amplitude), sizeof(float));
-		file->read(reinterpret_cast<char*>(&water.waveSpeed), sizeof(float));
-		file->read(reinterpret_cast<char*>(&water.wavePitch), sizeof(float));
-	}
-	if (version >= 0x109)
-		file->read(reinterpret_cast<char*>(&water.textureAnimSpeed), sizeof(int));
-	else
-	{
-		water.textureAnimSpeed = 100;
-		throw "todo";
+		if (version >= 0x103)
+			file->read(reinterpret_cast<char*>(&water.height), sizeof(float));
+		if (version >= 0x108)
+		{
+			file->read(reinterpret_cast<char*>(&water.type), sizeof(int));
+			file->read(reinterpret_cast<char*>(&water.amplitude), sizeof(float));
+			file->read(reinterpret_cast<char*>(&water.waveSpeed), sizeof(float));
+			file->read(reinterpret_cast<char*>(&water.wavePitch), sizeof(float));
+		}
+		if (version >= 0x109)
+			file->read(reinterpret_cast<char*>(&water.textureAnimSpeed), sizeof(int));
+		else
+		{
+			water.textureAnimSpeed = 100;
+			throw "todo";
+		}
 	}
 
 	if (loadGnd)
@@ -98,7 +109,6 @@ void Rsw::load(const std::string& fileName, Map* map, bool loadModels, bool load
 	light.diffuse = glm::vec3(1, 1, 1);
 	light.ambient = glm::vec3(0.3f, 0.3f, 0.3f);
 	light.intensity = 0.5f;
-
 
 	if (version >= 0x105)
 	{

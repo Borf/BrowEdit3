@@ -27,6 +27,15 @@ void RswModel::load(std::istream* is, int version, bool loadModel)
 		is->read(reinterpret_cast<char*>(&animSpeed), sizeof(float));
 		is->read(reinterpret_cast<char*>(&blockType), sizeof(int));
 	}
+	if (version >= 0x0206)
+	{
+		unsigned char c = is->get(); // unknown, 0?
+		if (c != 0) //wtf hack?
+		{
+			is->seekg(-1, std::ios_base::cur);
+		}
+	}
+
 	std::string fileNameRaw = util::FileIO::readString(is, 80);
 	fileName = util::iso_8859_1_to_utf8(fileNameRaw);
 	assert(fileNameRaw == util::utf8_to_iso_8859_1(fileName));

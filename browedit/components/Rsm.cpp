@@ -350,7 +350,11 @@ Rsm::Mesh::Mesh(Rsm* model, std::istream* rsmFile)
 		if (ok)
 			f->normal = glm::normalize(glm::cross(vertices[f->vertexIds[1]] - vertices[f->vertexIds[0]], vertices[f->vertexIds[2]] - vertices[f->vertexIds[0]]));
 		else
-			std::cerr<< "There's an error in " << model->fileName << std::endl;
+		{
+			std::cerr << "There's an error in " << model->fileName << std::endl;
+			model->loaded = false;
+			throw std::exception("vertex out of bounds");
+		}
 	}
 
 	std::map<int, std::map<int, glm::vec3>> vertexNormals;
