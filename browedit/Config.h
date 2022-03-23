@@ -38,6 +38,8 @@ public:
 	std::vector<float> translateGridSizes = { 0.25f, 0.5f, 1.0f, 2.0f, 2.5f, 5.0f, 10.0f, 20.0f };
 	std::vector<float> rotateGridSizes = { 1,22.5, 45,90,180 };
 
+	std::string grfEditorPath = "";
+
 	float toolbarHeight() { return toolbarButtonSize + 8; }
 
 	std::string isValid() const;
@@ -63,5 +65,6 @@ public:
 		toolbarButtonsTextureEdit,
 		toolbarButtonsWallEdit,
 		translateGridSizes,
-		rotateGridSizes);
+		rotateGridSizes,
+		grfEditorPath);
 };

@@ -25,12 +25,12 @@ using json = nlohmann::json;
 #include <mutex>
 
 
-Map::Map(const std::string& name) : name(name)
+Map::Map(const std::string& name, BrowEdit* browEdit) : name(name)
 {
 	rootNode = new Node(name);
 	auto rsw = new Rsw();
 	rootNode->addComponent(rsw);	
-	rsw->load(name, this);
+	rsw->load(name, this, browEdit);
 }
 
 

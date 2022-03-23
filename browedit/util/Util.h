@@ -46,6 +46,9 @@ namespace util
 	bool DragFloatMulti(BrowEdit* browEdit, Map* map, const std::vector<T*>& data, const char* label, const std::function<float* (T*)>& callback, float v_speed, float v_min, float v_max);
 
 	template<class T>
+	bool DragFloat2Multi(BrowEdit* browEdit, Map* map, const std::vector<T*>& data, const char* label, const std::function<glm::vec2* (T*)>& callback, float v_speed, float v_min, float v_max, bool moveTogether = false);
+
+	template<class T>
 	bool DragFloat3Multi(BrowEdit* browEdit, Map* map, const std::vector<T*>& data, const char* label, const std::function<glm::vec3* (T*)>& callback, float v_speed, float v_min, float v_max, bool moveTogether = false);
 
 	template<class T>

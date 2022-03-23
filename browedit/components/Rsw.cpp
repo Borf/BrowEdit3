@@ -19,6 +19,7 @@
 #include <browedit/Map.h>
 #include <iostream>
 #include <fstream>
+#include <filesystem>
 #include <glm/gtc/type_ptr.hpp>
 #include <browedit/Node.h>
 
@@ -27,7 +28,7 @@ Rsw::Rsw()
 }
 
 
-void Rsw::load(const std::string& fileName, Map* map, bool loadModels, bool loadGnd)
+void Rsw::load(const std::string& fileName, Map* map, BrowEdit* browEdit, bool loadModels, bool loadGnd)
 {
 	std::cout << "Loading " << fileName << std::endl;
 	auto file = util::FileIO::open(fileName);
@@ -37,6 +38,88 @@ void Rsw::load(const std::string& fileName, Map* map, bool loadModels, bool load
 		return;
 	}
 	quadtree = nullptr;
+
+	json lubInfo = json::array();
+
+	std::string mapName = fileName;
+	mapName = mapName.substr(0, mapName.size() - 4);
+	mapName = mapName.substr(mapName.rfind("\\") + 1);
+	auto lub = util::FileIO::open("data\\lua files\\effecttool\\" + mapName + ".lub");
+	if (!lub)
+		lub = util::FileIO::open("data\\luafiles514\\lua files\\effecttool\\" + mapName + ".lub");
+	if (!lub)
+		lub = util::FileIO::open("data\\LuaFiles514\\Lua Files\\effecttool\\" + mapName + ".lub");
+	if (lub)
+	{
+		std::ofstream out("tmp.lub", std::ios_base::binary | std::ios_base::out);
+		char buf[1024];
+		while (!lub->eof())
+		{
+			lub->read(buf, 1024);
+			auto count = lub->gcount();
+			out.write(buf, count);
+		}
+		out.close();
+		delete lub;
+
+		STARTUPINFO info = { sizeof(info) };
+		PROCESS_INFORMATION processInfo;
+		std::string cmd = browEdit->config.grfEditorPath + "GrfCL.exe -lub .\\tmp.lub .\\tmp.lua";
+
+		if (CreateProcess(nullptr, (LPSTR)cmd.c_str(), nullptr, nullptr, TRUE, 0, nullptr, nullptr, &info, &processInfo))
+		{
+			WaitForSingleObject(processInfo.hProcess, INFINITE);
+			CloseHandle(processInfo.hProcess);
+			CloseHandle(processInfo.hThread);
+		}
+		std::string data = "";
+		std::ifstream lua("tmp.lua", std::ios_base::binary | std::ios_base::in);
+		if (lua.is_open())
+		{
+			char buf[1024];
+			while (!lua.eof())
+			{
+				lua.read(buf, 1024);
+				data += std::string(buf, lua.gcount());
+			}
+			lua.close();
+		}
+		std::filesystem::remove("tmp.lub");
+		std::filesystem::remove("tmp.lua");
+
+//		std::cout << "Found lub: " << data << std::endl;
+
+		data = data.substr(data.find("{")); // strip beginning;
+		std::replace(data.begin(), data.end(), '[', '\"');
+		std::replace(data.begin(), data.end(), ']', '\"');
+		std::replace(data.begin(), data.end(), '=', ':');
+		data[0] = '[';
+		data[data.length() - 3] = ']';
+		auto lines = util::split(data, "\n");
+		for (auto i = 0; i < lines.size(); i++)
+		{
+			if (lines[i].size() > 2 && lines[i][0] == '\t' && lines[i][1] == '\"')
+				lines[i] = lines[i].substr(lines[i].find(":") + 2);
+			if (lines[i].size() > 3 && lines[i][0] == '\t' && lines[i][1] == '\t' && lines[i][2] != '\t')
+			{
+				lines[i] = "\t\t\"" + lines[i].substr(2, lines[i].find(" ") - 2) + "\"" + lines[i].substr(lines[i].find(" ") + 1);
+				std::replace(lines[i].begin(), lines[i].end(), '{', '[');
+				std::replace(lines[i].begin(), lines[i].end(), '}', ']');
+			}
+		}
+
+		std::string jsondata = util::combine(lines, "\n");
+		try
+		{
+			lubInfo = json::parse(jsondata);
+		}
+		catch (const std::exception &e)
+		{
+			std::cerr << "Error loading json from lub data: " << e.what() << std::endl;
+			std::cout << jsondata << std::endl;
+		}
+	}
+
 
 	auto extraProperties = util::FileIO::getJson(fileName + ".extra.json");
 
@@ -146,6 +229,7 @@ void Rsw::load(const std::string& fileName, Map* map, bool loadModels, bool load
 	file->read(reinterpret_cast<char*>(&objectCount), sizeof(int));
 	std::cout << "RSW: Loading " << objectCount << " objects" << std::endl;
 
+	int lubIndex = 0;
 	for (int i = 0; i < objectCount; i++)
 	{
 		Node* object = new Node("");
@@ -164,6 +248,15 @@ void Rsw::load(const std::string& fileName, Map* map, bool loadModels, bool load
 			for (const json& l : extraProperties["model"])
 				if (l["id"] == i)
 					object->getComponent<RswModel>()->loadExtra(l);
+		}
+		auto rswEffect = object->getComponent<RswEffect>();
+		if (rswEffect && rswEffect->id == 974)
+		{
+			auto lubEffect = new LubEffect();
+			if (lubIndex <= lubInfo.size())
+				lubEffect->load(lubInfo[lubIndex]);
+			object->addComponent(lubEffect);
+			lubIndex++;
 		}
 
 		std::string objPath = object->name;

@@ -14,6 +14,7 @@
 class RsmRenderer;
 class Gnd;
 class Map;
+class BrowEdit;
 
 class Rsw : public Component, public ImguiProps
 {
@@ -64,7 +65,7 @@ public:
 
 	Rsw();
 
-	void load(const std::string& fileName, Map* map, bool loadModels = true, bool loadGnd = true);
+	void load(const std::string& fileName, Map* map, BrowEdit* browEdit, bool loadModels = true, bool loadGnd = true);
 	void save(const std::string& fileName);
 	void buildImGui(BrowEdit* browEdit) override;
 	void recalculateQuadtree(QuadTreeNode* node = nullptr);
@@ -150,6 +151,28 @@ public:
 	nlohmann::json saveExtra();
 	static void buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>&);
 	NLOHMANN_DEFINE_TYPE_INTRUSIVE(RswLight, color, range, givesShadow, cutOff, cutOff, intensity, affectShadowMap, affectLightmap, falloff, falloffStyle);
+};
+
+class LubEffect : public Component
+{
+public:
+	glm::vec3 dir1;
+	glm::vec3 dir2;
+	glm::vec2 gravity;
+	glm::vec3 pos;
+	glm::vec3 radius;
+	glm::vec3 color;
+	glm::vec2 rate;
+	glm::vec2 size;
+	glm::vec2 life;
+	std::string texture;
+	float speed;
+	int srcmode;
+	int destmode;
+	int maxcount;
+
+	void load(const nlohmann::json& data);
+	static void buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>&);
 };
 
 class RswEffect : public Component

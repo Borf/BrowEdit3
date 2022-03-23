@@ -29,7 +29,8 @@ std::string Config::isValid() const
 	if (!std::filesystem::exists(util::utf8_to_iso_8859_1(ropath) + "data"))
 		return "Please create a data directory in your RO directory";
 
-
+	if (grfEditorPath != "" && !std::filesystem::exists(util::utf8_to_iso_8859_1(grfEditorPath) + "GrfCL.exe"))
+		return "GrfCL.exe not found in grf editor path";
 	for (const auto& grf : grfs)
 	{
 		if (!std::filesystem::exists(util::utf8_to_iso_8859_1(grf)))
@@ -69,7 +70,7 @@ bool Config::showWindow(BrowEdit* browEdit)
 		ImGui::Text("RO Path");
 		ImGui::InputText("##RO Path", &ropath);
 		ImGui::SameLine();
-		if (ImGui::Button("Browse"))
+		if (ImGui::Button("Browse##rodir"))
 		{
 			CoInitializeEx(0, 0);
 			CHAR szDir[MAX_PATH];
@@ -106,7 +107,7 @@ bool Config::showWindow(BrowEdit* browEdit)
 				ImGui::PushID(i);
 				ImGui::InputText("##", &grfs[i]);
 				ImGui::SameLine();
-				if (ImGui::Button("Browse"))
+				if (ImGui::Button("Browse##grf"))
 				{
 					CoInitializeEx(0, 0);
 
@@ -236,6 +237,39 @@ bool Config::showWindow(BrowEdit* browEdit)
 		if (ImGui::Button("+##Rotate"))
 			rotateGridSizes.push_back(1);
 
+
+		ImGui::InputText("GRF Editor path", &grfEditorPath);
+		ImGui::SameLine();
+		if (ImGui::Button("Browse##grfeditor"))
+		{
+			CoInitializeEx(0, 0);
+			CHAR szDir[MAX_PATH];
+			BROWSEINFO bInfo;
+			bInfo.hwndOwner = glfwGetWin32Window(browEdit->window);
+			bInfo.pidlRoot = NULL;
+			bInfo.pszDisplayName = szDir;
+			bInfo.lpszTitle = "Select your GRF editor path (not data)";
+			bInfo.ulFlags = 0;
+			bInfo.lpfn = BrowseCallBackProc;
+			std::string path = util::utf8_to_iso_8859_1(grfEditorPath);
+			if(path == "")
+				path = "c:\\Program Files (x86)\\GRF Editor\\";
+			if (path.find(":") == std::string::npos)
+				path = std::filesystem::current_path().string() + "\\" + path; //TODO: fix this
+
+			bInfo.lParam = (LPARAM)path.c_str();
+			bInfo.iImage = -1;
+
+			LPITEMIDLIST lpItem = SHBrowseForFolder(&bInfo);
+			if (lpItem != NULL)
+			{
+				SHGetPathFromIDList(lpItem, szDir);
+				grfEditorPath = szDir;
+				if (grfEditorPath[grfEditorPath.size() - 1] != '\\')
+					grfEditorPath += "\\";
+				grfEditorPath = util::iso_8859_1_to_utf8(grfEditorPath);
+			}
+		}
 
 		if (ImGui::Button("Save"))
 		{

@@ -137,7 +137,8 @@ void BrowEdit::run()
 	if(config.isValid() == "")
 //		loadMap("data\\aldebaran.rsw");
 //		loadMap("data\\prontera.rsw");
-		loadMap("data\\amicit01.rsw"); //RSM2
+//		loadMap("data\\amicit01.rsw"); //RSM2
+		loadMap("data\\grademk.rsw"); //special effects
 //		loadMap("data\\icecastle.rsw");
 //		loadMap("data\\bl_ice.rsw");
 	//		loadMap("data\\comodo.rsw");
@@ -497,7 +498,7 @@ void BrowEdit::loadMap(const std::string& file)
 			map = m;
 	if (!map)
 	{
-		map = new Map(file);
+		map = new Map(file, this);
 		maps.push_back(map);
 	}
 	int viewCount = 0;
