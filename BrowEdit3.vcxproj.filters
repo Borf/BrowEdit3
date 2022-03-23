@@ -50,6 +50,9 @@
     <Filter Include="browedit\shaders">
       <UniqueIdentifier>{4a696fe1-8d62-4f88-a26d-004f83ecf6bd}</UniqueIdentifier>
     </Filter>
+    <Filter Include="lib\lua">
+      <UniqueIdentifier>{3ef98012-f1ef-4385-9961-c1a5f68ab744}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="lib\imgui\imgui.cpp">
@@ -304,6 +307,96 @@
     <ClCompile Include="browedit\components\WaterRenderer.cpp">
       <Filter>browedit\components</Filter>
     </ClCompile>
+    <ClCompile Include="lib\lua-5.1.4\lbaselib.c">
+      <Filter>lib\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\lua-5.1.4\lcode.c">
+      <Filter>lib\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\lua-5.1.4\ldblib.c">
+      <Filter>lib\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\lua-5.1.4\ldebug.c">
+      <Filter>lib\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\lua-5.1.4\ldo.c">
+      <Filter>lib\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\lua-5.1.4\ldump.c">
+      <Filter>lib\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\lua-5.1.4\lfunc.c">
+      <Filter>lib\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\lua-5.1.4\lgc.c">
+      <Filter>lib\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\lua-5.1.4\linit.c">
+      <Filter>lib\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\lua-5.1.4\liolib.c">
+      <Filter>lib\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\lua-5.1.4\llex.c">
+      <Filter>lib\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\lua-5.1.4\lmathlib.c">
+      <Filter>lib\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\lua-5.1.4\lmem.c">
+      <Filter>lib\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\lua-5.1.4\loadlib.c">
+      <Filter>lib\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\lua-5.1.4\lobject.c">
+      <Filter>lib\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\lua-5.1.4\lopcodes.c">
+      <Filter>lib\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\lua-5.1.4\loslib.c">
+      <Filter>lib\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\lua-5.1.4\lparser.c">
+      <Filter>lib\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\lua-5.1.4\lstate.c">
+      <Filter>lib\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\lua-5.1.4\lstring.c">
+      <Filter>lib\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\lua-5.1.4\lstrlib.c">
+      <Filter>lib\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\lua-5.1.4\ltable.c">
+      <Filter>lib\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\lua-5.1.4\ltablib.c">
+      <Filter>lib\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\lua-5.1.4\ltm.c">
+      <Filter>lib\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\lua-5.1.4\lundump.c">
+      <Filter>lib\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\lua-5.1.4\lvm.c">
+      <Filter>lib\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\lua-5.1.4\lzio.c">
+      <Filter>lib\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\lua-5.1.4\print.c">
+      <Filter>lib\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\lua-5.1.4\lapi.c">
+      <Filter>lib\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\lua-5.1.4\lauxlib.c">
+      <Filter>lib\lua</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="lib\imgui\imgui.h">
@@ -537,6 +630,75 @@
     <ClInclude Include="browedit\shaders\WaterShader.h">
       <Filter>browedit\shaders</Filter>
     </ClInclude>
+    <ClInclude Include="lib\lua-5.1.4\lcode.h">
+      <Filter>lib\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\lua-5.1.4\ldebug.h">
+      <Filter>lib\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\lua-5.1.4\ldo.h">
+      <Filter>lib\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\lua-5.1.4\lfunc.h">
+      <Filter>lib\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\lua-5.1.4\lgc.h">
+      <Filter>lib\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\lua-5.1.4\llex.h">
+      <Filter>lib\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\lua-5.1.4\llimits.h">
+      <Filter>lib\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\lua-5.1.4\lmem.h">
+      <Filter>lib\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\lua-5.1.4\lobject.h">
+      <Filter>lib\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\lua-5.1.4\lopcodes.h">
+      <Filter>lib\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\lua-5.1.4\lparser.h">
+      <Filter>lib\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\lua-5.1.4\lstate.h">
+      <Filter>lib\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\lua-5.1.4\lstring.h">
+      <Filter>lib\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\lua-5.1.4\ltable.h">
+      <Filter>lib\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\lua-5.1.4\ltm.h">
+      <Filter>lib\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\lua-5.1.4\lua.h">
+      <Filter>lib\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\lua-5.1.4\luaconf.h">
+      <Filter>lib\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\lua-5.1.4\lualib.h">
+      <Filter>lib\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\lua-5.1.4\lundump.h">
+      <Filter>lib\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\lua-5.1.4\lvm.h">
+      <Filter>lib\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\lua-5.1.4\lzio.h">
+      <Filter>lib\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\lua-5.1.4\lapi.h">
+      <Filter>lib\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\lua-5.1.4\lauxlib.h">
+      <Filter>lib\lua</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="BrowEdit3.rc">
@@ -594,6 +756,9 @@
     </None>
     <None Include="data\shaders\water.fs">
       <Filter>data\shaders</Filter>
+    </None>
+    <None Include="lib\lua-5.1.4\Makefile">
+      <Filter>lib\lua</Filter>
     </None>
   </ItemGroup>
 </Project>
