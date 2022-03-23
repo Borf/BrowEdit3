@@ -397,6 +397,9 @@
     <ClCompile Include="lib\lua-5.1.4\lauxlib.c">
       <Filter>lib\lua</Filter>
     </ClCompile>
+    <ClCompile Include="browedit\luac.cpp">
+      <Filter>browedit</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="lib\imgui\imgui.h">

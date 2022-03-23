@@ -43,6 +43,7 @@
     <ClCompile Include="browedit\gl\Texture.cpp" />
     <ClCompile Include="browedit\Image.cpp" />
     <ClCompile Include="browedit\Lightmapper.cpp" />
+    <ClCompile Include="browedit\luac.cpp" />
     <ClCompile Include="browedit\Map.cpp" />
     <ClCompile Include="browedit\MapView.cpp" />
     <ClCompile Include="browedit\MapView.Heightmode.cpp" />
@@ -298,7 +299,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NOMINMAX;GRF_STATIC;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>lib/imgui/;lib/glfw-3.3.6/include;lib/grflib;lib/zlib;lib/sfl;lib/glm;lib/glad/include;$(SolutionDir);lib/bugtrap</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>lib/imgui/;lib/glfw-3.3.6/include;lib/grflib;lib/zlib;lib/sfl;lib/glm;lib/glad/include;$(SolutionDir);lib/bugtrap;lib/lua-5.1.4</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -323,7 +324,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NOMINMAX;GRF_STATIC;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>lib/imgui/;lib/glfw-3.3.6/include;lib/grflib;lib/zlib;lib/sfl;lib/glm;lib/glad/include;$(SolutionDir);lib/bugtrap</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>lib/imgui/;lib/glfw-3.3.6/include;lib/grflib;lib/zlib;lib/sfl;lib/glm;lib/glad/include;$(SolutionDir);lib/bugtrap;lib/lua-5.1.4</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <BrowseInformation>true</BrowseInformation>

@@ -23,9 +23,13 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <browedit/Node.h>
 
+void luadump(const char*, const char*);
+
+
 Rsw::Rsw()
 {
 }
+
 
 
 void Rsw::load(const std::string& fileName, Map* map, BrowEdit* browEdit, bool loadModels, bool loadGnd)
@@ -84,8 +88,11 @@ void Rsw::load(const std::string& fileName, Map* map, BrowEdit* browEdit, bool l
 			}
 			lua.close();
 		}
-		std::filesystem::remove("tmp.lub");
-		std::filesystem::remove("tmp.lua");
+		//std::filesystem::remove("tmp.lub");
+		//std::filesystem::remove("tmp.lua");
+
+		luadump("tmp.lua", "out.lub");
+
 
 //		std::cout << "Found lub: " << data << std::endl;
 
