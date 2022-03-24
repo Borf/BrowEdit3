@@ -56,7 +56,7 @@ void Rsw::load(const std::string& fileName, Map* map, BrowEdit* browEdit, bool l
 		char c = lub->get();
 		lub->seekg(0, std::ios_base::beg);
 		std::string data = "";
-		if (c == 0x27)
+		if (c == 0x1b)
 		{
 			std::ofstream out("tmp.lub", std::ios_base::binary | std::ios_base::out);
 			char buf[1024];
@@ -67,7 +67,6 @@ void Rsw::load(const std::string& fileName, Map* map, BrowEdit* browEdit, bool l
 				out.write(buf, count);
 			}
 			out.close();
-			delete lub;
 
 			STARTUPINFO info = { sizeof(info) };
 			PROCESS_INFORMATION processInfo;
@@ -105,29 +104,57 @@ void Rsw::load(const std::string& fileName, Map* map, BrowEdit* browEdit, bool l
 		}
 		delete lub;
 
-
-//		std::cout << "Found lub: " << data << std::endl;
-
+		//this is a dirty hack to change the main lua array into a json structure for automatic parsing...I'm wondering if it's not easier to just write a lua parser
 		data = data.substr(data.find("{")); // strip beginning;
+		data = util::replace(data, "\r\n", "\n");
+		while (data.find("\t\n") != std::string::npos)//omg mina, clean up your newlines
+			data = util::replace(data, "\t\n", "\n");
+		while(data.find(" \n") != std::string::npos)
+			data = util::replace(data, " \n", "\n");
+		while (data.find("\n\n") != std::string::npos)
+			data = util::replace(data, "\n\n", "\n");
+		data = util::replace(data, "\\", "\\\\");
+		data = util::replace(data, "[[", "\"");
+		data = util::replace(data, "]]", "\"");
 		std::replace(data.begin(), data.end(), '[', '\"');
 		std::replace(data.begin(), data.end(), ']', '\"');
+		data = util::replace(data, "\"\"", "");
 		std::replace(data.begin(), data.end(), '=', ':');
 		data[0] = '[';
-		data[data.length() - 3] = ']';
 		auto lines = util::split(data, "\n");
+		bool done = false;
 		for (auto i = 0; i < lines.size(); i++)
 		{
 			if (lines[i].size() > 2 && lines[i][0] == '\t' && lines[i][1] == '\"')
-				lines[i] = lines[i].substr(lines[i].find(":") + 2);
+			{
+				if(lines[i].find("{") != std::string::npos)
+					lines[i] = lines[i].substr(lines[i].find(":") + 2);
+				else
+					lines[i] = "";
+			}
 			if (lines[i].size() > 3 && lines[i][0] == '\t' && lines[i][1] == '\t' && lines[i][2] != '\t')
 			{
 				lines[i] = "\t\t\"" + lines[i].substr(2, lines[i].find(" ") - 2) + "\"" + lines[i].substr(lines[i].find(" ") + 1);
 				std::replace(lines[i].begin(), lines[i].end(), '{', '[');
 				std::replace(lines[i].begin(), lines[i].end(), '}', ']');
 			}
+			auto trimmed = util::trim(lines[i]); // why you do this to me mina? remove comma at end of list
+			if (i < lines.size()-1 && trimmed.size() > 0 && trimmed[trimmed.size() - 1] == ',' && (util::trim(lines[i + 1]) == "}," || util::trim(lines[i + 1]) == "}"))
+				lines[i] = lines[i].substr(0, lines[i].rfind(",")) + lines[i].substr(lines[i].rfind(",") + 1);
+
+			if (done)
+				lines[i] = "";
+			if (util::rtrim(lines[i]) == "}")
+				done = true;
 		}
 
 		std::string jsondata = util::combine(lines, "\n");
+		while (jsondata.find("\n\n") != std::string::npos)
+			jsondata = util::replace(jsondata, "\n\n", "\n");
+
+		jsondata = util::trim(jsondata);
+		jsondata[jsondata.length() - 1] = ']';
+
 		try
 		{
 			lubInfo = json::parse(jsondata);

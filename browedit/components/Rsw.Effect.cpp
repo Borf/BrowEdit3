@@ -62,6 +62,8 @@ void RswEffect::buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>& no
 
 void LubEffect::load(const json& data)
 {
+	if (data.is_null())
+		return;
 	from_json(data["dir1"], dir1);
 	from_json(data["dir2"], dir2);
 	from_json(data["gravity"], gravity);
@@ -102,9 +104,9 @@ void LubEffect::buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>& no
 		util::DragFloat2Multi<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "life", [](LubEffect* e) {return &e->life; }, 0, 0, 0);
 		util::InputTextMulti<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "texture", [](LubEffect* e) {return &e->texture; });
 		util::DragFloatMulti<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "speed", [](LubEffect* e) {return &e->speed; }, 0, 0, 0);
-		util::DragIntMulti<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "speed", [](LubEffect* e) {return &e->srcmode; }, 0, 0, 0);
-		util::DragIntMulti<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "speed", [](LubEffect* e) {return &e->destmode; }, 0, 0, 0);
-		util::DragIntMulti<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "speed", [](LubEffect* e) {return &e->maxcount; }, 0, 0, 0);
+		util::DragIntMulti<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "srcmode", [](LubEffect* e) {return &e->srcmode; }, 0, 0, 0);
+		util::DragIntMulti<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "destmode", [](LubEffect* e) {return &e->destmode; }, 0, 0, 0);
+		util::DragIntMulti<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "maxcount", [](LubEffect* e) {return &e->maxcount; }, 0, 0, 0);
 	}
 
 }

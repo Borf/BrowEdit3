@@ -18,6 +18,22 @@ namespace util
 
 	std::vector<std::string> split(std::string value, const std::string &seperator);
 	std::string combine(const std::vector<std::string> &items, const std::string& seperator);
+	std::string replace(std::string orig, const std::string& find, const std::string& replace);
+	static inline std::string ltrim(std::string s) {
+		s.erase(0, s.find_first_not_of(" \n\r\t"));
+		return s;
+	}
+
+	// trim from end
+	static inline std::string rtrim(std::string s) {
+		s.erase(s.find_last_not_of(" \n\r\t") + 1);
+		return s;
+	}
+
+	// trim from both ends
+	static inline std::string trim(std::string& s) {
+		return ltrim(rtrim(s));
+	}
 
 	std::string SaveAsDialog(const std::string& fileName, const char* filter = "All\0*.*\0");
 

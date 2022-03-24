@@ -88,6 +88,23 @@ namespace util
 		}
 		return ret;
 	}
+
+	std::string replace(std::string orig, const std::string& find, const std::string& replace)
+	{
+		size_t index = 0;
+		while (true)
+		{
+			index = orig.find(find, index);
+			if (index == std::string::npos)
+				break;
+			orig.replace(index, find.length(), replace);
+			index += replace.length();
+		}
+		return orig;
+	}
+
+
+
 	bool ColorEdit3(BrowEdit* browEdit, Map* map, Node* node, const char* label, glm::vec3* ptr, const std::string& action)
 	{
 		static glm::vec3 startValue;
