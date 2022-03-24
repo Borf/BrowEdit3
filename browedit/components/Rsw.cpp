@@ -128,7 +128,15 @@ void Rsw::load(const std::string& fileName, Map* map, BrowEdit* browEdit, bool l
 	}
 
 
-	auto extraProperties = util::FileIO::getJson(fileName + ".extra.json");
+	json extraProperties;
+	try {
+		extraProperties = util::FileIO::getJson(fileName + ".extra.json");
+	}
+	catch (const std::exception& e)
+	{
+		std::cerr << "Error loading extra properties " << fileName << ".extra.json" << std::endl;
+		std::cerr << e.what() << std::endl;
+	}
 
 	char header[4];
 	file->read(header, 4);
