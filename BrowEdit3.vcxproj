@@ -43,7 +43,6 @@
     <ClCompile Include="browedit\gl\Texture.cpp" />
     <ClCompile Include="browedit\Image.cpp" />
     <ClCompile Include="browedit\Lightmapper.cpp" />
-    <ClCompile Include="browedit\luac.cpp" />
     <ClCompile Include="browedit\Map.cpp" />
     <ClCompile Include="browedit\MapView.cpp" />
     <ClCompile Include="browedit\MapView.Heightmode.cpp" />
@@ -79,36 +78,6 @@
     <ClCompile Include="lib\imgui\imgui_tables.cpp" />
     <ClCompile Include="lib\imgui\imgui_widgets.cpp" />
     <ClCompile Include="lib\imgui\misc\cpp\imgui_stdlib.cpp" />
-    <ClCompile Include="lib\lua-5.1.4\lapi.c" />
-    <ClCompile Include="lib\lua-5.1.4\lauxlib.c" />
-    <ClCompile Include="lib\lua-5.1.4\lbaselib.c" />
-    <ClCompile Include="lib\lua-5.1.4\lcode.c" />
-    <ClCompile Include="lib\lua-5.1.4\ldblib.c" />
-    <ClCompile Include="lib\lua-5.1.4\ldebug.c" />
-    <ClCompile Include="lib\lua-5.1.4\ldo.c" />
-    <ClCompile Include="lib\lua-5.1.4\ldump.c" />
-    <ClCompile Include="lib\lua-5.1.4\lfunc.c" />
-    <ClCompile Include="lib\lua-5.1.4\lgc.c" />
-    <ClCompile Include="lib\lua-5.1.4\linit.c" />
-    <ClCompile Include="lib\lua-5.1.4\liolib.c" />
-    <ClCompile Include="lib\lua-5.1.4\llex.c" />
-    <ClCompile Include="lib\lua-5.1.4\lmathlib.c" />
-    <ClCompile Include="lib\lua-5.1.4\lmem.c" />
-    <ClCompile Include="lib\lua-5.1.4\loadlib.c" />
-    <ClCompile Include="lib\lua-5.1.4\lobject.c" />
-    <ClCompile Include="lib\lua-5.1.4\lopcodes.c" />
-    <ClCompile Include="lib\lua-5.1.4\loslib.c" />
-    <ClCompile Include="lib\lua-5.1.4\lparser.c" />
-    <ClCompile Include="lib\lua-5.1.4\lstate.c" />
-    <ClCompile Include="lib\lua-5.1.4\lstring.c" />
-    <ClCompile Include="lib\lua-5.1.4\lstrlib.c" />
-    <ClCompile Include="lib\lua-5.1.4\ltable.c" />
-    <ClCompile Include="lib\lua-5.1.4\ltablib.c" />
-    <ClCompile Include="lib\lua-5.1.4\ltm.c" />
-    <ClCompile Include="lib\lua-5.1.4\lundump.c" />
-    <ClCompile Include="lib\lua-5.1.4\lvm.c" />
-    <ClCompile Include="lib\lua-5.1.4\lzio.c" />
-    <ClCompile Include="lib\lua-5.1.4\print.c" />
     <ClCompile Include="lib\sfl\stb\stb_image.cpp" />
     <ClCompile Include="lib\sfl\stb\stb_image_write.cpp" />
     <ClCompile Include="lib\zlib\adler32.c" />
@@ -192,29 +161,6 @@
     <ClInclude Include="lib\imgui\imstb_textedit.h" />
     <ClInclude Include="lib\imgui\imstb_truetype.h" />
     <ClInclude Include="lib\imgui\misc\cpp\imgui_stdlib.h" />
-    <ClInclude Include="lib\lua-5.1.4\lapi.h" />
-    <ClInclude Include="lib\lua-5.1.4\lauxlib.h" />
-    <ClInclude Include="lib\lua-5.1.4\lcode.h" />
-    <ClInclude Include="lib\lua-5.1.4\ldebug.h" />
-    <ClInclude Include="lib\lua-5.1.4\ldo.h" />
-    <ClInclude Include="lib\lua-5.1.4\lfunc.h" />
-    <ClInclude Include="lib\lua-5.1.4\lgc.h" />
-    <ClInclude Include="lib\lua-5.1.4\llex.h" />
-    <ClInclude Include="lib\lua-5.1.4\llimits.h" />
-    <ClInclude Include="lib\lua-5.1.4\lmem.h" />
-    <ClInclude Include="lib\lua-5.1.4\lobject.h" />
-    <ClInclude Include="lib\lua-5.1.4\lopcodes.h" />
-    <ClInclude Include="lib\lua-5.1.4\lparser.h" />
-    <ClInclude Include="lib\lua-5.1.4\lstate.h" />
-    <ClInclude Include="lib\lua-5.1.4\lstring.h" />
-    <ClInclude Include="lib\lua-5.1.4\ltable.h" />
-    <ClInclude Include="lib\lua-5.1.4\ltm.h" />
-    <ClInclude Include="lib\lua-5.1.4\lua.h" />
-    <ClInclude Include="lib\lua-5.1.4\luaconf.h" />
-    <ClInclude Include="lib\lua-5.1.4\lualib.h" />
-    <ClInclude Include="lib\lua-5.1.4\lundump.h" />
-    <ClInclude Include="lib\lua-5.1.4\lvm.h" />
-    <ClInclude Include="lib\lua-5.1.4\lzio.h" />
     <ClInclude Include="lib\zlib\crc32.h" />
     <ClInclude Include="lib\zlib\deflate.h" />
     <ClInclude Include="lib\zlib\gzguts.h" />
@@ -252,7 +198,6 @@
     <None Include="doc\Lightmapping.md" />
     <None Include="doc\ObjectEdit.md" />
     <None Include="doc\Readme.md" />
-    <None Include="lib\lua-5.1.4\Makefile" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
@@ -299,10 +244,11 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NOMINMAX;GRF_STATIC;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>lib/imgui/;lib/glfw-3.3.6/include;lib/grflib;lib/zlib;lib/sfl;lib/glm;lib/glad/include;$(SolutionDir);lib/bugtrap;lib/lua-5.1.4</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>lib/imgui/;lib/glfw-3.3.6/include;lib/grflib;lib/zlib;lib/sfl;lib/glm;lib/glad/include;$(SolutionDir);lib/bugtrap</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <ObjectFileName>$(IntDir)%(RelativeDir)</ObjectFileName>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -324,11 +270,12 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NOMINMAX;GRF_STATIC;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>lib/imgui/;lib/glfw-3.3.6/include;lib/grflib;lib/zlib;lib/sfl;lib/glm;lib/glad/include;$(SolutionDir);lib/bugtrap;lib/lua-5.1.4</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>lib/imgui/;lib/glfw-3.3.6/include;lib/grflib;lib/zlib;lib/sfl;lib/glm;lib/glad/include;$(SolutionDir);lib/bugtrap</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <BrowseInformation>true</BrowseInformation>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <ObjectFileName>$(IntDir)%(RelativeDir)</ObjectFileName>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

@@ -23,8 +23,6 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <browedit/Node.h>
 
-void luadump(const char*, const char*);
-
 
 Rsw::Rsw()
 {
@@ -55,43 +53,57 @@ void Rsw::load(const std::string& fileName, Map* map, BrowEdit* browEdit, bool l
 		lub = util::FileIO::open("data\\LuaFiles514\\Lua Files\\effecttool\\" + mapName + ".lub");
 	if (lub)
 	{
-		std::ofstream out("tmp.lub", std::ios_base::binary | std::ios_base::out);
-		char buf[1024];
-		while (!lub->eof())
-		{
-			lub->read(buf, 1024);
-			auto count = lub->gcount();
-			out.write(buf, count);
-		}
-		out.close();
-		delete lub;
-
-		STARTUPINFO info = { sizeof(info) };
-		PROCESS_INFORMATION processInfo;
-		std::string cmd = browEdit->config.grfEditorPath + "GrfCL.exe -lub .\\tmp.lub .\\tmp.lua";
-
-		if (CreateProcess(nullptr, (LPSTR)cmd.c_str(), nullptr, nullptr, TRUE, 0, nullptr, nullptr, &info, &processInfo))
-		{
-			WaitForSingleObject(processInfo.hProcess, INFINITE);
-			CloseHandle(processInfo.hProcess);
-			CloseHandle(processInfo.hThread);
-		}
+		char c = lub->get();
+		lub->seekg(0, std::ios_base::beg);
 		std::string data = "";
-		std::ifstream lua("tmp.lua", std::ios_base::binary | std::ios_base::in);
-		if (lua.is_open())
+		if (c == 0x27)
+		{
+			std::ofstream out("tmp.lub", std::ios_base::binary | std::ios_base::out);
+			char buf[1024];
+			while (!lub->eof())
+			{
+				lub->read(buf, 1024);
+				auto count = lub->gcount();
+				out.write(buf, count);
+			}
+			out.close();
+			delete lub;
+
+			STARTUPINFO info = { sizeof(info) };
+			PROCESS_INFORMATION processInfo;
+			std::string cmd = browEdit->config.grfEditorPath + "GrfCL.exe -lub .\\tmp.lub .\\tmp.lua";
+
+			if (CreateProcess(nullptr, (LPSTR)cmd.c_str(), nullptr, nullptr, TRUE, 0, nullptr, nullptr, &info, &processInfo))
+			{
+				WaitForSingleObject(processInfo.hProcess, INFINITE);
+				CloseHandle(processInfo.hProcess);
+				CloseHandle(processInfo.hThread);
+			}
+			data = "";
+			std::ifstream lua("tmp.lua", std::ios_base::binary | std::ios_base::in);
+			if (lua.is_open())
+			{
+				char buf[1024];
+				while (!lua.eof())
+				{
+					lua.read(buf, 1024);
+					data += std::string(buf, lua.gcount());
+				}
+				lua.close();
+			}
+			std::filesystem::remove("tmp.lub");
+			std::filesystem::remove("tmp.lua");
+		}
+		else //this is a nasty renamed lua file to lub. Shame on you mappers!
 		{
 			char buf[1024];
-			while (!lua.eof())
+			while (!lub->eof())
 			{
-				lua.read(buf, 1024);
-				data += std::string(buf, lua.gcount());
+				lub->read(buf, 1024);
+				data += std::string(buf, lub->gcount());
 			}
-			lua.close();
 		}
-		//std::filesystem::remove("tmp.lub");
-		//std::filesystem::remove("tmp.lua");
-
-		luadump("tmp.lua", "out.lub");
+		delete lub;
 
 
 //		std::cout << "Found lub: " << data << std::endl;
