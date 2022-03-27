@@ -348,7 +348,7 @@ void Rsw::load(const std::string& fileName, Map* map, BrowEdit* browEdit, bool l
 }
 
 
-void Rsw::save(const std::string& fileName)
+void Rsw::save(const std::string& fileName, BrowEdit* browEdit)
 {
 	std::cout << "Saving to " << fileName << std::endl;
 	std::ofstream file(fileName.c_str(), std::ios_base::out | std::ios_base::binary);
@@ -419,6 +419,7 @@ void Rsw::save(const std::string& fileName)
 	});
 	int objectCount = (int)objects.size();
 	file.write(reinterpret_cast<char*>(&objectCount), sizeof(int));
+	std::vector<LubEffect*> lubEffects;
 	for (auto i = 0; i < objects.size(); i++)
 	{
 		objects[i]->getComponent<RswObject>()->save(file, version);
@@ -436,6 +437,9 @@ void Rsw::save(const std::string& fileName)
 			j["id"] = i;
 			extraProperties["model"].push_back(j);
 		}
+		auto lubEffect = objects[i]->getComponent<LubEffect>();
+		if (lubEffect)
+			lubEffects.push_back(lubEffect);
 	}
 	quadtree->foreach([&file](QuadTreeNode* n)
 	{
@@ -447,8 +451,52 @@ void Rsw::save(const std::string& fileName)
 
 	std::ofstream extraFile((fileName + ".extra.json").c_str(), std::ios_base::out | std::ios_base::binary);
 	extraFile << std::setw(2)<<extraProperties;
+	extraFile.close();
 
-	//TODO: write gnd/gat
+	std::string mapName = fileName;
+	if (mapName.find(".rsw") != std::string::npos)
+		mapName = fileName.substr(0, mapName.find(".rsw"));
+	if (mapName.find("\\") != std::string::npos)
+		mapName = mapName.substr(mapName.rfind("\\")+1);
+	std::ofstream lubFile((browEdit->config.ropath + "data\\luafiles514\\lua files\\effecttool\\" + mapName + ".lub").c_str(), std::ios_base::out | std::ios_base::binary);
+	lubFile << "_" << mapName << "_emitterInfo_version = 2.0" << std::endl;
+	lubFile << "_" << mapName << "_emitterInfo =" << std::endl;
+	lubFile << "{" << std::endl;
+	
+	#define SAVEPROP0(x,y) lubFile<<"\t\t[\""<<x<<"\"] = { "<<y<<" }"
+	#define SAVEPROP2(x,y) lubFile<<"\t\t[\""<<x<<"\"] = { "<<y[0]<<", "<<y[1]<<" }"
+	#define SAVEPROP3(x,y) lubFile<<"\t\t[\""<<x<<"\"] = { "<<y[0]<<", "<<y[1]<<", "<<y[2]<<" }"
+	#define SAVEPROPS(x,y) lubFile<<"\t\t[\""<<x<<"\"] = [["<<y<<"]]"
+
+	for (auto i = 0; i < lubEffects.size(); i++)
+	{
+		lubFile << "\t[" << i << "] = " << std::endl;
+		lubFile << "\t{" << std::endl;
+		SAVEPROP3("dir1", lubEffects[i]->dir1) << "," << std::endl;
+		SAVEPROP3("dir2", lubEffects[i]->dir2) << "," << std::endl;
+		SAVEPROP3("gravity", lubEffects[i]->gravity) << "," << std::endl;
+		SAVEPROP3("pos", lubEffects[i]->pos) << "," << std::endl;
+		SAVEPROP3("radius", lubEffects[i]->radius) << "," << std::endl;
+		SAVEPROP3("color", lubEffects[i]->color) << "," << std::endl;
+		SAVEPROP2("rate", lubEffects[i]->rate) << "," << std::endl;
+		SAVEPROP2("size", lubEffects[i]->size) << "," << std::endl;
+		SAVEPROP2("life", lubEffects[i]->life) << "," << std::endl;
+		SAVEPROPS("texture", lubEffects[i]->texture) << "," << std::endl;
+		SAVEPROP0("speed", lubEffects[i]->speed) << "," << std::endl;
+		SAVEPROP0("srcmode", lubEffects[i]->srcmode) << "," << std::endl;
+		SAVEPROP0("destmode", lubEffects[i]->destmode) << "," << std::endl;
+		SAVEPROP0("maxcount", lubEffects[i]->maxcount) << "," << std::endl;
+		SAVEPROP0("zenable", lubEffects[i]->zenable) << std::endl;
+
+
+		lubFile << "\t}";
+		if (i < lubEffects.size() - 1)
+			lubFile << ",";
+		lubFile << std::endl;
+	}
+	lubFile << "}" << std::endl;
+	lubFile.close();
+
 	std::cout << "Done saving" << std::endl;
 }
 

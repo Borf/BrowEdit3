@@ -487,7 +487,7 @@ void BrowEdit::saveMap(Map* map)
 		fixBackup(gndName);
 	}
 
-	map->rootNode->getComponent<Rsw>()->save(rswName);
+	map->rootNode->getComponent<Rsw>()->save(rswName, this);
 	map->rootNode->getComponent<Gnd>()->save(gndName);
 }
 
