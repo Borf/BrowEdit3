@@ -65,6 +65,7 @@ public:
 		void rebuild();
 	};
 
+	gl::Texture* white;
 	std::vector<gl::Texture*> textures;
 	std::vector<std::vector<Chunk*> > chunks; //TODO: remove pointer?
 	Gnd* gnd;

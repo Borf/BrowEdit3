@@ -16,6 +16,7 @@ GndRenderer::GndRenderer()
 {
 	renderContext = GndRenderContext::getInstance();
 
+	white = util::ResourceManager<gl::Texture>::load("data\\texture\\white.png");
 	gndShadow = new gl::Texture(shadowmapSize, shadowmapSize);
 	gndShadowDirty = true;
 }
@@ -121,7 +122,6 @@ void GndRenderer::render()
 		for (auto c : r)
 			c->render();
 
-	
 }
 
 
@@ -179,6 +179,7 @@ void GndRenderer::Chunk::render()
 				shader->setUniform(GndShader::Uniforms::lightColorToggle, 0.0f);
 				shader->setUniform(GndShader::Uniforms::colorToggle, 1.0f);
 				shader->setUniform(GndShader::Uniforms::viewTextures, 0.0f);
+				renderer->white->bind();
 			}
 			//VertexP3T2T2C4N3
 			glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexP3T2T2C4N3), (void*)(0 * sizeof(float)));
