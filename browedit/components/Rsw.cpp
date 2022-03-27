@@ -455,7 +455,7 @@ void Rsw::save(const std::string& fileName, BrowEdit* browEdit)
 
 	std::string mapName = fileName;
 	if (mapName.find(".rsw") != std::string::npos)
-		mapName = fileName.substr(0, mapName.find(".rsw"));
+		mapName = mapName.substr(0, mapName.find(".rsw"));
 	if (mapName.find("\\") != std::string::npos)
 		mapName = mapName.substr(mapName.rfind("\\")+1);
 	std::ofstream lubFile((browEdit->config.ropath + "data\\luafiles514\\lua files\\effecttool\\" + mapName + ".lub").c_str(), std::ios_base::out | std::ios_base::binary);

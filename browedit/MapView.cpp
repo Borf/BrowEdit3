@@ -83,13 +83,13 @@ void MapView::toolbar(BrowEdit* browEdit)
 		ImGui::SameLine();
 		browEdit->toolBarToggleButton("viewEmptyTiles", viewEmptyTiles ? ICON_EMPTYTILE_ON : ICON_EMPTYTILE_OFF, &viewEmptyTiles, "View empty tiles", browEdit->config.toolbarButtonsViewOptions);
 
-		browEdit->toolBarToggleButton("viewModels", ICON_NOICON, &viewModels, "View Models", browEdit->config.toolbarButtonsViewOptions);
+		browEdit->toolBarToggleButton("viewModels", ICON_VIEW_MODEL_ON, &viewModels, "View Models", browEdit->config.toolbarButtonsViewOptions);
 		ImGui::SameLine();
-		browEdit->toolBarToggleButton("viewEffects", ICON_NOICON, &viewEffects, "View Effects", browEdit->config.toolbarButtonsViewOptions);
+		browEdit->toolBarToggleButton("viewEffects", ICON_VIEW_EFFECT_ON, &viewEffects, "View Effects", browEdit->config.toolbarButtonsViewOptions);
 		ImGui::SameLine();
-		browEdit->toolBarToggleButton("viewSounds", ICON_NOICON, &viewSounds, "View Sounds", browEdit->config.toolbarButtonsViewOptions);
+		browEdit->toolBarToggleButton("viewSounds", ICON_VIEW_SOUND_ON, &viewSounds, "View Sounds", browEdit->config.toolbarButtonsViewOptions);
 		ImGui::SameLine();
-		browEdit->toolBarToggleButton("viewLights", ICON_NOICON, &viewLights, "View Lights", browEdit->config.toolbarButtonsViewOptions);
+		browEdit->toolBarToggleButton("viewLights", ICON_VIEW_LIGHT_ON, &viewLights, "View Lights", browEdit->config.toolbarButtonsViewOptions);
 
 		if (browEdit->editMode == BrowEdit::EditMode::Object)
 		{

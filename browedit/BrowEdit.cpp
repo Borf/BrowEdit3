@@ -478,13 +478,21 @@ void fixBackup(const std::string& fileName)
 
 void BrowEdit::saveMap(Map* map)
 {
+	std::string mapName = map->name;
+	if (mapName.find(".rsw") != std::string::npos)
+		mapName = mapName.substr(0, mapName.find(".rsw"));
+	if (mapName.find("\\") != std::string::npos)
+		mapName = mapName.substr(mapName.rfind("\\") + 1);
+
 	std::string rswName = config.ropath + map->name;
 	std::string gndName = config.ropath + map->name.substr(0, map->name.size() - 4) + ".gnd";
+	std::string lubName = config.ropath + "data\\luafiles514\\lua files\\effecttool\\" + mapName + ".lub";
 
 	if (config.backup)
 	{
 		fixBackup(rswName);
 		fixBackup(gndName);
+		fixBackup(lubName);
 	}
 
 	map->rootNode->getComponent<Rsw>()->save(rswName, this);

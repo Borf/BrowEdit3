@@ -17,13 +17,13 @@ $order = array(
 	"texture_on.png", "texture_off.png", "smooth_color_on.png", "smooth_color_off.png",					//16-
 		"emptytile_on.png", "emptytile_off.png", "all_lights_on.png", "all_lights_off.png",				//20-
 	"lightsphere_on.png", "lightsphere_off.png", "","",													//24-
-		"","","","",																					//28-
-	"snap_grid_on.png","snap_grid_off.png","viewoptions.png","",														//32-
+		"view_model_on.png","view_effect_on.png","view_light_on.png","view_sound_on.png",				//28-
+	"snap_grid_on.png","snap_grid_off.png","viewoptions.png","",										//32-
 		"undo.png", "redo.png", "copy.png", "paste.png",												//36-
 	"move.png", "rotate.png", "scale.png", "",															//40-
 		"camera_ortho.png","camera_perspective.png","","",												//44-
 	"pivot_rotation01.png","pivot_rotation02.png","","",												//48-
-		"object_window_opened.png","object_window_closed.png","","",																					//52-
+		"object_window_opened.png","object_window_closed.png","","",									//52-
 	"","","","",																						//56-
 		"","","","missing.png",																			//60-63
 );
