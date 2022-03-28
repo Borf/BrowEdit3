@@ -350,6 +350,12 @@ void Map::pasteSelection(BrowEdit* browEdit)
 						newNode->addComponent(new BillboardRenderer("data\\effect.png", "data\\effect_selected.png"));
 						newNode->addComponent(new CubeCollider(5));
 					}
+					if (c["type"] == "lubeffect")
+					{
+						auto lubEffect = new LubEffect();
+						from_json(c, *lubEffect);
+						newNode->addComponent(lubEffect);
+					}
 					if (c["type"] == "rswsound")
 					{
 						auto rswSound = new RswSound();
