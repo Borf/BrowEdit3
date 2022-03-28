@@ -109,9 +109,36 @@ void LubEffect::buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>& no
 	if (lubEffects.size() == 0)
 		return;
 
-	ImGui::Text("lub Effect");
+
+	ImGui::Text("Lub Effect");
+	ImGui::PushID("LubEffect");
+	if (ImGui::BeginPopupContextItem("CopyPaste"))
+	{
+		try {
+			if (ImGui::MenuItem("Copy"))
+			{
+				json clipboard;
+				to_json(clipboard, *lubEffects[0]);
+				ImGui::SetClipboardText(clipboard.dump(1).c_str());
+			}
+			if (ImGui::MenuItem("Paste (no undo)"))
+			{
+				auto cb = ImGui::GetClipboardText();
+				if (cb)
+					for (auto lubEffect : lubEffects)
+					{
+						from_json(json::parse(std::string(cb)), *lubEffect);
+						//lubEffect->node->getComponent<LubRenderer>()->begin();
+					}
+			}
+		}
+		catch (...) {}
+		ImGui::EndPopup();
+	}
+	ImGui::PopID();
+
 	if (browEdit->config.grfEditorPath == "")
-		ImGui::Text("Please set up grf editor to edit lub effects");
+		ImGui::Text("Please set up grf editor to edit lub effects, then reload the map");
 	else
 	{
 		util::DragFloat3Multi<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "dir1", [](LubEffect* e) {return &e->dir1; }, 0, 0, 0);
