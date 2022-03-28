@@ -43,14 +43,10 @@ public:
 	}
 
 	template<class T>
-	void addComponents(std::vector<T*> &lst)
+	void addComponents(const std::vector<T*> &lst)
 	{
-		for (auto c : components)
-		{
-			T* cc = dynamic_cast<T*>(c);
-			if (cc)
-				lst.push_back(cc);
-		}
+		for (auto c : lst)
+			addComponent(c);
 	}
 
 	template<class T>
@@ -69,6 +65,17 @@ public:
 				it++;
 		}
 		return ret;
+	}
+
+	void removeComponent(Component* component)
+	{
+		for (auto it = components.begin(); it != components.end(); )
+		{
+			if (*it == component)
+				it = components.erase(it);
+			else
+				it++;
+		}
 	}
 
 

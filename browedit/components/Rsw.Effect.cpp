@@ -1,9 +1,13 @@
 #include <Windows.h>
 #include "Rsw.h"
 #include <browedit/BrowEdit.h>
+#include <browedit/Map.h>
+#include <browedit/MapView.h>
 #include <browedit/Node.h>
 #include <browedit/Config.h>
 #include <browedit/util/FileIO.h>
+#include <browedit/actions/AddComponentAction.h>
+#include <browedit/actions/RemoveComponentAction.h>
 
 #include <iostream>
 #include <fstream>
@@ -50,7 +54,24 @@ void RswEffect::buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>& no
 		return;
 
 	ImGui::Text("Effect");
-	util::DragIntMulti<RswEffect>(browEdit, browEdit->activeMapView->map, rswEffects, "Type", [](RswEffect* e) {return &e->id; }, 1, 0, 500); //TODO: change this to a combobox
+	browEdit->activeMapView->map->beginGroupAction();
+	util::DragIntMulti<RswEffect>(browEdit, browEdit->activeMapView->map, rswEffects, "Type", [](RswEffect* e) {return &e->id; }, 1, 0, 500);
+	if (ImGui::IsItemDeactivatedAfterEdit())
+	{
+		if (rswEffects[0]->id == 974)
+		{
+			for (auto n : nodes)
+				if (!n->getComponent<LubEffect>())
+					browEdit->activeMapView->map->doAction(new AddComponentAction(n, new LubEffect()), browEdit);
+		}
+		else
+		{
+			for (auto n : nodes)
+				if (n->getComponent<LubEffect>())
+					browEdit->activeMapView->map->doAction(new RemoveComponentAction<LubEffect>(n), browEdit);
+		}
+	}
+	browEdit->activeMapView->map->endGroupAction(browEdit);
 	util::DragFloatMulti<RswEffect>(browEdit, browEdit->activeMapView->map, rswEffects, "Loop", [](RswEffect* e) {return &e->loop; }, 0.01f, 0.0f, 100.0f);
 	util::DragFloatMulti<RswEffect>(browEdit, browEdit->activeMapView->map, rswEffects, "Param 1", [](RswEffect* e) {return &e->param1; }, 0.01f, 0.0f, 100.0f);
 	util::DragFloatMulti<RswEffect>(browEdit, browEdit->activeMapView->map, rswEffects, "Param 2", [](RswEffect* e) {return &e->param2; }, 0.01f, 0.0f, 100.0f);
