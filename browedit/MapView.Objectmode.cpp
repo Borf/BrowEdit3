@@ -154,7 +154,7 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 			{
 				std::string path = newNode.first->name;
 				if (path.find("\\") != std::string::npos)
-					path = path.substr(0, path.find("\\"));
+					path = path.substr(0, path.rfind("\\"));
 				else
 					path = "";
 				newNode.first->setParent(map->findAndBuildNode(path));

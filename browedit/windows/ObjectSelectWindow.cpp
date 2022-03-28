@@ -248,7 +248,7 @@ void BrowEdit::showObjectWindow()
 					if (file.substr(file.size() - 4) == ".rsm" ||
 						file.substr(file.size() - 5) == ".rsm2")
 					{
-						std::string name = path.substr(0, path.rfind(".")-1); //remove .rsm
+						std::string name = path.substr(0, path.rfind(".")); //remove .rsm
 						name = name.substr(11); // remove data\model\ 
 						Node* newNode = new Node(util::iso_8859_1_to_utf8(name));
 						newNode->addComponent(util::ResourceManager<Rsm>::load(path));
