@@ -5,8 +5,8 @@
 #include "Rsm.h"
 #include "GndRenderer.h"
 #include "RsmRenderer.h"
+#include "LubRenderer.h"
 #include "WaterRenderer.h"
-#include "BillboardRenderer.h"
 
 #include <imgui.h>
 #include <misc/cpp/imgui_stdlib.h>
@@ -313,6 +313,7 @@ void Rsw::load(const std::string& fileName, Map* map, BrowEdit* browEdit, bool l
 			if (lubIndex <= lubInfo.size())
 				lubEffect->load(lubInfo[lubIndex]);
 			object->addComponent(lubEffect);
+			object->addComponent(new LubRenderer());
 			lubIndex++;
 		}
 

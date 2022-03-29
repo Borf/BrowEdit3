@@ -310,6 +310,9 @@
     <ClCompile Include="browedit\actions\AddComponentAction.cpp">
       <Filter>browedit\actions</Filter>
     </ClCompile>
+    <ClCompile Include="browedit\components\LubRenderer.cpp">
+      <Filter>browedit\components</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="lib\imgui\imgui.h">
@@ -549,6 +552,9 @@
     <ClInclude Include="browedit\actions\RemoveComponentAction.h">
       <Filter>browedit\actions</Filter>
     </ClInclude>
+    <ClInclude Include="browedit\components\LubRenderer.h">
+      <Filter>browedit\components</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="BrowEdit3.rc">
@@ -605,6 +611,12 @@
       <Filter>data\shaders</Filter>
     </None>
     <None Include="data\shaders\water.fs">
+      <Filter>data\shaders</Filter>
+    </None>
+    <None Include="data\shaders\lub.vs">
+      <Filter>data\shaders</Filter>
+    </None>
+    <None Include="data\shaders\lub.fs">
       <Filter>data\shaders</Filter>
     </None>
   </ItemGroup>

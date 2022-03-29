@@ -48,11 +48,22 @@ void BillboardRenderer::render()
 		textureSelected->bind();
 	else
 		texture->bind();
+	glDepthMask(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexP3T2), verts[0].data);
 	glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexP3T2), verts[0].data + 3);
 	glDrawArrays(GL_QUADS, 0, 4);
+	glDepthMask(1);
 
 
+}
+
+void BillboardRenderer::setTexture(const std::string &texture)
+{
+	util::ResourceManager<gl::Texture>::unload(this->texture);
+	util::ResourceManager<gl::Texture>::unload(this->textureSelected);
+	this->texture = util::ResourceManager<gl::Texture>::load(texture);
+	this->texture = util::ResourceManager<gl::Texture>::load(texture);
+	this->textureSelected = util::ResourceManager<gl::Texture>::load(texture);
 }
 
 
@@ -61,6 +72,7 @@ BillboardRenderer::BillboardRenderContext::BillboardRenderContext() : shader(uti
 {
 	shader->use();
 	shader->setUniform(BillboardShader::Uniforms::s_texture, 0);
+	order = 3;
 }
 
 void BillboardRenderer::BillboardRenderContext::preFrame(const glm::mat4& projectionMatrix, const glm::mat4& viewMatrix)

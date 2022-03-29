@@ -7,14 +7,15 @@
 namespace gl { class Texture; }
 class RswObject;
 class Gnd;
+class LubEffect;
 
-class BillboardRenderer : public Renderer
+class LubRenderer : public Renderer
 {
 public:
-	class BillboardShader : public gl::Shader
+	class LubShader : public gl::Shader
 	{
 	public:
-		BillboardShader() : gl::Shader("data/shaders/billboard", Uniforms::End) { bindUniforms(); }
+		LubShader() : gl::Shader("data/shaders/lub", Uniforms::End) { bindUniforms(); }
 		struct Uniforms
 		{
 			enum
@@ -38,27 +39,36 @@ public:
 		}
 	};
 private:
-	RswObject* rswObject;
+	RswObject* rswObject = nullptr;
+	LubEffect* lubEffect = nullptr;
+
 	gl::Texture* texture;
-	gl::Texture* textureSelected = nullptr;
+
+	float lastTime;
+	float emitTime = 0;
+	class Particle
+	{
+	public:
+		glm::vec3 position;
+		glm::vec3 speed;
+		float size;
+		float life;
+	};
+	std::vector<Particle> particles;
 
 public:
 	Gnd* gnd;
-	class BillboardRenderContext : public Renderer::RenderContext, public util::Singleton<BillboardRenderContext>
+	class LubRenderContext : public Renderer::RenderContext, public util::Singleton<LubRenderContext>
 	{
 	public:
-		BillboardShader* shader = nullptr;
+		LubShader* shader = nullptr;
 		glm::mat4 viewMatrix = glm::mat4(1.0f);
-		bool viewLighting = true;
 
-		BillboardRenderContext();
+		LubRenderContext();
 		virtual void preFrame(const glm::mat4& projectionMatrix, const glm::mat4& viewMatrix) override;
 	};
 
-	BillboardRenderer(const std::string& texture, const std::string& texture_selected = "");
+	LubRenderer();
 	virtual void render();
 	bool selected = false;
-
-	void setTexture(const std::string &texture);
-
 };

@@ -29,6 +29,7 @@
     <ClCompile Include="browedit\components\Component.cpp" />
     <ClCompile Include="browedit\components\Gnd.cpp" />
     <ClCompile Include="browedit\components\GndRenderer.cpp" />
+    <ClCompile Include="browedit\components\LubRenderer.cpp" />
     <ClCompile Include="browedit\components\Rsm.cpp" />
     <ClCompile Include="browedit\components\RsmRenderer.cpp" />
     <ClCompile Include="browedit\components\Rsw.cpp" />
@@ -118,6 +119,7 @@
     <ClInclude Include="browedit\components\Gnd.h" />
     <ClInclude Include="browedit\components\GndRenderer.h" />
     <ClInclude Include="browedit\components\ImguiProps.h" />
+    <ClInclude Include="browedit\components\LubRenderer.h" />
     <ClInclude Include="browedit\components\Renderer.h" />
     <ClInclude Include="browedit\components\Rsm.h" />
     <ClInclude Include="browedit\components\RsmRenderer.h" />
@@ -192,6 +194,8 @@
     <None Include="data\shaders\billboard.vs" />
     <None Include="data\shaders\gnd.fs" />
     <None Include="data\shaders\gnd.vs" />
+    <None Include="data\shaders\lub.fs" />
+    <None Include="data\shaders\lub.vs" />
     <None Include="data\shaders\rsm.fs" />
     <None Include="data\shaders\rsm.vs" />
     <None Include="data\shaders\simple.fs" />

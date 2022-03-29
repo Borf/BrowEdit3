@@ -6,6 +6,7 @@
 #include <browedit/Node.h>
 #include <browedit/Config.h>
 #include <browedit/util/FileIO.h>
+#include <browedit/components/BillboardRenderer.h>
 #include <browedit/actions/AddComponentAction.h>
 #include <browedit/actions/RemoveComponentAction.h>
 
@@ -141,21 +142,24 @@ void LubEffect::buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>& no
 		ImGui::Text("Please set up grf editor to edit lub effects, then reload the map");
 	else
 	{
-		util::DragFloat3Multi<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "dir1", [](LubEffect* e) {return &e->dir1; }, 0, 0, 0);
-		util::DragFloat3Multi<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "dir2", [](LubEffect* e) {return &e->dir2; }, 0, 0, 0);
-		util::DragFloat3Multi<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "gravity", [](LubEffect* e) {return &e->gravity; }, 0, 0, 0);
-		util::DragFloat3Multi<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "pos", [](LubEffect* e) {return &e->pos; }, 0, 0, 0);
-		util::DragFloat3Multi<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "radius", [](LubEffect* e) {return &e->radius; }, 0, 0, 0);
-		util::DragFloat3Multi<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "color", [](LubEffect* e) {return &e->color; }, 0, 0, 0);
-		util::DragFloat2Multi<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "rate", [](LubEffect* e) {return &e->rate; }, 0, 0, 0);
-		util::DragFloat2Multi<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "size", [](LubEffect* e) {return &e->size; }, 0, 0, 0);
-		util::DragFloat2Multi<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "life", [](LubEffect* e) {return &e->life; }, 0, 0, 0);
-		util::InputTextMulti<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "texture", [](LubEffect* e) {return &e->texture; });
-		util::DragFloatMulti<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "speed", [](LubEffect* e) {return &e->speed; }, 0, 0, 0);
-		util::DragIntMulti<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "srcmode", [](LubEffect* e) {return &e->srcmode; }, 0, 0, 0);
-		util::DragIntMulti<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "destmode", [](LubEffect* e) {return &e->destmode; }, 0, 0, 0);
-		util::DragIntMulti<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "maxcount", [](LubEffect* e) {return &e->maxcount; }, 0, 0, 0);
-		util::DragIntMulti<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "zenable", [](LubEffect* e) {return &e->zenable; }, 0, 0, 0);
+		util::DragFloat3Multi<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "dir1", [](LubEffect* e) {return &e->dir1; }, 0.1f, 0, 0);
+		util::DragFloat3Multi<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "dir2", [](LubEffect* e) {return &e->dir2; }, 0.1f, 0, 0);
+		util::DragFloat3Multi<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "gravity", [](LubEffect* e) {return &e->gravity; }, 0.1f, 0, 0);
+		util::DragFloat3Multi<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "pos", [](LubEffect* e) {return &e->pos; }, 0.1f, 0, 0);
+		util::DragFloat3Multi<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "radius", [](LubEffect* e) {return &e->radius; }, 0.1f, 0, 0);
+		util::DragFloat3Multi<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "color", [](LubEffect* e) {return &e->color; }, 0.1f, 0, 0);
+		util::DragFloat2Multi<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "rate", [](LubEffect* e) {return &e->rate; }, 0.1f, 0, 0);
+		util::DragFloat2Multi<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "size", [](LubEffect* e) {return &e->size; }, 0.1f, 0, 0);
+		util::DragFloat2Multi<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "life", [](LubEffect* e) {return &e->life; }, 0.1f, 0, 0);
+		if (util::InputTextMulti<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "texture", [](LubEffect* e) {return &e->texture; }))
+		{
+
+		}
+		util::DragFloatMulti<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "speed", [](LubEffect* e) {return &e->speed; }, 0.1f, 0, 0);
+		util::DragIntMulti<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "srcmode", [](LubEffect* e) {return &e->srcmode; }, 1.0f, 0, 0);
+		util::DragIntMulti<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "destmode", [](LubEffect* e) {return &e->destmode; }, 1.0f, 0, 20);
+		util::DragIntMulti<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "maxcount", [](LubEffect* e) {return &e->maxcount; }, 1.0f, 0, 20);
+		util::DragIntMulti<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "zenable", [](LubEffect* e) {return &e->zenable; }, 1.0f, 0, 1);
 	}
 
 }
