@@ -43,6 +43,12 @@ namespace gl
 		}
 		is->seekg(0, std::ios_base::end);
 		std::size_t len = is->tellg();
+		if (len <= 0 || len > 100 * 1024 * 1024)
+		{
+			std::cerr << "Texture: Error opening texture " << fileName << ", file is either empty or too large"<<std::endl;
+			delete is;
+			return;
+		}
 		char* buffer = new char[len];
 		is->seekg(0, std::ios_base::beg);
 		is->read(buffer, len);
