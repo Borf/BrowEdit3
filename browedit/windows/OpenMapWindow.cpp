@@ -78,6 +78,9 @@ void BrowEdit::showOpenWindow()
 {
 	windowData.openFiles = util::FileIO::listAllFiles();
 	windowData.openFiles.erase(std::remove_if(windowData.openFiles.begin(), windowData.openFiles.end(), [](const std::string& map) { return map.substr(map.size() - 4, 4) != ".rsw"; }), windowData.openFiles.end());
+	std::sort(windowData.openFiles.begin(), windowData.openFiles.end());
+	auto last = std::unique(windowData.openFiles.begin(), windowData.openFiles.end());
+	windowData.openFiles.erase(last, windowData.openFiles.end());
 	windowData.openJustVisible = true;
 	ImGui::OpenPopup("Open Map");
 }
