@@ -250,7 +250,7 @@ std::pair<glm::vec3, int> Lightmapper::calculateLight(const glm::vec3& groundPos
 		glm::vec3 lightPosition(5 * gnd->width + rswObject->position.x, -rswObject->position.y, 5 * gnd->height - rswObject->position.z+10);
 
 		glm::vec3 lightDirection2 = glm::normalize(lightPosition - groundPos);
-		if (rsw->light.lightmapIntensity > 0 && glm::dot(normal, lightDirection2) > 0)
+		if (true)// glm::dot(normal, lightDirection2) > 0)
 		{
 			float distance = glm::distance(lightPosition, groundPos);
 			float attenuation = 0;
