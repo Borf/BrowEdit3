@@ -188,6 +188,13 @@ void BrowEdit::run()
 			{
 				ImGui::Text(windowData.progressWindowText.c_str());
 				ImGui::ProgressBar(windowData.progressWindowProgres);
+				if (windowData.progressCancel != nullptr)
+				{
+					if (ImGui::Button("Cancel"))
+					{
+						windowData.progressCancel();
+					}
+				}
 				ImGui::EndPopup();
 			}
 		}
@@ -196,6 +203,7 @@ void BrowEdit::run()
 			windowData.progressWindowProgres = 0;
 			windowData.progressWindowOnDone();
 			windowData.progressWindowOnDone = nullptr;
+			windowData.progressCancel = nullptr;
 		}
 
 

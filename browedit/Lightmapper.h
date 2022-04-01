@@ -26,6 +26,7 @@ public:
 	bool buildDebugPoints = false;
 	glm::ivec2 rangeX;
 	glm::ivec2 rangeY;
+	bool running = true;
 
 	Lightmapper(Map* map, BrowEdit* browEdit);
 	void begin();

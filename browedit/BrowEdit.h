@@ -71,6 +71,7 @@ public:
 		std::string progressWindowText = "Progress....";
 		float progressWindowProgres = .25;
 		std::function<void()> progressWindowOnDone;
+		std::function<void()> progressCancel;
 
 	} windowData;
 	ImFont* font;

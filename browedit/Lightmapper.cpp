@@ -52,6 +52,10 @@ void Lightmapper::begin()
 	browEdit->windowData.progressWindowVisible = true;
 	browEdit->windowData.progressWindowProgres = 0;
 	browEdit->windowData.progressWindowText = "Calculating lightmaps";
+	browEdit->windowData.progressCancel = [this]()
+	{
+		running = false;
+	};
 	mainThread = std::thread(&Lightmapper::run, this);
 	browEdit->windowData.progressWindowOnDone = [&]()
 	{
@@ -125,7 +129,7 @@ void Lightmapper::run()
 
 	threads.push_back(std::thread([&]()
 		{
-			while (finishedX < rangeX[1])
+			while (finishedX < rangeX[1] && running)
 			{
 				std::this_thread::sleep_for(std::chrono::seconds(2));
 				progressMutex.lock();
@@ -142,7 +146,7 @@ void Lightmapper::run()
 	{
 		threads.push_back(std::thread([&, t]()
 			{
-				for (int x; (x = finishedX++) < rangeX[1];)
+				for (int x; (x = finishedX++) < rangeX[1] && running;)
 				{
 					std::cout << "Row " << x << std::endl;
 
@@ -170,7 +174,6 @@ void Lightmapper::run()
 	for (auto& t : threads)
 		t.join();
 
-	
 }
 
 bool Lightmapper::collidesMap(const math::Ray& ray)
@@ -352,6 +355,8 @@ void Lightmapper::calcPos(int direction, int tileId, int x, int y)
 			{
 				for (float yyy = 0; yyy < 1; yyy += qualityStep)
 				{
+					if (!running)
+						return;
 					glm::vec3 groundPos;
 					glm::vec3 normal;
 					//todo: use proper height using barycentric coordinats
