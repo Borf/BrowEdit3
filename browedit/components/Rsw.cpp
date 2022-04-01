@@ -127,6 +127,8 @@ void Rsw::load(const std::string& fileName, Map* map, BrowEdit* browEdit, bool l
 			bool done = false;
 			for (auto i = 0; i < lines.size(); i++)
 			{
+				if (lines[i].find("--") != std::string::npos)
+					lines[i] = util::rtrim(lines[i].substr(0, lines[i].find("--")));//remove comments
 				if (lines[i].size() > 2 && lines[i][0] == '\t' && lines[i][1] == '\"')
 				{
 					if (lines[i].find("{") != std::string::npos)
