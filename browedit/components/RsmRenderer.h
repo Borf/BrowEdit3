@@ -62,6 +62,9 @@ public:
 
 	std::vector<gl::Texture*> textures; //should this be shared over all RsmRenderers with the same Rsm? static map<Rsm, std::vector<Texture*> ???
 	bool matrixCached = false;
+
+	inline static Rsm* errorModel = nullptr;
+
 public:
 	RsmRenderer();
 	void begin();

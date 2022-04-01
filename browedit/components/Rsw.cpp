@@ -735,6 +735,9 @@ std::vector<glm::vec3> RswModelCollider::getCollisions(const math::Ray& ray)
 	if (!rswModel || !rsm || !rsmRenderer)
 		return std::vector<glm::vec3>();
 
+	if (!rsm->loaded)
+		rsm = RsmRenderer::errorModel;
+
 	if (!rswModel->aabb.hasRayCollision(ray, 0, 10000000))
 		return std::vector<glm::vec3>();
 	return getCollisions(rsm->rootMesh, ray, rsmRenderer->matrixCache);

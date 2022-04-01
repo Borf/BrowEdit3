@@ -45,10 +45,12 @@ void LubRenderer::render()
 	if (!lubEffect)
 	{
 		lubEffect = node->getComponent<LubEffect>();
-		if (lubEffect)
+		if (lubEffect && lubEffect->texture != "")
 		{
 			texture = util::ResourceManager<gl::Texture>::load("data\\texture\\" + lubEffect->texture);
 		}
+		else
+			texture = nullptr;
 	}
 	if (!rswObject || !lubEffect)
 		return;
@@ -62,7 +64,10 @@ void LubRenderer::render()
 	shader->setUniform(LubShader::Uniforms::color, glm::vec4(lubEffect->color, 255.0f) / glm::vec4(255.0f));
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	texture->bind();
+	if (texture)
+		texture->bind();
+	else
+		glBindTexture(GL_TEXTURE_2D, 0);
 
 	float time = glfwGetTime();
 	float elapsedTime = time - lastTime;

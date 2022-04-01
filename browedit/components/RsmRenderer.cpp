@@ -11,6 +11,8 @@
 RsmRenderer::RsmRenderer()
 {
 	renderContext = RsmRenderContext::getInstance();
+	if (errorModel == nullptr)
+		errorModel = new Rsm("data\\model\\box_error_01.rsm");
 	begin();
 }
 
@@ -57,8 +59,17 @@ void RsmRenderer::render()
 		this->gnd = node->root->getComponent<Gnd>(); //TODO: remove parent->parent
 	if (!this->rsw)
 		this->rsw = node->root->getComponent<Rsw>();
-	if (!this->rsm || !this->rsm->loaded)
+	if (!this->rsm)
 		return;
+
+	if (!this->rsm->loaded)
+	{
+		this->rsm = RsmRenderer::errorModel;
+		for (const auto& textureFilename : rsm->textures)
+			textures.push_back(util::ResourceManager<gl::Texture>::load("data\\texture\\" + textureFilename));
+		renderInfo.resize(rsm->meshCount);
+		initMeshInfo(rsm->rootMesh);
+	}
 
 	if (!matrixCached && this->rswModel && this->gnd && this->rsw)
 	{
