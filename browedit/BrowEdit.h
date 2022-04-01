@@ -81,7 +81,7 @@ public:
 		Object,
 		Wall,
 		Gat,
-	} editMode = EditMode::Object;
+	} editMode = EditMode::Texture;
 
 	std::map<std::string, std::vector<std::string>> tagList; // tag -> [ file ], utf8
 	std::map<std::string, std::vector<std::string>> tagListReverse; // file -> [ tag ], kr
@@ -128,6 +128,7 @@ public:
 	void showObjectWindow();
 	void showHelpWindow();
 	void showLightmapSettingsWindow();
+	void showTextureBrushWindow();
 
 	void copyTiles();
 	void pasteTiles();

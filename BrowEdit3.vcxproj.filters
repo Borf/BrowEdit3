@@ -313,6 +313,15 @@
     <ClCompile Include="browedit\components\LubRenderer.cpp">
       <Filter>browedit\components</Filter>
     </ClCompile>
+    <ClCompile Include="browedit\MapView.Texturemode.cpp">
+      <Filter>browedit</Filter>
+    </ClCompile>
+    <ClCompile Include="browedit\windows\TextureBrushWindow.cpp">
+      <Filter>browedit\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="browedit\windows\TextureManageWindow.cpp">
+      <Filter>browedit\windows</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="lib\imgui\imgui.h">

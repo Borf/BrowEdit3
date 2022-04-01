@@ -156,10 +156,11 @@ void LubEffect::buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>& no
 
 		}
 		util::DragFloatMulti<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "speed", [](LubEffect* e) {return &e->speed; }, 0.1f, 0, 0);
-		util::DragIntMulti<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "srcmode", [](LubEffect* e) {return &e->srcmode; }, 1.0f, 0, 0);
-		util::DragIntMulti<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "destmode", [](LubEffect* e) {return &e->destmode; }, 1.0f, 0, 20);
-		util::DragIntMulti<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "maxcount", [](LubEffect* e) {return &e->maxcount; }, 1.0f, 0, 20);
-		util::DragIntMulti<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "zenable", [](LubEffect* e) {return &e->zenable; }, 1.0f, 0, 1);
+		util::DragIntMulti<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "srcmode", [](LubEffect* e) {return &e->srcmode; }, 1, 0, 0);
+		util::DragIntMulti<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "destmode", [](LubEffect* e) {return &e->destmode; }, 1, 0, 20);
+		util::DragIntMulti<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "maxcount", [](LubEffect* e) {return &e->maxcount; }, 1, 0, 20);
+		util::DragIntMulti<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "zenable", [](LubEffect* e) {return &e->zenable; }, 1, 0, 1);
+		util::DragIntMulti<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "billboard_off ", [](LubEffect* e) {return &e->billboard_off; }, 1, 0, 1);
 	}
 
 }

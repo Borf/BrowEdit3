@@ -172,6 +172,8 @@ void BrowEdit::run()
 			ImGui::ShowDemoWindow(&windowData.demoWindowVisible);
 		if (windowData.helpWindowVisible)
 			showHelpWindow();
+		if (editMode == EditMode::Texture)
+			showTextureBrushWindow();
 
 		showLightmapSettingsWindow();
 
@@ -429,6 +431,8 @@ void BrowEdit::showMapWindow(MapView& mapView)
 				mapView.postRenderHeightMode(this);
 			else if (editMode == EditMode::Object)
 				mapView.postRenderObjectMode(this);
+			else if (editMode == EditMode::Texture)
+				mapView.postRenderTextureMode(this);
 			mapView.prevMouseState = mapView.mouseState; //meh
 		}
 

@@ -55,6 +55,7 @@ MapView::MapView(Map* map, const std::string &viewName) : map(map), viewName(vie
 		gadgetHeight[i].mode = Gadget::Mode::TranslateY;
 
 	gridVbo = new gl::VBO<VertexP3T2>();
+	textureGridVbo = new gl::VBO<VertexP3T2>();
 	rebuildObjectModeGrid();
 
 }

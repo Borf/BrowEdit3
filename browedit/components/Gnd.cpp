@@ -1015,14 +1015,14 @@ void Gnd::makeTilesUnique()
 
 Gnd::Texture::Texture()
 {
-	texture = nullptr;
+	//texture = nullptr;
 }
 
 Gnd::Texture::~Texture()
 {
-	if (texture)
-		delete[] texture; //TODO: resource manager
-	texture = nullptr;
+	//if (texture)
+	//	delete[] texture; //TODO: resource manager
+	//texture = nullptr;
 }
 
 void Gnd::Cube::calcNormal()

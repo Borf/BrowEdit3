@@ -59,6 +59,10 @@
 	public:
 		float data[N];
 	protected:
+		void set(const float& v, int& pos)
+		{
+			data[pos++] = v;
+		}
 		void set(const glm::vec2& v, int& pos)
 		{
 			data[pos++] = v.x;
@@ -146,4 +150,16 @@
 			set(t, index);
 		}
 		ATTR(p, 3, 0);
+	};
+
+	class VertexP3T2A1 : public Vert<3 + 2 + 1>
+	{
+	public:
+		VertexP3T2A1(const glm::vec3& pos, const glm::vec2& t, float alpha)
+		{
+			int index = 0;
+			set(pos, index);
+			set(t, index);
+			set(alpha, index);
+		}
 	};

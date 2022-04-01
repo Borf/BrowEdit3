@@ -51,7 +51,7 @@ public:
 		std::string name;
 		std::string file;
 
-		Texture* texture;
+//		Texture* texture;
 		Texture();
 		~Texture();
 	};

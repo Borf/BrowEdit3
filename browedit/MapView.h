@@ -39,6 +39,7 @@ public:
 	std::string viewName;
 
 	gl::VBO<VertexP3T2>* gridVbo = nullptr;
+	gl::VBO<VertexP3T2>* textureGridVbo = nullptr;
 
 	NodeRenderContext nodeRenderContext;
 	Gadget gadget;
@@ -78,6 +79,8 @@ public:
 		GroupCenter
 	} pivotPoint = PivotPoint::Local;
 
+	int textureSelected = 0;
+
 
 	//height edit mode
 	bool mouseDown = false;
@@ -103,8 +106,9 @@ public:
 
 	void update(BrowEdit* browEdit, const ImVec2& size);
 	void render(BrowEdit* browEdit);
-	void postRenderObjectMode(BrowEdit* browEdit);
+	void postRenderTextureMode(BrowEdit* browEdit);
 	void postRenderHeightMode(BrowEdit* browEdit);
+	void postRenderObjectMode(BrowEdit* browEdit);
 
 
 	void rebuildObjectModeGrid();

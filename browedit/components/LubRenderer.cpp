@@ -8,8 +8,6 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 
-static std::vector<VertexP3T2> verts;
-
 LubRenderer::LubRenderer()
 {
 	renderContext = LubRenderContext::getInstance();
@@ -69,7 +67,7 @@ void LubRenderer::render()
 	else
 		glBindTexture(GL_TEXTURE_2D, 0);
 
-	float time = glfwGetTime();
+	float time = (float)glfwGetTime();
 	float elapsedTime = time - lastTime;
 	lastTime = time;
 	for (auto& p : particles)
@@ -102,22 +100,24 @@ void LubRenderer::render()
 	glBlendFuncSeparate(src, dst, GL_ONE, GL_ONE);
 	glDepthMask(0);
 
-	verts.clear();
+	std::vector<VertexP3T2A1> verts;
 	for (const auto& p : particles)
 	{
-		verts.push_back(VertexP3T2(p.position + glm::vec3(-p.size/2, 0, 0), glm::vec2(0, 0)));
-		verts.push_back(VertexP3T2(p.position + glm::vec3(-p.size/2, p.size, 0), glm::vec2(0, 1)));
-		verts.push_back(VertexP3T2(p.position + glm::vec3(p.size/2, p.size, 0), glm::vec2(1, 1)));
-		verts.push_back(VertexP3T2(p.position + glm::vec3(p.size/2, 0, 0), glm::vec2(1, 0)));
+		float alpha = glm::clamp(p.life, 0.0f, 1.0f);
+		verts.push_back(VertexP3T2A1(p.position + glm::vec3(-p.size/2, 0, 0), glm::vec2(0, 0), alpha));
+		verts.push_back(VertexP3T2A1(p.position + glm::vec3(-p.size/2, p.size, 0), glm::vec2(0, 1), alpha));
+		verts.push_back(VertexP3T2A1(p.position + glm::vec3(p.size/2, p.size, 0), glm::vec2(1, 1), alpha));
+		verts.push_back(VertexP3T2A1(p.position + glm::vec3(p.size/2, 0, 0), glm::vec2(1, 0), alpha));
 	}
 
 
 	if (verts.size() > 0)
 	{
 
-		glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexP3T2), verts[0].data);
-		glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexP3T2), verts[0].data + 3);
-		glDrawArrays(GL_QUADS, 0, verts.size());
+		glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexP3T2A1), verts[0].data);
+		glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexP3T2A1), verts[0].data + 3);
+		glVertexAttribPointer(2, 1, GL_FLOAT, false, sizeof(VertexP3T2A1), verts[0].data + 5);
+		glDrawArrays(GL_QUADS, 0, (int)verts.size());
 	}
 	glDepthMask(1);
 
@@ -140,7 +140,7 @@ void LubRenderer::LubRenderContext::preFrame(const glm::mat4& projectionMatrix, 
 	shader->setUniform(LubShader::Uniforms::color, glm::vec4(1,1,1,1));
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
-	glDisableVertexAttribArray(2);
+	glEnableVertexAttribArray(2);
 	glDisableVertexAttribArray(3);
 	glDisableVertexAttribArray(4); //TODO: vao
 	glBindBuffer(GL_ARRAY_BUFFER, 0);

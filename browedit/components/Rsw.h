@@ -171,10 +171,11 @@ public:
 	int destmode;
 	int maxcount;
 	int zenable;
+	int billboard_off;
 
 	void load(const nlohmann::json& data);
 	static void buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>&);
-	NLOHMANN_DEFINE_TYPE_INTRUSIVE(LubEffect, dir1, dir2, gravity, pos, radius, color, rate, size, life, texture, speed, srcmode, destmode, maxcount, zenable);
+	NLOHMANN_DEFINE_TYPE_INTRUSIVE(LubEffect, dir1, dir2, gravity, pos, radius, color, rate, size, life, texture, speed, srcmode, destmode, maxcount, zenable, billboard_off);
 };
 
 class RswEffect : public Component
