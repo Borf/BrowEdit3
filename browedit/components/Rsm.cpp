@@ -342,6 +342,12 @@ Rsm::Mesh::Mesh(Rsm* model, std::istream* rsmFile)
 				rsmFile->read(reinterpret_cast<char*>(&f->smoothGroups[1]), sizeof(int));
 			if (len > 28)
 				rsmFile->read(reinterpret_cast<char*>(&f->smoothGroups[2]), sizeof(int));
+			for(int i = 32; i < len; i+=4)
+			{
+				std::cout << "Model " << model->fileName << " has too many smooth groups. Please contact borf" << std::endl;
+				int tmp;
+				rsmFile->read(reinterpret_cast<char*>(&tmp), sizeof(int));
+			}
 		}
 		bool ok = true;
 		for (int ii = 0; ii < 3; ii++)
