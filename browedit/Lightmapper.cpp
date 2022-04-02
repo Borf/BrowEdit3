@@ -280,9 +280,9 @@ std::pair<glm::vec3, int> Lightmapper::calculateLight(const glm::vec3& groundPos
 					attenuation = glm::clamp((1 - glm::pow(d, rswLight->cutOff)), 0.0f, 1.0f) * 255.0f;
 			}
 
-			math::Ray ray(groundPos, lightDirection2);
+			math::Ray ray(lightPosition, -lightDirection2);
 			bool collides = false;
-			if (rswLight->givesShadow)
+			if (rswLight->givesShadow && attenuation > 0)
 			{
 				map->rootNode->traverse([&](Node* n) {
 					if (collides)
@@ -296,7 +296,7 @@ std::pair<glm::vec3, int> Lightmapper::calculateLight(const glm::vec3& groundPos
 					}
 					});
 			}
-			if (!collides && collidesMap(ray))
+			if (!collides && collidesMap(math::Ray(groundPos, lightDirection2)))
 				collides = true;
 			if (!collides)
 			{

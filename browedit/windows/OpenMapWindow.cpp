@@ -44,6 +44,7 @@ void BrowEdit::openWindow()
 				if (ImGui::Selectable(m.c_str()))
 				{
 					loadMap(m);
+					ImGui::CloseCurrentPopup();
 					break;
 				}
 			ImGui::EndListBox();

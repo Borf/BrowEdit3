@@ -807,7 +807,7 @@ bool RswModelCollider::collidesTexture(Rsm::Mesh* mesh, const math::Ray& ray, co
 		for (size_t ii = 0; ii < 3; ii++)
 			verts[ii] = mesh->vertices[mesh->faces[i].vertexIds[ii]];
 
-		if (newRay.LineIntersectPolygon(verts, t))
+		if (newRay.LineIntersectPolygon(verts, t) && t > 0)
 		{
 			Image* img = nullptr;
 			auto rsmMesh = dynamic_cast<Rsm::Mesh*>(mesh);
