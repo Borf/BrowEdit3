@@ -356,13 +356,13 @@ glm::vec3 Gnd::rayCast(const math::Ray& ray, bool emptyTiles, int xMin, int yMin
 						glm::vec3 v4(10 * x + 10, -cube->h2, 10 * height - 10 * y + 10);
 
 						{
-							std::vector<glm::vec3> v{ v3, v2, v1 };
+							std::vector<glm::vec3> v{ v4, v2, v1 };
 							if (ray.LineIntersectPolygon(v, f))
 								if(f >= rayOffset)
 									collisions.push_back(ray.origin + f * ray.dir);
 						}
 						{
-							std::vector<glm::vec3> v{ v4, v2, v3 };
+							std::vector<glm::vec3> v{ v4, v1, v3 };
 							if (ray.LineIntersectPolygon(v, f))
 								if (f >= rayOffset)
 									collisions.push_back(ray.origin + f * ray.dir);
