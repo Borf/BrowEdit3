@@ -74,63 +74,62 @@ void BrowEdit::showTextureBrushWindow()
 			window->DrawList->AddImage((ImTextureID)(long long)gndRenderer->textures[activeMapView->textureSelected]->id, bb.Min + ImVec2(1, 1), bb.Max - ImVec2(1, 1), ImVec2(0, 1), ImVec2(1, 0));
 
 
-			for (float x = 0; x < 1; x += (1.0f / snapDivX))
-				window->DrawList->AddLine(
-					ImVec2(bb.Min.x + x * bb.GetWidth(), bb.Max.y - 0 * bb.GetHeight()),
-					ImVec2(bb.Min.x + x * bb.GetWidth(), bb.Max.y - 1 * bb.GetHeight()), ImGui::GetColorU32(ImGuiCol_Text, 0.25), 1.0f);
-			for (float y = 0; y < 1; y += (1.0f / snapDivY))
-				window->DrawList->AddLine(
-					ImVec2(bb.Min.x + 0 * bb.GetWidth(), bb.Max.y - y * bb.GetHeight()),
-					ImVec2(bb.Min.x + 1 * bb.GetWidth(), bb.Max.y - y * bb.GetHeight()), ImGui::GetColorU32(ImGuiCol_Text, 0.25), 1.0f);
-
-
+			if(snapDivX > 0)
+				for (float x = 0; x < 1; x += (1.0f / snapDivX))
+					window->DrawList->AddLine(
+						ImVec2(bb.Min.x + x * bb.GetWidth(), bb.Max.y - 0 * bb.GetHeight()),
+						ImVec2(bb.Min.x + x * bb.GetWidth(), bb.Max.y - 1 * bb.GetHeight()), ImGui::GetColorU32(ImGuiCol_Text, 0.25), 1.0f);
+			if(snapDivY > 0)
+				for (float y = 0; y < 1; y += (1.0f / snapDivY))
+					window->DrawList->AddLine(
+						ImVec2(bb.Min.x + 0 * bb.GetWidth(), bb.Max.y - y * bb.GetHeight()),
+						ImVec2(bb.Min.x + 1 * bb.GetWidth(), bb.Max.y - y * bb.GetHeight()), ImGui::GetColorU32(ImGuiCol_Text, 0.25), 1.0f);
 
 			window->DrawList->AddRectFilled(
 				ImVec2(bb.Min.x + activeMapView->textureEditUv1.x * bb.GetWidth(), bb.Max.y - activeMapView->textureEditUv1.y * bb.GetHeight()),
 				ImVec2(bb.Min.x + activeMapView->textureEditUv2.x * bb.GetWidth(), bb.Max.y - activeMapView->textureEditUv2.y * bb.GetHeight()),
 				ImGui::GetColorU32(ImVec4(1, 0, 0, 0.2f)));
 
-			window->DrawList->AddLine(
+			window->DrawList->AddRect(
 				ImVec2(bb.Min.x + activeMapView->textureEditUv1.x * bb.GetWidth(), bb.Max.y - activeMapView->textureEditUv1.y * bb.GetHeight()),
-				ImVec2(bb.Min.x + activeMapView->textureEditUv1.x * bb.GetWidth(), bb.Max.y - activeMapView->textureEditUv2.y * bb.GetHeight()), ImGui::GetColorU32(ImGuiCol_Text, 1), 2.0f);
-			window->DrawList->AddLine(
-				ImVec2(bb.Min.x + activeMapView->textureEditUv1.x * bb.GetWidth(), bb.Max.y - activeMapView->textureEditUv2.y * bb.GetHeight()),
-				ImVec2(bb.Min.x + activeMapView->textureEditUv2.x * bb.GetWidth(), bb.Max.y - activeMapView->textureEditUv2.y * bb.GetHeight()), ImGui::GetColorU32(ImGuiCol_Text, 1), 2.0f);
-			window->DrawList->AddLine(
 				ImVec2(bb.Min.x + activeMapView->textureEditUv2.x * bb.GetWidth(), bb.Max.y - activeMapView->textureEditUv2.y * bb.GetHeight()),
-				ImVec2(bb.Min.x + activeMapView->textureEditUv2.x * bb.GetWidth(), bb.Max.y - activeMapView->textureEditUv1.y * bb.GetHeight()), ImGui::GetColorU32(ImGuiCol_Text, 1), 2.0f);
-			window->DrawList->AddLine(
-				ImVec2(bb.Min.x + activeMapView->textureEditUv2.x * bb.GetWidth(), bb.Max.y - activeMapView->textureEditUv1.y * bb.GetHeight()),
-				ImVec2(bb.Min.x + activeMapView->textureEditUv1.x * bb.GetWidth(), bb.Max.y - activeMapView->textureEditUv1.y * bb.GetHeight()), ImGui::GetColorU32(ImGuiCol_Text, 1), 2.0f);
-
+				ImGui::GetColorU32(ImGuiCol_Text, 1.0f), 0, 0, 2.0f);
 
 			ImVec2 cursorPos = ImGui::GetCursorScreenPos();
 			int i = 0;
 			static bool c = false;
 			static bool dragged = false;
-			/*for (int i = 0; i < 4; i++)
+
+			glm::vec2 offsets[] = { glm::vec2(0,0), glm::vec2(0,1), glm::vec2(1,1), glm::vec2(1,0) };
+
+			for (int i = 0; i < 4; i++)
 			{
-				ImVec2 pos = ImVec2(bb.Min.x + tile->texCoords[i].x * bb.GetWidth(), bb.Max.y - tile->texCoords[i].y * bb.GetHeight());
+				ImVec2 pos = ImVec2(bb.Min.x + glm::mix(activeMapView->textureEditUv1.x, activeMapView->textureEditUv2.x, offsets[i].x)* bb.GetWidth(), 
+									bb.Max.y - glm::mix(activeMapView->textureEditUv1.y, activeMapView->textureEditUv2.y, offsets[i].y) * bb.GetHeight());
 				window->DrawList->AddCircle(pos, 5, ImGui::GetColorU32(ImGuiCol_Text, 1), 0, 2.0f);
 				ImGui::PushID(i);
-				ImGui::SetCursorScreenPos(pos - ImVec2(5, 5));
-				ImGui::InvisibleButton("button", ImVec2(2 * 5, 2 * 5));
+				ImGui::SetCursorScreenPos(pos - ImVec2(10, 10));
+				ImGui::InvisibleButton("button", ImVec2(2 * 10, 2 * 10));
 				if (ImGui::IsItemActive() || ImGui::IsItemHovered())
-					ImGui::SetTooltip("(%4.3f, %4.3f)", tile->texCoords[i].x, tile->texCoords[i].y);
+					ImGui::SetTooltip("(%4.3f, %4.3f)", glm::mix(activeMapView->textureEditUv1.x, activeMapView->textureEditUv2.x, offsets[i].x), glm::mix(activeMapView->textureEditUv1.y, activeMapView->textureEditUv2.y, offsets[i].y));
 				if (ImGui::IsItemActive() && ImGui::IsMouseDragging(0))
 				{
-					tile->texCoords[i].x = (ImGui::GetIO().MousePos.x - bb.Min.x) / Canvas.x;
-					tile->texCoords[i].y = 1 - (ImGui::GetIO().MousePos.y - bb.Min.y) / Canvas.y;
+					float& x = offsets[i].x == 0 ? activeMapView->textureEditUv1.x : activeMapView->textureEditUv2.x;
+					float& y = offsets[i].y == 0 ? activeMapView->textureEditUv1.y : activeMapView->textureEditUv2.y;
+
+					x = (ImGui::GetIO().MousePos.x - bb.Min.x) / Canvas.x;
+					y = 1 - (ImGui::GetIO().MousePos.y - bb.Min.y) / Canvas.y;
+
 					bool snap = snapUv;
 					if (ImGui::GetIO().KeyShift)
 						snap = !snap;
 
-					if (snap)
+					if (snap && snapDivX > 0 && snapDivY > 0)
 					{
-						//tile->texCoords[i] = glm::round(tile->texCoords[i] / gridSizeTranslate) * gridSizeTranslate;
+						glm::vec2 inc(1.0f / snapDivX, 1.0f / snapDivY);
+						x = glm::round(x / inc.x) * inc.x;
+						y = glm::round(y / inc.y) * inc.y;
 					}
-					gndRenderer->setChunkDirty(map->tileSelection[0].x, map->tileSelection[0].y);
-					tile->texCoords[i] = glm::clamp(tile->texCoords[i], 0.0f, 1.0f);
 					dragged = true;
 				}
 				else if (ImGui::IsMouseReleased(0) && dragged)
@@ -139,14 +138,14 @@ void BrowEdit::showTextureBrushWindow()
 					changed = true;
 				}
 				ImGui::PopID();
-			}*/
+			}
 			ImGui::SetCursorScreenPos(cursorPos);
-
 		}
-
-
-		
-
+		ImGui::DragInt("Brush Width", &activeMapView->textureBrushWidth, 1, 1, 20);
+		glm::vec2 uvSize = activeMapView->textureEditUv2 - activeMapView->textureEditUv1;
+		float textureBrushHeight = activeMapView->textureBrushWidth * (uvSize.y / uvSize.x);
+		if (glm::abs(textureBrushHeight - glm::floor(textureBrushHeight)) > 0.01)
+		ImGui::TextColored(ImVec4(1,0,0,1), "ERROR: THIS WIDTH WON'T WORK, HEIGHT WOULD BE %f", textureBrushHeight);
 
 
 		ImGui::End();
