@@ -511,8 +511,15 @@ void BrowEdit::saveMap(Map* map)
 	map->rootNode->getComponent<Gnd>()->save(gndName);
 }
 
-void BrowEdit::loadMap(const std::string& file)
+void BrowEdit::loadMap(const std::string file)
 {
+	if (std::find(config.recentFiles.begin(), config.recentFiles.end(), file) != config.recentFiles.end())
+		std::erase_if(config.recentFiles, [file](const std::string s) { return s == file; });
+	config.recentFiles.insert(config.recentFiles.begin(), file);
+	if (config.recentFiles.size() > 10)
+		config.recentFiles.resize(10);
+	config.save();
+
 	Map* map = nullptr;
 	for (auto m : maps)
 		if (m->name == file)

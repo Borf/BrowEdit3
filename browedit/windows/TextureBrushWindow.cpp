@@ -37,8 +37,11 @@ void BrowEdit::showTextureBrushWindow()
 				ImGui::Text(util::iso_8859_1_to_utf8(gnd->textures[i]->file).c_str());
 
 			}
-
 			ImGui::EndCombo();
+
+
+
+
 		}
 
 

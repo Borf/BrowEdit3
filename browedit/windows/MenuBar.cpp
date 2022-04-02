@@ -27,6 +27,16 @@ void BrowEdit::menuBar()
 			showOpenWindow();
 		if (activeMapView && ImGui::MenuItem(("Save " + activeMapView->map->name).c_str(), "Ctrl+s"))
 			saveMap(activeMapView->map);
+		if (ImGui::BeginMenu("Recent Maps", config.recentFiles.size() > 0))
+		{
+			for (const auto& m : config.recentFiles)
+				if (ImGui::MenuItem(m.c_str()))
+				{
+					loadMap(m);
+					break;
+				}
+			ImGui::EndMenu();
+		}
 		if (ImGui::MenuItem("Quit"))
 			glfwSetWindowShouldClose(window, 1);
 		ImGui::EndMenu();

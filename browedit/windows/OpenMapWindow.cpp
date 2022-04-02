@@ -14,10 +14,10 @@ void BrowEdit::openWindow()
 
 	if (ImGui::BeginPopupModal("Open Map", 0, ImGuiWindowFlags_NoDocking))
 	{
-		if (ImGui::Button("Browse for file"))
+		/*if (ImGui::Button("Browse for file"))
 		{
 			std::cout << "Sorry, not working yet" << std::endl;
-		}
+		}*/
 
 		static bool selectFirst = false;
 		ImGui::Text("Filter");
@@ -37,7 +37,19 @@ void BrowEdit::openWindow()
 			lastOpenFilter = windowData.openFilter;
 		}
 
-		if (ImGui::BeginListBox("##Files", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y-40)))
+		ImGui::Text("Recent Files");
+		if (ImGui::BeginListBox("##Recent", ImVec2(ImGui::GetContentRegionAvail().x, 100)))
+		{
+			for (const auto& m : config.recentFiles)
+				if (ImGui::Selectable(m.c_str()))
+				{
+					loadMap(m);
+					break;
+				}
+			ImGui::EndListBox();
+		}
+
+		if (ImGui::BeginListBox("##Files", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y-40-100)))
 		{
 			for (std::size_t i = 0; i < windowData.openFiles.size(); i++)
 			{

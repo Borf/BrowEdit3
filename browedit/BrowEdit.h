@@ -111,7 +111,7 @@ public:
 
 	void run();
 
-	void loadMap(const std::string& file);
+	void loadMap(const std::string file);
 	void saveMap(Map* map);
 	void showMapWindow(MapView& map);
 

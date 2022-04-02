@@ -275,9 +275,7 @@ bool Config::showWindow(BrowEdit* browEdit)
 		{
 			if (isValid() == "")
 			{
-				json configJson = *this;
-				std::ofstream configFile("config.json");
-				configFile << std::setw(2)<<configJson;
+				save();
 				close = true;
 
 				browEdit->windowData.objectWindowSelectedTreeNode = nullptr;
@@ -292,6 +290,13 @@ bool Config::showWindow(BrowEdit* browEdit)
 		ImGui::ShowStyleEditor();
 
 	return close;
+}
+
+void Config::save()
+{
+	json configJson = *this;
+	std::ofstream configFile("config.json");
+	configFile << std::setw(2) << configJson;
 }
 
 void Config::setupFileIO()

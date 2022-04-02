@@ -39,6 +39,7 @@ public:
 	std::vector<float> rotateGridSizes = { 1,22.5, 45,90,180 };
 
 	std::string grfEditorPath = "";
+	std::vector<std::string> recentFiles;
 
 	float toolbarHeight() { return toolbarButtonSize + 8; }
 
@@ -46,6 +47,7 @@ public:
 	bool showWindow(BrowEdit* browEdit);
 	void setupFileIO();
 	void setStyle(int style);
+	void save();
 public:
 	NLOHMANN_DEFINE_TYPE_INTRUSIVE_CHECKED(Config,
 		ropath,
@@ -66,5 +68,6 @@ public:
 		toolbarButtonsWallEdit,
 		translateGridSizes,
 		rotateGridSizes,
-		grfEditorPath);
+		grfEditorPath,
+		recentFiles);
 };
