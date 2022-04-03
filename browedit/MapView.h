@@ -85,6 +85,16 @@ public:
 	glm::vec2 textureEditUv2 = glm::vec2(0.75f, 0.75f);
 
 	int textureBrushWidth = 4;
+	bool textureBrushFlipH = false;
+	bool textureBrushFlipV = false;
+	bool textureBrushFlipD = false;
+	int textureBrushMask() { return (textureBrushFlipD ? 4 : 0) | (textureBrushFlipH ? 2 : 0) | (textureBrushFlipV ? 1 : 0); }
+	void textureBrushMask(int mask)
+	{
+		textureBrushFlipD = (mask & 4) != 0;
+		textureBrushFlipH = (mask & 2) != 0;
+		textureBrushFlipV = (mask & 1) != 0;
+	}
 
 
 	//height edit mode

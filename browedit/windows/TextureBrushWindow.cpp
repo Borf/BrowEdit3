@@ -52,6 +52,40 @@ void BrowEdit::showTextureBrushWindow()
 		ImGui::DragInt("Snap Y Divider", &snapDivY, 1, 1, 20);
 
 		toolBarToggleButton("SnapUV", snapUv ? ICON_GRID_SNAP_ON : ICON_GRID_SNAP_OFF, &snapUv, "Snap UV editor");
+		ImGui::SameLine();
+		if (toolBarButton("RotateL", ICON_ROTATE, "Rotate texture left", ImVec4(1,1,1,1)))
+		{ //00 -> 10 -> 11 -> 01
+			activeMapView->textureBrushFlipD = !activeMapView->textureBrushFlipD;
+			bool tmp = activeMapView->textureBrushFlipH;
+			activeMapView->textureBrushFlipH = !activeMapView->textureBrushFlipV;
+			activeMapView->textureBrushFlipV = tmp;
+		}
+		ImGui::SameLine();
+		if (toolBarButton("RotateR", ICON_ROTATE_RIGHT, "Rotate texture right", ImVec4(1, 1, 1, 1)))
+		{ //00 -> 01 -> 11 -> 10
+			activeMapView->textureBrushFlipD = !activeMapView->textureBrushFlipD;
+			bool tmp = activeMapView->textureBrushFlipV;
+			activeMapView->textureBrushFlipV = !activeMapView->textureBrushFlipH;
+			activeMapView->textureBrushFlipH = tmp;
+		}
+		ImGui::SameLine();
+		if (toolBarButton("MirrorH", ICON_MIRROR_HORIZONTAL, "Mirror Horizontal", ImVec4(1, 1, 1, 1)))
+		{
+			if(activeMapView->textureBrushFlipD)
+				activeMapView->textureBrushFlipV = !activeMapView->textureBrushFlipV;
+			else
+				activeMapView->textureBrushFlipH = !activeMapView->textureBrushFlipH;
+		}
+		ImGui::SameLine();
+		if (toolBarButton("MirrorV", ICON_MIRROR_VERTICAL, "Mirror Vertical", ImVec4(1, 1, 1, 1)))
+		{
+			if (!activeMapView->textureBrushFlipD)
+				activeMapView->textureBrushFlipV = !activeMapView->textureBrushFlipV;
+			else
+				activeMapView->textureBrushFlipH = !activeMapView->textureBrushFlipH;
+		}
+		ImGui::Text("%d %d %d", activeMapView->textureBrushFlipD ? 1 : 0, activeMapView->textureBrushFlipH ? 1 : 0, activeMapView->textureBrushFlipV ? 1 : 0);
+
 
 		bool changed = false;
 		{ //UV editor
@@ -70,7 +104,32 @@ void BrowEdit::showTextureBrushWindow()
 			ImGuiContext& g = *GImGui;
 
 			ImGui::RenderFrame(bb.Min, bb.Max, ImGui::GetColorU32(ImGuiCol_FrameBg, 1), true, style.FrameRounding);
-			window->DrawList->AddImage((ImTextureID)(long long)gndRenderer->textures[activeMapView->textureSelected]->id, bb.Min + ImVec2(1, 1), bb.Max - ImVec2(1, 1), ImVec2(0, 1), ImVec2(1, 0));
+
+			ImVec2 uv1(0, 0);
+			ImVec2 uv4(1, 1);
+			ImVec2 uv2(uv4.x, uv1.y);
+			ImVec2 uv3(uv1.x, uv4.y);
+			if (activeMapView->textureBrushFlipD)
+				std::swap(uv2, uv3);
+
+			if (activeMapView->textureBrushFlipH)
+			{
+				uv1.x = 1 - uv1.x;
+				uv2.x = 1 - uv2.x;
+				uv3.x = 1 - uv3.x;
+				uv4.x = 1 - uv4.x;
+			}
+			if (activeMapView->textureBrushFlipV)
+			{
+				uv1.y = 1 - uv1.y;
+				uv2.y = 1 - uv2.y;
+				uv3.y = 1 - uv3.y;
+				uv4.y = 1 - uv4.y;
+			}
+
+			window->DrawList->AddImageQuad((ImTextureID)(long long)gndRenderer->textures[activeMapView->textureSelected]->id, 
+				ImVec2(bb.Min.x + 1, bb.Min.y + 1), ImVec2(bb.Max.x - 1, bb.Min.y + 1), ImVec2(bb.Max.x - 1, bb.Max.y - 1), ImVec2(bb.Min.x + 1, bb.Max.y - 1),
+				uv1, uv2, uv4, uv3);
 
 
 			if(snapDivX > 0)

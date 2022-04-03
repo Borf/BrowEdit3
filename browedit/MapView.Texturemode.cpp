@@ -180,13 +180,17 @@ void MapView::postRenderTextureMode(BrowEdit* browEdit)
 				if (topleft.x + x >= gnd->width || topleft.x + x  < 0 || topleft.y + y >= gnd->height || topleft.y + y < 0)
 					continue;
 				auto cube = gnd->cubes[topleft.x + x][topleft.y + y];
-				verts.push_back(VertexP3T2N3(glm::vec3(10 * (topleft.x + x),		-cube->h3 + dist, 10 * gnd->height - 10 * (topleft.y + y)), glm::vec2(0,0), cube->normals[2]));
-				verts.push_back(VertexP3T2N3(glm::vec3(10 * (topleft.x + x) + 10,	-cube->h2 + dist, 10 * gnd->height - 10 * (topleft.y + y) + 10), glm::vec2(1,1), cube->normals[1]));
-				verts.push_back(VertexP3T2N3(glm::vec3(10 * (topleft.x + x) + 10,	-cube->h4 + dist, 10 * gnd->height - 10 * (topleft.y + y)), glm::vec2(1,0), cube->normals[3]));
 
-				verts.push_back(VertexP3T2N3(glm::vec3(10 * (topleft.x + x),		-cube->h1 + dist, 10 * gnd->height - 10 * (topleft.y + y) + 10), glm::vec2(0,1), cube->normals[0]));
-				verts.push_back(VertexP3T2N3(glm::vec3(10 * (topleft.x + x),		-cube->h3 + dist, 10 * gnd->height - 10 * (topleft.y + y)), glm::vec2(0,1), cube->normals[2]));
-				verts.push_back(VertexP3T2N3(glm::vec3(10 * (topleft.x + x) + 10,	-cube->h2 + dist, 10 * gnd->height - 10 * (topleft.y + y) + 10), glm::vec2(1,0), cube->normals[1]));
+				glm::vec2 uv1 = textureEditUv1 + ((textureEditUv2 - textureEditUv1) / glm::vec2(textureBrushWidth, textureBrushHeight)) * glm::vec2(x, y);
+				glm::vec2 uv2 = uv1 + ((textureEditUv2 - textureEditUv1) / glm::vec2(textureBrushWidth, textureBrushHeight));
+
+				verts.push_back(VertexP3T2N3(glm::vec3(10 * (topleft.x + x),		-cube->h3 + dist, 10 * gnd->height - 10 * (topleft.y + y)),			glm::vec2(uv1.x,uv2.y), cube->normals[2]));
+				verts.push_back(VertexP3T2N3(glm::vec3(10 * (topleft.x + x) + 10,	-cube->h2 + dist, 10 * gnd->height - 10 * (topleft.y + y) + 10),	glm::vec2(uv2.x,uv1.y), cube->normals[1]));
+				verts.push_back(VertexP3T2N3(glm::vec3(10 * (topleft.x + x) + 10,	-cube->h4 + dist, 10 * gnd->height - 10 * (topleft.y + y)),			glm::vec2(uv2.x,uv2.y), cube->normals[3]));
+
+				verts.push_back(VertexP3T2N3(glm::vec3(10 * (topleft.x + x),		-cube->h1 + dist, 10 * gnd->height - 10 * (topleft.y + y) + 10),	glm::vec2(uv1.x,uv1.y), cube->normals[0]));
+				verts.push_back(VertexP3T2N3(glm::vec3(10 * (topleft.x + x),		-cube->h3 + dist, 10 * gnd->height - 10 * (topleft.y + y)),			glm::vec2(uv1.x,uv2.y), cube->normals[2]));
+				verts.push_back(VertexP3T2N3(glm::vec3(10 * (topleft.x + x) + 10,	-cube->h2 + dist, 10 * gnd->height - 10 * (topleft.y + y) + 10),	glm::vec2(uv2.x,uv1.y), cube->normals[1]));
 			}
 		}
 		glEnableVertexAttribArray(0);
@@ -200,7 +204,9 @@ void MapView::postRenderTextureMode(BrowEdit* browEdit)
 		gndRenderer->textures[textureSelected]->bind();
 		simpleShader->setUniform(SimpleShader::Uniforms::color, glm::vec4(1, 1, 1, 0.5f));
 		simpleShader->setUniform(SimpleShader::Uniforms::textureFac, 1.0f);
+		simpleShader->setUniform(SimpleShader::Uniforms::lightMin, 1.0f);
 		glDrawArrays(GL_TRIANGLES, 0, (int)verts.size());
+		simpleShader->setUniform(SimpleShader::Uniforms::lightMin, 0.5f);
 		simpleShader->setUniform(SimpleShader::Uniforms::textureFac, 0.0f);
 	}
 

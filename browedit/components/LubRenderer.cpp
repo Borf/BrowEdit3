@@ -120,6 +120,7 @@ void LubRenderer::render()
 		glDrawArrays(GL_QUADS, 0, (int)verts.size());
 	}
 	glDepthMask(1);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 }
 

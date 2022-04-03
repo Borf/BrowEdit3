@@ -15,6 +15,7 @@ public:
 			modelMatrix,
 			s_texture,
 			textureFac,
+			lightMin,
 			color,
 			End
 		};
@@ -26,6 +27,7 @@ public:
 		bindUniform(Uniforms::modelMatrix, "modelMatrix");
 		bindUniform(Uniforms::s_texture, "s_texture");
 		bindUniform(Uniforms::textureFac, "textureFac");
+		bindUniform(Uniforms::lightMin, "lightMin");
 		bindUniform(Uniforms::color, "color");
 	}
 };

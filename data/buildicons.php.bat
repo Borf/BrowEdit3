@@ -20,8 +20,8 @@ $order = array(
 		"view_model_on.png","view_effect_on.png","view_light_on.png","view_sound_on.png",				//28-
 	"snap_grid_on.png","snap_grid_off.png","viewoptions.png","",										//32-
 		"undo.png", "redo.png", "copy.png", "paste.png",												//36-
-	"move.png", "rotate.png", "scale.png", "",															//40-
-		"camera_ortho.png","camera_perspective.png","","",												//44-
+	"move.png", "rotate.png", "scale.png", "rotate_right.png",											//40-
+		"camera_ortho.png","camera_perspective.png","mirror_horizontal.png","mirror_vertical.png",		//44-
 	"pivot_rotation01.png","pivot_rotation02.png","","",												//48-
 		"object_window_opened.png","object_window_closed.png","","",									//52-
 	"","","","",																						//56-

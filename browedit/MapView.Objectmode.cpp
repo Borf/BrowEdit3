@@ -359,6 +359,18 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 		if (ImGui::IsMouseClicked(0))
 		{
 			auto collisions = map->rootNode->getCollisions(mouseRay);
+			std::erase_if(collisions, [&](const std::pair<Node*, std::vector<glm::vec3>>& pn)
+			{
+				if (!viewModels && pn.first->getComponent<RswModel>())
+					return true;
+				if (!viewEffects && pn.first->getComponent<RswEffect>())
+					return true;
+				if (!viewSounds && pn.first->getComponent<RswSound>())
+					return true;
+				if (!viewLights && pn.first->getComponent<RswLight>())
+					return true;
+				return false;
+			});
 			if (collisions.size() > 0)
 			{
 				std::size_t closest = 0;
