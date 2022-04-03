@@ -67,7 +67,6 @@ void BrowEdit::showTextureBrushWindow()
 			ImGui::ItemSize(bb);
 			ImGui::ItemAdd(bb, NULL);
 			const ImGuiID id = window->GetID("Texture Edit");
-			//hovered |= 0 != ImGui::IsItemHovered(ImRect(bb.Min, bb.Min + ImVec2(avail, dim)), id);
 			ImGuiContext& g = *GImGui;
 
 			ImGui::RenderFrame(bb.Min, bb.Max, ImGui::GetColorU32(ImGuiCol_FrameBg, 1), true, style.FrameRounding);
@@ -130,6 +129,8 @@ void BrowEdit::showTextureBrushWindow()
 						x = glm::round(x / inc.x) * inc.x;
 						y = glm::round(y / inc.y) * inc.y;
 					}
+					x = glm::clamp(x, 0.0f, 1.0f);
+					y = glm::clamp(y, 0.0f, 1.0f);
 					dragged = true;
 				}
 				else if (ImGui::IsMouseReleased(0) && dragged)
@@ -139,6 +140,123 @@ void BrowEdit::showTextureBrushWindow()
 				}
 				ImGui::PopID();
 			}
+			//left
+			{
+				ImVec2 pos = ImVec2(bb.Min.x + activeMapView->textureEditUv1.x * bb.GetWidth(),
+					bb.Max.y - activeMapView->textureEditUv2.y * bb.GetHeight());
+				ImGui::SetCursorScreenPos(pos - ImVec2(10, 10));
+				ImGui::InvisibleButton("left", ImVec2(2 * 10, 2 * 10 + (activeMapView->textureEditUv2.y - activeMapView->textureEditUv1.y) * bb.GetHeight()));
+				if (ImGui::IsItemActive() || ImGui::IsItemHovered())
+					ImGui::SetTooltip("(%4.3f)", activeMapView->textureEditUv1.x);
+				if (ImGui::IsItemActive() && ImGui::IsMouseDragging(0))
+				{
+					activeMapView->textureEditUv1.x = (ImGui::GetIO().MousePos.x - bb.Min.x) / Canvas.x;
+					bool snap = snapUv;
+					if (ImGui::GetIO().KeyShift)
+						snap = !snap;
+
+					if (snap && snapDivX > 0 && snapDivY > 0)
+					{
+						glm::vec2 inc(1.0f / snapDivX, 1.0f / snapDivY);
+						activeMapView->textureEditUv1.x = glm::round(activeMapView->textureEditUv1.x / inc.x) * inc.x;
+					}
+					activeMapView->textureEditUv1.x = glm::clamp(activeMapView->textureEditUv1.x, 0.0f, 1.0f);
+					dragged = true;
+				}
+				else if (ImGui::IsMouseReleased(0) && dragged)
+				{
+					dragged = false;
+					changed = true;
+				}
+			}
+			//right
+			{
+				ImVec2 pos = ImVec2(bb.Min.x + activeMapView->textureEditUv2.x * bb.GetWidth(),
+									bb.Max.y - activeMapView->textureEditUv2.y * bb.GetHeight());
+				ImGui::SetCursorScreenPos(pos - ImVec2(10, 10));
+				ImGui::InvisibleButton("right", ImVec2(2 * 10, 2 * 10 + (activeMapView->textureEditUv2.y - activeMapView->textureEditUv1.y) * bb.GetHeight()));
+				if (ImGui::IsItemActive() || ImGui::IsItemHovered())
+					ImGui::SetTooltip("(%4.3f)", activeMapView->textureEditUv2.x);
+				if (ImGui::IsItemActive() && ImGui::IsMouseDragging(0))
+				{
+					activeMapView->textureEditUv2.x = (ImGui::GetIO().MousePos.x - bb.Min.x) / Canvas.x;
+					bool snap = snapUv;
+					if (ImGui::GetIO().KeyShift)
+						snap = !snap;
+
+					if (snap && snapDivX > 0 && snapDivY > 0)
+					{
+						glm::vec2 inc(1.0f / snapDivX, 1.0f / snapDivY);
+						activeMapView->textureEditUv2.x = glm::round(activeMapView->textureEditUv2.x / inc.x) * inc.x;
+					}
+					activeMapView->textureEditUv2.x = glm::clamp(activeMapView->textureEditUv2.x, 0.0f, 1.0f);
+					dragged = true;
+				}
+				else if (ImGui::IsMouseReleased(0) && dragged)
+				{
+					dragged = false;
+					changed = true;
+				}
+			}
+			//top
+			{
+				ImVec2 pos = ImVec2(bb.Min.x + activeMapView->textureEditUv1.x * bb.GetWidth(),
+									bb.Max.y - activeMapView->textureEditUv2.y * bb.GetHeight());
+				ImGui::SetCursorScreenPos(pos - ImVec2(10, 10));
+				ImGui::InvisibleButton("top", ImVec2(2 * 10 + (activeMapView->textureEditUv2.x - activeMapView->textureEditUv1.x) * bb.GetWidth(), 2 * 10));
+				if (ImGui::IsItemActive() || ImGui::IsItemHovered())
+					ImGui::SetTooltip("(%4.3f)", activeMapView->textureEditUv2.y);
+				if (ImGui::IsItemActive() && ImGui::IsMouseDragging(0))
+				{
+					activeMapView->textureEditUv2.y = 1 - (ImGui::GetIO().MousePos.y - bb.Min.y) / Canvas.y;
+					bool snap = snapUv;
+					if (ImGui::GetIO().KeyShift)
+						snap = !snap;
+
+					if (snap && snapDivX > 0 && snapDivY > 0)
+					{
+						glm::vec2 inc(1.0f / snapDivX, 1.0f / snapDivY);
+						activeMapView->textureEditUv2.y = glm::round(activeMapView->textureEditUv2.y / inc.y) * inc.y;
+					}
+					activeMapView->textureEditUv2.y = glm::clamp(activeMapView->textureEditUv2.y, 0.0f, 1.0f);
+					dragged = true;
+				}
+				else if (ImGui::IsMouseReleased(0) && dragged)
+				{
+					dragged = false;
+					changed = true;
+				}
+			}
+			//bottom
+			{
+				ImVec2 pos = ImVec2(bb.Min.x + activeMapView->textureEditUv1.x * bb.GetWidth(),
+					bb.Max.y - activeMapView->textureEditUv2.y * bb.GetHeight());
+				ImGui::SetCursorScreenPos(pos - ImVec2(10, 10 - (activeMapView->textureEditUv2.y - activeMapView->textureEditUv1.y) * bb.GetHeight()));
+				ImGui::InvisibleButton("bottom", ImVec2(2 * 10 + (activeMapView->textureEditUv2.x - activeMapView->textureEditUv1.x) * bb.GetWidth(), 2 * 10));
+				if (ImGui::IsItemActive() || ImGui::IsItemHovered())
+					ImGui::SetTooltip("(%4.3f)", activeMapView->textureEditUv1.y);
+				if (ImGui::IsItemActive() && ImGui::IsMouseDragging(0))
+				{
+					activeMapView->textureEditUv1.y = 1 - (ImGui::GetIO().MousePos.y - bb.Min.y) / Canvas.y;
+					bool snap = snapUv;
+					if (ImGui::GetIO().KeyShift)
+						snap = !snap;
+
+					if (snap && snapDivX > 0 && snapDivY > 0)
+					{
+						glm::vec2 inc(1.0f / snapDivX, 1.0f / snapDivY);
+						activeMapView->textureEditUv1.y = glm::round(activeMapView->textureEditUv1.y / inc.y) * inc.y;
+					}
+					activeMapView->textureEditUv1.y = glm::clamp(activeMapView->textureEditUv1.y, 0.0f, 1.0f);
+					dragged = true;
+				}
+				else if (ImGui::IsMouseReleased(0) && dragged)
+				{
+					dragged = false;
+					changed = true;
+				}
+			}
+
 			ImGui::SetCursorScreenPos(cursorPos);
 		}
 		ImGui::DragInt("Brush Width", &activeMapView->textureBrushWidth, 1, 1, 20);
@@ -146,6 +264,12 @@ void BrowEdit::showTextureBrushWindow()
 		float textureBrushHeight = activeMapView->textureBrushWidth * (uvSize.y / uvSize.x);
 		if (glm::abs(textureBrushHeight - glm::floor(textureBrushHeight)) > 0.01)
 		ImGui::TextColored(ImVec4(1,0,0,1), "ERROR: THIS WIDTH WON'T WORK, HEIGHT WOULD BE %f", textureBrushHeight);
+
+
+		glm::vec2 uv1 = activeMapView->textureEditUv1;
+		glm::vec2 uv2 = activeMapView->textureEditUv2;
+		activeMapView->textureEditUv1 = glm::min(uv1, uv2);
+		activeMapView->textureEditUv2 = glm::max(uv1, uv2);
 
 
 		ImGui::End();
