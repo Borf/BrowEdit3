@@ -84,7 +84,7 @@ public:
 	glm::vec2 textureEditUv1 = glm::vec2(0.25f, 0.25f);
 	glm::vec2 textureEditUv2 = glm::vec2(0.75f, 0.75f);
 
-	int textureBrushWidth = 1;
+	int textureBrushWidth = 4;
 
 
 	//height edit mode

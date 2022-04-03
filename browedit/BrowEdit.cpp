@@ -513,6 +513,9 @@ void BrowEdit::saveMap(Map* map)
 
 void BrowEdit::loadMap(const std::string file)
 {
+	if (!util::FileIO::exists(file))
+		return;
+
 	if (std::find(config.recentFiles.begin(), config.recentFiles.end(), file) != config.recentFiles.end())
 		std::erase_if(config.recentFiles, [file](const std::string s) { return s == file; });
 	config.recentFiles.insert(config.recentFiles.begin(), file);
