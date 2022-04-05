@@ -319,11 +319,11 @@ void BrowEdit::showTextureBrushWindow()
 			ImGui::SetCursorScreenPos(cursorPos);
 		}
 		ImGui::DragInt("Brush Width", &activeMapView->textureBrushWidth, 1, 1, 20);
+		ImGui::DragInt("Brush Height", &activeMapView->textureBrushHeight, 1, 1, 20);
+
 		glm::vec2 uvSize = activeMapView->textureEditUv2 - activeMapView->textureEditUv1;
 		float textureBrushHeight = activeMapView->textureBrushWidth * (uvSize.y / uvSize.x);
-		if (glm::abs(textureBrushHeight - glm::floor(textureBrushHeight)) > 0.01)
-		ImGui::TextColored(ImVec4(1,0,0,1), "ERROR: THIS WIDTH WON'T WORK, HEIGHT WOULD BE %f", textureBrushHeight);
-
+		ImGui::Text("For proper aspect ratio, height should be %f", textureBrushHeight);
 
 		glm::vec2 uv1 = activeMapView->textureEditUv1;
 		glm::vec2 uv2 = activeMapView->textureEditUv2;

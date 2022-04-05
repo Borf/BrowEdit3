@@ -157,14 +157,39 @@ void MapView::postRenderTextureMode(BrowEdit* browEdit)
 	}
 
 
-	bool textureBrushOk = true;
 	glm::vec2 uvSize = textureEditUv2 - textureEditUv1;
-	float textureBrushHeight = textureBrushWidth * (uvSize.y / uvSize.x);
-	if (glm::abs(textureBrushHeight - glm::floor(textureBrushHeight)) > 0.01)
-		textureBrushOk = false;
-	
+	glm::vec2 uv1 = textureEditUv1; //(0,0)
+	glm::vec2 uv4 = textureEditUv2; //(1,1)
+
+	glm::vec2 uv2(uv4.x, uv1.y);
+	glm::vec2 uv3(uv1.x, uv4.y);
+	bool flipH = textureBrushFlipH;
+	bool flipV = textureBrushFlipV;
+
+	if (textureBrushFlipD)
+	{
+		std::swap(uv2, uv3);
+	}
+
+	if (flipH)
+	{
+		uv1.x = 1 - uv1.x;
+		uv2.x = 1 - uv2.x;
+		uv3.x = 1 - uv3.x;
+		uv4.x = 1 - uv4.x;
+	}
+	if (flipV)
+	{
+		uv1.y = 1 - uv1.y;
+		uv2.y = 1 - uv2.y;
+		uv3.y = 1 - uv3.y;
+		uv4.y = 1 - uv4.y;
+	}
+	glm::vec2 xInc = (uv2 - uv1) / (float)textureBrushWidth;
+	glm::vec2 yInc = (uv3 - uv1) / (float)textureBrushHeight;
+
 	auto mouse3D = gnd->rayCast(mouseRay, viewEmptyTiles);
-	if (textureBrushOk && mouse3D != glm::vec3(0,0,0))
+	if (mouse3D != glm::vec3(0,0,0))
 	{
 		glm::ivec2 tileHovered((int)glm::floor(mouse3D.x / 10), (gnd->height - (int)glm::floor(mouse3D.z) / 10));
 
@@ -181,16 +206,23 @@ void MapView::postRenderTextureMode(BrowEdit* browEdit)
 					continue;
 				auto cube = gnd->cubes[topleft.x + x][topleft.y + y];
 
-				glm::vec2 uv1 = textureEditUv1 + ((textureEditUv2 - textureEditUv1) / glm::vec2(textureBrushWidth, textureBrushHeight)) * glm::vec2(x, y);
-				glm::vec2 uv2 = uv1 + ((textureEditUv2 - textureEditUv1) / glm::vec2(textureBrushWidth, textureBrushHeight));
+				glm::vec2 uv1_ = uv1 + xInc * (float)x + yInc * (float)y;
+				glm::vec2 uv2_ = uv1_ + xInc;
+				glm::vec2 uv3_ = uv1_ + yInc;
+				glm::vec2 uv4_ = uv1_ + xInc + yInc;
 
-				verts.push_back(VertexP3T2N3(glm::vec3(10 * (topleft.x + x),		-cube->h3 + dist, 10 * gnd->height - 10 * (topleft.y + y)),			glm::vec2(uv1.x,uv2.y), cube->normals[2]));
-				verts.push_back(VertexP3T2N3(glm::vec3(10 * (topleft.x + x) + 10,	-cube->h2 + dist, 10 * gnd->height - 10 * (topleft.y + y) + 10),	glm::vec2(uv2.x,uv1.y), cube->normals[1]));
-				verts.push_back(VertexP3T2N3(glm::vec3(10 * (topleft.x + x) + 10,	-cube->h4 + dist, 10 * gnd->height - 10 * (topleft.y + y)),			glm::vec2(uv2.x,uv2.y), cube->normals[3]));
+				uv1_.y = 1 - uv1_.y;
+				uv2_.y = 1 - uv2_.y;
+				uv3_.y = 1 - uv3_.y;
+				uv4_.y = 1 - uv4_.y;
 
-				verts.push_back(VertexP3T2N3(glm::vec3(10 * (topleft.x + x),		-cube->h1 + dist, 10 * gnd->height - 10 * (topleft.y + y) + 10),	glm::vec2(uv1.x,uv1.y), cube->normals[0]));
-				verts.push_back(VertexP3T2N3(glm::vec3(10 * (topleft.x + x),		-cube->h3 + dist, 10 * gnd->height - 10 * (topleft.y + y)),			glm::vec2(uv1.x,uv2.y), cube->normals[2]));
-				verts.push_back(VertexP3T2N3(glm::vec3(10 * (topleft.x + x) + 10,	-cube->h2 + dist, 10 * gnd->height - 10 * (topleft.y + y) + 10),	glm::vec2(uv2.x,uv1.y), cube->normals[1]));
+				verts.push_back(VertexP3T2N3(glm::vec3(10 * (topleft.x + x),		-cube->h3 + dist, 10 * gnd->height - 10 * (topleft.y + y)),			uv3_, cube->normals[2]));
+				verts.push_back(VertexP3T2N3(glm::vec3(10 * (topleft.x + x) + 10,	-cube->h2 + dist, 10 * gnd->height - 10 * (topleft.y + y) + 10),	uv2_, cube->normals[1]));
+				verts.push_back(VertexP3T2N3(glm::vec3(10 * (topleft.x + x) + 10,	-cube->h4 + dist, 10 * gnd->height - 10 * (topleft.y + y)),			uv4_, cube->normals[3]));
+
+				verts.push_back(VertexP3T2N3(glm::vec3(10 * (topleft.x + x),		-cube->h1 + dist, 10 * gnd->height - 10 * (topleft.y + y) + 10),	uv1_, cube->normals[0]));
+				verts.push_back(VertexP3T2N3(glm::vec3(10 * (topleft.x + x),		-cube->h3 + dist, 10 * gnd->height - 10 * (topleft.y + y)),			uv3_, cube->normals[2]));
+				verts.push_back(VertexP3T2N3(glm::vec3(10 * (topleft.x + x) + 10,	-cube->h2 + dist, 10 * gnd->height - 10 * (topleft.y + y) + 10),	uv2_, cube->normals[1]));
 			}
 		}
 		glEnableVertexAttribArray(0);

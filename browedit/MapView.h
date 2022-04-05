@@ -85,6 +85,7 @@ public:
 	glm::vec2 textureEditUv2 = glm::vec2(0.75f, 0.75f);
 
 	int textureBrushWidth = 4;
+	int textureBrushHeight = 4;
 	bool textureBrushFlipH = false;
 	bool textureBrushFlipV = false;
 	bool textureBrushFlipD = false;
