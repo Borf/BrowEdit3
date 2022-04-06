@@ -163,22 +163,18 @@ void MapView::postRenderTextureMode(BrowEdit* browEdit)
 
 	glm::vec2 uv2(uv4.x, uv1.y);
 	glm::vec2 uv3(uv1.x, uv4.y);
-	bool flipH = textureBrushFlipH;
-	bool flipV = textureBrushFlipV;
 
 	if (textureBrushFlipD)
-	{
-		std::swap(uv2, uv3);
-	}
+		std::swap(uv1, uv4); // different from texturebrush window due to flipped UV
 
-	if (flipH)
+	if (textureBrushFlipH)
 	{
 		uv1.x = 1 - uv1.x;
 		uv2.x = 1 - uv2.x;
 		uv3.x = 1 - uv3.x;
 		uv4.x = 1 - uv4.x;
 	}
-	if (flipV)
+	if (textureBrushFlipV)
 	{
 		uv1.y = 1 - uv1.y;
 		uv2.y = 1 - uv2.y;
