@@ -39,7 +39,6 @@ public:
 	std::string viewName;
 
 	gl::VBO<VertexP3T2>* gridVbo = nullptr;
-	gl::VBO<VertexP3T2>* textureGridVbo = nullptr;
 
 	NodeRenderContext nodeRenderContext;
 	Gadget gadget;
@@ -80,6 +79,9 @@ public:
 	} pivotPoint = PivotPoint::Local;
 
 	//texture edit stuff
+	gl::VBO<VertexP3T2>* textureGridVbo = nullptr;
+	bool textureGridDirty = true;
+
 	int textureSelected = 0;
 	glm::vec2 textureEditUv1 = glm::vec2(0.25f, 0.25f);
 	glm::vec2 textureEditUv2 = glm::vec2(0.75f, 0.75f);
@@ -89,6 +91,8 @@ public:
 	bool textureBrushFlipH = false;
 	bool textureBrushFlipV = false;
 	bool textureBrushFlipD = false;
+	bool textureBrushKeepShadow = true;
+	bool textureBrushKeepColor = true;
 	int textureBrushMask() { return (textureBrushFlipD ? 4 : 0) | (textureBrushFlipH ? 2 : 0) | (textureBrushFlipV ? 1 : 0); }
 	void textureBrushMask(int mask)
 	{

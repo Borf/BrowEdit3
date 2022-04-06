@@ -330,6 +330,9 @@ void BrowEdit::showTextureBrushWindow()
 		activeMapView->textureEditUv1 = glm::min(uv1, uv2);
 		activeMapView->textureEditUv2 = glm::max(uv1, uv2);
 
+		ImGui::Checkbox("Keep Shadows", &activeMapView->textureBrushKeepShadow);
+		ImGui::Checkbox("Keep Colors", &activeMapView->textureBrushKeepColor);
+
 
 		ImGui::End();
 	}

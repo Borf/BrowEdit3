@@ -24,27 +24,9 @@ void MapView::postRenderTextureMode(BrowEdit* browEdit)
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glDisable(GL_TEXTURE_2D);
 
-	if (textureGridVbo->size() > 0)
+	if (textureGridVbo->size() == 0 || textureGridDirty)
 	{
-		if (snapToGrid)
-		{
-			simpleShader->setUniform(SimpleShader::Uniforms::modelMatrix, glm::mat4(1.0f));
-			simpleShader->setUniform(SimpleShader::Uniforms::color, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
-			glLineWidth(2);
-			textureGridVbo->bind();
-			glEnableVertexAttribArray(0);
-			glEnableVertexAttribArray(1);
-			glDisableVertexAttribArray(2);
-			glDisableVertexAttribArray(3);
-			glDisableVertexAttribArray(4); //TODO: vao
-			glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexP3T2), (void*)(0 * sizeof(float)));
-			glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexP3T2), (void*)(3 * sizeof(float)));
-			glDrawArrays(GL_LINES, 0, (int)textureGridVbo->size());
-			textureGridVbo->unBind();
-		}
-	}
-	else
-	{
+		textureGridDirty = false;
 		std::vector<VertexP3T2> verts;
 
 		auto gnd = map->rootNode->getComponent<Gnd>();
@@ -155,6 +137,22 @@ void MapView::postRenderTextureMode(BrowEdit* browEdit)
 		}
 		textureGridVbo->setData(verts, GL_STATIC_DRAW);
 	}
+	if(textureGridVbo->size() > 0 && snapToGrid)
+	{
+		simpleShader->setUniform(SimpleShader::Uniforms::modelMatrix, glm::mat4(1.0f));
+		simpleShader->setUniform(SimpleShader::Uniforms::color, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+		glLineWidth(2);
+		textureGridVbo->bind();
+		glEnableVertexAttribArray(0);
+		glEnableVertexAttribArray(1);
+		glDisableVertexAttribArray(2);
+		glDisableVertexAttribArray(3);
+		glDisableVertexAttribArray(4); //TODO: vao
+		glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexP3T2), (void*)(0 * sizeof(float)));
+		glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexP3T2), (void*)(3 * sizeof(float)));
+		glDrawArrays(GL_LINES, 0, (int)textureGridVbo->size());
+		textureGridVbo->unBind();
+	}
 
 
 	glm::vec2 uvSize = textureEditUv2 - textureEditUv1;
@@ -193,7 +191,6 @@ void MapView::postRenderTextureMode(BrowEdit* browEdit)
 		float dist = 0.002f * cameraDistance;
 
 		glm::ivec2 topleft = tileHovered - glm::ivec2(textureBrushWidth / 2, textureBrushHeight / 2);
-
 		for (int x = 0; x < textureBrushWidth; x++)
 		{
 			for (int y = 0; y < textureBrushHeight; y++)
@@ -238,6 +235,56 @@ void MapView::postRenderTextureMode(BrowEdit* browEdit)
 		simpleShader->setUniform(SimpleShader::Uniforms::textureFac, 0.0f);
 	}
 
+
+	if (hovered)
+	{
+
+		if (ImGui::IsMouseClicked(0) && mouse3D != glm::vec3(0, 0, 0))
+		{
+			glm::ivec2 tileHovered((int)glm::floor(mouse3D.x / 10), (gnd->height - (int)glm::floor(mouse3D.z) / 10));
+			glm::ivec2 topleft = tileHovered - glm::ivec2(textureBrushWidth / 2, textureBrushHeight / 2);
+			for (int x = 0; x < textureBrushWidth; x++)
+			{
+				for (int y = 0; y < textureBrushHeight; y++)
+				{
+					if (topleft.x + x >= gnd->width || topleft.x + x < 0 || topleft.y + y >= gnd->height || topleft.y + y < 0)
+						continue;
+					auto cube = gnd->cubes[topleft.x + x][topleft.y + y];
+
+					glm::vec2 uv1_ = uv1 + xInc * (float)x + yInc * (float)y;
+					glm::vec2 uv2_ = uv1_ + xInc;
+					glm::vec2 uv3_ = uv1_ + yInc;
+					glm::vec2 uv4_ = uv1_ + xInc + yInc;
+
+					uv1_.y = 1 - uv1_.y;
+					uv2_.y = 1 - uv2_.y;
+					uv3_.y = 1 - uv3_.y;
+					uv4_.y = 1 - uv4_.y;
+
+					Gnd::Tile* t = new Gnd::Tile();
+					auto id = gnd->tiles.size();
+					gnd->tiles.push_back(t);
+
+					t->v1 = uv1_;
+					t->v2 = uv2_;
+					t->v3 = uv3_;
+					t->v4 = uv4_;
+					t->color = glm::ivec4(255, 255, 255, 255);
+					t->textureIndex = textureSelected;
+					t->lightmapIndex = 0;
+					if (textureBrushKeepShadow && cube->tileUp != -1)
+						t->lightmapIndex = gnd->tiles[cube->tileUp]->lightmapIndex;
+					if (textureBrushKeepColor && cube->tileUp != -1)
+						t->color = gnd->tiles[cube->tileUp]->color;
+					cube->tileUp = (int)id;
+					gndRenderer->setChunkDirty(topleft.x + x, topleft.y + y);
+					gndRenderer->gndShadowDirty = true;
+				}
+			}
+			textureGridDirty = true;
+		}
+
+	}
 
 
 	fbo->unbind();
