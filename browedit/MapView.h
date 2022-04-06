@@ -5,6 +5,7 @@
 #include <browedit/math/Ray.h>
 #include <browedit/math/Plane.h>
 #include <browedit/components/BillboardRenderer.h>
+#include <browedit/components/Gnd.h>
 #include <browedit/Gadget.h>
 class BrowEdit;
 class Map;
@@ -79,12 +80,15 @@ public:
 	} pivotPoint = PivotPoint::Local;
 
 	//texture edit stuff
+	void buildTextureGrid();
 	gl::VBO<VertexP3T2>* textureGridVbo = nullptr;
 	bool textureGridDirty = true;
 
 	int textureSelected = 0;
 	glm::vec2 textureEditUv1 = glm::vec2(0.25f, 0.25f);
 	glm::vec2 textureEditUv2 = glm::vec2(0.75f, 0.75f);
+
+	std::vector<std::vector<Gnd::Tile*>> textureStamp;
 
 	int textureBrushWidth = 4;
 	int textureBrushHeight = 4;
