@@ -301,9 +301,9 @@ std::pair<glm::vec3, int> Lightmapper::calculateLight(const glm::vec3& groundPos
 			if (!collides)
 			{
 				if (rswLight->affectShadowMap)
-					intensity += (int)attenuation;
+					intensity += (int)(attenuation * rswLight->intensity);
 				if (rswLight->affectLightmap)
-					colorInc += (attenuation / 255.0f) * rswLight->color;
+					colorInc += (attenuation / 255.0f) * rswLight->color * rswLight->intensity;
 			}
 		}
 	}

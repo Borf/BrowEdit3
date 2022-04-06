@@ -139,7 +139,7 @@ public:
 	};
 
 	float cutOff = 0.5f;
-	float intensity = 20;
+	float intensity = 1;
 	std::vector<glm::vec2> falloff = { glm::vec2(0,1), glm::vec2(1,0) };
 	// end custom properties
 	float realRange();
