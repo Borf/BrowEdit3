@@ -3,6 +3,17 @@
 #include <browedit/Node.h>
 #include <browedit/components/GndRenderer.h>
 
+CubeTileChangeAction::CubeTileChangeAction(Gnd::Cube* cube, int tileUp, int tileFront, int tileSide)
+{
+	this->oldValues[cube][0] = cube->tileUp;
+	this->oldValues[cube][1] = cube->tileFront;
+	this->oldValues[cube][2] = cube->tileSide;
+
+	this->newValues[cube][0] = tileUp;
+	this->newValues[cube][1] = tileFront;
+	this->newValues[cube][2] = tileSide;
+}
+
 CubeTileChangeAction::CubeTileChangeAction(const std::map<Gnd::Cube*, int[3]>& oldValues, const std::map<Gnd::Cube*, int[3]>& newValues)
 {
 	this->oldValues = oldValues;
@@ -30,7 +41,10 @@ void CubeTileChangeAction::perform(Map* map, BrowEdit* browEdit)
 			kv.first->tileIds[i] = kv.second[i];
 	auto gndRenderer = map->rootNode->getComponent<GndRenderer>();
 	if (gndRenderer)
-		gndRenderer->setChunksDirty();
+	{
+		gndRenderer->setChunksDirty(); //TODO: don't double up?
+		gndRenderer->gndShadowDirty = true;
+	}
 }
 
 void CubeTileChangeAction::undo(Map* map, BrowEdit* browEdit)
@@ -40,7 +54,10 @@ void CubeTileChangeAction::undo(Map* map, BrowEdit* browEdit)
 			kv.first->tileIds[i] = kv.second[i];
 	auto gndRenderer = map->rootNode->getComponent<GndRenderer>();
 	if (gndRenderer)
-		gndRenderer->setChunksDirty();
+	{
+		gndRenderer->setChunksDirty();//TODO: don't double up?
+		gndRenderer->gndShadowDirty = true;
+	}
 }
 
 std::string CubeTileChangeAction::str()

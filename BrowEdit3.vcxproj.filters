@@ -322,6 +322,15 @@
     <ClCompile Include="browedit\windows\TextureManageWindow.cpp">
       <Filter>browedit\windows</Filter>
     </ClCompile>
+    <ClCompile Include="browedit\actions\TilePropertyChangeAction.cpp">
+      <Filter>browedit\actions</Filter>
+    </ClCompile>
+    <ClCompile Include="browedit\actions\TileDeleteAction.cpp">
+      <Filter>browedit\actions</Filter>
+    </ClCompile>
+    <ClCompile Include="browedit\actions\TileNewAction.cpp">
+      <Filter>browedit\actions</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="lib\imgui\imgui.h">
@@ -563,6 +572,15 @@
     </ClInclude>
     <ClInclude Include="browedit\components\LubRenderer.h">
       <Filter>browedit\components</Filter>
+    </ClInclude>
+    <ClInclude Include="browedit\actions\TilePropertyChangeAction.h">
+      <Filter>browedit\actions</Filter>
+    </ClInclude>
+    <ClInclude Include="browedit\actions\TileDeleteAction.h">
+      <Filter>browedit\actions</Filter>
+    </ClInclude>
+    <ClInclude Include="browedit\actions\TileNewAction.h">
+      <Filter>browedit\actions</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

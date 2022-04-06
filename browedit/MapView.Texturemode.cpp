@@ -6,6 +6,9 @@
 #include <browedit/gl/Texture.h>
 #include <browedit/components/Gnd.h>
 #include <browedit/components/GndRenderer.h>
+#include <browedit/actions/GroupAction.h>
+#include <browedit/actions/TileNewAction.h>
+#include <browedit/actions/CubeTileChangeAction.h>
 
 void MapView::postRenderTextureMode(BrowEdit* browEdit)
 {
@@ -241,8 +244,11 @@ void MapView::postRenderTextureMode(BrowEdit* browEdit)
 
 		if (ImGui::IsMouseClicked(0) && mouse3D != glm::vec3(0, 0, 0))
 		{
+			auto ga = new GroupAction();
+
 			glm::ivec2 tileHovered((int)glm::floor(mouse3D.x / 10), (gnd->height - (int)glm::floor(mouse3D.z) / 10));
 			glm::ivec2 topleft = tileHovered - glm::ivec2(textureBrushWidth / 2, textureBrushHeight / 2);
+			int id = gnd->tiles.size();
 			for (int x = 0; x < textureBrushWidth; x++)
 			{
 				for (int y = 0; y < textureBrushHeight; y++)
@@ -251,24 +257,16 @@ void MapView::postRenderTextureMode(BrowEdit* browEdit)
 						continue;
 					auto cube = gnd->cubes[topleft.x + x][topleft.y + y];
 
-					glm::vec2 uv1_ = uv1 + xInc * (float)x + yInc * (float)y;
-					glm::vec2 uv2_ = uv1_ + xInc;
-					glm::vec2 uv3_ = uv1_ + yInc;
-					glm::vec2 uv4_ = uv1_ + xInc + yInc;
-
-					uv1_.y = 1 - uv1_.y;
-					uv2_.y = 1 - uv2_.y;
-					uv3_.y = 1 - uv3_.y;
-					uv4_.y = 1 - uv4_.y;
-
 					Gnd::Tile* t = new Gnd::Tile();
-					auto id = gnd->tiles.size();
-					gnd->tiles.push_back(t);
 
-					t->v1 = uv1_;
-					t->v2 = uv2_;
-					t->v3 = uv3_;
-					t->v4 = uv4_;
+					t->v1 = uv1 + xInc * (float)x + yInc * (float)y;
+					t->v2 = t->v1 + xInc;
+					t->v3 = t->v1 + yInc;
+					t->v4 = t->v1 + xInc + yInc;
+
+					for (int i = 0; i < 4; i++)
+						t->texCoords[i].y = 1 - t->texCoords[i].y;
+
 					t->color = glm::ivec4(255, 255, 255, 255);
 					t->textureIndex = textureSelected;
 					t->lightmapIndex = 0;
@@ -276,12 +274,15 @@ void MapView::postRenderTextureMode(BrowEdit* browEdit)
 						t->lightmapIndex = gnd->tiles[cube->tileUp]->lightmapIndex;
 					if (textureBrushKeepColor && cube->tileUp != -1)
 						t->color = gnd->tiles[cube->tileUp]->color;
-					cube->tileUp = (int)id;
-					gndRenderer->setChunkDirty(topleft.x + x, topleft.y + y);
-					gndRenderer->gndShadowDirty = true;
+
+					ga->addAction(new TileNewAction(t));
+					ga->addAction(new CubeTileChangeAction(cube, id, cube->tileFront, cube->tileSide));
+					cube->tileUp = id;
+					id++;
 				}
 			}
 			textureGridDirty = true;
+			map->doAction(ga, browEdit);
 		}
 
 	}
