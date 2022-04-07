@@ -10,6 +10,7 @@
 #include <browedit/gl/Texture.h>
 #include <browedit/Icons.h>
 #include <imgui_internal.h>
+#include <glm/gtc/matrix_transform.hpp>
 
 void BrowEdit::showTextureBrushWindow()
 {
@@ -59,6 +60,11 @@ void BrowEdit::showTextureBrushWindow()
 			bool tmp = activeMapView->textureBrushFlipH;
 			activeMapView->textureBrushFlipH = !activeMapView->textureBrushFlipV;
 			activeMapView->textureBrushFlipV = tmp;
+
+			glm::vec2 uv1 = glm::translate(glm::rotate(glm::translate(glm::mat4(1.0), glm::vec3(0.5f, 0.5f, 0)), glm::radians(90.0f), glm::vec3(0, 0, 1)), glm::vec3(-0.5f, -0.5f, 0.0f)) * glm::vec4(activeMapView->textureEditUv1, 0, 1);
+			glm::vec2 uv2 = glm::translate(glm::rotate(glm::translate(glm::mat4(1.0), glm::vec3(0.5f, 0.5f, 0)), glm::radians(90.0f), glm::vec3(0, 0, 1)), glm::vec3(-0.5f, -0.5f, 0.0f)) * glm::vec4(activeMapView->textureEditUv2, 0, 1);
+			activeMapView->textureEditUv1 = glm::min(uv1, uv2);
+			activeMapView->textureEditUv2 = glm::max(uv1, uv2);
 		}
 		ImGui::SameLine();
 		if (toolBarButton("RotateR", ICON_ROTATE_RIGHT, "Rotate texture right", ImVec4(1, 1, 1, 1)))
@@ -67,6 +73,11 @@ void BrowEdit::showTextureBrushWindow()
 			bool tmp = activeMapView->textureBrushFlipV;
 			activeMapView->textureBrushFlipV = !activeMapView->textureBrushFlipH;
 			activeMapView->textureBrushFlipH = tmp;
+
+			glm::vec2 uv1 = glm::translate(glm::rotate(glm::translate(glm::mat4(1.0), glm::vec3(0.5f, 0.5f, 0)), glm::radians(-90.0f), glm::vec3(0, 0, 1)), glm::vec3(-0.5f, -0.5f, 0.0f)) * glm::vec4(activeMapView->textureEditUv1, 0, 1);
+			glm::vec2 uv2 = glm::translate(glm::rotate(glm::translate(glm::mat4(1.0), glm::vec3(0.5f, 0.5f, 0)), glm::radians(-90.0f), glm::vec3(0, 0, 1)), glm::vec3(-0.5f, -0.5f, 0.0f)) * glm::vec4(activeMapView->textureEditUv2, 0, 1);
+			activeMapView->textureEditUv1 = glm::min(uv1, uv2);
+			activeMapView->textureEditUv2 = glm::max(uv1, uv2);
 		}
 		ImGui::SameLine();
 		if (toolBarButton("MirrorH", ICON_MIRROR_HORIZONTAL, "Mirror Horizontal", ImVec4(1, 1, 1, 1)))
@@ -75,6 +86,10 @@ void BrowEdit::showTextureBrushWindow()
 				activeMapView->textureBrushFlipV = !activeMapView->textureBrushFlipV;
 			else
 				activeMapView->textureBrushFlipH = !activeMapView->textureBrushFlipH;
+
+			activeMapView->textureEditUv1.x = 1 - activeMapView->textureEditUv1.x;
+			activeMapView->textureEditUv2.x = 1 - activeMapView->textureEditUv2.x;
+			std::swap(activeMapView->textureEditUv1.x, activeMapView->textureEditUv2.x);
 		}
 		ImGui::SameLine();
 		if (toolBarButton("MirrorV", ICON_MIRROR_VERTICAL, "Mirror Vertical", ImVec4(1, 1, 1, 1)))
@@ -83,6 +98,10 @@ void BrowEdit::showTextureBrushWindow()
 				activeMapView->textureBrushFlipV = !activeMapView->textureBrushFlipV;
 			else
 				activeMapView->textureBrushFlipH = !activeMapView->textureBrushFlipH;
+
+			activeMapView->textureEditUv1.y = 1 - activeMapView->textureEditUv1.y;
+			activeMapView->textureEditUv2.y = 1 - activeMapView->textureEditUv2.y;
+			std::swap(activeMapView->textureEditUv1.y, activeMapView->textureEditUv2.y);
 		}
 		ImGui::Text("%d %d %d", activeMapView->textureBrushFlipD ? 1 : 0, activeMapView->textureBrushFlipH ? 1 : 0, activeMapView->textureBrushFlipV ? 1 : 0);
 
