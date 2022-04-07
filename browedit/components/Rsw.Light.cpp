@@ -136,9 +136,9 @@ void RswLight::buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>& nod
 	{
 		auto falloffStyle = rswLights.front()->falloffStyle;
 
+		util::DragFloatMulti<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Intensity", [](RswLight* l) { return &l->intensity; }, 1.00f, 0.0f, 100000.0f);
 		if (falloffStyle == FalloffStyle::Magic)
 		{
-			util::DragFloatMulti<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Intensity", [](RswLight* l) { return &l->intensity; }, 1.00f, 0.0f, 100000.0f);
 			util::DragFloatMulti<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Cutoff", [](RswLight* l) { return &l->cutOff; }, 0.01f, 0.0f, 1.0f);
 		}
 		else if (falloffStyle == FalloffStyle::SplineTweak)
