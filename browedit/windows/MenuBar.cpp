@@ -27,6 +27,8 @@ void BrowEdit::menuBar()
 			showOpenWindow();
 		if (activeMapView && ImGui::MenuItem(("Save " + activeMapView->map->name).c_str(), "Ctrl+s"))
 			saveMap(activeMapView->map);
+		if (activeMapView && ImGui::MenuItem("Save as "))
+			saveAsMap(activeMapView->map);
 		if (ImGui::BeginMenu("Recent Maps", config.recentFiles.size() > 0))
 		{
 			for (const auto& m : config.recentFiles)
@@ -119,8 +121,10 @@ void BrowEdit::menuBar()
 		{
 			if (ImGui::BeginMenu(map->name.c_str()))
 			{
-				if (ImGui::MenuItem("Save as"))
+				if (ImGui::MenuItem("Save"))
 					saveMap(map);
+				if (ImGui::MenuItem("Save as"))
+					saveAsMap(map);
 				if (ImGui::MenuItem("Open new view"))
 					loadMap(map->name);
 				if (ImGui::BeginMenu("Import/Export maps"))

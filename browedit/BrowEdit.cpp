@@ -491,6 +491,10 @@ void fixBackup(const std::string& fileName)
 void BrowEdit::saveMap(Map* map)
 {
 	std::string mapName = map->name;
+	bool fullPath = false;
+	if (mapName.find(":") != std::string::npos)
+		fullPath = true;
+
 	if (mapName.find(".rsw") != std::string::npos)
 		mapName = mapName.substr(0, mapName.find(".rsw"));
 	if (mapName.find("\\") != std::string::npos)
@@ -499,6 +503,12 @@ void BrowEdit::saveMap(Map* map)
 	std::string rswName = config.ropath + map->name;
 	std::string gndName = config.ropath + map->name.substr(0, map->name.size() - 4) + ".gnd";
 	std::string lubName = config.ropath + "data\\luafiles514\\lua files\\effecttool\\" + mapName + ".lub";
+	if (fullPath)
+	{
+		rswName = map->name;
+		gndName = map->name.substr(0, map->name.size() - 4) + ".gnd";
+		//dunno what to do with lub
+	}
 
 	if (config.backup)
 	{
@@ -507,6 +517,56 @@ void BrowEdit::saveMap(Map* map)
 		fixBackup(lubName);
 	}
 
+	map->rootNode->getComponent<Rsw>()->save(rswName, this);
+	map->rootNode->getComponent<Gnd>()->save(gndName);
+}
+
+void BrowEdit::saveAsMap(Map* map)
+{
+	std::string path = util::SaveAsDialog(config.ropath + map->name, "Rsw\0*.rsw\0");
+	if (path == "")
+		return;
+
+	if (path.size() < 4 || path.substr(path.size() - 4) != ".rsw")
+		path += ".rsw";
+
+	if (path.find(config.ropath) == std::string::npos)
+	{
+		std::cout << "WARNING: YOU ARE SAVING OUTSIDE OF THE RO DATA PATH. THIS WILL GIVE BUGS" << std::endl;
+		map->name = path;
+	}
+	else
+	{
+		map->name = path.substr(path.find(config.ropath) + config.ropath.size());
+		for (auto& mv : mapViews)
+		{
+			if (mv.map == map)
+			{
+				mv.viewName = mv.map->name + mv.viewName.substr(mv.viewName.find("#"));
+			}
+		}
+	}
+
+	std::string fileName = path.substr(path.rfind("\\") + 1);
+	std::string directory = path.substr(0, path.rfind("\\")+1);
+
+	std::string mapName = fileName;
+	if (mapName.find(".rsw") != std::string::npos)
+		mapName = mapName.substr(0, mapName.find(".rsw"));
+
+	std::string rswName = directory + mapName + ".rsw";
+	std::string gndName = directory + mapName + ".gnd";
+//	std::string lubName = config.ropath + "data\\luafiles514\\lua files\\effecttool\\" + mapName + ".lub"; //not sure where to store this
+
+	if (config.backup)
+	{
+		fixBackup(rswName);
+		fixBackup(gndName);
+//		fixBackup(lubName);
+	}
+
+	map->rootNode->getComponent<Rsw>()->gatFile = mapName + ".gat";
+	map->rootNode->getComponent<Rsw>()->gndFile = mapName + ".gnd";
 	map->rootNode->getComponent<Rsw>()->save(rswName, this);
 	map->rootNode->getComponent<Gnd>()->save(gndName);
 }

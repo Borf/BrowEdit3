@@ -113,6 +113,7 @@ public:
 
 	void loadMap(const std::string file);
 	void saveMap(Map* map);
+	void saveAsMap(Map* map);
 	void showMapWindow(MapView& map);
 
 	void saveTagList();
