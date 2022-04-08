@@ -28,6 +28,12 @@ Rsw::Rsw()
 {
 }
 
+Rsw::~Rsw()
+{
+	if (quadtree)
+		delete quadtree;
+}
+
 
 
 void Rsw::load(const std::string& fileName, Map* map, BrowEdit* browEdit, bool loadModels, bool loadGnd)

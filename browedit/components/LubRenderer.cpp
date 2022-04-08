@@ -11,8 +11,12 @@
 LubRenderer::LubRenderer()
 {
 	renderContext = LubRenderContext::getInstance();
+}
 
-
+LubRenderer::~LubRenderer()
+{
+	if(texture)
+		util::ResourceManager<gl::Texture>::unload(texture);
 }
 
 

@@ -16,6 +16,11 @@ RsmRenderer::RsmRenderer()
 	begin();
 }
 
+RsmRenderer::~RsmRenderer()
+{
+	begin();
+}
+
 void RsmRenderer::begin()
 {
 	selected = false;

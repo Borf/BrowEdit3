@@ -17,6 +17,12 @@ WaterRenderer::WaterRenderer()
 	renderContext = WaterRenderContext::getInstance();
 }
 
+WaterRenderer::~WaterRenderer()
+{
+	for (auto t : textures)
+		util::ResourceManager<gl::Texture>::unload(t);
+}
+
 void WaterRenderer::render()
 {
 	if (!this->rsw)

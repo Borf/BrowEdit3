@@ -2,7 +2,9 @@
 #include "components/Component.h"
 #include "components/Renderer.h"
 #include "components/Collider.h"
+#include "components/Rsm.h"
 #include <browedit/util/Util.h>
+#include <browedit/util/ResourceManager.h>
 #include <browedit/Map.h>
 
 Node::Node(const std::string& name, Node* parent) : name(name), parent(parent)
@@ -13,6 +15,18 @@ Node::Node(const std::string& name, Node* parent) : name(name), parent(parent)
 		this->root = parent->root;
 	}
 	root->dirty = true;
+}
+
+Node::~Node()
+{
+	for (auto c : children)
+		delete c;
+	children.clear();
+	for (auto c : components)
+		if (dynamic_cast<Rsm*>(c) != nullptr)
+			util::ResourceManager<Rsm>::unload(dynamic_cast<Rsm*>(c)); //TODO: remove double cast
+		else
+			delete c;
 }
 
 void Node::addComponent(Component* component)

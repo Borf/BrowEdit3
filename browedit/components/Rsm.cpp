@@ -13,6 +13,14 @@ Rsm::Rsm(const std::string& fileName)
 	loaded = false;
 	reload();
 }
+
+Rsm::~Rsm()
+{
+	if(rootMesh)
+		delete rootMesh;
+}
+
+
 void Rsm::reload()
 {
 	rootMesh = NULL;

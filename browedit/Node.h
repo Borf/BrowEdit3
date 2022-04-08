@@ -22,6 +22,7 @@ public:
 
 
 	Node(const std::string& name = "", Node* parent = nullptr);
+	~Node();
 	void addComponent(Component* component);
 	void setParent(Node* newParent);
 	void removeChild(Node* child);

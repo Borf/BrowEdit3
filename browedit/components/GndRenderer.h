@@ -60,7 +60,7 @@ public:
 		Gnd* gnd;
 
 		Chunk(int x, int y, Gnd* gnd, GndRenderer* renderer);
-
+		~Chunk();
 		void render();
 		void rebuild();
 	};
@@ -79,6 +79,7 @@ public:
 	bool gndShadowDirty = true;
 
 	GndRenderer();
+	~GndRenderer();
 	void render() override;
 
 

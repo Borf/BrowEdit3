@@ -23,7 +23,13 @@ BillboardRenderer::BillboardRenderer(const std::string& textureFile, const std::
 		verts.push_back(VertexP3T2(glm::vec3(5, 5, 0), glm::vec2(1, 1)));
 		verts.push_back(VertexP3T2(glm::vec3(5, -5, 0), glm::vec2(1, 0)));
 	}
+}
 
+BillboardRenderer::~BillboardRenderer()
+{
+	util::ResourceManager<gl::Texture>::unload(texture);
+	if(textureSelected)
+		util::ResourceManager<gl::Texture>::unload(textureSelected);
 }
 
 

@@ -111,6 +111,7 @@ public:
 	void updateMatrices();
 public:
 	Rsm(const std::string& fileName);
+	~Rsm();
 	void reload();
 
 	std::string fileName;

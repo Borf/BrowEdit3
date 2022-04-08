@@ -196,6 +196,20 @@ Gnd::Gnd(const std::string& fileName)
 	std::cout << "GND: Done calculating normals" << std::endl;
 }
 
+
+Gnd::~Gnd()
+{
+	for (auto t : textures)
+		delete t;
+	for (auto l : lightmaps)
+		delete l;
+	for (auto t : tiles)
+		delete t;
+	for (auto r : cubes)
+		for (auto c : r)
+			delete c;
+}
+
 void Gnd::save(const std::string& fileName)
 {
 	std::ofstream file(fileName.c_str(), std::ios_base::binary | std::ios_base::out);

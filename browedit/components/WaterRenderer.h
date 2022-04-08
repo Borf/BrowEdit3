@@ -32,6 +32,7 @@ public:
 	gl::VBO<VertexP3T2>* vbo = nullptr;
 
 	WaterRenderer();
+	~WaterRenderer();
 	void render() override;
 	void reloadTextures();
 };

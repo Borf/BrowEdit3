@@ -21,6 +21,17 @@ GndRenderer::GndRenderer()
 	gndShadowDirty = true;
 }
 
+GndRenderer::~GndRenderer()
+{
+	util::ResourceManager<gl::Texture>::unload(white);
+	delete gndShadow;
+	for(auto t : textures)
+		util::ResourceManager<gl::Texture>::unload(t);
+	for (auto r : chunks)
+		for (auto c : r)
+			delete c;
+}
+
 void GndRenderer::render()
 {
 	if (!this->gnd)
@@ -161,6 +172,10 @@ GndRenderer::Chunk::Chunk(int x, int y, Gnd* gnd, GndRenderer* renderer)
 	this->y = y;
 	this->gnd = gnd;
 	this->renderer = renderer;
+}
+
+GndRenderer::Chunk::~Chunk()
+{
 }
 
 

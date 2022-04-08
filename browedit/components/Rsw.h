@@ -64,6 +64,7 @@ public:
 
 
 	Rsw();
+	~Rsw();
 
 	void load(const std::string& fileName, Map* map, BrowEdit* browEdit, bool loadModels = true, bool loadGnd = true);
 	void save(const std::string& fileName, BrowEdit* browEdit);

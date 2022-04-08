@@ -33,6 +33,15 @@ Map::Map(const std::string& name, BrowEdit* browEdit) : name(name)
 	rsw->load(name, this, browEdit);
 }
 
+Map::~Map()
+{
+	for (auto u : undoStack)
+		delete u;
+	for (auto u : redoStack)
+		delete u;
+	delete rootNode;
+}
+
 
 std::vector<glm::ivec2> Map::getSelectionAroundTiles()
 {

@@ -42,7 +42,7 @@ private:
 	RswObject* rswObject = nullptr;
 	LubEffect* lubEffect = nullptr;
 
-	gl::Texture* texture;
+	gl::Texture* texture = nullptr;
 
 	float lastTime;
 	float emitTime = 0;
@@ -69,6 +69,7 @@ public:
 	};
 
 	LubRenderer();
+	~LubRenderer();
 	virtual void render();
 	bool selected = false;
 };

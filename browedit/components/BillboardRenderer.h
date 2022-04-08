@@ -56,6 +56,7 @@ public:
 	};
 
 	BillboardRenderer(const std::string& texture, const std::string& texture_selected = "");
+	~BillboardRenderer();
 	virtual void render();
 	bool selected = false;
 
