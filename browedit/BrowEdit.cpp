@@ -136,7 +136,7 @@ void BrowEdit::run()
 #ifdef _DEBUG
 	if(config.isValid() == "")
 //		loadMap("data\\aldebaran.rsw");
-		loadMap("data\\prontera.rsw");
+	//	loadMap("data\\prontera.rsw");
 //		loadMap("data\\amicit01.rsw"); //RSM2
 //		loadMap("data\\grademk.rsw"); //special effects
 //		loadMap("data\\noel02.rsw");
@@ -144,7 +144,7 @@ void BrowEdit::run()
 //		loadMap("data\\bl_ice.rsw");
 //		loadMap("data\\comodo.rsw");
 //		loadMap("data\\guild_vs1.rsw");
-//		loadMap("data\\effects_ro.rsw");
+		loadMap("data\\effects_ro.rsw");
 //		loadMap("data\\prt_in.rsw");
 //		loadMap("data\\wall_colour.rsw");
 //		loadMap("data\\easter_la.rsw");

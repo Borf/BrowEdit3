@@ -54,8 +54,8 @@ void MapView::postRenderTextureMode(BrowEdit* browEdit)
 
 	auto mouse3D = gnd->rayCast(mouseRay, viewEmptyTiles);
 	glm::vec2 uvSize = textureEditUv2 - textureEditUv1;
-	glm::vec2 uv1 = textureEditUv1; //(0,0)
-	glm::vec2 uv4 = textureEditUv2; //(1,1)
+	glm::vec2 uv1(0,0);
+	glm::vec2 uv4(1,1);
 
 	glm::vec2 uv2(uv4.x, uv1.y);
 	glm::vec2 uv3(uv1.x, uv4.y);
@@ -77,8 +77,25 @@ void MapView::postRenderTextureMode(BrowEdit* browEdit)
 		uv3.y = 1 - uv3.y;
 		uv4.y = 1 - uv4.y;
 	}
-	glm::vec2 xInc = (uv2 - uv1) / (float)textureBrushWidth;
-	glm::vec2 yInc = (uv3 - uv1) / (float)textureBrushHeight;
+	glm::vec2 xInc = (uv2 - uv1) * uvSize / (float)textureBrushWidth;
+	glm::vec2 yInc = (uv3 - uv1) * uvSize / (float)textureBrushHeight;
+	if (textureBrushFlipD)
+	{
+		std::swap(xInc, yInc);
+		std::swap(xInc.x, xInc.y);
+		std::swap(yInc.x, yInc.y);
+	}
+
+	glm::vec2 uvStart = uv1 + textureEditUv1.x * (uv2 - uv1) + textureEditUv1.y * (uv3 - uv1);
+
+	//ImGui::Begin("Statusbar");
+	//ImGui::Text("UV1 %.1f,%.1f  UV2 %.1f,%.1f  UV3 %.1f,%.1f  UV4 %.1f,%.1f", uv1.x, uv1.y, uv2.x, uv2.y, uv3.x, uv3.y, uv4.x, uv4.y);
+	//ImGui::SameLine();
+	//ImGui::Text("xInc %.3f,%.3f  yInc %.3f,%.3f ", xInc.x, xInc.y, yInc.x, yInc.y);
+	//ImGui::SameLine();
+	//ImGui::Text("uvStart %.3f,%.3f", uvStart.x, uvStart.y);
+	//ImGui::End();
+
 
 	if (textureStamp.size() == 0 && !ImGui::GetIO().KeyShift)
 	{
@@ -98,7 +115,7 @@ void MapView::postRenderTextureMode(BrowEdit* browEdit)
 						continue;
 					auto cube = gnd->cubes[topleft.x + x][topleft.y + y];
 
-					glm::vec2 uv1_ = uv1 + xInc * (float)x + yInc * (float)y;
+					glm::vec2 uv1_ = uvStart + xInc * (float)x + yInc * (float)y;
 					glm::vec2 uv2_ = uv1_ + xInc;
 					glm::vec2 uv3_ = uv1_ + yInc;
 					glm::vec2 uv4_ = uv1_ + xInc + yInc;
