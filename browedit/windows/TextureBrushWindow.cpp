@@ -19,6 +19,26 @@ void BrowEdit::showTextureBrushWindow()
 
 	auto gnd = activeMapView->map->rootNode->getComponent<Gnd>();
 	auto gndRenderer = activeMapView->map->rootNode->getComponent<GndRenderer>();
+
+	if (!ImGui::GetIO().WantTextInput && activeMapView)
+	{
+		if (ImGui::IsKeyDown('F'))
+		{
+			activeMapView->textureEditUv1 = glm::vec2(0, 0);
+			activeMapView->textureEditUv2 = glm::vec2(1, 1);
+		}
+		if (ImGui::IsKeyDown(GLFW_KEY_KP_ADD))
+		{
+			activeMapView->textureBrushWidth++;
+			activeMapView->textureBrushHeight++;
+		}
+		if (ImGui::IsKeyDown(GLFW_KEY_KP_SUBTRACT))
+		{
+			activeMapView->textureBrushWidth--;
+			activeMapView->textureBrushHeight--;
+		}
+	}
+
 	if (ImGui::Begin("Texture Brush Options"))
 	{
 		if (!activeMapView)
@@ -54,7 +74,7 @@ void BrowEdit::showTextureBrushWindow()
 
 		toolBarToggleButton("SnapUV", snapUv ? ICON_GRID_SNAP_ON : ICON_GRID_SNAP_OFF, &snapUv, "Snap UV editor");
 		ImGui::SameLine();
-		if (toolBarButton("RotateL", ICON_ROTATE, "Rotate texture left", ImVec4(1,1,1,1)))
+		if (toolBarButton("RotateL", ICON_ROTATE, "Rotate texture left", ImVec4(1,1,1,1)) || (ImGui::IsKeyPressed('L') && !ImGui::GetIO().WantTextInput))
 		{ //00 -> 10 -> 11 -> 01
 			activeMapView->textureBrushFlipD = !activeMapView->textureBrushFlipD;
 			bool tmp = activeMapView->textureBrushFlipH;
@@ -67,7 +87,7 @@ void BrowEdit::showTextureBrushWindow()
 			activeMapView->textureEditUv2 = glm::max(uv1, uv2);
 		}
 		ImGui::SameLine();
-		if (toolBarButton("RotateR", ICON_ROTATE_RIGHT, "Rotate texture right", ImVec4(1, 1, 1, 1)))
+		if (toolBarButton("RotateR", ICON_ROTATE_RIGHT, "Rotate texture right", ImVec4(1, 1, 1, 1)) || (ImGui::IsKeyPressed('R') && !ImGui::GetIO().WantTextInput))
 		{ //00 -> 01 -> 11 -> 10
 			activeMapView->textureBrushFlipD = !activeMapView->textureBrushFlipD;
 			bool tmp = activeMapView->textureBrushFlipV;
@@ -80,7 +100,7 @@ void BrowEdit::showTextureBrushWindow()
 			activeMapView->textureEditUv2 = glm::max(uv1, uv2);
 		}
 		ImGui::SameLine();
-		if (toolBarButton("MirrorH", ICON_MIRROR_HORIZONTAL, "Mirror Horizontal", ImVec4(1, 1, 1, 1)))
+		if (toolBarButton("MirrorH", ICON_MIRROR_HORIZONTAL, "Mirror Horizontal", ImVec4(1, 1, 1, 1)) || (ImGui::IsKeyPressed('H') && !ImGui::GetIO().WantTextInput))
 		{
 			if(activeMapView->textureBrushFlipD)
 				activeMapView->textureBrushFlipV = !activeMapView->textureBrushFlipV;
@@ -92,7 +112,7 @@ void BrowEdit::showTextureBrushWindow()
 			std::swap(activeMapView->textureEditUv1.x, activeMapView->textureEditUv2.x);
 		}
 		ImGui::SameLine();
-		if (toolBarButton("MirrorV", ICON_MIRROR_VERTICAL, "Mirror Vertical", ImVec4(1, 1, 1, 1)))
+		if (toolBarButton("MirrorV", ICON_MIRROR_VERTICAL, "Mirror Vertical", ImVec4(1, 1, 1, 1)) || (ImGui::IsKeyPressed('V') && !ImGui::GetIO().WantTextInput))
 		{
 			if (!activeMapView->textureBrushFlipD)
 				activeMapView->textureBrushFlipV = !activeMapView->textureBrushFlipV;
