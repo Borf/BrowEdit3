@@ -199,7 +199,7 @@ void BrowEdit::showTextureBrushWindow()
 
 			glm::vec2 offsets[] = { glm::vec2(0,0), glm::vec2(0,1), glm::vec2(1,1), glm::vec2(1,0) };
 
-			for (int i = 0; i < 4; i++)
+			for (int i = 0; i < 4; i++) //4 corners
 			{
 				ImVec2 pos = ImVec2(bb.Min.x + glm::mix(activeMapView->textureEditUv1.x, activeMapView->textureEditUv2.x, offsets[i].x)* bb.GetWidth(), 
 									bb.Max.y - glm::mix(activeMapView->textureEditUv1.y, activeMapView->textureEditUv2.y, offsets[i].y) * bb.GetHeight());
@@ -339,7 +339,6 @@ void BrowEdit::showTextureBrushWindow()
 					bool snap = snapUv;
 					if (ImGui::GetIO().KeyShift)
 						snap = !snap;
-
 					if (snap && snapDivX > 0 && snapDivY > 0)
 					{
 						glm::vec2 inc(1.0f / snapDivX, 1.0f / snapDivY);
@@ -354,6 +353,37 @@ void BrowEdit::showTextureBrushWindow()
 					changed = true;
 				}
 			}
+
+			//dragging into void
+			ImGui::SetCursorScreenPos(bb.Min);
+			ImGui::InvisibleButton("button", bb.GetSize());
+			if (ImGui::IsItemActive() && ImGui::IsMouseDragging(0))
+			{
+				static glm::vec2 dragStart;
+				if (!dragged)
+				{
+					dragStart.x = (ImGui::GetIO().MousePos.x - bb.Min.x) / Canvas.x;
+					dragStart.y = 1 - (ImGui::GetIO().MousePos.y - bb.Min.y) / Canvas.y;
+				}
+				dragged = true;
+				activeMapView->textureEditUv1.x = glm::min(dragStart.x, (ImGui::GetIO().MousePos.x - bb.Min.x) / Canvas.x);
+				activeMapView->textureEditUv1.y = glm::min(dragStart.y, 1 - (ImGui::GetIO().MousePos.y - bb.Min.y) / Canvas.y);
+
+				activeMapView->textureEditUv2.x = glm::max(dragStart.x, (ImGui::GetIO().MousePos.x - bb.Min.x) / Canvas.x);
+				activeMapView->textureEditUv2.y = glm::max(dragStart.y, 1 - (ImGui::GetIO().MousePos.y - bb.Min.y) / Canvas.y);
+
+				bool snap = snapUv;
+				if (ImGui::GetIO().KeyShift)
+					snap = !snap;
+				if (snap && snapDivX > 0 && snapDivY > 0)
+				{
+					glm::vec2 inc(1.0f / snapDivX, 1.0f / snapDivY);
+					activeMapView->textureEditUv1 = glm::round(activeMapView->textureEditUv1 / inc) * inc;
+					activeMapView->textureEditUv2 = glm::round(activeMapView->textureEditUv2 / inc) * inc;
+				}
+			}
+			if (ImGui::IsItemActive() && ImGui::IsMouseReleased(0) && dragged)
+				dragged = false;
 
 			ImGui::SetCursorScreenPos(cursorPos);
 		}
