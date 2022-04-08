@@ -22,20 +22,22 @@ void BrowEdit::showTextureBrushWindow()
 
 	if (!ImGui::GetIO().WantTextInput && activeMapView)
 	{
-		if (ImGui::IsKeyDown('F'))
+		if (ImGui::IsKeyPressed('F'))
 		{
 			activeMapView->textureEditUv1 = glm::vec2(0, 0);
 			activeMapView->textureEditUv2 = glm::vec2(1, 1);
 		}
-		if (ImGui::IsKeyDown(GLFW_KEY_KP_ADD))
+		if (ImGui::IsKeyPressed(GLFW_KEY_KP_ADD))
 		{
 			activeMapView->textureBrushWidth++;
 			activeMapView->textureBrushHeight++;
 		}
-		if (ImGui::IsKeyDown(GLFW_KEY_KP_SUBTRACT))
+		if (ImGui::IsKeyPressed(GLFW_KEY_KP_SUBTRACT))
 		{
-			activeMapView->textureBrushWidth--;
-			activeMapView->textureBrushHeight--;
+			if (activeMapView->textureBrushWidth > 1)
+				activeMapView->textureBrushWidth--;
+			if (activeMapView->textureBrushHeight > 1)
+				activeMapView->textureBrushHeight--;
 		}
 	}
 
