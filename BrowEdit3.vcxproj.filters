@@ -50,6 +50,9 @@
     <Filter Include="browedit\shaders">
       <UniqueIdentifier>{4a696fe1-8d62-4f88-a26d-004f83ecf6bd}</UniqueIdentifier>
     </Filter>
+    <Filter Include="doc\formats">
+      <UniqueIdentifier>{ada228bb-85f8-4714-b5e0-fc414f2ce1a9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="lib\imgui\imgui.cpp">
@@ -645,6 +648,15 @@
     </None>
     <None Include="data\shaders\lub.fs">
       <Filter>data\shaders</Filter>
+    </None>
+    <None Include="doc\formats\Rsm.md">
+      <Filter>doc\formats</Filter>
+    </None>
+    <None Include="doc\formats\Rsw.md">
+      <Filter>doc\formats</Filter>
+    </None>
+    <None Include="doc\formats\Gnd.md">
+      <Filter>doc\formats</Filter>
     </None>
   </ItemGroup>
 </Project>

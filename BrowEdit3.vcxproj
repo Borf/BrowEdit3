@@ -212,6 +212,9 @@
     <None Include="data\shaders\water.fs" />
     <None Include="data\shaders\water.vs" />
     <None Include="doc\Configuration.md" />
+    <None Include="doc\formats\Gnd.md" />
+    <None Include="doc\formats\Rsm.md" />
+    <None Include="doc\formats\Rsw.md" />
     <None Include="doc\Lightmapping.md" />
     <None Include="doc\ObjectEdit.md" />
     <None Include="doc\Readme.md" />
