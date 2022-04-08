@@ -18,6 +18,8 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <mutex>
 
+extern std::vector<std::vector<glm::vec3>> debugPoints;
+
 
 void MapView::postRenderObjectMode(BrowEdit* browEdit)
 {

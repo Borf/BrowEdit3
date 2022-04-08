@@ -392,7 +392,10 @@ void BrowEdit::showTextureBrushWindow()
 
 		glm::vec2 uvSize = activeMapView->textureEditUv2 - activeMapView->textureEditUv1;
 		float textureBrushHeight = activeMapView->textureBrushWidth * (uvSize.y / uvSize.x);
-		ImGui::Text("For proper aspect ratio, height should be %f", textureBrushHeight);
+		if(glm::abs(activeMapView->textureBrushHeight - textureBrushHeight) < 0.01)
+			ImGui::Text("For proper aspect ratio, height should be %f", textureBrushHeight);
+		else
+			ImGui::TextColored(ImVec4(1,0,0,1), "For proper aspect ratio, height should be %f", textureBrushHeight);
 
 		glm::vec2 uv1 = activeMapView->textureEditUv1;
 		glm::vec2 uv2 = activeMapView->textureEditUv2;

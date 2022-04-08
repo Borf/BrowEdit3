@@ -319,7 +319,7 @@ glm::vec3 Gnd::rayCast(const math::Ray& ray, bool emptyTiles, int xMin, int yMin
 {
 	if (cubes.size() == 0)
 		return glm::vec3(0,0,0);
-	//TODO: optimize this by making AABBs like a quadtree
+
 	if (xMax == -1)
 		xMax = (int)cubes.size();
 	if (yMax == -1)
@@ -368,7 +368,7 @@ glm::vec3 Gnd::rayCast(const math::Ray& ray, bool emptyTiles, int xMin, int yMin
 									collisions.push_back(ray.origin + f * ray.dir);
 						}
 					}
-					if (cube->tileFront != -1 && x < width - 1)
+					if (cube->tileSide != -1 && x < width - 1)
 					{
 						glm::vec3 v1(10 * x + 10, -cube->h2, 10 * height - 10 * y + 10);
 						glm::vec3 v2(10 * x + 10, -cube->h4, 10 * height - 10 * y);
@@ -376,19 +376,19 @@ glm::vec3 Gnd::rayCast(const math::Ray& ray, bool emptyTiles, int xMin, int yMin
 						glm::vec3 v4(10 * x + 10, -cubes[x + 1][y]->h3, 10 * height - 10 * y);
 
 						{
-							std::vector<glm::vec3> v{ v3, v2, v1 };
+							std::vector<glm::vec3> v{ v4, v2, v1 };
 							if (ray.LineIntersectPolygon(v, f))
 								if (f >= rayOffset)
 									collisions.push_back(ray.origin + f * ray.dir);
 						}
 						{
-							std::vector<glm::vec3> v{ v4, v2, v3 };
+							std::vector<glm::vec3> v{ v4, v1, v3 };
 							if (ray.LineIntersectPolygon(v, f))
 								if (f >= rayOffset)
 									collisions.push_back(ray.origin + f * ray.dir);
 						}
 					}
-					if (cube->tileSide != -1 && y < height - 1)
+					if (cube->tileFront != -1 && y < height - 1)
 					{
 						glm::vec3 v1(10 * x, -cube->h3, 10 * height - 10 * y);
 						glm::vec3 v2(10 * x + 10, -cube->h4, 10 * height - 10 * y);
@@ -396,13 +396,13 @@ glm::vec3 Gnd::rayCast(const math::Ray& ray, bool emptyTiles, int xMin, int yMin
 						glm::vec3 v3(10 * x, -cubes[x][y + 1]->h1, 10 * height - 10 * y);
 
 						{
-							std::vector<glm::vec3> v{ v3, v2, v1 };
+							std::vector<glm::vec3> v{ v4, v2, v1 };
 							if (ray.LineIntersectPolygon(v, f))
 								if (f >= rayOffset)
 									collisions.push_back(ray.origin + f * ray.dir);
 						}
 						{
-							std::vector<glm::vec3> v{ v4, v2, v3 };
+							std::vector<glm::vec3> v{ v4, v1, v3 };
 							if (ray.LineIntersectPolygon(v, f))
 								if (f >= rayOffset)
 									collisions.push_back(ray.origin + f * ray.dir);
