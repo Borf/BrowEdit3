@@ -39,8 +39,8 @@ class BrowEdit
 
 
 	std::vector<Map*> maps;
-	std::list<MapView> mapViews; //list, because vector reallocates mapviews when pushing back, which breaks activeMapview pointer
 public:
+	std::list<MapView> mapViews; //list, because vector reallocates mapviews when pushing back, which breaks activeMapview pointer
 	gl::Texture* iconsTexture;
 	Lightmapper* lightmapper = nullptr;
 

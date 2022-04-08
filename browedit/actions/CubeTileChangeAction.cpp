@@ -1,6 +1,9 @@
+#include <Windows.h>
 #include "CubeTileChangeAction.h"
 #include <browedit/Map.h>
 #include <browedit/Node.h>
+#include <browedit/BrowEdit.h>
+#include <browedit/MapView.h>
 #include <browedit/components/GndRenderer.h>
 
 CubeTileChangeAction::CubeTileChangeAction(Gnd::Cube* cube, int tileUp, int tileFront, int tileSide)
@@ -42,8 +45,11 @@ void CubeTileChangeAction::perform(Map* map, BrowEdit* browEdit)
 	auto gndRenderer = map->rootNode->getComponent<GndRenderer>();
 	if (gndRenderer)
 	{
-		gndRenderer->setChunksDirty(); //TODO: don't double up?
+		gndRenderer->setChunksDirty(); //TODO : only set this specific chunk dirty
 		gndRenderer->gndShadowDirty = true;
+		for (auto& mv : browEdit->mapViews)
+			if (mv.map == map)
+				mv.textureGridDirty = true;
 	}
 }
 
@@ -55,8 +61,11 @@ void CubeTileChangeAction::undo(Map* map, BrowEdit* browEdit)
 	auto gndRenderer = map->rootNode->getComponent<GndRenderer>();
 	if (gndRenderer)
 	{
-		gndRenderer->setChunksDirty();//TODO: don't double up?
+		gndRenderer->setChunksDirty(); //TODO : only set this specific chunk dirty
 		gndRenderer->gndShadowDirty = true;
+		for (auto& mv : browEdit->mapViews)
+			if (mv.map == map)
+				mv.textureGridDirty = true;
 	}
 }
 

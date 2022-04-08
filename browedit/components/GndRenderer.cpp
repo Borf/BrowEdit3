@@ -119,9 +119,15 @@ void GndRenderer::render()
 	shader->setUniform(GndShader::Uniforms::viewTextures, viewTextures ? 1.0f : 0.0f);
 
 	for (auto r : chunks)
+	{
 		for (auto c : r)
+		{
+			if (allDirty)
+				c->dirty = true;
 			c->render();
-
+		}
+	}
+	allDirty = false;
 }
 
 
@@ -323,7 +329,5 @@ void GndRenderer::setChunkDirty(int x, int y)
 
 void GndRenderer::setChunksDirty()
 {
-	for (auto y = 0; y < chunks.size(); y++)
-		for (auto x = 0; x < chunks[y].size(); x++)
-			chunks[y][x]->dirty = true;
+	allDirty = true;
 }
