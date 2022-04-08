@@ -223,6 +223,13 @@ void BrowEdit::run()
 					activeMapView = nullptr;
 				Map* map = it->map;
 				it = mapViews.erase(it);
+
+				auto count = std::count_if(mapViews.begin(), mapViews.end(), [map](const MapView& mv) { return mv.map == map; });
+				if (count == 0)
+				{
+					std::erase_if(maps, [map](Map* m) { return m == map;  });
+					delete map;
+				}
 			}
 			else
 				it++;
