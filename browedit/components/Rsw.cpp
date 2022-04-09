@@ -782,7 +782,7 @@ std::vector<glm::vec3> RswModelCollider::getCollisions(Rsm::Mesh* mesh, const ma
 	return ret;
 }
 
-bool RswModelCollider::collidesTexture(const math::Ray& ray)
+bool RswModelCollider::collidesTexture(const math::Ray& ray, float maxDistance)
 {
 	std::vector<glm::vec3> ret;
 
@@ -797,11 +797,11 @@ bool RswModelCollider::collidesTexture(const math::Ray& ray)
 
 	if (!rswModel->aabb.hasRayCollision(ray, 0, 10000000))
 		return false;
-	return collidesTexture(rsm->rootMesh, ray, rsmRenderer->matrixCache);
+	return collidesTexture(rsm->rootMesh, ray, rsmRenderer->matrixCache, maxDistance);
 }
 
 
-bool RswModelCollider::collidesTexture(Rsm::Mesh* mesh, const math::Ray& ray, const glm::mat4& matrix)
+bool RswModelCollider::collidesTexture(Rsm::Mesh* mesh, const math::Ray& ray, const glm::mat4& matrix, float maxDistance)
 {
 	std::vector<glm::vec3> ret;
 
@@ -830,40 +830,43 @@ bool RswModelCollider::collidesTexture(Rsm::Mesh* mesh, const math::Ray& ray, co
 			if (img->hasAlpha)
 			{
 				glm::vec3 hitPoint = newRay.origin + newRay.dir * t;
-				auto f1 = verts[0] - hitPoint;
-				auto f2 = verts[1] - hitPoint;
-				auto f3 = verts[2] - hitPoint;
-
-				float a = glm::length(glm::cross(verts[0] - verts[1], verts[0] - verts[2]));
-				float a1 = glm::length(glm::cross(f2, f3)) / a;
-				float a2 = glm::length(glm::cross(f3, f1)) / a;
-				float a3 = glm::length(glm::cross(f1, f2)) / a;
-
-				glm::vec2 uv1 = mesh->texCoords[mesh->faces[i].texCoordIds[0]];
-				glm::vec2 uv2 = mesh->texCoords[mesh->faces[i].texCoordIds[1]];
-				glm::vec2 uv3 = mesh->texCoords[mesh->faces[i].texCoordIds[2]];
-
-				glm::vec2 uv = uv1 * a1 + uv2 * a2 + uv3 * a3;
-
-				if (uv.x > 1 || uv.x < 0)
-					uv.x -= glm::floor(uv.x);
-				if (uv.y > 1 || uv.y < 0)
-					uv.y -= glm::floor(uv.y);
-
-				if (std::isnan(uv.x))
+				if (maxDistance - t > -0.01)
 				{
-					std::cerr << "Error calculating lightmap for model " << node->name << ", " << rswModel->fileName << std::endl;
-					return false;
-				}
+					auto f1 = verts[0] - hitPoint;
+					auto f2 = verts[1] - hitPoint;
+					auto f3 = verts[2] - hitPoint;
 
-				if (img && img->get(uv) > 0.01)
-					return true;
+					float a = glm::length(glm::cross(verts[0] - verts[1], verts[0] - verts[2]));
+					float a1 = glm::length(glm::cross(f2, f3)) / a;
+					float a2 = glm::length(glm::cross(f3, f1)) / a;
+					float a3 = glm::length(glm::cross(f1, f2)) / a;
+
+					glm::vec2 uv1 = mesh->texCoords[mesh->faces[i].texCoordIds[0]];
+					glm::vec2 uv2 = mesh->texCoords[mesh->faces[i].texCoordIds[1]];
+					glm::vec2 uv3 = mesh->texCoords[mesh->faces[i].texCoordIds[2]];
+
+					glm::vec2 uv = uv1 * a1 + uv2 * a2 + uv3 * a3;
+
+					if (uv.x > 1 || uv.x < 0)
+						uv.x -= glm::floor(uv.x);
+					if (uv.y > 1 || uv.y < 0)
+						uv.y -= glm::floor(uv.y);
+
+					if (std::isnan(uv.x))
+					{
+						std::cerr << "Error calculating lightmap for model " << node->name << ", " << rswModel->fileName << std::endl;
+						return false;
+					}
+
+					if (img && img->get(uv) > 0.01)
+						return true;
+				}
 			}
 		}
 	}
 
 	for (size_t i = 0; i < mesh->children.size(); i++)
-		if(collidesTexture(mesh->children[i], ray, matrix))
+		if(collidesTexture(mesh->children[i], ray, matrix, maxDistance))
 			return true;
 	return false;
 }

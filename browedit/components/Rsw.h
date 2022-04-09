@@ -230,8 +230,8 @@ class RswModelCollider : public Collider
 	RsmRenderer* rsmRenderer = nullptr;
 public:
 	void begin();
-	bool collidesTexture(const math::Ray& ray);
-	bool collidesTexture(Rsm::Mesh* mesh, const math::Ray& ray, const glm::mat4& matrix);
+	bool collidesTexture(const math::Ray& ray, float maxDistance = 9999999.0f);
+	bool collidesTexture(Rsm::Mesh* mesh, const math::Ray& ray, const glm::mat4& matrix, float maxDistance);
 
 	std::vector<glm::vec3> getVerticesWorldSpace(Rsm::Mesh* mesh = nullptr, const glm::mat4& matrix = glm::mat4(1.0f));
 
