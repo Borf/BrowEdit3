@@ -22,6 +22,7 @@ public:
 	Map* map;
 	int quality = 1;
 	bool sunLight = true;
+	bool shadows = true;
 	int threadCount = 4;
 	bool buildDebugPoints = false;
 	glm::ivec2 rangeX;

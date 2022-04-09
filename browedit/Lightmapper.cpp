@@ -216,29 +216,29 @@ std::pair<glm::vec3, int> Lightmapper::calculateLight(const glm::vec3& groundPos
 		float dotProd = glm::dot(normal, lightDirection);
 		if (rsw->light.lightmapIntensity > 0 && dotProd > 0)
 		{
-			math::Ray ray(groundPos, glm::normalize(lightDirection));
 			bool collides = false;
-			//check objects
-			map->rootNode->traverse([&collides, &ray](Node* n) {
-				if (collides)
-					return;
-				auto rswModel = n->getComponent<RswModel>();
-				if (rswModel && rswModel->givesShadow)
-				{
-					auto collider = n->getComponent<RswModelCollider>();
-					if (collider->collidesTexture(ray))
-						collides = true;
-				}
-				});
+			if (shadows)
+			{
+				math::Ray ray(groundPos, glm::normalize(lightDirection));
+				//check objects
+				map->rootNode->traverse([&collides, &ray](Node* n) {
+					if (collides)
+						return;
+					auto rswModel = n->getComponent<RswModel>();
+					if (rswModel && rswModel->givesShadow)
+					{
+						auto collider = n->getComponent<RswModelCollider>();
+						if (collider->collidesTexture(ray))
+							collides = true;
+					}
+					});
 
-			if (!collides && collidesMap(ray))
-				collides = true;
-
+				if (!collides && collidesMap(ray))
+					collides = true;
+			}
 
 			if (!collides)
-			{
 				intensity += (int)(dotProd * rsw->light.lightmapIntensity * 255);
-			}
 		}
 	}
 
@@ -280,24 +280,27 @@ std::pair<glm::vec3, int> Lightmapper::calculateLight(const glm::vec3& groundPos
 					attenuation = glm::clamp((1 - glm::pow(d, rswLight->cutOff)), 0.0f, 1.0f) * 255.0f;
 			}
 
-			math::Ray ray(lightPosition, -lightDirection2);
 			bool collides = false;
-			if (rswLight->givesShadow && attenuation > 0)
+			if (shadows)
 			{
-				map->rootNode->traverse([&](Node* n) {
-					if (collides)
-						return;
-					auto rswModel = n->getComponent<RswModel>();
-					if (rswModel && rswModel->givesShadow)
-					{
-						auto collider = n->getComponent<RswModelCollider>();
-						if (collider->collidesTexture(ray, distance))
-							collides = true;
-					}
-					});
+				math::Ray ray(lightPosition, -lightDirection2);
+				if (rswLight->givesShadow && attenuation > 0)
+				{
+					map->rootNode->traverse([&](Node* n) {
+						if (collides)
+							return;
+						auto rswModel = n->getComponent<RswModel>();
+						if (rswModel && rswModel->givesShadow)
+						{
+							auto collider = n->getComponent<RswModelCollider>();
+							if (collider->collidesTexture(ray, distance))
+								collides = true;
+						}
+						});
+				}
+				if (!collides && collidesMap(math::Ray(groundPos, lightDirection2)))
+					collides = true;
 			}
-			if (!collides && collidesMap(math::Ray(groundPos, lightDirection2)))
-				collides = true;
 			if (!collides)
 			{
 				if (rswLight->affectShadowMap)
@@ -359,7 +362,7 @@ void Lightmapper::calcPos(int direction, int tileId, int x, int y)
 						return;
 					glm::vec3 groundPos;
 					glm::vec3 normal;
-					//todo: use proper height using barycentric coordinats
+
 					if (direction == 0)
 					{
 						glm::vec2 v1((x + 0) * 10, 10 * height - (y + 1) * 10 + 10);//1 , -cube->heights[2]

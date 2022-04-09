@@ -806,7 +806,7 @@ bool RswModelCollider::collidesTexture(Rsm::Mesh* mesh, const math::Ray& ray, co
 	std::vector<glm::vec3> ret;
 
 	glm::mat4 newMatrix = matrix * rsmRenderer->renderInfo[mesh->index].matrix;
-	//math::Ray newRay(ray * glm::inverse(newMatrix));
+	//math::Ray newRay(ray * glm::inverse(newMatrix)); //would rather work with the inversed ray here, but that doesn't work for scaled models
 
 	std::vector<glm::vec3> verts;
 	verts.resize(3);
