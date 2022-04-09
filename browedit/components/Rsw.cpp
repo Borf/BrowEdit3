@@ -806,8 +806,7 @@ bool RswModelCollider::collidesTexture(Rsm::Mesh* mesh, const math::Ray& ray, co
 	std::vector<glm::vec3> ret;
 
 	glm::mat4 newMatrix = matrix * rsmRenderer->renderInfo[mesh->index].matrix;
-	newMatrix = glm::inverse(newMatrix);
-	math::Ray newRay(ray * newMatrix);
+	//math::Ray newRay(ray * glm::inverse(newMatrix));
 
 	std::vector<glm::vec3> verts;
 	verts.resize(3);
@@ -815,9 +814,9 @@ bool RswModelCollider::collidesTexture(Rsm::Mesh* mesh, const math::Ray& ray, co
 	for (size_t i = 0; i < mesh->faces.size(); i++)
 	{
 		for (size_t ii = 0; ii < 3; ii++)
-			verts[ii] = mesh->vertices[mesh->faces[i].vertexIds[ii]];
+			verts[ii] = newMatrix * glm::vec4(mesh->vertices[mesh->faces[i].vertexIds[ii]],1.0f);
 
-		if (newRay.LineIntersectPolygon(verts, t) && t > 0)
+		if (ray.LineIntersectPolygon(verts, t) && t > 0)
 		{
 			Image* img = nullptr;
 			auto rsmMesh = dynamic_cast<Rsm::Mesh*>(mesh);
@@ -829,8 +828,8 @@ bool RswModelCollider::collidesTexture(Rsm::Mesh* mesh, const math::Ray& ray, co
 			}
 			if (img->hasAlpha)
 			{
-				glm::vec3 hitPoint = newRay.origin + newRay.dir * t;
-				if (maxDistance - t > -0.01)
+				glm::vec3 hitPoint = ray.origin + ray.dir * t;
+				if (maxDistance - t > 0)
 				{
 					auto f1 = verts[0] - hitPoint;
 					auto f2 = verts[1] - hitPoint;
@@ -862,6 +861,9 @@ bool RswModelCollider::collidesTexture(Rsm::Mesh* mesh, const math::Ray& ray, co
 						return true;
 				}
 			}
+			else
+				return true;
+
 		}
 	}
 
