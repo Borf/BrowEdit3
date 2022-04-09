@@ -63,6 +63,7 @@
     <ClCompile Include="browedit\NodeRenderer.cpp" />
     <ClCompile Include="browedit\util\FileIO.cpp" />
     <ClCompile Include="browedit\util\Util.cpp" />
+    <ClCompile Include="browedit\windows\ExportMapWindow.cpp" />
     <ClCompile Include="browedit\windows\HelpWindow.cpp" />
     <ClCompile Include="browedit\windows\LightmapSettingsWindow.cpp" />
     <ClCompile Include="browedit\windows\MenuBar.cpp" />

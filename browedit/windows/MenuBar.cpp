@@ -29,6 +29,8 @@ void BrowEdit::menuBar()
 			saveMap(activeMapView->map);
 		if (activeMapView && ImGui::MenuItem("Save as "))
 			saveAsMap(activeMapView->map);
+		if (activeMapView && ImGui::MenuItem("Export to folder"))
+			exportMap(activeMapView->map);
 		if (ImGui::BeginMenu("Recent Maps", config.recentFiles.size() > 0))
 		{
 			for (const auto& m : config.recentFiles)

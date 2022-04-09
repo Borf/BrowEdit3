@@ -54,6 +54,22 @@ public:
 		std::size_t openFileSelected = 0;
 		std::string openFilter;
 
+
+		bool exportVisible = false;
+		Map* exportMap = nullptr;
+		class ExportInfo
+		{
+		public:
+			std::string filename;
+			std::string type;
+			std::string source;
+			bool enabled;
+			std::vector<ExportInfo*> linkedForward; //textures used by this model
+			std::vector<ExportInfo*> linkedBackward; //models used by this texture
+		};
+		std::vector<ExportInfo> exportToExport;
+		std::string exportFolder;
+
 		bool undoVisible = true;
 
 		bool helpWindowVisible = false;
@@ -114,6 +130,7 @@ public:
 	void loadMap(const std::string file);
 	void saveMap(Map* map);
 	void saveAsMap(Map* map);
+	void exportMap(Map* map);
 	void showMapWindow(MapView& map);
 
 	void saveTagList();
@@ -122,6 +139,7 @@ public:
 	void toolbar();
 
 	void showOpenWindow();
+	void showExportWindow();
 	void openWindow();
 	void showObjectTree();
 	void buildObjectTree(Node* node, Map* map);

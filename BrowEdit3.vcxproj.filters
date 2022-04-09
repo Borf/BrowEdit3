@@ -334,6 +334,9 @@
     <ClCompile Include="browedit\actions\TileNewAction.cpp">
       <Filter>browedit\actions</Filter>
     </ClCompile>
+    <ClCompile Include="browedit\windows\ExportMapWindow.cpp">
+      <Filter>browedit\windows</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="lib\imgui\imgui.h">

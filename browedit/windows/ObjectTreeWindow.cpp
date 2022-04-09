@@ -70,7 +70,8 @@ void BrowEdit::buildObjectTree(Node* node, Map* map)
 					if (m.map->rootNode == node->root)
 					{
 						m.cameraCenter.x = 5 * gnd->width + rswObject->position.x;
-						m.cameraCenter.y = -1 * (-10 - 5 * gnd->height + rswObject->position.z);
+						m.cameraCenter.y = -rswObject->position.y;
+						m.cameraCenter.z = -1 * (-10 - 5 * gnd->height + rswObject->position.z);
 					}
 				}
 			}

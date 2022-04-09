@@ -164,6 +164,7 @@ void BrowEdit::run()
 			windowData.configVisible = !config.showWindow(this);
 
 		openWindow();
+		showExportWindow();
 		if (windowData.undoVisible)
 			showUndoWindow();
 		if (windowData.objectWindowVisible && editMode == EditMode::Object)
@@ -605,7 +606,6 @@ void BrowEdit::loadMap(const std::string file)
 			viewCount++;
 	mapViews.push_back(MapView(map, file + "#" + std::to_string(viewCount)));
 }
-
 
 
 void BrowEdit::copyTiles()
