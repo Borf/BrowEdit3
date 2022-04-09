@@ -1,6 +1,7 @@
 #include "BrowEdit.h"
 #include <imgui.h>
 #include <GLFW/glfw3.h>
+#include <imgui_internal.h>
 #include <backends/imgui_impl_opengl3.h>
 #include <backends/imgui_impl_glfw.h>
 #include <browedit/gl/Texture.h>
@@ -53,6 +54,9 @@ bool BrowEdit::imguiBegin()
     //io.Fonts->AddFontFromFileTTF("../../misc/fonts/ProggyTiny.ttf", 10.0f);
     //ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18.0f, NULL, io.Fonts->GetGlyphRangesJapanese());
     //IM_ASSERT(font != NULL);
+
+
+    ImGui::GetCurrentContext()->PlatformLocaleDecimalPoint = *localeconv()->decimal_point;
     return true;
 }
 
