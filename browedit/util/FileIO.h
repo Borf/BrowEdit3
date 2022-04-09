@@ -19,11 +19,13 @@ namespace util
 			virtual void close() = 0;
 			virtual void listFiles(const std::string& directory, std::vector<std::string>&) = 0;
 			virtual void listAllFiles(std::vector<std::string>&) = 0;
+			virtual std::string toString() = 0;
 		};
 		class GrfSource : public Source
 		{
 		private:
 			std::string grfFile;
+			std::string grfFileName;
 			Grf* grf;
 			std::map<std::string, int> lookup;
 		public:
@@ -33,6 +35,7 @@ namespace util
 			void close() override;
 			void listFiles(const std::string& directory, std::vector<std::string>&) override;
 			void listAllFiles(std::vector<std::string>&) override;
+			virtual std::string toString() override;
 		private:
 			std::string sanitizeFileName(std::string fileName);
 		};
@@ -47,6 +50,7 @@ namespace util
 			void close() override;
 			void listFiles(const std::string& directory, std::vector<std::string>&) override;
 			void listAllFiles(std::vector<std::string>&) override;
+			virtual std::string toString() override;
 		};
 
 		static std::vector<Source*> sources;
@@ -62,6 +66,7 @@ namespace util
 		static bool exists(const std::string& fileName);
 		static std::vector<std::string> listFiles(const std::string& directory);
 		static std::vector<std::string> listAllFiles();
+		static std::string getSrc(const std::string& fileName);
 
 		//helper methods
 		static std::string readString(std::istream* is, int maxLength, int length = -1);

@@ -67,8 +67,8 @@ public:
 			std::vector<ExportInfo*> linkedForward; //textures used by this model
 			std::vector<ExportInfo*> linkedBackward; //models used by this texture
 		};
-		std::vector<ExportInfo> exportToExport;
-		std::string exportFolder;
+		std::list<ExportInfo> exportToExport;
+		std::string exportFolder = "export\\";
 
 		bool undoVisible = true;
 

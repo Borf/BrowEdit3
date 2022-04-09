@@ -8,6 +8,7 @@
 #include <misc/cpp/imgui_stdlib.h>
 #include <imgui_internal.h>
 #include <iostream>
+#include <ShlObj_core.h>
 
 #include <browedit/Map.h>
 #include <browedit/BrowEdit.h>
@@ -1446,6 +1447,45 @@ namespace util
 			return fileName;
 		}
 		_chdir(curdir);
+		return "";
+	}
+
+	int CALLBACK BrowseCallBackProc(HWND hwnd, UINT uMsg, LPARAM lParam, LPARAM lpData)
+	{
+		switch (uMsg)
+		{
+		case BFFM_INITIALIZED:
+			::SendMessage(hwnd, BFFM_SETSELECTION, TRUE, lpData);
+			break;
+		}
+		return 0;
+	}
+	std::string SelectPathDialog(std::string path)
+	{
+		CoInitializeEx(0, 0);
+		CHAR szDir[MAX_PATH];
+		BROWSEINFO bInfo;
+		bInfo.hwndOwner = nullptr;// glfwGetWin32Window(browEdit->window);
+		bInfo.pidlRoot = NULL;
+		bInfo.pszDisplayName = szDir;
+		bInfo.lpszTitle = "Select your RO directory (not data)";
+		bInfo.ulFlags = 0;
+		bInfo.lpfn = BrowseCallBackProc;
+		if (path.find(":") == std::string::npos)
+			path = std::filesystem::current_path().string() + "\\" + path; //TODO: fix this
+
+		bInfo.lParam = (LPARAM)path.c_str();
+		bInfo.iImage = -1;
+
+		LPITEMIDLIST lpItem = SHBrowseForFolder(&bInfo);
+		if (lpItem != NULL)
+		{
+			SHGetPathFromIDList(lpItem, szDir);
+			std::string retpath = szDir;
+			if (retpath[retpath.size() - 1] != '\\')
+				retpath += "\\";
+			return retpath;
+		}
 		return "";
 	}
 

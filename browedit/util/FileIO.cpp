@@ -31,6 +31,15 @@ namespace util
 		}
 		return nullptr;
 	}
+	std::string FileIO::getSrc(const std::string& fileName)
+	{
+		for (auto& source : sources)
+		{
+			if (source->exists(fileName))
+				return source->toString();
+		}
+		return "No Src: " + fileName;
+	}
 
 	bool FileIO::exists(const std::string& fileName)
 	{
@@ -152,6 +161,11 @@ namespace util
 
 	FileIO::GrfSource::GrfSource(const std::string& fileName) : grfFile(fileName)
 	{
+		grfFileName = fileName;
+		if (grfFileName.find("/") != std::string::npos)
+			grfFileName = grfFileName.substr(grfFileName.rfind("/") + 1);
+		if (grfFileName.find("\\") != std::string::npos)
+			grfFileName = grfFileName.substr(grfFileName.rfind("\\") + 1);
 		std::cout << "GRF: Loading " << fileName << std::endl;
 		GrfError error;
 		grf = grf_open(fileName.c_str(), "rb", &error);
@@ -213,6 +227,11 @@ namespace util
 	{
 		for (auto kv : lookup)
 			files.push_back(kv.first);
+	}
+
+	std::string FileIO::GrfSource::toString()
+	{
+		return "Grf: " + this->grfFileName;
 	}
 
 	///////////////////////File
@@ -279,6 +298,11 @@ namespace util
 	void FileIO::DirSource::listAllFiles(std::vector<std::string>& files)
 	{
 		listFiles("", files);
+	}
+
+	std::string FileIO::DirSource::toString()
+	{
+		return "Dir: " + this->directory;
 	}
 
 	std::string FileIO::readString(std::istream* is, int maxLength, int length)
