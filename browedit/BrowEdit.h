@@ -54,7 +54,6 @@ public:
 		std::size_t openFileSelected = 0;
 		std::string openFilter;
 
-
 		bool exportVisible = false;
 		Map* exportMap = nullptr;
 		class ExportInfo

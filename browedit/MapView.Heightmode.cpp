@@ -99,7 +99,11 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 				if (ImGui::Button("Shrink selection", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
 					map->shrinkTileSelection(browEdit);
 				if (ImGui::Button("Smooth selection", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
-					gnd->smoothTiles(map, browEdit, map->tileSelection);
+					gnd->smoothTiles(map, browEdit, map->tileSelection, 3);
+				if (ImGui::Button("Smooth selection Horizontal", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
+					gnd->smoothTiles(map, browEdit, map->tileSelection, 1);
+				if (ImGui::Button("Smooth selection Vertical", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
+					gnd->smoothTiles(map, browEdit, map->tileSelection, 2);
 				if (ImGui::Button("Flatten selection", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
 					gnd->flattenTiles(map, browEdit, map->tileSelection);
 				if (ImGui::Button("Connect tiles high", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))

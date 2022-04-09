@@ -876,10 +876,12 @@ void Gnd::flattenTiles(Map* map, BrowEdit* browEdit, const std::vector<glm::ivec
 	node->getComponent<GndRenderer>()->setChunksDirty();
 }
 
-void Gnd::smoothTiles(Map* map, BrowEdit* browEdit, const std::vector<glm::ivec2>& tiles)
+void Gnd::smoothTiles(Map* map, BrowEdit* browEdit, const std::vector<glm::ivec2>& tiles, int axis)
 {
 	CubeHeightChangeAction* action = new CubeHeightChangeAction(this, tiles);
-	glm::ivec2 offsets[] = { glm::ivec2(0,0), glm::ivec2(1,0), glm::ivec2(0,1), glm::ivec2(1,1) };
+	glm::ivec2 offsets[] = {glm::ivec2(0, 0), glm::ivec2(1, 0) ,glm::ivec2(0, 1), glm::ivec2(1, 1)};
+
+
 	auto gndRenderer = node->getComponent<GndRenderer>();
 	std::vector<std::vector<std::pair<float,int>>> heights;
 	heights.resize(width + 1, std::vector<std::pair<float, int>>());
@@ -887,8 +889,11 @@ void Gnd::smoothTiles(Map* map, BrowEdit* browEdit, const std::vector<glm::ivec2
 		heights[x].resize(height + 1);
 	for (int x = 0; x < width; x++)
 		for (int y = 0; y < height; y++)
-			for (int i = 0; i < 4; i++)
+			for (auto i = 0; i < 4; i++)
 			{
+				if (std::find(tiles.begin(), tiles.end(), glm::ivec2(x, y)) == tiles.end())
+					continue;
+
 				heights[x + offsets[i].x][y + offsets[i].y].first += cubes[x][y]->heights[i];
 				heights[x + offsets[i].x][y + offsets[i].y].second++;
 			}
@@ -904,14 +909,25 @@ void Gnd::smoothTiles(Map* map, BrowEdit* browEdit, const std::vector<glm::ivec2
 			{
 				for (int y = -1; y <= 1; y++)
 				{
+					if ((axis & 1) == 0 && x != 0)
+						continue;
+					if ((axis & 2) == 0 && y != 0)
+						continue;
 					if (t.x + x + offsets[i].x >= 0 && t.x + x +offsets[i].x <= width && t.y + y + offsets[i].y >= 0 && t.y + y + offsets[i].y <= height)
 					{
-						cubes[t.x][t.y]->heights[i] += heights[t.x + x + offsets[i].x][t.y + y + offsets[i].y].first / heights[t.x + x + offsets[i].x][t.y + y + offsets[i].y].second;
-						count++;
+						//if (std::find(tiles.begin(), tiles.end(), glm::ivec2(t.x + x + offsets[i].x, t.y + y + offsets[i].y)) == tiles.end())
+						//	continue;
+
+						if (heights[t.x + x + offsets[i].x][t.y + y + offsets[i].y].second > 0)
+						{
+							cubes[t.x][t.y]->heights[i] += heights[t.x + x + offsets[i].x][t.y + y + offsets[i].y].first / heights[t.x + x + offsets[i].x][t.y + y + offsets[i].y].second;
+							count++;
+						}
 					}
 				}
 			}
-			cubes[t.x][t.y]->heights[i] /= count;
+			if(count > 0)
+				cubes[t.x][t.y]->heights[i] /= count;
 		}
 	}
 	node->getComponent<GndRenderer>()->setChunksDirty();
