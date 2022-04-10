@@ -307,6 +307,14 @@ void BrowEdit::run()
 						pasteTiles();
 				}
 
+			}	
+			if (editMode == EditMode::Texture && activeMapView)
+			{
+				if (ImGui::IsKeyPressed(GLFW_KEY_LEFT_BRACKET))
+					activeMapView->textureSelected = (activeMapView->textureSelected + activeMapView->map->rootNode->getComponent<Gnd>()->textures.size() - 1) % activeMapView->map->rootNode->getComponent<Gnd>()->textures.size();
+				if (ImGui::IsKeyPressed(GLFW_KEY_RIGHT_BRACKET))
+					activeMapView->textureSelected = (activeMapView->textureSelected + 1) % activeMapView->map->rootNode->getComponent<Gnd>()->textures.size();
+
 			}
 		}
 		int display_w, display_h;
