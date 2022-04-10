@@ -1,3 +1,4 @@
+#define IMGUI_DEFINE_MATH_OPERATORS
 #include <Windows.h>
 #include "MapView.h"
 #include "Map.h"
@@ -65,44 +66,48 @@ void MapView::toolbar(BrowEdit* browEdit)
 	browEdit->toolBarToggleButton("ortho", ortho ? ICON_ORTHO : ICON_PERSPECTIVE, &ortho, "Toggle between ortho and perspective camera", browEdit->config.toolbarButtonsViewOptions);
 	ImGui::SameLine();
 
-	if (browEdit->toolBarButton("showViewOptions", ICON_VIEWOPTIONS, "View Options", browEdit->config.toolbarButtonsViewOptions))
-		ImGui::OpenPopup("ViewOptions");
-	ImGui::SameLine();
-	if (ImGui::BeginPopup("ViewOptions"))
+	if (showViewOptions)
 	{
-		browEdit->toolBarToggleButton("viewLightMapShadow", viewLightmapShadow ? ICON_SHADOWMAP_ON : ICON_SHADOWMAP_OFF, &viewLightmapShadow, "Toggle shadowmap", browEdit->config.toolbarButtonsViewOptions);
-		ImGui::SameLine();
-		browEdit->toolBarToggleButton("viewLightmapColor", viewLightmapColor ? ICON_COLORMAP_ON : ICON_COLORMAP_OFF, &viewLightmapColor, "Toggle colormap", browEdit->config.toolbarButtonsViewOptions);
-		ImGui::SameLine();
-		browEdit->toolBarToggleButton("viewColors", viewColors ? ICON_TILECOLOR_ON : ICON_TILECOLOR_OFF, &viewColors, "Toggle tile colors", browEdit->config.toolbarButtonsViewOptions);
-		ImGui::SameLine();
-		browEdit->toolBarToggleButton("viewLighting", viewLighting ? ICON_LIGHTING_ON : ICON_LIGHTING_OFF, &viewLighting, "Toggle lighting", browEdit->config.toolbarButtonsViewOptions);
-		ImGui::SameLine();
-		browEdit->toolBarToggleButton("viewTextures", viewTextures ? ICON_TEXTURE_ON : ICON_TEXTURE_OFF, &viewTextures, "Toggle textures", browEdit->config.toolbarButtonsViewOptions);
-		ImGui::SameLine();
-		browEdit->toolBarToggleButton("smoothColors", smoothColors ? ICON_SMOOTH_COLOR_ON : ICON_SMOOTH_COLOR_OFF, &smoothColors, "Smooth colormap", browEdit->config.toolbarButtonsViewOptions);
-		ImGui::SameLine();
-		browEdit->toolBarToggleButton("viewEmptyTiles", viewEmptyTiles ? ICON_EMPTYTILE_ON : ICON_EMPTYTILE_OFF, &viewEmptyTiles, "View empty tiles", browEdit->config.toolbarButtonsViewOptions);
-
-		browEdit->toolBarToggleButton("viewModels", ICON_VIEW_MODEL_ON, &viewModels, "View Models", browEdit->config.toolbarButtonsViewOptions);
-		ImGui::SameLine();
-		browEdit->toolBarToggleButton("viewEffects", ICON_VIEW_EFFECT_ON, &viewEffects, "View Effects", browEdit->config.toolbarButtonsViewOptions);
-		ImGui::SameLine();
-		browEdit->toolBarToggleButton("viewSounds", ICON_VIEW_SOUND_ON, &viewSounds, "View Sounds", browEdit->config.toolbarButtonsViewOptions);
-		ImGui::SameLine();
-		browEdit->toolBarToggleButton("viewLights", ICON_VIEW_LIGHT_ON, &viewLights, "View Lights", browEdit->config.toolbarButtonsViewOptions);
-
-		if (browEdit->editMode == BrowEdit::EditMode::Object)
+		ImGui::SetNextWindowPos(ImGui::GetCursorScreenPos() + ImVec2(0, browEdit->config.toolbarButtonSize));
+		if (ImGui::Begin(("ViewOptions##" + viewName).c_str(), 0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav))
 		{
-			browEdit->toolBarToggleButton("showAllLights", showAllLights ? ICON_ALL_LIGHTS_ON : ICON_ALL_LIGHTS_OFF, &showAllLights, "Show all lights", browEdit->config.toolbarButtonsViewOptions);
+			ImGui::Text("Render Settings");
+			browEdit->toolBarToggleButton("viewLightMapShadow", viewLightmapShadow ? ICON_SHADOWMAP_ON : ICON_SHADOWMAP_OFF, &viewLightmapShadow, "Toggle shadowmap", browEdit->config.toolbarButtonsViewOptions);
 			ImGui::SameLine();
-			browEdit->toolBarToggleButton("showLightSphere", showLightSphere ? ICON_LIGHTSPHERE_ON : ICON_LIGHTSPHERE_OFF, &showLightSphere, "Show light sphere", browEdit->config.toolbarButtonsViewOptions);
+			browEdit->toolBarToggleButton("viewLightmapColor", viewLightmapColor ? ICON_COLORMAP_ON : ICON_COLORMAP_OFF, &viewLightmapColor, "Toggle colormap", browEdit->config.toolbarButtonsViewOptions);
 			ImGui::SameLine();
+			browEdit->toolBarToggleButton("viewColors", viewColors ? ICON_TILECOLOR_ON : ICON_TILECOLOR_OFF, &viewColors, "Toggle tile colors", browEdit->config.toolbarButtonsViewOptions);
+			ImGui::SameLine();
+			browEdit->toolBarToggleButton("viewLighting", viewLighting ? ICON_LIGHTING_ON : ICON_LIGHTING_OFF, &viewLighting, "Toggle lighting", browEdit->config.toolbarButtonsViewOptions);
+			ImGui::SameLine();
+			browEdit->toolBarToggleButton("viewTextures", viewTextures ? ICON_TEXTURE_ON : ICON_TEXTURE_OFF, &viewTextures, "Toggle textures", browEdit->config.toolbarButtonsViewOptions);
+			ImGui::SameLine();
+			browEdit->toolBarToggleButton("smoothColors", smoothColors ? ICON_SMOOTH_COLOR_ON : ICON_SMOOTH_COLOR_OFF, &smoothColors, "Smooth colormap", browEdit->config.toolbarButtonsViewOptions);
+			ImGui::SameLine();
+			browEdit->toolBarToggleButton("viewEmptyTiles", viewEmptyTiles ? ICON_EMPTYTILE_ON : ICON_EMPTYTILE_OFF, &viewEmptyTiles, "View empty tiles", browEdit->config.toolbarButtonsViewOptions);
+
+			ImGui::Text("Object render settings");
+			browEdit->toolBarToggleButton("viewModels", viewModels ? ICON_VIEW_MODEL_ON : ICON_VIEW_MODEL_OFF, &viewModels, "View Models", browEdit->config.toolbarButtonsViewOptions);
+			ImGui::SameLine();
+			browEdit->toolBarToggleButton("viewEffects", viewEffects ? ICON_VIEW_EFFECT_ON : ICON_VIEW_EFFECT_OFF, &viewEffects, "View Effects", browEdit->config.toolbarButtonsViewOptions);
+			ImGui::SameLine();
+			browEdit->toolBarToggleButton("viewSounds", viewSounds ? ICON_VIEW_SOUND_ON : ICON_VIEW_SOUND_OFF, &viewSounds, "View Sounds", browEdit->config.toolbarButtonsViewOptions);
+			ImGui::SameLine();
+			browEdit->toolBarToggleButton("viewLights", viewLights ? ICON_VIEW_LIGHT_ON : ICON_VIEW_LIGHT_OFF, &viewLights, "View Lights", browEdit->config.toolbarButtonsViewOptions);
+
+			if (browEdit->editMode == BrowEdit::EditMode::Object)
+			{
+				ImGui::Text("Light render settings");
+				browEdit->toolBarToggleButton("showAllLights", showAllLights ? ICON_ALL_LIGHTS_ON : ICON_ALL_LIGHTS_OFF, &showAllLights, "Show all lights", browEdit->config.toolbarButtonsViewOptions);
+				ImGui::SameLine();
+				browEdit->toolBarToggleButton("showLightSphere", showLightSphere ? ICON_LIGHTSPHERE_ON : ICON_LIGHTSPHERE_OFF, &showLightSphere, "Show light sphere", browEdit->config.toolbarButtonsViewOptions);
+				ImGui::SameLine();
+			}
+			ImGui::End();
 		}
-		ImGui::EndPopup();
 	}
-
-
+	browEdit->toolBarToggleButton("showViewOptions", ICON_VIEWOPTIONS, &showViewOptions, "View Options", browEdit->config.toolbarButtonsViewOptions);
+	ImGui::SameLine();
 	ImGui::SetNextItemWidth(50);
 	ImGui::DragInt("##quadTreeMaxLevel", &quadTreeMaxLevel, 1, 0, 6);
 	if (ImGui::IsItemHovered())
@@ -526,7 +531,7 @@ void MapView::drawLight(Node* n)
 		simpleShader->setUniform(SimpleShader::Uniforms::projectionMatrix, nodeRenderContext.projectionMatrix);
 		simpleShader->setUniform(SimpleShader::Uniforms::viewMatrix, nodeRenderContext.viewMatrix);
 		simpleShader->setUniform(SimpleShader::Uniforms::modelMatrix, modelMatrix);
-		simpleShader->setUniform(SimpleShader::Uniforms::textureFac, 0);
+		simpleShader->setUniform(SimpleShader::Uniforms::textureFac, 0.0f);
 		simpleShader->setUniform(SimpleShader::Uniforms::color, glm::vec4(rswLight->color, 0.25f));
 		glDepthMask(0);
 		sphereMesh.draw();

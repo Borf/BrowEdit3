@@ -51,7 +51,8 @@ public:
 
 	bool opened = true;
 	gl::FBO* fbo;
-
+	
+	bool showViewOptions = false;
 	bool ortho = false;
 	glm::vec3 cameraCenter;
 	float cameraRotX = 45.0f;
