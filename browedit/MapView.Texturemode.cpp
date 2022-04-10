@@ -81,8 +81,8 @@ void MapView::postRenderTextureMode(BrowEdit* browEdit)
 	glm::vec2 yInc = (uv3 - uv1) * uvSize / (float)textureBrushHeight;
 	if (textureBrushFlipD)
 	{
-		xInc = (uv2 - uv1) * uvSize / (float)textureBrushHeight;
-		yInc = (uv3 - uv1) * uvSize / (float)textureBrushWidth;
+		xInc = (uv1 - uv2) * uvSize / (float)textureBrushHeight;
+		yInc = (uv1 - uv3) * uvSize / (float)textureBrushWidth;
 		std::swap(xInc, yInc);
 		std::swap(xInc.x, xInc.y);
 		std::swap(yInc.x, yInc.y);
@@ -90,19 +90,21 @@ void MapView::postRenderTextureMode(BrowEdit* browEdit)
 
 	glm::vec2 uvStart = uv1 + textureEditUv1.x * (uv2 - uv1) + textureEditUv1.y * (uv3 - uv1);
 
-	//ImGui::Begin("Statusbar");
-	//ImGui::Text("UV1 %.1f,%.1f  UV2 %.1f,%.1f  UV3 %.1f,%.1f  UV4 %.1f,%.1f", uv1.x, uv1.y, uv2.x, uv2.y, uv3.x, uv3.y, uv4.x, uv4.y);
-	//ImGui::SameLine();
-	//ImGui::Text("xInc %.3f,%.3f  yInc %.3f,%.3f ", xInc.x, xInc.y, yInc.x, yInc.y);
-	//ImGui::SameLine();
-	//ImGui::Text("uvStart %.3f,%.3f", uvStart.x, uvStart.y);
-	//ImGui::End();
+	ImGui::Begin("Statusbar");
+	ImGui::Text("UV1 %.1f,%.1f  UV2 %.1f,%.1f  UV3 %.1f,%.1f  UV4 %.1f,%.1f", uv1.x, uv1.y, uv2.x, uv2.y, uv3.x, uv3.y, uv4.x, uv4.y);
+	ImGui::SameLine();
+	ImGui::Text("xInc %.3f,%.3f  yInc %.3f,%.3f ", xInc.x, xInc.y, yInc.x, yInc.y);
+	ImGui::SameLine();
+	ImGui::Text("uvStart %.3f,%.3f", uvStart.x, uvStart.y);
+	ImGui::End();
 
 
 	if (textureStamp.size() == 0 && !ImGui::GetIO().KeyShift)
 	{
 		if (mouse3D != glm::vec3(0, 0, 0) && !(ImGui::IsMouseDown(0) && ImGui::GetIO().KeyShift))
 		{
+			ImGui::Begin("Debug");
+			ImGui::BeginTable("bla", textureBrushWidth, ImGuiTableFlags_Borders);
 			glm::ivec2 tileHovered((int)glm::floor(mouse3D.x / 10), (gnd->height - (int)glm::floor(mouse3D.z) / 10));
 
 			std::vector<VertexP3T2N3> verts;
@@ -111,6 +113,7 @@ void MapView::postRenderTextureMode(BrowEdit* browEdit)
 			glm::ivec2 topleft = tileHovered - glm::ivec2(textureBrushWidth / 2, textureBrushHeight / 2);
 			for (int x = 0; x < textureBrushWidth; x++)
 			{
+				ImGui::TableNextRow();
 				for (int y = 0; y < textureBrushHeight; y++)
 				{
 					if (topleft.x + x >= gnd->width || topleft.x + x < 0 || topleft.y + y >= gnd->height || topleft.y + y < 0)
@@ -127,6 +130,17 @@ void MapView::postRenderTextureMode(BrowEdit* browEdit)
 					uv3_.y = 1 - uv3_.y;
 					uv4_.y = 1 - uv4_.y;
 
+					ImGui::TableNextColumn();
+					ImGui::Text("%.2f, %.2f", uv1_.x, uv1_.y);
+					ImGui::SameLine(95);
+					ImGui::Text("%.2f, %.2f", uv2_.x, uv2_.y);
+					ImGui::Text("%.2f, %.2f", uv3_.x, uv3_.y);
+					ImGui::SameLine(95);
+					ImGui::Text("%.2f, %.2f", uv4_.x, uv4_.y);
+					ImGui::Spacing();
+					ImGui::Spacing();
+
+
 					verts.push_back(VertexP3T2N3(glm::vec3(10 * (topleft.x + x), -cube->h3 + dist, 10 * gnd->height - 10 * (topleft.y + y)), uv3_, cube->normals[2]));
 					verts.push_back(VertexP3T2N3(glm::vec3(10 * (topleft.x + x) + 10, -cube->h2 + dist, 10 * gnd->height - 10 * (topleft.y + y) + 10), uv2_, cube->normals[1]));
 					verts.push_back(VertexP3T2N3(glm::vec3(10 * (topleft.x + x) + 10, -cube->h4 + dist, 10 * gnd->height - 10 * (topleft.y + y)), uv4_, cube->normals[3]));
@@ -136,6 +150,7 @@ void MapView::postRenderTextureMode(BrowEdit* browEdit)
 					verts.push_back(VertexP3T2N3(glm::vec3(10 * (topleft.x + x) + 10, -cube->h2 + dist, 10 * gnd->height - 10 * (topleft.y + y) + 10), uv2_, cube->normals[1]));
 				}
 			}
+			ImGui::EndTable();
 			glEnableVertexAttribArray(0);
 			glEnableVertexAttribArray(1);
 			glEnableVertexAttribArray(2);
@@ -151,6 +166,7 @@ void MapView::postRenderTextureMode(BrowEdit* browEdit)
 			glDrawArrays(GL_TRIANGLES, 0, (int)verts.size());
 			simpleShader->setUniform(SimpleShader::Uniforms::lightMin, 0.5f);
 			simpleShader->setUniform(SimpleShader::Uniforms::textureFac, 0.0f);
+			ImGui::End();
 		}
 	}
 	else if (!ImGui::GetIO().KeyShift) //imagestamp
