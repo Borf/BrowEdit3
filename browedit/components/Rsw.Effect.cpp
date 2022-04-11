@@ -6,6 +6,8 @@
 #include <browedit/Node.h>
 #include <browedit/Config.h>
 #include <browedit/util/FileIO.h>
+#include <browedit/util/ResourceManager.h>
+#include <browedit/gl/Texture.h>
 #include <browedit/components/BillboardRenderer.h>
 #include <browedit/actions/AddComponentAction.h>
 #include <browedit/actions/RemoveComponentAction.h>
@@ -47,6 +49,7 @@ void RswEffect::save(std::ofstream& file)
 
 
 
+static std::map<int, gl::Texture*> previews;
 void RswEffect::buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>& nodes)
 {
 	std::vector<RswEffect*> rswEffects;
@@ -73,6 +76,12 @@ void RswEffect::buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>& no
 		}
 	}
 	browEdit->activeMapView->map->endGroupAction(browEdit);
+
+	int id = rswEffects[0]->id;
+	if (previews.find(id) == previews.end())
+		previews[id] = util::ResourceManager<gl::Texture>::load("data\\texture\\effect\\" + std::to_string(id) + ".gif");
+	ImGui::Image((ImTextureID)(long long)previews[id]->getAnimatedTextureId(), ImVec2(200, 200));
+
 	util::DragFloatMulti<RswEffect>(browEdit, browEdit->activeMapView->map, rswEffects, "Loop", [](RswEffect* e) {return &e->loop; }, 0.01f, 0.0f, 100.0f);
 	util::DragFloatMulti<RswEffect>(browEdit, browEdit->activeMapView->map, rswEffects, "Param 1", [](RswEffect* e) {return &e->param1; }, 0.01f, 0.0f, 100.0f);
 	util::DragFloatMulti<RswEffect>(browEdit, browEdit->activeMapView->map, rswEffects, "Param 2", [](RswEffect* e) {return &e->param2; }, 0.01f, 0.0f, 100.0f);
