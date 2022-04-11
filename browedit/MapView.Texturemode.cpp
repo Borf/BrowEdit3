@@ -101,10 +101,13 @@ void MapView::postRenderTextureMode(BrowEdit* browEdit)
 
 	if (textureStamp.size() == 0 && !ImGui::GetIO().KeyShift)
 	{
-		if (mouse3D != glm::vec3(0, 0, 0) && !(ImGui::IsMouseDown(0) && ImGui::GetIO().KeyShift))
+		if (mouse3D != glm::vec3(0, 0, 0) && !(ImGui::IsMouseDown(0) && ImGui::GetIO().KeyShift) && textureBrushWidth > 0 && textureBrushHeight > 0)
 		{
+//#define UVDEBUG
+#ifdef UVDEBUG
 			ImGui::Begin("Debug");
 			ImGui::BeginTable("bla", textureBrushWidth, ImGuiTableFlags_Borders);
+#endif
 			glm::ivec2 tileHovered((int)glm::floor(mouse3D.x / 10), (gnd->height - (int)glm::floor(mouse3D.z) / 10));
 
 			std::vector<VertexP3T2N3> verts;
@@ -113,7 +116,9 @@ void MapView::postRenderTextureMode(BrowEdit* browEdit)
 			glm::ivec2 topleft = tileHovered - glm::ivec2(textureBrushWidth / 2, textureBrushHeight / 2);
 			for (int x = 0; x < textureBrushWidth; x++)
 			{
+#ifdef UVDEBUG
 				ImGui::TableNextRow();
+#endif
 				for (int y = 0; y < textureBrushHeight; y++)
 				{
 					if (topleft.x + x >= gnd->width || topleft.x + x < 0 || topleft.y + y >= gnd->height || topleft.y + y < 0)
@@ -130,6 +135,7 @@ void MapView::postRenderTextureMode(BrowEdit* browEdit)
 					uv3_.y = 1 - uv3_.y;
 					uv4_.y = 1 - uv4_.y;
 
+#ifdef UVDEBUG
 					ImGui::TableNextColumn();
 					ImGui::Text("%.2f, %.2f", uv1_.x, uv1_.y);
 					ImGui::SameLine(95);
@@ -139,7 +145,7 @@ void MapView::postRenderTextureMode(BrowEdit* browEdit)
 					ImGui::Text("%.2f, %.2f", uv4_.x, uv4_.y);
 					ImGui::Spacing();
 					ImGui::Spacing();
-
+#endif
 
 					verts.push_back(VertexP3T2N3(glm::vec3(10 * (topleft.x + x), -cube->h3 + dist, 10 * gnd->height - 10 * (topleft.y + y)), uv3_, cube->normals[2]));
 					verts.push_back(VertexP3T2N3(glm::vec3(10 * (topleft.x + x) + 10, -cube->h2 + dist, 10 * gnd->height - 10 * (topleft.y + y) + 10), uv2_, cube->normals[1]));
@@ -150,7 +156,9 @@ void MapView::postRenderTextureMode(BrowEdit* browEdit)
 					verts.push_back(VertexP3T2N3(glm::vec3(10 * (topleft.x + x) + 10, -cube->h2 + dist, 10 * gnd->height - 10 * (topleft.y + y) + 10), uv2_, cube->normals[1]));
 				}
 			}
+#ifdef UVDEBUG
 			ImGui::EndTable();
+#endif
 			glEnableVertexAttribArray(0);
 			glEnableVertexAttribArray(1);
 			glEnableVertexAttribArray(2);
@@ -166,7 +174,9 @@ void MapView::postRenderTextureMode(BrowEdit* browEdit)
 			glDrawArrays(GL_TRIANGLES, 0, (int)verts.size());
 			simpleShader->setUniform(SimpleShader::Uniforms::lightMin, 0.5f);
 			simpleShader->setUniform(SimpleShader::Uniforms::textureFac, 0.0f);
+#ifdef UVDEBUG
 			ImGui::End();
+#endif
 		}
 	}
 	else if (!ImGui::GetIO().KeyShift) //imagestamp
