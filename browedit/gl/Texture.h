@@ -15,6 +15,7 @@ namespace gl
 		int frameCount = 1;
 		std::string fileName;
 		int width, height;
+		bool loaded = false;
 		bool flipSelection;
 
 		Texture(int width, int height);

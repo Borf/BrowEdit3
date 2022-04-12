@@ -15,6 +15,7 @@ class RsmRenderer;
 class Gnd;
 class Map;
 class BrowEdit;
+namespace gl { class Texture; }
 
 class Rsw : public Component, public ImguiProps
 {
@@ -193,7 +194,7 @@ public:
 	void load(std::istream* is);
 	void save(std::ofstream& file);
 	static void buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>&);
-
+	static inline std::map<int, gl::Texture*> previews;
 	NLOHMANN_DEFINE_TYPE_INTRUSIVE(RswEffect, id, loop, param1, param2, param3, param4);
 };
 

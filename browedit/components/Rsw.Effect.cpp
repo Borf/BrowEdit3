@@ -49,7 +49,7 @@ void RswEffect::save(std::ofstream& file)
 
 
 
-static std::map<int, gl::Texture*> previews;
+
 void RswEffect::buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>& nodes)
 {
 	std::vector<RswEffect*> rswEffects;

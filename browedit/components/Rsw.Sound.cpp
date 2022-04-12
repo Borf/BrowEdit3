@@ -132,7 +132,7 @@ void RswSound::play()
 		is->read(buffer, len);
 		delete is;
 
-		PlaySound(buffer, NULL, SND_MEMORY);
+		PlaySound(buffer, NULL, SND_MEMORY | SND_ASYNC);
 		delete[] buffer;
 	}
 	else

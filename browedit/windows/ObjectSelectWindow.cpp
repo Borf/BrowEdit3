@@ -16,6 +16,7 @@
 #include <browedit/actions/SelectAction.h>
 #include <browedit/actions/ModelChangeAction.h>
 
+#include <imgui_internal.h>
 #include <misc/cpp/imgui_stdlib.h>
 #include <thread>
 #include <iostream>
@@ -239,9 +240,23 @@ void BrowEdit::showObjectWindow()
 				if (path.find("data\\lights") != std::string::npos)
 					texture = (ImTextureID)(long long)lightTexture->id;
 				if (path.find("data\\effects") != std::string::npos)
-					texture = (ImTextureID)(long long)effectTexture->id;
+				{
+					static std::map<std::string, int> effectIds;
+					if (effectIds.find(path) == effectIds.end())
+					{
+						auto json = util::FileIO::getJson(path);
+						effectIds[path] = json["id"].get<int>();
+					}
+					int effectId = effectIds[path];
+					if (RswEffect::previews.find(effectId) == RswEffect::previews.end())
+						RswEffect::previews[effectId] = util::ResourceManager<gl::Texture>::load("data\\texture\\effect\\" + std::to_string(effectId) + ".gif");
+					if (RswEffect::previews[effectId]->loaded)
+						texture = (ImTextureID)(long long)RswEffect::previews[effectId]->getAnimatedTextureId();
+					else
+						texture = (ImTextureID)(long long)effectTexture->id;
+				}
 			}
-			if (ImGui::ImageButton(texture, config.thumbnailSize, ImVec2(0, 0), ImVec2(1, 1), 0))
+			if (ImGui::ImageButtonEx(ImGui::GetID(path.c_str()), texture, config.thumbnailSize, ImVec2(0, 0), ImVec2(1, 1), ImVec2(0,0), ImVec4(0, 0, 0, 0), ImVec4(1, 1, 1, 1)))
 			{
 				if (activeMapView && newNodes.size() == 0)
 				{
@@ -322,7 +337,7 @@ void BrowEdit::showObjectWindow()
 						is->read(buffer, len);
 						delete is;
 
-						PlaySound(buffer, NULL, SND_MEMORY);
+						PlaySound(buffer, NULL, SND_MEMORY | SND_ASYNC);
 						delete[] buffer;
 					}
 				}
