@@ -12,12 +12,15 @@
 #define IDI_ICON1                       129
 #define IDD_DIALOG1                     130
 #define IDD_DOWNLOADING                 130
-#define IDD_DIALOG2                     131
 #define IDD_SWITCHING                   131
 #define IDC_NEXT                        1002
 #define IDC_PREV                        1003
 #define IDC_DETAILS                     1004
 #define IDC_PROGRESS1                   1005
+#define IDC_BUTTON1                     1006
+#define IDC_UPDATE                      1006
+#define ID_EFFECTCURRENTVERSION         1007
+#define ID_EFFECTLATESTVERSION          1008
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
@@ -27,7 +30,7 @@
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        132
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         1006
+#define _APS_NEXT_CONTROL_VALUE         1009
 #define _APS_NEXT_SYMED_VALUE           110
 #endif
 #endif

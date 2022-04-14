@@ -16,8 +16,13 @@
 #include "../lib/sfl/json.hpp"
 using json = nlohmann::json;
 int currentVersion = 0;
+std::string effectCurrentVersion;
+std::string effectLatestVersion;
+HINSTANCE hInstance;
 
 json releaseInfo;
+
+void updateEffects(HWND hwnd);
 
 
 void setDesc(HWND hDlg, int i)
@@ -85,6 +90,35 @@ INT_PTR CALLBACK Wndproc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
                 setDesc(hDlg, pos);
             }
         }
+        HWND hwndCurrentEffect = GetDlgItem(hDlg, ID_EFFECTCURRENTVERSION);
+        SendMessage(hwndCurrentEffect, WM_SETTEXT, 0, (LPARAM)effectCurrentVersion.c_str());
+        json effectInfo;
+        for (int i = 0; i < 4; i++)
+        {
+            try {
+                auto data = net::fetch_request(net::url(L"https://api.github.com/repos/borf/roeffects/commits"));
+                std::string sdata(data.begin(), data.end());
+                OutputDebugString(sdata.c_str());
+                effectInfo = json::parse(sdata);
+                break;
+            }
+            catch (...) {}
+        }
+        if (!effectInfo.is_null())
+        {
+            HWND hwndCurrentEffect = GetDlgItem(hDlg, ID_EFFECTLATESTVERSION);
+            effectLatestVersion = effectInfo[0]["sha"].get<std::string>();
+            SendMessage(hwndCurrentEffect, WM_SETTEXT, 0, (LPARAM)effectLatestVersion.c_str());
+
+            if (effectLatestVersion != effectCurrentVersion)
+            {
+                HWND hwndButton = GetDlgItem(hDlg, IDC_UPDATE);
+                EnableWindow(hwndButton, TRUE);
+            }
+
+        }
+
+
     }
         return (INT_PTR)TRUE;
     case WM_CLOSE:
@@ -108,13 +142,18 @@ INT_PTR CALLBACK Wndproc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
                 setDesc(hDlg, i);
             }
         }
+        if (LOWORD(wParam) == IDC_UPDATE)
+        {
+            updateEffects(hDlg);
+        }
+
         return 0;
         break;
     }
     return DefWindowProc(hDlg, message, wParam, lParam);
 }
 
-HWND hProgressDlg;
+HWND hProgressDlg = 0;
 
 INT_PTR CALLBACK DownloadWndProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -154,6 +193,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 {
     UNREFERENCED_PARAMETER(hPrevInstance);
     UNREFERENCED_PARAMETER(lpCmdLine);
+    ::hInstance = hInstance;
 
     if (!std::filesystem::exists("zips"))
         std::filesystem::create_directories("zips");
@@ -183,6 +223,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         }
         delete[] verData;
     }
+
+    std::ifstream effectVersionFile("data\\texture\\effect\\version.txt");
+    effectVersionFile >> effectCurrentVersion;
+    effectVersionFile.close();
+
     int index = ((int)DialogBox(hInstance, MAKEINTRESOURCE(IDD_ABOUTBOX), nullptr, Wndproc)) - 1;
     if (index < 0)
         return -1;
@@ -198,7 +243,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         {
             std::thread t([&]()
                 {
-                    Sleep(500);
+                    while(hProgressDlg == 0)
+                        Sleep(500);
                     HWND hwndDialogBar = GetDlgItem(hProgressDlg, IDC_PROGRESS1);
                     SendMessage(hwndDialogBar, PBM_SETRANGE, 0, MAKELPARAM(0, 100));
                     SendMessage(hwndDialogBar, PBM_SETSTEP, (WPARAM)1, 0);
@@ -232,6 +278,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                         catch (...){}
                     }
                     EndDialog(hProgressDlg, 0);
+                    hProgressDlg = 0;
                 });
             DialogBox(hInstance, MAKEINTRESOURCE(IDD_DOWNLOADING), nullptr, DownloadWndProc);
             t.join();
@@ -253,4 +300,78 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     ShellExecute(nullptr, nullptr, "BrowEdit3.exe", "", nullptr, SW_SHOWDEFAULT);
 
     return 0;
+}
+
+
+
+
+void updateEffects(HWND hwnd)
+{
+    std::thread t([&]()
+        {
+            while(hProgressDlg == 0)
+                Sleep(500);
+            HWND hwndDialogBar = GetDlgItem(hProgressDlg, IDC_PROGRESS1);
+            HWND hwndDialogText = GetDlgItem(hProgressDlg, IDC_STATIC);
+            SendMessage(hwndDialogBar, PBM_SETRANGE, 0, MAKELPARAM(0, 100));
+            SendMessage(hwndDialogBar, PBM_SETSTEP, (WPARAM)1, 0);
+
+            std::string url = "https://api.github.com/repos/borf/roeffects/zipball/main";
+            for (int i = 0; i < 4; i++)
+            {
+                try {
+                    auto data = net::fetch_request(net::url(std::wstring(url.begin(), url.end())), L"", L"", L"Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko)", [&](float p) {
+                        SendMessage(hwndDialogBar, PBM_SETPOS, (int)(p * 100), 0);
+                        });
+                    std::ofstream outStream("effects.zip", std::ios_base::out | std::ios_base::binary);
+                    char buf[1024];
+                    for (int i = 0; i < data.size(); i += 1024)
+                        outStream.write(data.data() + i, std::min(1024, (int)data.size() - i));
+                    //std::copy(data.begin(), data.end(), std::ostream_iterator<char>(outStream));
+                    outStream.close();
+                    break;
+                }
+                catch (...) {}
+            }
+
+            std::thread t([&]() {
+                SendMessage(hwndDialogBar, PBM_SETPOS, 0, 0);
+                SendMessage(hwndDialogText, WM_SETTEXT, 0, (LPARAM)"Unzipping....");
+                miniz_cpp::zip_file zip("effects.zip");
+                auto list = zip.infolist();
+                char buf[1024];
+                std::filesystem::create_directories("data\\texture\\effect");
+                for (auto i = 0; i < list.size(); i++)
+                {
+                    SendMessage(hwndDialogBar, PBM_SETPOS, (int)((i / (float)list.size()) * 100), 0);
+                    std::string file = list[i].filename;
+                    if (file.ends_with(".gif"))
+                    {
+                        if (file.find("/") != std::string::npos)
+                            file = file.substr(file.rfind("/") + 1);
+                        if (file.find("\\") != std::string::npos)
+                            file = file.substr(file.rfind("\\") + 1);
+                        auto data = zip.read(list[i]);
+                        std::ofstream out("data\\texture\\effect\\" + file, std::ios_base::binary | std::ios_base::out);
+                        for (auto ii = 0; ii < data.size(); ii += 1024)
+                            out.write(data.data()+ii, std::min(1024, (int)data.size()-ii));
+                    }
+                }
+            });
+
+            t.join();
+            EndDialog(hProgressDlg, 0);
+            hProgressDlg = 0;
+
+            std::ofstream effectVersionFile("data\\texture\\effect\\version.txt");
+            effectVersionFile << effectLatestVersion;
+            effectVersionFile.close();
+        });
+    DialogBox(hInstance, MAKEINTRESOURCE(IDD_DOWNLOADING), hwnd, DownloadWndProc);
+    t.join();
+
+    HWND hwndCurrentEffect = GetDlgItem(hwnd, ID_EFFECTCURRENTVERSION);
+    SendMessage(hwndCurrentEffect, WM_SETTEXT, 0, (LPARAM)effectLatestVersion.c_str());
+    HWND hwndButton = GetDlgItem(hwnd, IDC_UPDATE);
+    EnableWindow(hwndButton, FALSE);
 }
