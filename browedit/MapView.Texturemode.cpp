@@ -18,6 +18,8 @@ void MapView::postRenderTextureMode(BrowEdit* browEdit)
 	auto gnd = map->rootNode->getComponent<Gnd>();
 	auto gndRenderer = map->rootNode->getComponent<GndRenderer>();
 
+	if (gndRenderer->textures.size() == 0)
+		return;
 
 	simpleShader->use();
 	simpleShader->setUniform(SimpleShader::Uniforms::projectionMatrix, nodeRenderContext.projectionMatrix);

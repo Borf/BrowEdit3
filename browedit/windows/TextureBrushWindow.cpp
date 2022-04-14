@@ -20,6 +20,9 @@ void BrowEdit::showTextureBrushWindow()
 	auto gnd = activeMapView->map->rootNode->getComponent<Gnd>();
 	auto gndRenderer = activeMapView->map->rootNode->getComponent<GndRenderer>();
 
+	if (gnd->textures.size() == 0)
+		return;
+
 	if (!ImGui::GetIO().WantTextInput && activeMapView)
 	{
 		if (ImGui::IsKeyPressed('F'))
