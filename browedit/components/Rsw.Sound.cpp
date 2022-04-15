@@ -43,8 +43,8 @@ void RswSound::save(std::ofstream& file, int version)
 {
 	auto rswObject = node->getComponent<RswObject>();
 
-	util::FileIO::writeString(file, util::utf8_to_iso_8859_1(node->name), 40);
-	util::FileIO::writeString(file, util::utf8_to_iso_8859_1(fileName), 80); //TODO: CHECK IF 80/40 or 40/80
+	util::FileIO::writeString(file, util::utf8_to_iso_8859_1(node->name), 80);
+	util::FileIO::writeString(file, util::utf8_to_iso_8859_1(fileName), 40); //TODO: CHECK IF 80/40 or 40/80
 
 	file.write(reinterpret_cast<char*>(&unknown7), sizeof(float));
 	file.write(reinterpret_cast<char*>(&unknown8), sizeof(float));
