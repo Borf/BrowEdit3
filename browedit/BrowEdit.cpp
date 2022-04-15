@@ -174,7 +174,10 @@ void BrowEdit::run()
 		if (windowData.helpWindowVisible)
 			showHelpWindow();
 		if (editMode == EditMode::Texture)
+		{
 			showTextureBrushWindow();
+			showTextureManageWindow();
+		}
 
 		showLightmapSettingsWindow();
 

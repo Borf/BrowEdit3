@@ -88,6 +88,9 @@ public:
 		std::function<void()> progressWindowOnDone;
 		std::function<void()> progressCancel;
 
+		bool textureManageWindowVisible = true; //TODO: load from config
+		util::FileIO::Node* textureManageWindowSelectedTreeNode = nullptr;
+		std::map<std::string, gl::Texture*> textureManageWindowCache;
 	} windowData;
 	ImFont* font;
 	enum class EditMode
@@ -148,6 +151,7 @@ public:
 	void showHelpWindow();
 	void showLightmapSettingsWindow();
 	void showTextureBrushWindow();
+	void showTextureManageWindow();
 
 	void copyTiles();
 	void pasteTiles();
