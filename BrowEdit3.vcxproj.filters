@@ -337,6 +337,9 @@
     <ClCompile Include="browedit\windows\ExportMapWindow.cpp">
       <Filter>browedit\windows</Filter>
     </ClCompile>
+    <ClCompile Include="browedit\actions\GndTextureActions.cpp">
+      <Filter>browedit\actions</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="lib\imgui\imgui.h">
@@ -586,6 +589,9 @@
       <Filter>browedit\actions</Filter>
     </ClInclude>
     <ClInclude Include="browedit\actions\TileNewAction.h">
+      <Filter>browedit\actions</Filter>
+    </ClInclude>
+    <ClInclude Include="browedit\actions\GndTextureActions.h">
       <Filter>browedit\actions</Filter>
     </ClInclude>
   </ItemGroup>

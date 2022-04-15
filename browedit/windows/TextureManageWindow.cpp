@@ -1,6 +1,11 @@
 #include <browedit/BrowEdit.h>
 #include <browedit/util/ResourceManager.h>
 #include <browedit/gl/Texture.h>
+#include <browedit/Map.h>
+#include <browedit/Node.h>
+#include <browedit/components/Gnd.h>
+#include <browedit/components/GndRenderer.h>
+#include <browedit/actions/GndTextureActions.h>
 #include <misc/cpp/imgui_stdlib.h>
 #include <imgui_internal.h>
 
@@ -78,29 +83,36 @@ void BrowEdit::showTextureManageWindow()
 				}
 			}
 
-			std::string p = util::utf8_to_iso_8859_1(file);
-			if (!fullPath)
-			{
-				auto n = windowData.textureManageWindowSelectedTreeNode;
-				while (n->parent)
-				{
-					p = util::utf8_to_iso_8859_1(n->name) + "\\" + p;
-					n = n->parent;
-				}
-			}
-
-			if (windowData.textureManageWindowCache.find(p) == windowData.textureManageWindowCache.end())
-				windowData.textureManageWindowCache[p] = util::ResourceManager<gl::Texture>::load(p);
+			if (windowData.textureManageWindowCache.find(path) == windowData.textureManageWindowCache.end())
+				windowData.textureManageWindowCache[path] = util::ResourceManager<gl::Texture>::load(path);
 			
 			ImTextureID texture = 0;
-			if(windowData.textureManageWindowCache[p]->loaded)
-				texture = (ImTextureID)(long long)windowData.textureManageWindowCache[p]->id();
+			if(windowData.textureManageWindowCache[path]->loaded)
+				texture = (ImTextureID)(long long)windowData.textureManageWindowCache[path]->id();
 
 			if (ImGui::ImageButtonEx(ImGui::GetID(path.c_str()), texture, config.thumbnailSize, ImVec2(0, 0), ImVec2(1, 1), ImVec2(0, 0), ImVec4(0, 0, 0, 0), ImVec4(1, 1, 1, 1)))
 			{
 				std::cout << "Click on " << file << std::endl;
 				if (activeMapView)
 				{
+					auto gnd = activeMapView->map->rootNode->getComponent<Gnd>();
+					auto gndRenderer = activeMapView->map->rootNode->getComponent<GndRenderer>();
+					std::string tex = path.substr(13); // remove "data\texture\"
+
+					bool found = false;
+					for (auto i = 0; i < gnd->textures.size(); i++)
+					{
+						if (gnd->textures[i]->file == tex)
+						{
+							found = true;
+							activeMapView->textureSelected = i;
+						}
+					}
+					if (!found)
+					{
+						activeMapView->map->doAction(new GndTextureAddAction(tex), this);
+					}
+
 				}
 			}
 			if (ImGui::BeginPopupContextWindow("Texture Tags"))

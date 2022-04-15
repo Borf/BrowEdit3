@@ -54,6 +54,7 @@ public:
 
 //		Texture* texture;
 		Texture();
+		Texture(const std::string& name, const std::string& file) : name(name), file(file) {}
 		~Texture();
 	};
 
