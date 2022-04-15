@@ -61,7 +61,7 @@ void BrowEdit::showTextureBrushWindow()
 					activeMapView->textureSelected = i;
 				}
 				ImGui::SameLine(0);
-				ImGui::Image((ImTextureID)(long long)gndRenderer->textures[i]->id, ImVec2(64, 64));
+				ImGui::Image((ImTextureID)(long long)gndRenderer->textures[i]->id(), ImVec2(64, 64));
 				ImGui::SameLine(80);
 				ImGui::Text(util::iso_8859_1_to_utf8(gnd->textures[i]->file).c_str());
 
@@ -171,7 +171,7 @@ void BrowEdit::showTextureBrushWindow()
 				uv4.y = 1 - uv4.y;
 			}
 
-			window->DrawList->AddImageQuad((ImTextureID)(long long)gndRenderer->textures[activeMapView->textureSelected]->id, 
+			window->DrawList->AddImageQuad((ImTextureID)(long long)gndRenderer->textures[activeMapView->textureSelected]->id(),
 				ImVec2(bb.Min.x + 1, bb.Min.y + 1), ImVec2(bb.Max.x - 1, bb.Min.y + 1), ImVec2(bb.Max.x - 1, bb.Max.y - 1), ImVec2(bb.Min.x + 1, bb.Max.y - 1),
 				uv1, uv2, uv4, uv3);
 

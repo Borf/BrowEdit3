@@ -395,7 +395,7 @@ bool BrowEdit::toolBarToggleButton(const std::string_view &name, int icon, bool*
 	ImVec2 v2(v1.x + (1.0f / iconsTexture->width) * 100, v1.y + (1.0f / iconsTexture->height) * 100);
 	ImGui::PushID(name.data());
 
-	bool clicked = ImGui::ImageButton((ImTextureID)(long long)iconsTexture->id, ImVec2(config.toolbarButtonSize, config.toolbarButtonSize), v1, v2, 0, *status ? enabledColor : disabledColor, tint);
+	bool clicked = ImGui::ImageButton((ImTextureID)(long long)iconsTexture->id(), ImVec2(config.toolbarButtonSize, config.toolbarButtonSize), v1, v2, 0, *status ? enabledColor : disabledColor, tint);
 	if (ImGui::IsItemHovered())
 		ImGui::SetTooltip(tooltip);
 	if(clicked)
@@ -412,7 +412,7 @@ bool BrowEdit::toolBarButton(const std::string_view& name, int icon, const char*
 	ImVec2 v2(v1.x + (1.0f / iconsTexture->width) * 100, v1.y + (1.0f / iconsTexture->height) * 100);
 	ImGui::PushID(name.data());
 
-	bool clicked = ImGui::ImageButton((ImTextureID)(long long)iconsTexture->id, ImVec2(config.toolbarButtonSize, config.toolbarButtonSize), v1, v2, 0, enabledColor, tint);
+	bool clicked = ImGui::ImageButton((ImTextureID)(long long)iconsTexture->id(), ImVec2(config.toolbarButtonSize, config.toolbarButtonSize), v1, v2, 0, enabledColor, tint);
 	if (ImGui::IsItemHovered())
 		ImGui::SetTooltip(tooltip);
 	ImGui::PopID();
@@ -428,7 +428,7 @@ bool BrowEdit::toolBarToggleButton(const std::string_view& name, int icon, bool 
 	ImVec2 v2(v1.x + (1.0f / iconsTexture->width) * 100, v1.y + (1.0f / iconsTexture->height) * 100);
 	ImGui::PushID(name.data());
 
-	bool clicked = ImGui::ImageButton((ImTextureID)(long long)iconsTexture->id, ImVec2(config.toolbarButtonSize, config.toolbarButtonSize), v1, v2, 0, status ? enabledColor : disabledColor, tint);
+	bool clicked = ImGui::ImageButton((ImTextureID)(long long)iconsTexture->id(), ImVec2(config.toolbarButtonSize, config.toolbarButtonSize), v1, v2, 0, status ? enabledColor : disabledColor, tint);
 	if (ImGui::IsItemHovered())
 		ImGui::SetTooltip(tooltip);
 	ImGui::PopID();

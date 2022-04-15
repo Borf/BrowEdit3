@@ -72,7 +72,7 @@ inline ImGui::MarkdownImageData ImageCallback(ImGui::MarkdownLinkCallbackData da
     ImGui::MarkdownImageData imageData;
     imageData.isValid = true;
     imageData.useLinkCallback = false;
-    imageData.user_texture_id = (ImTextureID)(long long)texture->id;
+    imageData.user_texture_id = (ImTextureID)(long long)texture->id();
     imageData.size = ImVec2((float)texture->width, (float)texture->height);
 
     // For image resize when available size.x > image width, add

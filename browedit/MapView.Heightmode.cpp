@@ -222,7 +222,7 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 							ImGuiContext& g = *GImGui;
 
 							ImGui::RenderFrame(bb.Min, bb.Max, ImGui::GetColorU32(ImGuiCol_FrameBg, 1), true, style.FrameRounding);
-							window->DrawList->AddImage((ImTextureID)(long long)gndRenderer->textures[tile->textureIndex]->id, bb.Min + ImVec2(1, 1), bb.Max - ImVec2(1, 1), ImVec2(0,1), ImVec2(1,0));
+							window->DrawList->AddImage((ImTextureID)(long long)gndRenderer->textures[tile->textureIndex]->id(), bb.Min + ImVec2(1, 1), bb.Max - ImVec2(1, 1), ImVec2(0, 1), ImVec2(1, 0));
 
 							for (int i = 0; i < 4; i++)
 							{
@@ -284,7 +284,7 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 							ImGui::ItemSize(bb);
 							ImGui::ItemAdd(bb, NULL);
 							ImGui::RenderFrame(bb.Min, bb.Max, ImGui::GetColorU32(ImGuiCol_FrameBg, 1), true, style.FrameRounding);
-							window->DrawList->AddImage((ImTextureID)(long long)gndRenderer->gndShadow->id, bb.Min + ImVec2(1, 1), bb.Max - ImVec2(1, 1), ImVec2(lm1.x, lm2.y), ImVec2(lm2.x, lm1.y));
+							window->DrawList->AddImage((ImTextureID)(long long)gndRenderer->gndShadow->id(), bb.Min + ImVec2(1, 1), bb.Max - ImVec2(1, 1), ImVec2(lm1.x, lm2.y), ImVec2(lm2.x, lm1.y));
 						}
 
 						ImGui::TreePop();

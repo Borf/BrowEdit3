@@ -10,21 +10,32 @@ namespace gl
 {
 	Texture::Texture(const std::string& fileName, bool flipSelection) : fileName(fileName), flipSelection(flipSelection)
 	{
-		id = 0;
+		ids = nullptr;
 		reload();
 	}
 
 
 	Texture::Texture(int width, int height) : width(width), height(height), fileName("")
 	{
-		glGenTextures(1, &id);
-		glBindTexture(GL_TEXTURE_2D, id);
+		ids = new GLuint[1];
+		glGenTextures(1, &ids[0]);
+		glBindTexture(GL_TEXTURE_2D, ids[0]);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	}
+
+
+	Texture::~Texture()
+	{
+		if (ids)
+		{
+			glDeleteTextures(frameCount, ids);
+			delete[] ids;
+		}
 	}
 
 	void Texture::reload()
@@ -38,7 +49,7 @@ namespace gl
 		if (!is)
 		{
 			std::cerr << "Texture: Could not open " << fileName << std::endl;
-			id = 0;
+			ids = nullptr;
 			return;
 		}
 		is->seekg(0, std::ios_base::end);
@@ -56,14 +67,16 @@ namespace gl
 
 		if (fileName.substr(fileName.size() - 4) == ".gif")
 		{
-			if (id == 0)
-				glGenTextures(frameCount, &id);
-
 			int* delays;
 			auto data = stbi_load_gif_from_memory((stbi_uc*)buffer, (int)len, &delays, &width, &height, &frameCount, &comp, 4);
+			if (ids == nullptr)
+			{
+				ids = new GLuint[frameCount];
+				glGenTextures(frameCount, ids);
+			}
 			for(int frame = 0; frame < frameCount; frame++)
 			{
-				glBindTexture(GL_TEXTURE_2D, id+frame);
+				glBindTexture(GL_TEXTURE_2D, ids[frame]);
 				glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data+(width*height*4)*frame);
 				glGenerateMipmap(GL_TEXTURE_2D);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
@@ -130,9 +143,13 @@ namespace gl
 				if (!changed)
 					break;
 			}
-			if (id == 0)
-				glGenTextures(frameCount, &id);
-			glBindTexture(GL_TEXTURE_2D, id);
+			if (ids == nullptr)
+			{
+				frameCount = 1;
+				ids = new GLuint[1];
+				glGenTextures(frameCount, ids);
+			}
+			glBindTexture(GL_TEXTURE_2D, ids[0]);
 			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 			stbi_image_free(data);
 			//std::cout << "Texture: loaded " << fileName << std::endl;;
@@ -155,14 +172,14 @@ namespace gl
 
 	GLuint Texture::getAnimatedTextureId()
 	{
-		return id + (int)(glfwGetTime() * 10) % frameCount;
+		return ids[(int)(glfwGetTime() * 10) % frameCount];
 	}
 
 	void Texture::bind()
 	{
 		if (frameCount > 1)
-			glBindTexture(GL_TEXTURE_2D, id + (int)(glfwGetTime() * 10) % frameCount);
+			glBindTexture(GL_TEXTURE_2D, ids[(int)(glfwGetTime() * 10) % frameCount]);
 		else
-			glBindTexture(GL_TEXTURE_2D, id);
+			glBindTexture(GL_TEXTURE_2D, ids[0]);
 	}
 }

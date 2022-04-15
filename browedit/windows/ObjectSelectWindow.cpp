@@ -234,11 +234,11 @@ void BrowEdit::showObjectWindow()
 				texture = (ImTextureID)(long long)it->second->fbo->texid[0];
 			}
 			else if (path.substr(path.size() - 4) == ".wav")
-				texture = (ImTextureID)(long long)soundTexture->id;
+				texture = (ImTextureID)(long long)soundTexture->id();
 			else if (path.substr(path.size() - 5) == ".json")
 			{
 				if (path.find("data\\lights") != std::string::npos)
-					texture = (ImTextureID)(long long)lightTexture->id;
+					texture = (ImTextureID)(long long)lightTexture->id();
 				if (path.find("data\\effects") != std::string::npos)
 				{
 					static std::map<std::string, int> effectIds;
@@ -253,7 +253,7 @@ void BrowEdit::showObjectWindow()
 					if (RswEffect::previews[effectId]->loaded)
 						texture = (ImTextureID)(long long)RswEffect::previews[effectId]->getAnimatedTextureId();
 					else
-						texture = (ImTextureID)(long long)effectTexture->id;
+						texture = (ImTextureID)(long long)effectTexture->id();
 				}
 			}
 			if (ImGui::ImageButtonEx(ImGui::GetID(path.c_str()), texture, config.thumbnailSize, ImVec2(0, 0), ImVec2(1, 1), ImVec2(0,0), ImVec4(0, 0, 0, 0), ImVec4(1, 1, 1, 1)))
