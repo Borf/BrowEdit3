@@ -47,3 +47,35 @@ std::string GndTextureAddAction::str()
 {
 	return "Added Texture";
 }
+
+GndTextureChangeAction::GndTextureChangeAction(int index, const std::string& fileName) : index(index), newTexture(fileName)
+{
+}
+
+void GndTextureChangeAction::perform(Map* map, BrowEdit* browEdit)
+{
+	auto gnd = map->rootNode->getComponent<Gnd>();
+	auto gndRenderer = map->rootNode->getComponent<GndRenderer>();
+	oldTexture = gnd->textures[index]->file;
+	gnd->textures[index]->file = newTexture;
+
+	util::ResourceManager<gl::Texture>::unload(gndRenderer->textures[index]);
+	gndRenderer->textures[index] = util::ResourceManager<gl::Texture>::load("data\\texture\\" + newTexture);
+}
+
+void GndTextureChangeAction::undo(Map* map, BrowEdit* browEdit)
+{
+	auto gnd = map->rootNode->getComponent<Gnd>();
+	auto gndRenderer = map->rootNode->getComponent<GndRenderer>();
+	gnd->textures[index]->file = oldTexture;
+
+	util::ResourceManager<gl::Texture>::unload(gndRenderer->textures[index]);
+	gndRenderer->textures[index] = util::ResourceManager<gl::Texture>::load("data\\texture\\" + oldTexture);
+}
+
+std::string GndTextureChangeAction::str()
+{
+	return "Change texture to " + util::iso_8859_1_to_utf8(newTexture);
+}
+
+

@@ -61,6 +61,11 @@ void BrowEdit::toolbar()
 		toolBarToggleButton("showObjectWindow", windowData.objectWindowVisible ? ICON_OBJECTPICKER_OPEN : ICON_OBJECTPICKER_CLOSE, &windowData.objectWindowVisible, "Toggle object window", config.toolbarButtonsObjectEdit);
 		ImGui::SameLine();
 	}
+	if (editMode == EditMode::Texture)
+	{
+		toolBarToggleButton("showTextureWindow", windowData.textureManageWindowVisible ? ICON_TEXTUREPICKER_OPEN : ICON_TEXTUREPICKER_CLOSE, &windowData.textureManageWindowVisible, "Toggle texture window", config.toolbarButtonsTextureEdit);
+		ImGui::SameLine();
+	}
 
 
 	if (toolBarToggleButton("undo", ICON_UNDO, false, "Undo") && activeMapView)

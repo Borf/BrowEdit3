@@ -12,6 +12,8 @@
 
 void BrowEdit::showTextureManageWindow()
 {
+	if (!windowData.textureManageWindowVisible)
+		return;
 	if (!ImGui::Begin("Texture Picker", &windowData.textureManageWindowVisible))
 		return;
 	static std::string tagFilter;
@@ -109,22 +111,31 @@ void BrowEdit::showTextureManageWindow()
 						}
 					}
 					if (!found)
-					{
 						activeMapView->map->doAction(new GndTextureAddAction(tex), this);
-					}
-
 				}
 			}
 			if (ImGui::BeginPopupContextWindow("Texture Tags"))
 			{
 				if (ImGui::CollapsingHeader("Actions", ImGuiTreeNodeFlags_DefaultOpen))
 				{
-					if (ImGui::Button("Add to map"))
-						std::cout << "Just click the thing" << std::endl;
-					ImGui::SameLine();
 					if (ImGui::Button("Replace selected Texture"))
-						std::cout << "Just click the thing" << std::endl;
-					ImGui::SameLine();
+					{
+						auto gnd = activeMapView->map->rootNode->getComponent<Gnd>();
+						auto gndRenderer = activeMapView->map->rootNode->getComponent<GndRenderer>();
+						std::string tex = path.substr(13); // remove "data\texture\"
+
+						bool found = false;
+						for (auto i = 0; i < gnd->textures.size(); i++)
+						{
+							if (gnd->textures[i]->file == tex)
+							{
+								found = true; //replace tiles with texture activeMapView->textureSelected to texture i
+							}
+						}
+						if (!found)
+							activeMapView->map->doAction(new GndTextureChangeAction(activeMapView->textureSelected, tex), this);
+						
+					}
 				}
 				if (ImGui::CollapsingHeader("Tags", ImGuiTreeNodeFlags_DefaultOpen))
 				{
