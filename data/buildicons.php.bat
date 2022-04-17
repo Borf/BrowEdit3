@@ -17,7 +17,7 @@ $order = array(
 	"smooth_color_on.png",	"smooth_color_off.png",		"emptytile_on.png",			"emptytile_off.png",	"all_lights_on.png",	//20-24
 	"all_lights_off.png",	"lightsphere_on.png",		"lightsphere_off.png",		"",						"",						//25-29
 	"view_model_on.png",	"view_model_off.png",		"view_effect_on.png",		"view_effect_off.png",	"view_light_on.png",	//30-34
-	"view_light_off.png",	"view_sound_on.png",		"view_sound_off.png",		"",						"",	//35-39
+	"view_light_off.png",	"view_sound_on.png",		"view_sound_off.png",		"view_water_on.png",	"view_water_off.png",	//35-39
 	"snap_grid_on.png",		"snap_grid_off.png",		"viewoptions.png",			"",						"",						//40-44
 	"undo.png",				"redo.png",					"copy.png",					"paste.png",			"",						//45-49
 	"move.png",				"rotate.png",				"scale.png",				"rotate_right.png",		"",						//50-54

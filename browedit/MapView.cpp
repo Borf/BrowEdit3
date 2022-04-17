@@ -10,6 +10,7 @@
 #include "components/Gnd.h"
 #include "components/GndRenderer.h"
 #include "components/RsmRenderer.h"
+#include "components/WaterRenderer.h"
 #include "components/BillboardRenderer.h"
 
 #include <browedit/gl/FBO.h>
@@ -94,6 +95,8 @@ void MapView::toolbar(BrowEdit* browEdit)
 			browEdit->toolBarToggleButton("viewSounds", viewSounds ? ICON_VIEW_SOUND_ON : ICON_VIEW_SOUND_OFF, &viewSounds, "View Sounds", browEdit->config.toolbarButtonsViewOptions);
 			ImGui::SameLine();
 			browEdit->toolBarToggleButton("viewLights", viewLights ? ICON_VIEW_LIGHT_ON : ICON_VIEW_LIGHT_OFF, &viewLights, "View Lights", browEdit->config.toolbarButtonsViewOptions);
+			ImGui::SameLine();
+			browEdit->toolBarToggleButton("viewWater", viewWater ? ICON_VIEW_WATER_ON : ICON_VIEW_WATER_OFF, &viewWater, "View Water", browEdit->config.toolbarButtonsViewOptions);
 
 			if (browEdit->editMode == BrowEdit::EditMode::Object)
 			{
@@ -270,6 +273,7 @@ void MapView::render(BrowEdit* browEdit)
 				r->enabled = viewLights;
 		}
 	}
+	map->rootNode->getComponent<WaterRenderer>()->enabled = viewWater;
 
 	NodeRenderer::render(map->rootNode, nodeRenderContext);
 

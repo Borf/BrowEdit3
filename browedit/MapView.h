@@ -151,6 +151,7 @@ public:
 	bool viewEffects = true;
 	bool viewSounds = true;
 	bool viewLights = true;
+	bool viewWater = true;
 
 	void focusSelection();
 	void drawLight(Node* n);
