@@ -478,6 +478,7 @@ void Rsw::save(const std::string& fileName, BrowEdit* browEdit)
 #define SAVEPROP0(x,y) lubFile<<"\t\t[\""<<x<<"\"] = { "<<y<<" }"
 #define SAVEPROP2(x,y) lubFile<<"\t\t[\""<<x<<"\"] = { "<<y[0]<<", "<<y[1]<<" }"
 #define SAVEPROP3(x,y) lubFile<<"\t\t[\""<<x<<"\"] = { "<<y[0]<<", "<<y[1]<<", "<<y[2]<<" }"
+#define SAVEPROP4(x,y) lubFile<<"\t\t[\""<<x<<"\"] = { "<<y[0]<<", "<<y[1]<<", "<<y[2]<<", "<<y[3]<<" }"
 #define SAVEPROPS(x,y) lubFile<<"\t\t[\""<<x<<"\"] = [["<<y<<"]]"
 
 		for (auto i = 0; i < lubEffects.size(); i++)
@@ -489,7 +490,7 @@ void Rsw::save(const std::string& fileName, BrowEdit* browEdit)
 			SAVEPROP3("gravity", lubEffects[i]->gravity) << "," << std::endl;
 			SAVEPROP3("pos", lubEffects[i]->pos) << "," << std::endl;
 			SAVEPROP3("radius", lubEffects[i]->radius) << "," << std::endl;
-			SAVEPROP3("color", lubEffects[i]->color) << "," << std::endl;
+			SAVEPROP4("color", glm::round(lubEffects[i]->color * 255.0f)) << "," << std::endl;
 			SAVEPROP2("rate", lubEffects[i]->rate) << "," << std::endl;
 			SAVEPROP2("size", lubEffects[i]->size) << "," << std::endl;
 			SAVEPROP2("life", lubEffects[i]->life) << "," << std::endl;

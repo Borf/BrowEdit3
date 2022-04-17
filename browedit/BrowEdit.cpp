@@ -314,7 +314,7 @@ void BrowEdit::run()
 			if (editMode == EditMode::Texture && activeMapView)
 			{
 				if (ImGui::IsKeyPressed(GLFW_KEY_LEFT_BRACKET))
-					activeMapView->textureSelected = (activeMapView->textureSelected + activeMapView->map->rootNode->getComponent<Gnd>()->textures.size() - 1) % activeMapView->map->rootNode->getComponent<Gnd>()->textures.size();
+					activeMapView->textureSelected = (activeMapView->textureSelected + activeMapView->map->rootNode->getComponent<Gnd>()->textures.size() - 1) % (int)activeMapView->map->rootNode->getComponent<Gnd>()->textures.size();
 				if (ImGui::IsKeyPressed(GLFW_KEY_RIGHT_BRACKET))
 					activeMapView->textureSelected = (activeMapView->textureSelected + 1) % activeMapView->map->rootNode->getComponent<Gnd>()->textures.size();
 

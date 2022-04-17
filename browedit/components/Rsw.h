@@ -163,7 +163,7 @@ public:
 	glm::vec3 gravity;
 	glm::vec3 pos;
 	glm::vec3 radius;
-	glm::vec3 color;
+	glm::vec4 color;
 	glm::vec2 rate;
 	glm::vec2 size;
 	glm::vec2 life;

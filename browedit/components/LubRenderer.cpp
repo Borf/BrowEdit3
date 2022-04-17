@@ -63,7 +63,7 @@ void LubRenderer::render()
 	modelMatrix = glm::scale(modelMatrix, glm::vec3(1, 1, -1));
 	modelMatrix = glm::translate(modelMatrix, glm::vec3(5 * gnd->width + rswObject->position.x, -rswObject->position.y, -10 - 5 * gnd->height + rswObject->position.z));
 	shader->setUniform(LubShader::Uniforms::modelMatrix, modelMatrix);
-	shader->setUniform(LubShader::Uniforms::color, glm::vec4(lubEffect->color, 255.0f) / glm::vec4(255.0f));
+	shader->setUniform(LubShader::Uniforms::color, lubEffect->color);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	if (texture)

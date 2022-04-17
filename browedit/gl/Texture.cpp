@@ -172,7 +172,10 @@ namespace gl
 
 	GLuint Texture::getAnimatedTextureId()
 	{
-		return ids[(int)(glfwGetTime() * 10) % frameCount];
+		if (loaded)
+			return ids[(int)(glfwGetTime() * 10) % frameCount];
+		else
+			return 0;
 	}
 
 	void Texture::bind()

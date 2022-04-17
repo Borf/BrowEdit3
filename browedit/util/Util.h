@@ -60,6 +60,9 @@ namespace util
 	bool ColorEdit3Multi(BrowEdit* browEdit, Map* map, const std::vector<T*>& data, const char* label, const std::function<glm::vec3* (T*)>& callback);
 
 	template<class T>
+	bool ColorEdit4Multi(BrowEdit* browEdit, Map* map, const std::vector<T*>& data, const char* label, const std::function<glm::vec4* (T*)>& callback);
+
+	template<class T>
 	bool DragFloatMulti(BrowEdit* browEdit, Map* map, const std::vector<T*>& data, const char* label, const std::function<float* (T*)>& callback, float v_speed, float v_min, float v_max);
 
 	template<class T>
@@ -93,6 +96,9 @@ namespace glm
 	void from_json(const nlohmann::json& j, glm::vec3& v);
 	void to_json(nlohmann::json& j, const glm::vec2& v);
 	void from_json(const nlohmann::json& j, glm::vec2& v);
+
+	void to_json(nlohmann::json& j, const glm::lowp_i8vec4& v);
+	void from_json(const nlohmann::json& j, glm::lowp_i8vec4& v);
 
 	void to_json(nlohmann::json& j, const glm::ivec2& v);
 	void from_json(const nlohmann::json& j, glm::ivec2& v);

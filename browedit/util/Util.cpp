@@ -969,6 +969,76 @@ namespace util
 
 
 	template<class T>
+	bool ColorEdit4Multi(BrowEdit* browEdit, Map* map, const std::vector<T*>& data, const char* label, const std::function<glm::vec4* (T*)>& getProp)
+	{
+		static std::vector<glm::vec4> startValues;
+		glm::vec4* f = getProp(data.front());
+		std::vector<const char*> formats;
+		bool differentValues = !std::all_of(data.begin(), data.end(), [&](T* o) { return (*getProp(o)) == (*getProp(data.front())); });
+		bool ret = ImGui::ColorEdit4(label, glm::value_ptr(*f));
+		if (ImGui::IsItemActivated())
+		{
+			startValues.clear();
+			for (auto o : data)
+				startValues.push_back(*getProp(o));
+		}
+		if (ret)
+		{
+			for (auto o : data)
+				*getProp(o) = *f;
+		}
+		if (ImGui::IsItemDeactivatedAfterEdit())
+		{
+			auto ga = new GroupAction();
+			for (auto i = 0; i < data.size(); i++)
+				ga->addAction(new ObjectChangeAction(data[i]->node, getProp(data[i]), startValues[i], label));
+			map->doAction(ga, browEdit);
+		}
+		if (!differentValues)
+		{
+			ImGui::PushID(label);
+			if (ImGui::BeginPopupContextItem("CopyPaste"))
+			{
+				try {
+					if (ImGui::MenuItem("Copy"))
+					{
+						json clipboard;
+						to_json(clipboard, *getProp(data[0]));
+						ImGui::SetClipboardText(clipboard.dump(1).c_str());
+					}
+					if (ImGui::MenuItem("Paste"))
+					{
+						auto cb = ImGui::GetClipboardText();
+						if (cb)
+						{
+							startValues.clear();
+							for (auto o : data)
+							{
+								startValues.push_back(*getProp(o));
+								from_json(json::parse(std::string(cb)), *getProp(o));
+							}
+							auto ga = new GroupAction();
+							for (auto i = 0; i < data.size(); i++)
+								ga->addAction(new ObjectChangeAction(data[i]->node, getProp(data[i]), startValues[i], label));
+							ret = true;
+						}
+					}
+				}
+				catch (...) {}
+				ImGui::EndPopup();
+			}
+			ImGui::PopID();
+		}
+		return ret;
+	}
+	template bool ColorEdit4Multi<RswObject>(BrowEdit* browEdit, Map* map, const std::vector<RswObject*>& data, const char* label, const std::function<glm::vec4* (RswObject*)>& getProp);
+	template bool ColorEdit4Multi<RswModel>(BrowEdit* browEdit, Map* map, const std::vector<RswModel*>& data, const char* label, const std::function<glm::vec4* (RswModel*)>& getProp);
+	template bool ColorEdit4Multi<RswEffect>(BrowEdit* browEdit, Map* map, const std::vector<RswEffect*>& data, const char* label, const std::function<glm::vec4* (RswEffect*)>& getProp);
+	template bool ColorEdit4Multi<LubEffect>(BrowEdit* browEdit, Map* map, const std::vector<LubEffect*>& data, const char* label, const std::function<glm::vec4* (LubEffect*)>& getProp);
+	template bool ColorEdit4Multi<RswSound>(BrowEdit* browEdit, Map* map, const std::vector<RswSound*>& data, const char* label, const std::function<glm::vec4* (RswSound*)>& getProp);
+	template bool ColorEdit4Multi<RswLight>(BrowEdit* browEdit, Map* map, const std::vector<RswLight*>& data, const char* label, const std::function<glm::vec4* (RswLight*)>& getProp);
+
+	template<class T>
 	bool CheckboxMulti(BrowEdit* browEdit, Map* map, const std::vector<T*>& data, const char* label, const std::function<bool* (T*)>& getProp)
 	{
 		static std::vector<bool> startValues;
@@ -1528,6 +1598,15 @@ namespace glm
 	void from_json(const nlohmann::json& j, glm::ivec2& v) {
 		j[0].get_to(v.x);
 		j[1].get_to(v.y);
+	}
+	void to_json(nlohmann::json& j, const glm::lowp_i8vec4& v) {
+		j = nlohmann::json{ v.x, v.y, v.z, v.w };
+	}
+	void from_json(const nlohmann::json& j, glm::lowp_i8vec4& v) {
+		j[0].get_to(v.x);
+		j[1].get_to(v.y);
+		j[2].get_to(v.z);
+		j[3].get_to(v.w);
 	}
 }
 
