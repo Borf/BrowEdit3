@@ -64,6 +64,7 @@ void WaterRenderer::render()
 	shader->setUniform(WaterShader::Uniforms::wavePitch, rsw->water.wavePitch);
 	shader->setUniform(WaterShader::Uniforms::frameTime, glm::fract(time * 60 / rsw->water.textureAnimSpeed));
 
+	glDepthMask(0);
 	glEnable(GL_BLEND);
 	vbo->bind();
 	glActiveTexture(GL_TEXTURE0);
@@ -77,6 +78,7 @@ void WaterRenderer::render()
 	glDrawArrays(GL_QUADS, 0, (int)vbo->size());
 
 
+	glDepthMask(1);
 
 	
 }
