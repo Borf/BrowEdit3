@@ -143,7 +143,7 @@ void BrowEdit::showTextureManageWindow()
 									if (tile->textureIndex > activeMapView->textureSelected)
 										tile->textureIndex--;
 								}
-
+								gndRenderer->setChunksDirty();
 							}
 						}
 						if (!found)
