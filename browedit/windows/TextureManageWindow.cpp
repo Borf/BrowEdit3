@@ -130,6 +130,20 @@ void BrowEdit::showTextureManageWindow()
 							if (gnd->textures[i]->file == tex)
 							{
 								found = true; //replace tiles with texture activeMapView->textureSelected to texture i
+								for (auto tile : gnd->tiles)
+								{
+									if (tile->textureIndex == activeMapView->textureSelected)
+										tile->textureIndex = i;
+								}
+								gnd->textures.erase(gnd->textures.begin() + activeMapView->textureSelected);
+								util::ResourceManager<gl::Texture>::unload(gndRenderer->textures[activeMapView->textureSelected]);
+								gndRenderer->textures.erase(gndRenderer->textures.begin() + activeMapView->textureSelected);
+								for (auto tile : gnd->tiles)
+								{
+									if (tile->textureIndex > activeMapView->textureSelected)
+										tile->textureIndex--;
+								}
+
 							}
 						}
 						if (!found)
@@ -223,7 +237,14 @@ void BrowEdit::showTextureManageWindow()
 						}
 					}
 					if (match)
+					{
+						if (t.first.find(".bmp") == std::string::npos &&
+							t.first.find(".tga") == std::string::npos &&
+							t.first.find(".png") == std::string::npos &&
+							t.first.find(".gif") == std::string::npos)
+							continue;
 						filteredFiles.push_back(util::iso_8859_1_to_utf8(t.first));
+					}
 				}
 			}
 			for (const auto& file : filteredFiles)

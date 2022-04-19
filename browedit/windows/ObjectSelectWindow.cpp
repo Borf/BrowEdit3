@@ -115,7 +115,7 @@ void BrowEdit::showObjectWindow()
 				Node* node = new Node();
 				Rsw* rsw = new Rsw();
 				node->addComponent(rsw);
-				rsw->load(fileName, false, false);
+				rsw->load(fileName, nullptr, this, false, true);
 
 				std::string mapTag = fileName;
 				if (mapTag.substr(0, 5) == "data\\")
@@ -124,6 +124,13 @@ void BrowEdit::showObjectWindow()
 					mapTag = mapTag.substr(0, mapTag.size() - 4);
 
 				mapTag = "map:" + util::iso_8859_1_to_utf8(mapTag);
+
+				auto gnd = node->getComponent<Gnd>();
+				for (auto t : gnd->textures)
+				{
+					if (std::find(newTagList[mapTag].begin(), newTagList[mapTag].end(), "data\\texture\\" + t->file) == newTagList[mapTag].end())
+						newTagList[mapTag].push_back("data\\texture\\" + util::iso_8859_1_to_utf8(t->file));
+				}
 
 				node->traverse([&](Node* node)
 					{
@@ -481,7 +488,13 @@ void BrowEdit::showObjectWindow()
 						}
 					}
 					if (match)
-						filteredFiles.push_back(util::iso_8859_1_to_utf8(t.first));
+					{
+						if (t.first.find(".bmp") == std::string::npos &&
+							t.first.find(".tga") == std::string::npos &&
+							t.first.find(".png") == std::string::npos &&
+							t.first.find(".gif") == std::string::npos)
+							filteredFiles.push_back(util::iso_8859_1_to_utf8(t.first));
+					}
 				}
 			}
 			for (const auto& file : filteredFiles)

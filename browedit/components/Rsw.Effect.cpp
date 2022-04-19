@@ -100,7 +100,15 @@ void LubEffect::load(const json& data)
 	from_json(data["gravity"], gravity);
 	from_json(data["pos"], pos);
 	from_json(data["radius"], radius);
-	from_json(data["color"], color);
+	if(data.size() == 4)
+		from_json(data["color"], color);
+	else
+	{
+		color.r = data["color"][0].get<float>();
+		color.g = data["color"][1].get<float>();
+		color.b = data["color"][2].get<float>();
+		color.a = 255;
+	}
 	color /= 255.0f;
 	from_json(data["rate"], rate);
 	from_json(data["size"], size);

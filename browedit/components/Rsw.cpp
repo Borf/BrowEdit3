@@ -110,7 +110,7 @@ void Rsw::load(const std::string& fileName, Map* map, BrowEdit* browEdit, bool l
 		}
 		delete lub;
 		
-		if (data != "")
+		if (data != "" && data.find("{") != std::string::npos)
 		{
 			//this is a dirty hack to change the main lua array into a json structure for automatic parsing...I'm wondering if it's not easier to just write a lua parser
 			data = data.substr(data.find("{")); // strip beginning;
