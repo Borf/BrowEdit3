@@ -52,7 +52,7 @@ void BrowEdit::showTextureBrushWindow()
 			return;
 		}
 
-		if (ImGui::BeginCombo("Texture", util::iso_8859_1_to_utf8(gnd->textures[activeMapView->textureSelected]->file).c_str()))
+		if (ImGui::BeginCombo("Texture", util::iso_8859_1_to_utf8(gnd->textures[activeMapView->textureSelected]->file).c_str(), ImGuiComboFlags_HeightLargest))
 		{
 			for (auto i = 0; i < gnd->textures.size(); i++)
 			{
