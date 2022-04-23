@@ -120,6 +120,9 @@ public:
 	std::vector<CopyCube*> newCubes;
 	MapView* activeMapView = nullptr;
 	float statusBarHeight = 10;
+	Map* textureStampMap = nullptr;
+	std::vector<std::vector<Gnd::Tile*>> textureStamp;
+
 
 	void configBegin();
 

@@ -17,6 +17,9 @@ void GndTextureAddAction::perform(Map* map, BrowEdit* browEdit)
 {
 	auto gnd = map->rootNode->getComponent<Gnd>();
 	auto gndRenderer = map->rootNode->getComponent<GndRenderer>();
+	for (auto t : gnd->textures)
+		if (t->file == fileName)
+			return;
 	gnd->textures.push_back(new Gnd::Texture(fileName, fileName));
 	gndRenderer->textures.push_back(util::ResourceManager<gl::Texture>::load("data\\texture\\" + fileName));
 	if (browEdit->activeMapView && browEdit->activeMapView->map == map)

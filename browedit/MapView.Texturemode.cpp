@@ -1,5 +1,7 @@
 #define IMGUI_DEFINE_MATH_OPERATORS
+#include <windows.h>
 #include "MapView.h"
+#include <browedit/BrowEdit.h>
 #include <browedit/shaders/SimpleShader.h>
 #include <browedit/gl/FBO.h>
 #include <browedit/Node.h>
@@ -10,6 +12,7 @@
 #include <browedit/actions/GroupAction.h>
 #include <browedit/actions/TileNewAction.h>
 #include <browedit/actions/CubeTileChangeAction.h>
+#include <browedit/actions/GndTextureActions.h>
 
 #include <imgui_internal.h>
 
@@ -92,16 +95,16 @@ void MapView::postRenderTextureMode(BrowEdit* browEdit)
 
 	glm::vec2 uvStart = uv1 + textureEditUv1.x * (uv2 - uv1) + textureEditUv1.y * (uv3 - uv1);
 
-	ImGui::Begin("Statusbar");
-	ImGui::Text("UV1 %.1f,%.1f  UV2 %.1f,%.1f  UV3 %.1f,%.1f  UV4 %.1f,%.1f", uv1.x, uv1.y, uv2.x, uv2.y, uv3.x, uv3.y, uv4.x, uv4.y);
-	ImGui::SameLine();
-	ImGui::Text("xInc %.3f,%.3f  yInc %.3f,%.3f ", xInc.x, xInc.y, yInc.x, yInc.y);
-	ImGui::SameLine();
-	ImGui::Text("uvStart %.3f,%.3f", uvStart.x, uvStart.y);
-	ImGui::End();
+	//ImGui::Begin("Statusbar");
+	//ImGui::Text("UV1 %.1f,%.1f  UV2 %.1f,%.1f  UV3 %.1f,%.1f  UV4 %.1f,%.1f", uv1.x, uv1.y, uv2.x, uv2.y, uv3.x, uv3.y, uv4.x, uv4.y);
+	//ImGui::SameLine();
+	//ImGui::Text("xInc %.3f,%.3f  yInc %.3f,%.3f ", xInc.x, xInc.y, yInc.x, yInc.y);
+	//ImGui::SameLine();
+	//ImGui::Text("uvStart %.3f,%.3f", uvStart.x, uvStart.y);
+	//ImGui::End();
 
 
-	if (textureStamp.size() == 0 && !ImGui::GetIO().KeyShift)
+	if (browEdit->textureStamp.size() == 0 && !ImGui::GetIO().KeyShift)
 	{
 		if (mouse3D != glm::vec3(0, 0, 0) && !(ImGui::IsMouseDown(0) && ImGui::GetIO().KeyShift) && textureBrushWidth > 0 && textureBrushHeight > 0)
 		{
@@ -184,18 +187,18 @@ void MapView::postRenderTextureMode(BrowEdit* browEdit)
 	else if (!ImGui::GetIO().KeyShift) //imagestamp
 	{
 		glm::ivec2 tileHovered((int)glm::floor(mouse3D.x / 10), (gnd->height - (int)glm::floor(mouse3D.z) / 10));
-		glm::ivec2 topleft = tileHovered - glm::ivec2(textureStamp.size() / 2, textureStamp[0].size() / 2);
+		glm::ivec2 topleft = tileHovered - glm::ivec2(browEdit->textureStamp.size() / 2, browEdit->textureStamp[0].size() / 2);
 		float dist = 0.002f * cameraDistance;
 		std::map<int, std::vector<VertexP3T2N3>> verts;
-		for (auto xx = 0; xx < textureStamp.size(); xx++)
+		for (auto xx = 0; xx < browEdit->textureStamp.size(); xx++)
 		{
-			for (auto yy = 0; yy < textureStamp[xx].size(); yy++)
+			for (auto yy = 0; yy < browEdit->textureStamp[xx].size(); yy++)
 			{
 				int x = topleft.x + xx;
 				int y = topleft.y + yy;
 				if (x < 0 || x >= gnd->width || y < 0 || y >= gnd->height)
 					continue;
-				auto tile = textureStamp[xx][yy];
+				auto tile = browEdit->textureStamp[xx][yy];
 				if (!tile)
 					continue;
 				auto cube = gnd->cubes[x][y];
@@ -211,9 +214,10 @@ void MapView::postRenderTextureMode(BrowEdit* browEdit)
 		simpleShader->setUniform(SimpleShader::Uniforms::lightMin, 1.0f);
 		simpleShader->setUniform(SimpleShader::Uniforms::textureFac, 1.0f);
 		simpleShader->setUniform(SimpleShader::Uniforms::color, glm::vec4(1, 1, 1, 0.5f));
+		auto mapGndRenderer = browEdit->textureStampMap->rootNode->getComponent<GndRenderer>();
 		for (auto texVerts : verts)
 		{
-			gndRenderer->textures[texVerts.first]->bind();
+			mapGndRenderer->textures[texVerts.first]->bind();
 			glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexP3T2N3), texVerts.second[0].data);
 			glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexP3T2N3), texVerts.second[0].data + 3);
 			glVertexAttribPointer(2, 3, GL_FLOAT, false, sizeof(VertexP3T2N3), texVerts.second[0].data + 5);
@@ -275,10 +279,10 @@ void MapView::postRenderTextureMode(BrowEdit* browEdit)
 		else if (ImGui::IsMouseReleased(0) && mouseDown)
 		{ //release mouse to create texturestamp
 			mouseDown = false;
-			for (auto r : textureStamp)
+			for (auto r : browEdit->textureStamp)
 				for (auto rr : r)
 					delete rr;
-			textureStamp.clear();
+			browEdit->textureStamp.clear();
 			if (ImLengthSqr(ImGui::GetMouseDragDelta(0)) > 3)
 			{
 				auto mouseDragEnd = mouse3D;
@@ -288,6 +292,8 @@ void MapView::postRenderTextureMode(BrowEdit* browEdit)
 
 				int tileMaxY = gnd->height - (int)glm::floor(glm::min(mouseDragStart.z, mouseDragEnd.z) / 10) + 1;
 				int tileMinY = gnd->height - (int)glm::ceil(glm::max(mouseDragStart.z, mouseDragEnd.z) / 10) + 1;
+
+				browEdit->textureStampMap = map;
 
 				if (tileMinX >= 0 && tileMaxX < gnd->width + 1 && tileMinY >= 0 && tileMaxY < gnd->height + 1)
 					for (int x = tileMinX; x < tileMaxX; x++)
@@ -301,14 +307,14 @@ void MapView::postRenderTextureMode(BrowEdit* browEdit)
 							else
 								col.push_back(new Gnd::Tile(*gnd->tiles[cube->tileUp]));
 						}
-						textureStamp.push_back(col);
+						browEdit->textureStamp.push_back(col);
 					}
 			}
 
 		}
 		else if (ImGui::IsMouseClicked(0) && !ImGui::GetIO().KeyShift)
 		{
-			if (textureStamp.size() == 0)
+			if (browEdit->textureStamp.size() == 0)
 			{
 				auto ga = new GroupAction();
 
@@ -353,24 +359,47 @@ void MapView::postRenderTextureMode(BrowEdit* browEdit)
 			else 
 			{//do texture stamping
 				auto ga = new GroupAction();
-
+				std::map<int, int> textureStampLookup;
 				glm::ivec2 tileHovered((int)glm::floor(mouse3D.x / 10), (gnd->height - (int)glm::floor(mouse3D.z) / 10));
-				glm::ivec2 topleft = tileHovered - glm::ivec2(textureStamp.size() / 2, textureStamp[0].size() / 2);
+				glm::ivec2 topleft = tileHovered - glm::ivec2(browEdit->textureStamp.size() / 2, browEdit->textureStamp[0].size() / 2);
 				int id = (int)gnd->tiles.size();
-				for (auto xx = 0; xx < textureStamp.size(); xx++)
+
+				auto stampGnd = browEdit->textureStampMap->rootNode->getComponent<Gnd>();
+				auto stampGndRenderer = browEdit->textureStampMap->rootNode->getComponent<GndRenderer>();
+
+				for (auto xx = 0; xx < browEdit->textureStamp.size(); xx++)
 				{
-					for (int yy = 0; yy < textureStamp[xx].size(); yy++)
+					for (int yy = 0; yy < browEdit->textureStamp[xx].size(); yy++)
 					{
 						int x = topleft.x + xx;
 						int y = topleft.y + yy;
 						if (x < 0 || x >= gnd->width || y < 0 || y >= gnd->height)
 							continue;
 						auto cube = gnd->cubes[x][y];
-						Gnd::Tile* t = new Gnd::Tile(*textureStamp[xx][yy]);
+						Gnd::Tile* t = new Gnd::Tile(*browEdit->textureStamp[xx][yy]);
 						if (textureBrushKeepShadow && cube->tileUp != -1)
 							t->lightmapIndex = gnd->tiles[cube->tileUp]->lightmapIndex;
 						if (textureBrushKeepColor && cube->tileUp != -1)
 							t->color = gnd->tiles[cube->tileUp]->color;
+
+						if (browEdit->textureStampMap != map)
+						{
+							if (textureStampLookup.find(t->textureIndex) == textureStampLookup.end())
+							{
+								auto tx = stampGnd->textures[t->textureIndex]->file;
+								for (auto i = 0; i < gnd->textures.size(); i++)
+									if (gnd->textures[i]->file == tx)
+										textureStampLookup[t->textureIndex] = i;
+								if (textureStampLookup.find(t->textureIndex) == textureStampLookup.end())
+								{
+									textureStampLookup[t->textureIndex] = (int)gnd->textures.size();
+									gnd->textures.push_back(new Gnd::Texture(tx, tx));
+									gndRenderer->textures.push_back(util::ResourceManager<gl::Texture>::load("data\\texture\\" + tx));
+									ga->addAction(new GndTextureAddAction(tx));
+								}
+							}
+							t->textureIndex = textureStampLookup[t->textureIndex];
+						}
 						ga->addAction(new TileNewAction(t));
 						ga->addAction(new CubeTileChangeAction(cube, id, cube->tileFront, cube->tileSide));
 						cube->tileUp = id;

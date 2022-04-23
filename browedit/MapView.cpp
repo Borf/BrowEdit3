@@ -167,7 +167,7 @@ void MapView::toolbar(BrowEdit* browEdit)
 		}
 		if (browEdit->editMode == BrowEdit::EditMode::Texture)
 		{
-			ImGui::SameLine();
+			ImGui::SameLine(); //TODO: make an icon for these
 			if (browEdit->toolBarToggleButton("smartGrid", textureGridSmart ? ICON_GRID_SNAP_ON : ICON_GRID_SNAP_OFF, &textureGridSmart, "Smart Grid"))
 				textureGridDirty = true;
 		}
