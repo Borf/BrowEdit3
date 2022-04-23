@@ -52,6 +52,12 @@ void BrowEdit::showTextureBrushWindow()
 			return;
 		}
 		
+		toolBarToggleButton("stamp", ICON_TEXTUREBRUSH_STAMP, false, "Texture Stamping");
+		ImGui::SameLine();
+		toolBarToggleButton("bucket", ICON_TEXTUREBRUSH_BUCKET, false, "Texture filling");
+		ImGui::SameLine();
+		toolBarToggleButton("select", ICON_TEXTUREBRUSH_SELECT, false, "Texture Selecting & fill");
+
 		if (ImGui::BeginCombo("Texture", util::iso_8859_1_to_utf8(gnd->textures[activeMapView->textureSelected]->file).c_str(), ImGuiComboFlags_HeightLargest))
 		{
 			for (auto i = 0; i < gnd->textures.size(); i++)

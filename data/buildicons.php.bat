@@ -24,7 +24,7 @@ $order = array(
 	"camera_ortho.png",		"camera_perspective.png",	"mirror_horizontal.png",	"mirror_vertical.png",	"",						//55-59
 	"pivot_rotation01.png",	"pivot_rotation02.png",		"",							"",						"",						//60-64
 	"object_window_opened.png","object_window_closed.png","texture_window_opened.png","texture_window_closed.png","",				//65-69
-	"",						"",							"",							"",						"",						//70-74
+	"texture_stamp.png",	"texture_bucket.png",		"texture_select.png",		"",						"",						//70-74
 	"",						"",							"",							"",						"",						//75-79
 	"",						"",							"",							"",						"",						//80-84
 	"",						"",							"",							"",						"",						//85-89
