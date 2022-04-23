@@ -468,7 +468,7 @@ void BrowEdit::showMapWindow(MapView& mapView)
 		//ImGui::Image(id, size, ImVec2(0, 1), ImVec2(1, 0));
 		mapView.hovered = ImGui::IsItemHovered() || ImGui::IsItemClicked();
 	}
-	if (ImGui::IsWindowFocused())
+	if (ImGui::IsWindowFocused() || (ImGui::IsWindowHovered() && (ImGui::IsMouseClicked(0) || ImGui::IsMouseClicked(1) || ImGui::IsMouseClicked(2))))
 	{
 		if (activeMapView != &mapView)
 			std::cout << "Switching map to " << mapView.viewName<<std::endl;

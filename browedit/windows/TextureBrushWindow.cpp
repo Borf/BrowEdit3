@@ -11,6 +11,7 @@
 #include <browedit/Icons.h>
 #include <imgui_internal.h>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 void BrowEdit::showTextureBrushWindow()
 {
@@ -403,8 +404,13 @@ void BrowEdit::showTextureBrushWindow()
 
 			ImGui::SetCursorScreenPos(cursorPos);
 		}
-		ImGui::DragInt("Brush Width", &activeMapView->textureBrushWidth, 1, 1, 20);
-		ImGui::DragInt("Brush Height", &activeMapView->textureBrushHeight, 1, 1, 20);
+		if (ImGui::InputInt("Brush Width", &activeMapView->textureBrushWidth, 1))
+			if (activeMapView->textureBrushWidth < 1)
+				activeMapView->textureBrushWidth = 1;
+		if(ImGui::InputInt("Brush Height", &activeMapView->textureBrushHeight, 1))
+			if (activeMapView->textureBrushHeight < 1)
+				activeMapView->textureBrushHeight = 1;
+
 
 		glm::vec2 uvSize = activeMapView->textureEditUv2 - activeMapView->textureEditUv1;
 		float textureBrushHeight = activeMapView->textureBrushWidth * (uvSize.y / uvSize.x);
@@ -420,6 +426,11 @@ void BrowEdit::showTextureBrushWindow()
 
 		ImGui::Checkbox("Keep Shadows", &activeMapView->textureBrushKeepShadow);
 		ImGui::Checkbox("Keep Colors", &activeMapView->textureBrushKeepColor);
+
+		if (textureBrushMode == TextureBrushMode::Select)
+		{
+			ImGui::InputInt2("Brush Offset", glm::value_ptr(textureFillOffset), 1);
+		}
 
 
 		ImGui::End();

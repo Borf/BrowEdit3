@@ -122,6 +122,7 @@ public:
 	float statusBarHeight = 10;
 	Map* textureStampMap = nullptr;
 	std::vector<std::vector<Gnd::Tile*>> textureStamp;
+	glm::ivec2 textureFillOffset;
 
 
 	void configBegin();
