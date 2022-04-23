@@ -72,6 +72,7 @@ public:
 
 	float gadgetOpacity = 0.5f;
 	float gadgetScale = 1.0f;
+	float gadgetThickness = 1.0f;
 
 	int quadTreeMaxLevel = 0;
 
@@ -81,6 +82,13 @@ public:
 	} pivotPoint = PivotPoint::Local;
 
 	//texture edit stuff
+	enum TextureBrushMode
+	{
+		Brush,
+		Select,
+		Fill
+	};
+
 	void buildTextureGrid();
 	gl::VBO<VertexP3T2>* textureGridVbo = nullptr;
 	bool textureGridDirty = true;

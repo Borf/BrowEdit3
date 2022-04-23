@@ -12,7 +12,8 @@ void Mesh::init()
 		for (size_t ii = i; ii < i + 3; ii++)
 			verts.push_back(VertexP3T2N3(vertices[ii], normal));
 	}
-	vbo = new gl::VBO<VertexP3T2N3>();
+	if(!vbo)
+		vbo = new gl::VBO<VertexP3T2N3>();
 	vbo->setData(verts, GL_STATIC_DRAW);
 }
 

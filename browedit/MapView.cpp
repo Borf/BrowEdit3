@@ -207,6 +207,14 @@ void MapView::toolbar(BrowEdit* browEdit)
 	ImGui::SliderFloat("##gadgetScale", &gadgetScale, 0, 2);
 	if (ImGui::IsItemHovered())
 		ImGui::SetTooltip("Gadget scale");
+	ImGui::SetNextItemWidth(50);
+	ImGui::SameLine();
+	if (ImGui::SliderFloat("##gadgetThickness", &gadgetThickness, 0, 5))
+	{
+		Gadget::setThickness(gadgetThickness);
+	}
+	if (ImGui::IsItemHovered())
+		ImGui::SetTooltip("Gadget thickness");
 	Gadget::opacity = gadgetOpacity;
 	Gadget::scale = gadgetScale;
 }

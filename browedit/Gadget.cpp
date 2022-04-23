@@ -89,6 +89,15 @@ void Gadget::draw(const math::Ray& mouseRay, glm::mat4 modelMatrix)
 
 
 
+void Gadget::setThickness(float newThickness)
+{
+	Gadget::thickness = newThickness;
+	arrowMesh.init();
+	rotateMesh.init();
+	scaleMesh.init();
+	scaleCubeMesh.init();
+}
+
 int Gadget::selectedAxisIndex()
 {
 	if (selectedAxis == Axis::X)
@@ -108,7 +117,7 @@ std::vector<glm::vec3> Gadget::ArrowMesh::buildVertices()
 	int height = 20;
 	int tip = 30;
 
-	std::vector<glm::vec3> verts = math::AABB::box(glm::vec3(-2, 5, -2), glm::vec3(2, height, 2));
+	std::vector<glm::vec3> verts = math::AABB::box(glm::vec3(-Gadget::thickness, 5, -Gadget::thickness), glm::vec3(Gadget::thickness, height, Gadget::thickness));
 	verts.push_back(glm::vec3(-5, height, -5));
 	verts.push_back(glm::vec3(-5, height, 5));
 	verts.push_back(glm::vec3(0, tip, 0));
@@ -132,7 +141,7 @@ std::vector<glm::vec3> Gadget::ScaleMesh::buildVertices()
 {
 	int height = 20;
 	int tip = 30;
-	std::vector<glm::vec3> verts = math::AABB::box(glm::vec3(-2, 5, -2), glm::vec3(2, height, 2));
+	std::vector<glm::vec3> verts = math::AABB::box(glm::vec3(-Gadget::thickness, 5, -Gadget::thickness), glm::vec3(Gadget::thickness, height, Gadget::thickness));
 	auto b = math::AABB::box(glm::vec3(-5, height, -5), glm::vec3(5, height + 10, 5));
 	verts.insert(verts.begin(), b.begin(), b.end());
 	return verts;
@@ -287,7 +296,7 @@ std::vector<glm::vec3> Gadget::RotateMesh::buildVertices()
 	}*/
 
 	float inc = (2 * glm::pi<float>()) / 36.0f;
-	float w = 1;
+	float w = Gadget::thickness;
 	float size = 25;
 	float siz2 = size - 2*w;
 

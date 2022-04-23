@@ -58,7 +58,8 @@ public:
 		Z = 4
 	};
 	static void setMode(Mode mode);
-	
+	static void setThickness(float newThickness);
+
 	bool disabled = false;
 	bool axisClicked = false;
 	bool axisReleased = false;
@@ -68,6 +69,7 @@ public:
 	bool axisHovered;
 	inline static float opacity = 1.0f;
 	inline static float scale = 1.0f;
+	inline static float thickness = 2;
 
 	int selectedAxisIndex();
 
