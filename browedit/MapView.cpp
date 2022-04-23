@@ -165,6 +165,13 @@ void MapView::toolbar(BrowEdit* browEdit)
 			if (ImGui::IsItemHovered())
 				ImGui::SetTooltip("Grid Offset");
 		}
+		if (browEdit->editMode == BrowEdit::EditMode::Texture)
+		{
+			ImGui::SameLine();
+			if (browEdit->toolBarToggleButton("smartGrid", textureGridSmart ? ICON_GRID_SNAP_ON : ICON_GRID_SNAP_OFF, &textureGridSmart, "Smart Grid"))
+				textureGridDirty = true;
+		}
+
 	}
 
 

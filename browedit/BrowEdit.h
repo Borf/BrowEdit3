@@ -102,6 +102,13 @@ public:
 		Gat,
 	} editMode = EditMode::Texture;
 
+	enum TextureBrushMode
+	{
+		Stamp,
+		Select,
+		Fill
+	} textureBrushMode = TextureBrushMode::Stamp;
+
 	std::map<std::string, std::vector<std::string>> tagList; // tag -> [ file ], utf8
 	std::map<std::string, std::vector<std::string>> tagListReverse; // file -> [ tag ], kr
 	GLFWwindow* window;

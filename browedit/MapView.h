@@ -81,16 +81,9 @@ public:
 		GroupCenter
 	} pivotPoint = PivotPoint::Local;
 
-	//texture edit stuff
-	enum TextureBrushMode
-	{
-		Brush,
-		Select,
-		Fill
-	};
-
 	void buildTextureGrid();
 	gl::VBO<VertexP3T2>* textureGridVbo = nullptr;
+	bool textureGridSmart = true;
 	bool textureGridDirty = true;
 
 	int textureSelected = 0;
