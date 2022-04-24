@@ -104,6 +104,7 @@ void MapView::postRenderTextureMode(BrowEdit* browEdit)
 	ImGui::Text("uvStart %.3f,%.3f", uvStart.x, uvStart.y);
 	ImGui::End();
 
+	glm::ivec2 tileHovered((int)glm::floor(mouse3D.x / 10), (gnd->height - (int)glm::floor(mouse3D.z) / 10));
 	if (browEdit->textureBrushMode == BrowEdit::TextureBrushMode::Stamp)
 	{
 		if (browEdit->textureStamp.size() == 0 && !ImGui::GetIO().KeyShift)
@@ -115,7 +116,6 @@ void MapView::postRenderTextureMode(BrowEdit* browEdit)
 				ImGui::Begin("Debug");
 				ImGui::BeginTable("bla", textureBrushWidth, ImGuiTableFlags_Borders);
 #endif
-				glm::ivec2 tileHovered((int)glm::floor(mouse3D.x / 10), (gnd->height - (int)glm::floor(mouse3D.z) / 10));
 
 				std::vector<VertexP3T2N3> verts;
 				float dist = 0.002f * cameraDistance;
@@ -451,11 +451,22 @@ void MapView::postRenderTextureMode(BrowEdit* browEdit)
 			glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexP3T2N3), verts[0].data + 3);
 			glVertexAttribPointer(2, 3, GL_FLOAT, false, sizeof(VertexP3T2N3), verts[0].data + 5);
 
+
 			gndRenderer->textures[textureSelected]->bind();
 			simpleShader->setUniform(SimpleShader::Uniforms::textureFac, 1.0f);
 			simpleShader->setUniform(SimpleShader::Uniforms::color, glm::vec4(1, 1.0f, 1.0f, 0.5f));
 			simpleShader->setUniform(SimpleShader::Uniforms::lightMin, 1.0f);
+			glDepthMask(0);
 			glDrawArrays(GL_TRIANGLES, 0, (int)verts.size());
+
+			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+			simpleShader->setUniform(SimpleShader::Uniforms::textureFac, 0.0f);
+			simpleShader->setUniform(SimpleShader::Uniforms::color, glm::vec4(1, 0.0f, 0.0f, 0.5f));
+			simpleShader->setUniform(SimpleShader::Uniforms::lightMin, 1.0f);
+			glDepthMask(1);
+			glDrawArrays(GL_TRIANGLES, 0, (int)verts.size());
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
 		}
 
 
@@ -470,67 +481,98 @@ void MapView::postRenderTextureMode(BrowEdit* browEdit)
 
 			if (ImGui::IsMouseReleased(0))
 			{
-				auto mouseDragEnd = mouse3D;
 				mouseDown = false;
-
-				std::vector<glm::ivec2> newSelection;
-				if (ImGui::GetIO().KeyShift || ImGui::GetIO().KeyCtrl)
-					newSelection = map->tileSelection;
-
-				//if (tool == 0) //rectangle
+				if (ImLengthSqr(ImGui::GetMouseDragDelta(0)) < 3)
 				{
-					int tileMinX = (int)glm::floor(glm::min(mouseDragStart.x, mouseDragEnd.x) / 10);
-					int tileMaxX = (int)glm::ceil(glm::max(mouseDragStart.x, mouseDragEnd.x) / 10);
-
-					int tileMaxY = gnd->height - (int)glm::floor(glm::min(mouseDragStart.z, mouseDragEnd.z) / 10) + 1;
-					int tileMinY = gnd->height - (int)glm::ceil(glm::max(mouseDragStart.z, mouseDragEnd.z) / 10) + 1;
-
-					if (tileMinX >= 0 && tileMaxX < gnd->width + 1 && tileMinY >= 0 && tileMaxY < gnd->height + 1)
-						for (int x = tileMinX; x < tileMaxX; x++)
-							for (int y = tileMinY; y < tileMaxY; y++)
-								if (ImGui::GetIO().KeyCtrl)
-								{
-									if (std::find(newSelection.begin(), newSelection.end(), glm::ivec2(x, y)) != newSelection.end())
-										newSelection.erase(std::remove_if(newSelection.begin(), newSelection.end(), [&](const glm::ivec2& el) { return el.x == x && el.y == y; }));
-								}
-								else if (std::find(newSelection.begin(), newSelection.end(), glm::ivec2(x, y)) == newSelection.end())
-									newSelection.push_back(glm::ivec2(x, y));
-				}
-				/*else if (tool == 1) // lassoo
-				{
-					math::Polygon polygon;
-					for (size_t i = 0; i < selectLasso.size(); i++)
-						polygon.push_back(glm::vec2(selectLasso[i]));
-					for (int x = 0; x < gnd->width; x++)
+					if (std::find(map->tileSelection.begin(), map->tileSelection.end(), tileHovered) != map->tileSelection.end())
 					{
-						for (int y = 0; y < gnd->height; y++)
-						{
-							if (polygon.contains(glm::vec2(x, y)))
-								if (ImGui::GetIO().KeyCtrl)
-								{
-									if (std::find(newSelection.begin(), newSelection.end(), glm::ivec2(x, y)) != newSelection.end())
-										newSelection.erase(std::remove_if(newSelection.begin(), newSelection.end(), [&](const glm::ivec2& el) { return el.x == x && el.y == y; }));
-								}
-								else if (std::find(newSelection.begin(), newSelection.end(), glm::ivec2(x, y)) == newSelection.end())
-									newSelection.push_back(glm::ivec2(x, y));
 
+						for (auto& tile : map->tileSelection)
+						{
+							auto cube = gnd->cubes[tile.x][tile.y];
+
+							glm::vec2 v1 = uvStart + xInc * (float)((tile.x + browEdit->textureFillOffset.x) % textureBrushWidth) + yInc * (float)((tile.y + browEdit->textureFillOffset.y) % textureBrushHeight);
+							glm::vec2 v2 = v1 + xInc;
+							glm::vec2 v3 = v1 + yInc;
+							glm::vec2 v4 = v1 + xInc + yInc;
+
+							if (cube->tileUp == -1)
+								;
+							
+							gnd->tiles[cube->tileUp]->textureIndex = textureSelected;
+							gnd->tiles[cube->tileUp]->v1 = v1;
+							gnd->tiles[cube->tileUp]->v2 = v2;
+							gnd->tiles[cube->tileUp]->v3 = v3;
+							gnd->tiles[cube->tileUp]->v4 = v4;
+							gndRenderer->setChunkDirty(tile.x, tile.y);
 						}
+
+						map->tileSelection.clear();
 					}
-					for (auto t : selectLasso)
-						if (ImGui::GetIO().KeyCtrl)
-						{
-							if (std::find(newSelection.begin(), newSelection.end(), glm::ivec2(t.x, t.y)) != newSelection.end())
-								newSelection.erase(std::remove_if(newSelection.begin(), newSelection.end(), [&](const glm::ivec2& el) { return el.x == t.x && el.y == t.y; }));
-						}
-						else if (std::find(newSelection.begin(), newSelection.end(), glm::ivec2(t.x, t.y)) == newSelection.end())
-							newSelection.push_back(glm::ivec2(t.x, t.y));
-					selectLasso.clear();
-				}*/
-
-
-				if (map->tileSelection != newSelection)
+				}
+				else
 				{
-					map->doAction(new TileSelectAction(map, newSelection), browEdit);
+					auto mouseDragEnd = mouse3D;
+
+					std::vector<glm::ivec2> newSelection;
+					if (ImGui::GetIO().KeyShift || ImGui::GetIO().KeyCtrl)
+						newSelection = map->tileSelection;
+
+					//if (tool == 0) //rectangle
+					{
+						int tileMinX = (int)glm::floor(glm::min(mouseDragStart.x, mouseDragEnd.x) / 10);
+						int tileMaxX = (int)glm::ceil(glm::max(mouseDragStart.x, mouseDragEnd.x) / 10);
+
+						int tileMaxY = gnd->height - (int)glm::floor(glm::min(mouseDragStart.z, mouseDragEnd.z) / 10) + 1;
+						int tileMinY = gnd->height - (int)glm::ceil(glm::max(mouseDragStart.z, mouseDragEnd.z) / 10) + 1;
+
+						if (tileMinX >= 0 && tileMaxX < gnd->width + 1 && tileMinY >= 0 && tileMaxY < gnd->height + 1)
+							for (int x = tileMinX; x < tileMaxX; x++)
+								for (int y = tileMinY; y < tileMaxY; y++)
+									if (ImGui::GetIO().KeyCtrl)
+									{
+										if (std::find(newSelection.begin(), newSelection.end(), glm::ivec2(x, y)) != newSelection.end())
+											newSelection.erase(std::remove_if(newSelection.begin(), newSelection.end(), [&](const glm::ivec2& el) { return el.x == x && el.y == y; }));
+									}
+									else if (std::find(newSelection.begin(), newSelection.end(), glm::ivec2(x, y)) == newSelection.end())
+										newSelection.push_back(glm::ivec2(x, y));
+					}
+					/*else if (tool == 1) // lassoo
+					{
+						math::Polygon polygon;
+						for (size_t i = 0; i < selectLasso.size(); i++)
+							polygon.push_back(glm::vec2(selectLasso[i]));
+						for (int x = 0; x < gnd->width; x++)
+						{
+							for (int y = 0; y < gnd->height; y++)
+							{
+								if (polygon.contains(glm::vec2(x, y)))
+									if (ImGui::GetIO().KeyCtrl)
+									{
+										if (std::find(newSelection.begin(), newSelection.end(), glm::ivec2(x, y)) != newSelection.end())
+											newSelection.erase(std::remove_if(newSelection.begin(), newSelection.end(), [&](const glm::ivec2& el) { return el.x == x && el.y == y; }));
+									}
+									else if (std::find(newSelection.begin(), newSelection.end(), glm::ivec2(x, y)) == newSelection.end())
+										newSelection.push_back(glm::ivec2(x, y));
+
+							}
+						}
+						for (auto t : selectLasso)
+							if (ImGui::GetIO().KeyCtrl)
+							{
+								if (std::find(newSelection.begin(), newSelection.end(), glm::ivec2(t.x, t.y)) != newSelection.end())
+									newSelection.erase(std::remove_if(newSelection.begin(), newSelection.end(), [&](const glm::ivec2& el) { return el.x == t.x && el.y == t.y; }));
+							}
+							else if (std::find(newSelection.begin(), newSelection.end(), glm::ivec2(t.x, t.y)) == newSelection.end())
+								newSelection.push_back(glm::ivec2(t.x, t.y));
+						selectLasso.clear();
+					}*/
+
+
+					if (map->tileSelection != newSelection)
+					{
+						map->doAction(new TileSelectAction(map, newSelection), browEdit);
+					}
 				}
 			}
 		}
@@ -538,7 +580,7 @@ void MapView::postRenderTextureMode(BrowEdit* browEdit)
 		{
 			auto mouseDragEnd = mouse3D;
 			std::vector<VertexP3T2N3> verts;
-			float dist = 0.002f * cameraDistance;
+			float dist = 0.003f * cameraDistance;
 
 			int tileX = (int)glm::floor(mouseDragEnd.x / 10);
 			int tileY = gnd->height - (int)glm::floor(mouseDragEnd.z / 10);
