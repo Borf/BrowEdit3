@@ -486,26 +486,35 @@ void MapView::postRenderTextureMode(BrowEdit* browEdit)
 				{
 					if (std::find(map->tileSelection.begin(), map->tileSelection.end(), tileHovered) != map->tileSelection.end())
 					{
-
+						auto ga = new GroupAction();
+						int id = (int)gnd->tiles.size();
 						for (auto& tile : map->tileSelection)
 						{
 							auto cube = gnd->cubes[tile.x][tile.y];
 
-							glm::vec2 v1 = uvStart + xInc * (float)((tile.x + browEdit->textureFillOffset.x) % textureBrushWidth) + yInc * (float)((tile.y + browEdit->textureFillOffset.y) % textureBrushHeight);
-							glm::vec2 v2 = v1 + xInc;
-							glm::vec2 v3 = v1 + yInc;
-							glm::vec2 v4 = v1 + xInc + yInc;
+							auto t = new Gnd::Tile();
 
-							if (cube->tileUp == -1)
-								;//TODO: make a new tile
+							t->v1 = uvStart + xInc * (float)((tile.x + browEdit->textureFillOffset.x) % textureBrushWidth) + yInc * (float)((tile.y + browEdit->textureFillOffset.y) % textureBrushHeight);
+							t->v2 = t->v1 + xInc;
+							t->v3 = t->v1 + yInc;
+							t->v4 = t->v1 + xInc + yInc;
+							t->color = glm::ivec4(255, 255, 255, 255);
+							t->lightmapIndex = -1;
+							t->textureIndex = textureSelected;
+
+							if (cube->tileUp != -1)
+							{
+								t->color = gnd->tiles[cube->tileUp]->color;
+								t->lightmapIndex = gnd->tiles[cube->tileUp]->lightmapIndex;
+							}
 							
-							gnd->tiles[cube->tileUp]->textureIndex = textureSelected;
-							gnd->tiles[cube->tileUp]->v1 = v1;
-							gnd->tiles[cube->tileUp]->v2 = v2;
-							gnd->tiles[cube->tileUp]->v3 = v3;
-							gnd->tiles[cube->tileUp]->v4 = v4;
 							gndRenderer->setChunkDirty(tile.x, tile.y);
+
+							ga->addAction(new TileNewAction(t));
+							ga->addAction(new CubeTileChangeAction(cube, id, cube->tileFront, cube->tileSide));
+							id++;
 						}
+						map->doAction(ga, browEdit);
 
 						map->tileSelection.clear();
 					}
