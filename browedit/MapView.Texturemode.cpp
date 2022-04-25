@@ -497,7 +497,7 @@ void MapView::postRenderTextureMode(BrowEdit* browEdit)
 							glm::vec2 v4 = v1 + xInc + yInc;
 
 							if (cube->tileUp == -1)
-								;
+								;//TODO: make a new tile
 							
 							gnd->tiles[cube->tileUp]->textureIndex = textureSelected;
 							gnd->tiles[cube->tileUp]->v1 = v1;
