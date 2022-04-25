@@ -16,6 +16,7 @@
 #include <browedit/actions/GndTextureActions.h>
 
 #include <imgui_internal.h>
+#include <queue>
 
 void MapView::postRenderTextureMode(BrowEdit* browEdit)
 {
@@ -662,7 +663,128 @@ void MapView::postRenderTextureMode(BrowEdit* browEdit)
 	}
 	else if (browEdit->textureBrushMode == BrowEdit::TextureBrushMode::Fill)
 	{
+		auto mouse3D = gnd->rayCast(mouseRay, viewEmptyTiles);
+		glm::ivec2 tileHovered((int)glm::floor(mouse3D.x / 10), (gnd->height - (int)glm::floor(mouse3D.z) / 10));
 
+		std::vector<glm::ivec2> tilesToFill;
+		std::queue<glm::ivec2> queue;
+		std::map<int, bool> done;
+
+		glm::ivec2 offsets[4] = { glm::ivec2(-1,0), glm::ivec2(1,0), glm::ivec2(0,-1), glm::ivec2(0,1) };
+		queue.push(tileHovered);
+		int c = 0;
+		while (!queue.empty())
+		{
+			auto p = queue.front();
+			queue.pop();
+			for (const auto& o : offsets)
+			{
+				auto pp = p + o;
+				if (!gnd->inMap(pp) || !gnd->inMap(p))
+					continue;
+				auto c = gnd->cubes[pp.x][pp.y];
+				if (c->tileUp == -1 || gnd->cubes[p.x][p.y]->tileUp == -1)
+					continue;
+				auto t = gnd->tiles[c->tileUp];
+				if (t->textureIndex != gnd->tiles[gnd->cubes[p.x][p.y]->tileUp]->textureIndex)
+					continue;
+				if (done.find(pp.x + gnd->width*pp.y) == done.end())
+				{
+					done[pp.x + gnd->width*pp.y] = true;
+					queue.push(pp);
+				}
+			}
+			if (gnd->inMap(p) && std::find(tilesToFill.begin(), tilesToFill.end(), p) == tilesToFill.end())
+				tilesToFill.push_back(p);
+			c++;
+		}
+		ImGui::Begin("Statusbar");
+		ImGui::SameLine();
+		ImGui::Text("Tiles gone through: %d", c);
+		ImGui::End();
+
+
+		std::vector<VertexP3T2N3> verts;
+		float dist = 0.002f * cameraDistance;
+		for (auto& tile : tilesToFill)
+		{
+			auto cube = gnd->cubes[tile.x][tile.y];
+
+			glm::vec2 v1 = uvStart + xInc * (float)((tile.x + browEdit->textureFillOffset.x) % textureBrushWidth) + yInc * (float)((tile.y + browEdit->textureFillOffset.y) % textureBrushHeight);
+			glm::vec2 v2 = v1 + xInc;
+			glm::vec2 v3 = v1 + yInc;
+			glm::vec2 v4 = v1 + xInc + yInc;
+
+			verts.push_back(VertexP3T2N3(glm::vec3(10 * tile.x, -cube->h3 + dist, 10 * gnd->height - 10 * tile.y), v3, cube->normals[2]));
+			verts.push_back(VertexP3T2N3(glm::vec3(10 * tile.x + 10, -cube->h2 + dist, 10 * gnd->height - 10 * tile.y + 10), v2, cube->normals[1]));
+			verts.push_back(VertexP3T2N3(glm::vec3(10 * tile.x + 10, -cube->h4 + dist, 10 * gnd->height - 10 * tile.y), v4, cube->normals[3]));
+
+			verts.push_back(VertexP3T2N3(glm::vec3(10 * tile.x, -cube->h1 + dist, 10 * gnd->height - 10 * tile.y + 10), v1, cube->normals[0]));
+			verts.push_back(VertexP3T2N3(glm::vec3(10 * tile.x, -cube->h3 + dist, 10 * gnd->height - 10 * tile.y), v3, cube->normals[2]));
+			verts.push_back(VertexP3T2N3(glm::vec3(10 * tile.x + 10, -cube->h2 + dist, 10 * gnd->height - 10 * tile.y + 10), v2, cube->normals[1]));
+		}
+		if (verts.size() > 0)
+		{
+			glEnableVertexAttribArray(0);
+			glEnableVertexAttribArray(1);
+			glEnableVertexAttribArray(2);
+			glDisableVertexAttribArray(3);
+			glDisableVertexAttribArray(4); //TODO: vao
+			glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexP3T2N3), verts[0].data);
+			glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexP3T2N3), verts[0].data + 3);
+			glVertexAttribPointer(2, 3, GL_FLOAT, false, sizeof(VertexP3T2N3), verts[0].data + 5);
+
+
+			gndRenderer->textures[textureSelected]->bind();
+			simpleShader->setUniform(SimpleShader::Uniforms::textureFac, 1.0f);
+			simpleShader->setUniform(SimpleShader::Uniforms::color, glm::vec4(1, 1.0f, 1.0f, 0.5f));
+			simpleShader->setUniform(SimpleShader::Uniforms::lightMin, 1.0f);
+			glDepthMask(0);
+			glDrawArrays(GL_TRIANGLES, 0, (int)verts.size());
+
+			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+			simpleShader->setUniform(SimpleShader::Uniforms::textureFac, 0.0f);
+			simpleShader->setUniform(SimpleShader::Uniforms::color, glm::vec4(1, 0.0f, 0.0f, 0.5f));
+			simpleShader->setUniform(SimpleShader::Uniforms::lightMin, 1.0f);
+			glDepthMask(1);
+			glDrawArrays(GL_TRIANGLES, 0, (int)verts.size());
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		}
+
+		if (ImGui::IsMouseClicked(0) && tilesToFill.size() > 0)
+		{
+			auto ga = new GroupAction();
+			int id = (int)gnd->tiles.size();
+			for (auto& tile : tilesToFill)
+			{
+				auto cube = gnd->cubes[tile.x][tile.y];
+
+				auto t = new Gnd::Tile();
+
+				t->v1 = uvStart + xInc * (float)((tile.x + browEdit->textureFillOffset.x) % textureBrushWidth) + yInc * (float)((tile.y + browEdit->textureFillOffset.y) % textureBrushHeight);
+				t->v2 = t->v1 + xInc;
+				t->v3 = t->v1 + yInc;
+				t->v4 = t->v1 + xInc + yInc;
+				t->color = glm::ivec4(255, 255, 255, 255);
+				t->lightmapIndex = -1;
+				t->textureIndex = textureSelected;
+
+				if (cube->tileUp != -1)
+				{
+					t->color = gnd->tiles[cube->tileUp]->color;
+					t->lightmapIndex = gnd->tiles[cube->tileUp]->lightmapIndex;
+				}
+
+				gndRenderer->setChunkDirty(tile.x, tile.y);
+
+				ga->addAction(new TileNewAction(t));
+				ga->addAction(new CubeTileChangeAction(cube, id, cube->tileFront, cube->tileSide));
+				id++;
+			}
+			map->doAction(ga, browEdit);
+		}
+
+	
 	}
 
 
