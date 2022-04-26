@@ -505,8 +505,10 @@ void MapView::postRenderTextureMode(BrowEdit* browEdit)
 
 							if (cube->tileUp != -1)
 							{
-								t->color = gnd->tiles[cube->tileUp]->color;
-								t->lightmapIndex = gnd->tiles[cube->tileUp]->lightmapIndex;
+								if (textureBrushKeepColor)
+									t->color = gnd->tiles[cube->tileUp]->color;
+								if (textureBrushKeepShadow)
+									t->lightmapIndex = gnd->tiles[cube->tileUp]->lightmapIndex;
 							}
 							
 							gndRenderer->setChunkDirty(tile.x, tile.y);
@@ -771,8 +773,10 @@ void MapView::postRenderTextureMode(BrowEdit* browEdit)
 
 				if (cube->tileUp != -1)
 				{
-					t->color = gnd->tiles[cube->tileUp]->color;
-					t->lightmapIndex = gnd->tiles[cube->tileUp]->lightmapIndex;
+					if(textureBrushKeepColor)
+						t->color = gnd->tiles[cube->tileUp]->color;
+					if(textureBrushKeepShadow)
+						t->lightmapIndex = gnd->tiles[cube->tileUp]->lightmapIndex;
 				}
 
 				gndRenderer->setChunkDirty(tile.x, tile.y);
