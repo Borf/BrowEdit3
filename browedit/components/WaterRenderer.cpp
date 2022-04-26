@@ -54,6 +54,9 @@ void WaterRenderer::render()
 	if (!this->rsw)
 		return;
 
+	if (textures.size() == 0)
+		return;
+
 	float time = (float)glfwGetTime();
 
 	auto shader = dynamic_cast<WaterRenderContext*>(renderContext)->shader;
