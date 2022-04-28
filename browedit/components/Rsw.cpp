@@ -628,6 +628,7 @@ std::vector<std::vector<glm::vec2>> heights;
 void Rsw::recalculateQuadtree(QuadTreeNode* node)
 {
 	static Gnd* gnd;
+	static Rsw* rsw;
 //	static std::vector<std::vector<glm::vec2>> heights;
 	bool rootNode = false;
 	if (!node)
@@ -635,11 +636,12 @@ void Rsw::recalculateQuadtree(QuadTreeNode* node)
 		rootNode = true;
 		node = quadtree;
 		gnd = this->node->getComponent<Gnd>();
+		rsw = this->node->getComponent<Rsw>();
 
 		heights.clear();
 		heights.resize(gnd->width);
 		for (int i = 0; i < gnd->width; i++)
-			heights[i].resize(gnd->height, glm::vec2(99999999, -99999999));
+			heights[i].resize(gnd->height, glm::vec2(rsw->water.height, rsw->water.height));
 
 		debugPoints.clear();
 		debugPoints.resize(2);
