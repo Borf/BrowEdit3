@@ -435,6 +435,11 @@ void MapView::postRenderTextureMode(BrowEdit* browEdit)
 				glm::vec2 v3 = v1 + yInc;
 				glm::vec2 v4 = v1 + xInc + yInc;
 
+				v1.y = 1.0f - v1.y;
+				v2.y = 1.0f - v2.y;
+				v3.y = 1.0f - v3.y;
+				v4.y = 1.0f - v4.y;
+
 				verts.push_back(VertexP3T2N3(glm::vec3(10 * tile.x, -cube->h3 + dist, 10 * gnd->height - 10 * tile.y), v3, cube->normals[2]));
 				verts.push_back(VertexP3T2N3(glm::vec3(10 * tile.x + 10, -cube->h2 + dist, 10 * gnd->height - 10 * tile.y + 10), v2, cube->normals[1]));
 				verts.push_back(VertexP3T2N3(glm::vec3(10 * tile.x + 10, -cube->h4 + dist, 10 * gnd->height - 10 * tile.y), v4, cube->normals[3]));
@@ -499,6 +504,13 @@ void MapView::postRenderTextureMode(BrowEdit* browEdit)
 							t->v2 = t->v1 + xInc;
 							t->v3 = t->v1 + yInc;
 							t->v4 = t->v1 + xInc + yInc;
+
+							t->v1.y = 1.0f - t->v1.y;
+							t->v2.y = 1.0f - t->v2.y;
+							t->v3.y = 1.0f - t->v3.y;
+							t->v4.y = 1.0f - t->v4.y;
+
+
 							t->color = glm::ivec4(255, 255, 255, 255);
 							t->lightmapIndex = -1;
 							t->textureIndex = textureSelected;
@@ -717,6 +729,11 @@ void MapView::postRenderTextureMode(BrowEdit* browEdit)
 			glm::vec2 v3 = v1 + yInc;
 			glm::vec2 v4 = v1 + xInc + yInc;
 
+			v1.y = 1.0f - v1.y;
+			v2.y = 1.0f - v2.y;
+			v3.y = 1.0f - v3.y;
+			v4.y = 1.0f - v4.y;
+
 			verts.push_back(VertexP3T2N3(glm::vec3(10 * tile.x, -cube->h3 + dist, 10 * gnd->height - 10 * tile.y), v3, cube->normals[2]));
 			verts.push_back(VertexP3T2N3(glm::vec3(10 * tile.x + 10, -cube->h2 + dist, 10 * gnd->height - 10 * tile.y + 10), v2, cube->normals[1]));
 			verts.push_back(VertexP3T2N3(glm::vec3(10 * tile.x + 10, -cube->h4 + dist, 10 * gnd->height - 10 * tile.y), v4, cube->normals[3]));
@@ -767,6 +784,12 @@ void MapView::postRenderTextureMode(BrowEdit* browEdit)
 				t->v2 = t->v1 + xInc;
 				t->v3 = t->v1 + yInc;
 				t->v4 = t->v1 + xInc + yInc;
+
+				t->v1.y = 1.0f - t->v1.y;
+				t->v2.y = 1.0f - t->v2.y;
+				t->v3.y = 1.0f - t->v3.y;
+				t->v4.y = 1.0f - t->v4.y;
+
 				t->color = glm::ivec4(255, 255, 255, 255);
 				t->lightmapIndex = -1;
 				t->textureIndex = textureSelected;
