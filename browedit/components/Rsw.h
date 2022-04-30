@@ -26,6 +26,8 @@ public:
 	std::string gndFile;
 	std::string gatFile;
 
+	int lubVersion = 2;
+
 	class QuadTreeNode : public util::Tree<4, QuadTreeNode>
 	{
 	public:
@@ -174,10 +176,11 @@ public:
 	int maxcount;
 	int zenable;
 	int billboard_off;
+	glm::vec3 rotate_angle; // v3
 
 	void load(const nlohmann::json& data);
 	static void buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>&);
-	NLOHMANN_DEFINE_TYPE_INTRUSIVE(LubEffect, dir1, dir2, gravity, pos, radius, color, rate, size, life, texture, speed, srcmode, destmode, maxcount, zenable, billboard_off);
+	NLOHMANN_DEFINE_TYPE_INTRUSIVE(LubEffect, dir1, dir2, gravity, pos, radius, color, rate, size, life, texture, speed, srcmode, destmode, maxcount, zenable, billboard_off, rotate_angle);
 };
 
 class RswEffect : public Component

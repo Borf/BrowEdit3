@@ -112,6 +112,14 @@ void Rsw::load(const std::string& fileName, Map* map, BrowEdit* browEdit, bool l
 		
 		if (data != "" && data.find("{") != std::string::npos)
 		{
+			std::string ver = data;
+			ver = ver.substr(ver.find("version ="));
+			ver = ver.substr(0, ver.find("\n"));
+			if (ver.find("\r"))
+				ver = ver.substr(0, ver.find("\r"));
+			ver = ver.substr(ver.rfind("=")+1);
+			ver = util::trim(ver);
+			lubVersion = std::stoi(ver);
 			//this is a dirty hack to change the main lua array into a json structure for automatic parsing...I'm wondering if it's not easier to just write a lua parser
 			data = data.substr(data.find("{")); // strip beginning;
 			data = util::replace(data, "\r\n", "\n");
@@ -467,12 +475,14 @@ void Rsw::save(const std::string& fileName, BrowEdit* browEdit)
 		mapName = mapName.substr(0, mapName.find(".rsw"));
 	if (mapName.find("\\") != std::string::npos)
 		mapName = mapName.substr(mapName.rfind("\\")+1);
+	std::string luaMapName = util::replace("@", "", mapName);
+	
 	if (lubEffects.size() > 0)
 	{
 		std::cout << "Lub effects found, saving to " << browEdit->config.ropath << "data\\luafiles514\\lua files\\effecttool\\" << mapName << ".lub" << std::endl;
 		std::ofstream lubFile((browEdit->config.ropath + "data\\luafiles514\\lua files\\effecttool\\" + mapName + ".lub").c_str(), std::ios_base::out | std::ios_base::binary);
-		lubFile << "_" << mapName << "_emitterInfo_version = 2.0" << std::endl;
-		lubFile << "_" << mapName << "_emitterInfo =" << std::endl;
+		lubFile << "_" << luaMapName << "_emitterInfo_version = "<<lubVersion<<".0" << std::endl;
+		lubFile << "_" << luaMapName << "_emitterInfo =" << std::endl;
 		lubFile << "{" << std::endl;
 
 #define SAVEPROP0(x,y) lubFile<<"\t\t[\""<<x<<"\"] = { "<<y<<" }"
@@ -500,6 +510,7 @@ void Rsw::save(const std::string& fileName, BrowEdit* browEdit)
 			SAVEPROP0("destmode", lubEffects[i]->destmode) << "," << std::endl;
 			SAVEPROP0("maxcount", lubEffects[i]->maxcount) << "," << std::endl;
 			SAVEPROP0("zenable", lubEffects[i]->zenable) << std::endl;
+			SAVEPROP3("rotate_angle", lubEffects[i]->rotate_angle) << std::endl;
 
 
 			lubFile << "\t}";
@@ -593,6 +604,19 @@ void Rsw::buildImGui(BrowEdit* browEdit)
 			version = 0x0204;
 		ImGui::EndCombo();
 	}
+	
+	
+	if (ImGui::BeginCombo("LubEffect Version", std::to_string(lubVersion).c_str()))
+	{
+		if (ImGui::Selectable("1", version == 1))
+			lubVersion = 1;
+		if (ImGui::Selectable("2", version == 2))
+			lubVersion = 2;
+		if (ImGui::Selectable("3", version == 3))
+			lubVersion = 3;
+		ImGui::EndCombo();
+	}
+	
 
 	if (ImGui::CollapsingHeader("Lighting", ImGuiTreeNodeFlags_DefaultOpen))
 	{
