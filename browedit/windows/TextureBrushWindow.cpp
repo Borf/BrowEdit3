@@ -94,10 +94,19 @@ void BrowEdit::showTextureBrushWindow()
 		if (toolBarButton("RotateL", ICON_ROTATE, "Rotate texture left", ImVec4(1,1,1,1)) || (ImGui::IsKeyPressed('L') && !ImGui::GetIO().WantTextInput))
 		{ //00 -> 10 -> 11 -> 01
 			activeMapView->textureBrushFlipD = !activeMapView->textureBrushFlipD;
-			bool tmp = activeMapView->textureBrushFlipH;
-			activeMapView->textureBrushFlipH = !activeMapView->textureBrushFlipV;
-			activeMapView->textureBrushFlipV = tmp;
-
+			
+			if (activeMapView->textureBrushFlipWeird())
+			{
+				bool tmp = activeMapView->textureBrushFlipV;
+				activeMapView->textureBrushFlipV = !activeMapView->textureBrushFlipH;
+				activeMapView->textureBrushFlipH = tmp;
+			}
+			else
+			{
+				bool tmp = activeMapView->textureBrushFlipH;
+				activeMapView->textureBrushFlipH = !activeMapView->textureBrushFlipV;
+				activeMapView->textureBrushFlipV = tmp;
+			}
 			glm::vec2 uv1 = glm::translate(glm::rotate(glm::translate(glm::mat4(1.0), glm::vec3(0.5f, 0.5f, 0)), glm::radians(90.0f), glm::vec3(0, 0, 1)), glm::vec3(-0.5f, -0.5f, 0.0f)) * glm::vec4(activeMapView->textureEditUv1, 0, 1);
 			glm::vec2 uv2 = glm::translate(glm::rotate(glm::translate(glm::mat4(1.0), glm::vec3(0.5f, 0.5f, 0)), glm::radians(90.0f), glm::vec3(0, 0, 1)), glm::vec3(-0.5f, -0.5f, 0.0f)) * glm::vec4(activeMapView->textureEditUv2, 0, 1);
 			activeMapView->textureEditUv1 = glm::min(uv1, uv2);
@@ -107,9 +116,18 @@ void BrowEdit::showTextureBrushWindow()
 		if (toolBarButton("RotateR", ICON_ROTATE_RIGHT, "Rotate texture right", ImVec4(1, 1, 1, 1)) || (ImGui::IsKeyPressed('R') && !ImGui::GetIO().WantTextInput))
 		{ //00 -> 01 -> 11 -> 10
 			activeMapView->textureBrushFlipD = !activeMapView->textureBrushFlipD;
-			bool tmp = activeMapView->textureBrushFlipV;
-			activeMapView->textureBrushFlipV = !activeMapView->textureBrushFlipH;
-			activeMapView->textureBrushFlipH = tmp;
+			if (activeMapView->textureBrushFlipWeird())
+			{
+				bool tmp = activeMapView->textureBrushFlipH;
+				activeMapView->textureBrushFlipH = !activeMapView->textureBrushFlipV;
+				activeMapView->textureBrushFlipV = tmp;
+			}
+			else
+			{
+				bool tmp = activeMapView->textureBrushFlipV;
+				activeMapView->textureBrushFlipV = !activeMapView->textureBrushFlipH;
+				activeMapView->textureBrushFlipH = tmp;
+			}
 
 			glm::vec2 uv1 = glm::translate(glm::rotate(glm::translate(glm::mat4(1.0), glm::vec3(0.5f, 0.5f, 0)), glm::radians(-90.0f), glm::vec3(0, 0, 1)), glm::vec3(-0.5f, -0.5f, 0.0f)) * glm::vec4(activeMapView->textureEditUv1, 0, 1);
 			glm::vec2 uv2 = glm::translate(glm::rotate(glm::translate(glm::mat4(1.0), glm::vec3(0.5f, 0.5f, 0)), glm::radians(-90.0f), glm::vec3(0, 0, 1)), glm::vec3(-0.5f, -0.5f, 0.0f)) * glm::vec4(activeMapView->textureEditUv2, 0, 1);

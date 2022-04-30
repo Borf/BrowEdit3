@@ -95,6 +95,7 @@ public:
 	bool textureBrushFlipH = false;
 	bool textureBrushFlipV = false;
 	bool textureBrushFlipD = false;
+	inline bool textureBrushFlipWeird() { return ((textureBrushFlipH ? 1 : 0) + (textureBrushFlipV ? 1 : 0) + (textureBrushFlipD ? 1 : 0)) % 2 == 0; }
 	bool textureBrushKeepShadow = true;
 	bool textureBrushKeepColor = true;
 	int textureBrushMask() { return (textureBrushFlipD ? 4 : 0) | (textureBrushFlipH ? 2 : 0) | (textureBrushFlipV ? 1 : 0); }
