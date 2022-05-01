@@ -484,19 +484,23 @@ void BrowEdit::showMapWindow(MapView& mapView)
 
 
 
-void fixBackup(const std::string& fileName)
+void fixBackup(const std::string& fileName, const std::string& backupfileName)
 {
 	std::ifstream is(fileName, std::ios_base::binary | std::ios_base::in);
 	if (is.is_open())
 	{
+		std::filesystem::path path(backupfileName);
+		auto p = path.parent_path().string();
+		std::filesystem::create_directories(p);
+
 		int c = 0;
 		for(int i = 0; i < 999; i++)
-			if (!std::filesystem::exists(fileName + "." + std::to_string(i)))
+			if (!std::filesystem::exists(backupfileName + "." + std::to_string(i)))
 			{
 				c = i;
 					break;
 			}
-		std::ofstream os((fileName + "." + std::to_string(c)), std::ios_base::binary | std::ios_base::out);
+		std::ofstream os((backupfileName + "." + std::to_string(c)), std::ios_base::binary | std::ios_base::out);
 		char buf[1024];
 		while (!is.eof())
 		{
@@ -530,11 +534,22 @@ void BrowEdit::saveMap(Map* map)
 		//dunno what to do with lub
 	}
 
+	std::string backupRswName = "backups\\" + map->name;
+	std::string backupGndName = "backups\\" + map->name.substr(0, map->name.size() - 4) + ".gnd";
+	std::string backupLubName = "backups\\data\\luafiles514\\lua files\\effecttool\\" + mapName + ".lub";
+	if (fullPath)
+	{
+		rswName = map->name;
+		gndName = map->name.substr(0, map->name.size() - 4) + ".gnd";
+		//dunno what to do with lub
+	}
+
+
 	if (config.backup)
 	{
-		fixBackup(rswName);
-		fixBackup(gndName);
-		fixBackup(lubName);
+		fixBackup(rswName, backupRswName);
+		fixBackup(gndName, backupGndName);
+		fixBackup(lubName, backupGndName);
 	}
 
 	map->rootNode->getComponent<Rsw>()->save(rswName, this);
@@ -578,11 +593,15 @@ void BrowEdit::saveAsMap(Map* map)
 	std::string gndName = directory + mapName + ".gnd";
 //	std::string lubName = config.ropath + "data\\luafiles514\\lua files\\effecttool\\" + mapName + ".lub"; //not sure where to store this
 
+	std::string backupRswName = "backups\\" + map->name;
+	std::string backupGndName = "backups\\" + map->name.substr(0, map->name.size() - 4) + ".gnd";
+	std::string backupLubName = "backups\\data\\luafiles514\\lua files\\effecttool\\" + mapName + ".lub";
+
 	if (config.backup)
 	{
-		fixBackup(rswName);
-		fixBackup(gndName);
-//		fixBackup(lubName);
+		fixBackup(rswName, backupRswName);
+		fixBackup(gndName, backupGndName);
+//		fixBackup(lubName, backupGndName);
 	}
 
 	map->rootNode->getComponent<Rsw>()->gatFile = mapName + ".gat";
