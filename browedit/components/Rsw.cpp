@@ -836,6 +836,8 @@ bool RswModelCollider::collidesTexture(const math::Ray& ray, float maxDistance)
 
 bool RswModelCollider::collidesTexture(Rsm::Mesh* mesh, const math::Ray& ray, const glm::mat4& matrix, float maxDistance)
 {
+	if (mesh->index >= rsmRenderer->renderInfo.size())
+		return false;
 	std::vector<glm::vec3> ret;
 
 	glm::mat4 newMatrix = matrix * rsmRenderer->renderInfo[mesh->index].matrix;
