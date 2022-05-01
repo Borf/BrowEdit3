@@ -86,10 +86,13 @@ void MapView::postRenderTextureMode(BrowEdit* browEdit)
 	}
 	glm::vec2 xInc = (uv2 - uv1) * uvSize / (float)textureBrushWidth;
 	glm::vec2 yInc = (uv3 - uv1) * uvSize / (float)textureBrushHeight;
-	if (textureBrushFlipD && (textureBrushFlipV ^ textureBrushFlipH))
+	if (textureBrushFlipD && (textureBrushFlipV || textureBrushFlipH))
 	{
-		xInc = (uv1 - uv2) * uvSize / (float)textureBrushHeight;
-		yInc = (uv1 - uv3) * uvSize / (float)textureBrushWidth;
+		if (textureBrushFlipV ^ textureBrushFlipH)
+		{
+			xInc = (uv1 - uv2) * uvSize / (float)textureBrushHeight;
+			yInc = (uv1 - uv3) * uvSize / (float)textureBrushWidth;
+		}
 		std::swap(xInc, yInc);
 		std::swap(xInc.x, xInc.y);
 		std::swap(yInc.x, yInc.y);
