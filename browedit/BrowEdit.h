@@ -101,7 +101,14 @@ public:
 		Wall,
 		Gat,
 	} editMode = EditMode::Texture;
-
+	
+	enum class SelectTool
+	{
+		Rectangle,
+		Lasso,
+		WandTex,
+		WandHeight
+	} selectTool = SelectTool::Rectangle;
 	enum TextureBrushMode
 	{
 		Stamp,

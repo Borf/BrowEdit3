@@ -59,128 +59,142 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 	static bool showEdgeArrows = true;
 	static int edgeMode = 0;
 
-	static enum class Tool
-	{
-		Rectangle,
-		Lasso,
-		WandTex,
-		WandHeight
-	} tool = Tool::Rectangle;
-
 	ImGui::Begin("Height Edit");
 	ImGui::PushItemWidth(-200);
-	if (ImGui::TreeNodeEx("Tool Options", ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed))
-	{
-		ImGui::Checkbox("Triangle Split", &splitTriangleFlip);
 
-		if (ImGui::TreeNodeEx("Tool", ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed))
+	if (ImGui::TreeNodeEx("Tool", ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed))
+	{
+		if (browEdit->toolBarToggleButton("Rectangle", ICON_SELECT_RECTANGLE, browEdit->selectTool == BrowEdit::SelectTool::Rectangle, "Rectangle Select", ImVec4(1, 1, 1, 1)))
+			browEdit->selectTool = BrowEdit::SelectTool::Rectangle;
+		ImGui::SameLine();
+		if (browEdit->toolBarToggleButton("Lasso", ICON_SELECT_LASSO, browEdit->selectTool == BrowEdit::SelectTool::Lasso, "Rectangle Select", ImVec4(1, 1, 1, 1)))
+			browEdit->selectTool = BrowEdit::SelectTool::Lasso;
+		ImGui::SameLine();
+		if (browEdit->toolBarToggleButton("WandTex", ICON_SELECT_WAND_TEX, browEdit->selectTool == BrowEdit::SelectTool::WandTex, "Magic Wand (Texture)", ImVec4(1, 1, 1, 1)))
+			browEdit->selectTool = BrowEdit::SelectTool::WandTex;
+		ImGui::SameLine();
+		if (browEdit->toolBarToggleButton("WandHeight", ICON_SELECT_WAND_HEIGHT, browEdit->selectTool == BrowEdit::SelectTool::WandHeight, "Magic Wand (Height)", ImVec4(1, 1, 1, 1)))
+			browEdit->selectTool = BrowEdit::SelectTool::WandHeight;
+		ImGui::TreePop();
+	}
+
+	if (browEdit->selectTool == BrowEdit::SelectTool::Rectangle || 
+		browEdit->selectTool == BrowEdit::SelectTool::Lasso ||
+		browEdit->selectTool == BrowEdit::SelectTool::WandTex ||
+		browEdit->selectTool == BrowEdit::SelectTool::WandHeight)
+	{
+		if (ImGui::TreeNodeEx("Selection Options", ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed))
 		{
-			if (browEdit->toolBarToggleButton("Rectangle", ICON_SELECT_RECTANGLE, tool == Tool::Rectangle, "Rectangle Select", ImVec4(1, 1, 1, 1)))
-				tool = Tool::Rectangle;
+			browEdit->toolBarToggleButton("TriangleSplit", splitTriangleFlip ? ICON_HEIGHT_SPLIT_1 : ICON_HEIGHT_SPLIT_2, &splitTriangleFlip, "Change the way quads are split into triangles");
 			ImGui::SameLine();
-			if (browEdit->toolBarToggleButton("Lasso", ICON_SELECT_LASSO, tool == Tool::Lasso, "Rectangle Select", ImVec4(1, 1, 1, 1)))
-				tool = Tool::Lasso;
+			browEdit->toolBarToggleButton("CenterArrow", ICON_HEIGHT_SELECT_CENTER, &showCenterArrow, "Show Center Arrow");
 			ImGui::SameLine();
-			if (browEdit->toolBarToggleButton("WandTex", ICON_SELECT_WAND_TEX, tool == Tool::WandTex, "Magic Wand (Texture)", ImVec4(1, 1, 1, 1)))
-				tool = Tool::WandTex;
+			browEdit->toolBarToggleButton("CornerArrow", ICON_HEIGHT_SELECT_CORNERS, &showCornerArrows, "Show Corner Arrows");
 			ImGui::SameLine();
-			if (browEdit->toolBarToggleButton("WandHeight", ICON_SELECT_WAND_HEIGHT, tool == Tool::WandHeight, "Magic Wand (Height)", ImVec4(1, 1, 1, 1)))
-				tool = Tool::WandHeight;
+			browEdit->toolBarToggleButton("EdgeArrow", ICON_HEIGHT_SELECT_SIDES, &showEdgeArrows, "Show Edge Arrows");
+
+
+			if (ImGui::TreeNodeEx("Edge handling", ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed))
+			{
+				ImGui::RadioButton("Nothing", &edgeMode, 0);
+				ImGui::SameLine();
+				ImGui::RadioButton("Raise ground", &edgeMode, 1);
+
+				ImGui::RadioButton("Build walls", &edgeMode, 3);
+				ImGui::SameLine();
+				ImGui::RadioButton("Snap ground", &edgeMode, 2);
+				ImGui::TreePop();
+			}
+
+			if (ImGui::Button("Grow selection", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
+				map->growTileSelection(browEdit);
+			if (ImGui::Button("Shrink selection", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
+				map->shrinkTileSelection(browEdit);
+
 			ImGui::TreePop();
 		}
-
-		if (tool == Tool::Rectangle || tool == Tool::Lasso)
+		if (ImGui::TreeNodeEx("Actions", ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed))
 		{
-			if (ImGui::TreeNodeEx("Selection Options", ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed))
+			if (ImGui::Button("Smooth selection", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
+				gnd->smoothTiles(map, browEdit, map->tileSelection, 3);
+			if (ImGui::Button("Smooth selection Horizontal", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
+				gnd->smoothTiles(map, browEdit, map->tileSelection, 1);
+			if (ImGui::Button("Smooth selection Vertical", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
+				gnd->smoothTiles(map, browEdit, map->tileSelection, 2);
+			if (ImGui::Button("Flatten selection", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
+				gnd->flattenTiles(map, browEdit, map->tileSelection);
+			if (ImGui::Button("Connect tiles high", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
+				gnd->connectHigh(map, browEdit, map->tileSelection);
+			if (ImGui::Button("Connect tiles low", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
+				gnd->connectLow(map, browEdit, map->tileSelection);
+
+			if(ImGui::TreeNodeEx("Set Height", ImGuiTreeNodeFlags_Framed))
 			{
-				ImGui::Checkbox("Show Center Arrow", &showCenterArrow);
-				ImGui::Checkbox("Show Corner Arrows", &showCornerArrows);
-				ImGui::Checkbox("Show Edge Arrows", &showEdgeArrows);
-
-				if (ImGui::TreeNodeEx("Edge handling", ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed))
+				static float height = 0;
+				ImGui::InputFloat("Height", &height);
+				if (ImGui::Button("Set selection to height"))
 				{
-					ImGui::RadioButton("Nothing", &edgeMode, 0);
-					ImGui::SameLine();
-					ImGui::RadioButton("Raise ground", &edgeMode, 1);
-
-					ImGui::RadioButton("Build walls", &edgeMode, 3);
-					ImGui::SameLine();
-					ImGui::RadioButton("Snap ground", &edgeMode, 2);
-					ImGui::TreePop();
-				}
-
-				if (ImGui::Button("Grow selection", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
-					map->growTileSelection(browEdit);
-				if (ImGui::Button("Shrink selection", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
-					map->shrinkTileSelection(browEdit);
-				if (ImGui::Button("Smooth selection", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
-					gnd->smoothTiles(map, browEdit, map->tileSelection, 3);
-				if (ImGui::Button("Smooth selection Horizontal", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
-					gnd->smoothTiles(map, browEdit, map->tileSelection, 1);
-				if (ImGui::Button("Smooth selection Vertical", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
-					gnd->smoothTiles(map, browEdit, map->tileSelection, 2);
-				if (ImGui::Button("Flatten selection", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
-					gnd->flattenTiles(map, browEdit, map->tileSelection);
-				if (ImGui::Button("Connect tiles high", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
-					gnd->connectHigh(map, browEdit, map->tileSelection);
-				if (ImGui::Button("Connect tiles low", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
-					gnd->connectLow(map, browEdit, map->tileSelection);
-				if (ImGui::Button("Remove walls from selection", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
-				{
-
-				}
-				if (ImGui::Button("Add walls to selection", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
-				{
-
-				}
-				if (ImGui::TreeNodeEx("Random Generation", ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_DefaultOpen))
-				{
-					static float maxHeight = 1;
-					static float minHeight = 0;
-					static int raiseMode = 1;
-					static bool edges = false;
-					ImGui::SliderFloat("Min Random Value", &minHeight, -100, maxHeight);
-					ImGui::SliderFloat("Max Random Value", &maxHeight, minHeight, 100);
-					ImGui::Combo("Connect tiles", &raiseMode, "none\0high\0low\0");
-					ImGui::Checkbox("Connect tiles around selection", &edges);
-					if (ImGui::Button("Add random values to selection", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
-					{
-						map->beginGroupAction("Random Tile Generation");
-						gnd->addRandomHeight(map, browEdit, map->tileSelection, minHeight, maxHeight);
-						if (raiseMode == 1)
-							gnd->connectHigh(map, browEdit, map->tileSelection);
-						else if (raiseMode == 2)
-							gnd->connectLow(map, browEdit, map->tileSelection);
-						if (edges)
-						{
-							if (raiseMode == 1)
-								gnd->connectHigh(map, browEdit, map->getSelectionAroundTiles());
-							else if (raiseMode == 2)
-								gnd->connectLow(map, browEdit, map->getSelectionAroundTiles());
-						}
-						map->endGroupAction(browEdit);
-
-					}
-					ImGui::TreePop();
-				}
-
-				if (ImGui::TreeNodeEx("Perlin Noise Generation", ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed))
-				{
-					if (ImGui::Button("Add perlin noise", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
-					{
-						gnd->perlinNoise(map->tileSelection);
-					}
-					ImGui::TreePop();
-				}
-
-				if (ImGui::Button("Finish my map with AI", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
-				{
-					std::cout << "Coming soon®" << std::endl;
+					auto action = new CubeHeightChangeAction(gnd, map->tileSelection);
+					for (auto t : map->tileSelection)
+						for(int i = 0; i < 4; i++)
+							gnd->cubes[t.x][t.y]->heights[i] = height;
+		
+					action->setNewHeights(gnd, map->tileSelection);
+					map->doAction(action, browEdit);
 				}
 				ImGui::TreePop();
 			}
+
+			//TODO
+			/*if (ImGui::Button("Remove walls from selection", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
+			{
+			}
+			if (ImGui::Button("Add walls to selection", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
+			{
+			}*/
+
+			if (ImGui::TreeNodeEx("Random Generation", ImGuiTreeNodeFlags_Framed))
+			{
+				static float maxHeight = 1;
+				static float minHeight = 0;
+				static int raiseMode = 1;
+				static bool edges = false;
+				ImGui::SliderFloat("Min Random Value", &minHeight, -100, maxHeight);
+				ImGui::SliderFloat("Max Random Value", &maxHeight, minHeight, 100);
+				ImGui::Combo("Connect tiles", &raiseMode, "none\0high\0low\0");
+				ImGui::Checkbox("Connect tiles around selection", &edges);
+				if (ImGui::Button("Add random values to selection", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
+				{
+					map->beginGroupAction("Random Tile Generation");
+					gnd->addRandomHeight(map, browEdit, map->tileSelection, minHeight, maxHeight);
+					if (raiseMode == 1)
+						gnd->connectHigh(map, browEdit, map->tileSelection);
+					else if (raiseMode == 2)
+						gnd->connectLow(map, browEdit, map->tileSelection);
+					if (edges)
+					{
+						if (raiseMode == 1)
+							gnd->connectHigh(map, browEdit, map->getSelectionAroundTiles());
+						else if (raiseMode == 2)
+							gnd->connectLow(map, browEdit, map->getSelectionAroundTiles());
+					}
+					map->endGroupAction(browEdit);
+
+				}
+				ImGui::TreePop();
+			}
+			if (ImGui::TreeNodeEx("Perlin Noise Generation", ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed))
+			{
+				if (ImGui::Button("Add perlin noise", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
+					gnd->perlinNoise(map->tileSelection);
+				ImGui::TreePop();
+			}
+
+
+			if (ImGui::Button("Finish my map with AI", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
+				std::cout << "Coming soon®" << std::endl;
+			ImGui::TreePop();
 		}
-		ImGui::TreePop();
 	}
 
 	if (map->tileSelection.size() == 1)
@@ -213,7 +227,12 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 							tile->textureIndex = texIndex;
 						glm::vec4 color = glm::vec4(tile->color) / 255.0f;
 						if (changed |= util::ColorEdit4(browEdit, map, map->rootNode, "Color", &color))
+						{
 							tile->color = glm::ivec4(color * 255.0f);
+							for (auto tt : map->tileSelection)
+								if (gnd->cubes[tt.x][tt.y]->tileIds[t] != -1)
+									gnd->tiles[gnd->cubes[tt.x][tt.y]->tileIds[t]]->color = tile->color;
+						}
 						changed |= util::DragFloat2(browEdit, map, map->rootNode, "UV1", &tile->v1, 0.01f, 0.0f, 1.0f);
 						changed |= util::DragFloat2(browEdit, map, map->rootNode, "UV2", &tile->v2, 0.01f, 0.0f, 1.0f);
 						changed |= util::DragFloat2(browEdit, map, map->rootNode, "UV3", &tile->v3, 0.01f, 0.0f, 1.0f);
@@ -779,7 +798,7 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 			if (ImGui::GetIO().KeyShift || ImGui::GetIO().KeyCtrl)
 				newSelection = map->tileSelection;
 
-			if (tool == Tool::Rectangle)
+			if (browEdit->selectTool == BrowEdit::SelectTool::Rectangle)
 			{
 				int tileMinX = (int)glm::floor(glm::min(mouseDragStart.x, mouseDragEnd.x) / 10);
 				int tileMaxX = (int)glm::ceil(glm::max(mouseDragStart.x, mouseDragEnd.x) / 10);
@@ -798,7 +817,7 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 							else if (std::find(newSelection.begin(), newSelection.end(), glm::ivec2(x, y)) == newSelection.end())
 								newSelection.push_back(glm::ivec2(x, y));
 			}
-			else if (tool == Tool::Lasso)
+			else if (browEdit->selectTool == BrowEdit::SelectTool::Lasso)
 			{
 				math::Polygon polygon;
 				for (size_t i = 0; i < selectLasso.size(); i++)
@@ -828,7 +847,7 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 						newSelection.push_back(glm::ivec2(t.x, t.y));
 				selectLasso.clear();
 			}
-			else if (tool == Tool::WandTex)
+			else if (browEdit->selectTool == BrowEdit::SelectTool::WandTex)
 			{
 				glm::ivec2 tileHovered((int)glm::floor(mouse3D.x / 10), (gnd->height - (int)glm::floor(mouse3D.z) / 10));
 
@@ -875,7 +894,7 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 						newSelection.push_back(t);
 				}
 			}
-			else if (tool == Tool::WandHeight)
+			else if (browEdit->selectTool == BrowEdit::SelectTool::WandHeight)
 			{
 				glm::ivec2 tileHovered((int)glm::floor(mouse3D.x / 10), (gnd->height - (int)glm::floor(mouse3D.z) / 10));
 
@@ -948,7 +967,7 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 		ImGui::Text("Selection: (%d,%d) - (%d,%d)", tileMinX, tileMinY, tileMaxX, tileMaxY);
 		ImGui::End();
 
-		if (tool == Tool::Rectangle) // select rectangular area
+		if (browEdit->selectTool == BrowEdit::SelectTool::Rectangle)
 		{
 			if (tileMinX >= 0 && tileMaxX < gnd->width + 1 && tileMinY >= 0 && tileMaxY < gnd->height + 1)
 				for (int x = tileMinX; x < tileMaxX; x++)
@@ -966,7 +985,7 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 					}
 				}
 		}
-		else if (tool == Tool::Lasso) // lasso
+		else if (browEdit->selectTool == BrowEdit::SelectTool::Lasso) // lasso
 		{
 			if (tileX >= 0 && tileX < gnd->width && tileY >= 0 && tileY < gnd->height)
 			{
