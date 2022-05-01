@@ -20,6 +20,7 @@
 
 #include <glm/gtc/type_ptr.hpp>
 #include <iostream>
+#include <queue>
 
 float TriangleHeight(const glm::vec3& a, const glm::vec3& b, const glm::vec3& c, const glm::vec3& p)
 {
@@ -56,7 +57,14 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 	static bool showCornerArrows = true;
 	static bool showEdgeArrows = true;
 	static int edgeMode = 0;
-	static int tool = 0;
+
+	static enum class Tool
+	{
+		Rectangle,
+		Lasso,
+		FillTex,
+		FillHeight
+	} tool = Tool::Rectangle;
 
 	ImGui::Begin("Height Edit");
 	ImGui::PushItemWidth(-200);
@@ -66,15 +74,17 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 
 		if (ImGui::TreeNodeEx("Tool", ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed))
 		{
-			ImGui::RadioButton("Rectangle", &tool, 0);
+			ImGui::RadioButton("Rectangle", &((int&)tool), (int)Tool::Rectangle);
 			ImGui::SameLine();
-			ImGui::RadioButton("Lasso", &tool, 1);
+			ImGui::RadioButton("Lasso", &((int&)tool), (int)Tool::Lasso);
+
+			ImGui::RadioButton("Fill (Texture)", &((int&)tool), (int)Tool::FillTex);
 			ImGui::SameLine();
-			ImGui::RadioButton("Doodle", &tool, 2);
+			ImGui::RadioButton("Fill (Height)", &((int&)tool), (int)Tool::FillHeight);
 			ImGui::TreePop();
 		}
 
-		if (tool == 0 || tool == 1)
+		if (tool == Tool::Rectangle || tool == Tool::Lasso)
 		{
 			if (ImGui::TreeNodeEx("Selection Options", ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed))
 			{
@@ -764,7 +774,7 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 			if (ImGui::GetIO().KeyShift || ImGui::GetIO().KeyCtrl)
 				newSelection = map->tileSelection;
 
-			if (tool == 0) //rectangle
+			if (tool == Tool::Rectangle)
 			{
 				int tileMinX = (int)glm::floor(glm::min(mouseDragStart.x, mouseDragEnd.x) / 10);
 				int tileMaxX = (int)glm::ceil(glm::max(mouseDragStart.x, mouseDragEnd.x) / 10);
@@ -783,7 +793,7 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 							else if (std::find(newSelection.begin(), newSelection.end(), glm::ivec2(x, y)) == newSelection.end())
 								newSelection.push_back(glm::ivec2(x, y));
 			}
-			else if (tool == 1) // lassoo
+			else if (tool == Tool::Lasso)
 			{
 				math::Polygon polygon;
 				for (size_t i = 0; i < selectLasso.size(); i++)
@@ -813,6 +823,98 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 						newSelection.push_back(glm::ivec2(t.x, t.y));
 				selectLasso.clear();
 			}
+			else if (tool == Tool::FillTex)
+			{
+				glm::ivec2 tileHovered((int)glm::floor(mouse3D.x / 10), (gnd->height - (int)glm::floor(mouse3D.z) / 10));
+
+				std::vector<glm::ivec2> tilesToFill;
+				std::queue<glm::ivec2> queue;
+				std::map<int, bool> done;
+
+				glm::ivec2 offsets[4] = { glm::ivec2(-1,0), glm::ivec2(1,0), glm::ivec2(0,-1), glm::ivec2(0,1) };
+				queue.push(tileHovered);
+				int c = 0;
+				while (!queue.empty())
+				{
+					auto p = queue.front();
+					queue.pop();
+					for (const auto& o : offsets)
+					{
+						auto pp = p + o;
+						if (!gnd->inMap(pp) || !gnd->inMap(p))
+							continue;
+						auto c = gnd->cubes[pp.x][pp.y];
+						if (c->tileUp == -1 || gnd->cubes[p.x][p.y]->tileUp == -1)
+							continue;
+						auto t = gnd->tiles[c->tileUp];
+						if (t->textureIndex != gnd->tiles[gnd->cubes[p.x][p.y]->tileUp]->textureIndex)
+							continue;
+						if (done.find(pp.x + gnd->width * pp.y) == done.end())
+						{
+							done[pp.x + gnd->width * pp.y] = true;
+							queue.push(pp);
+						}
+					}
+					if (gnd->inMap(p) && std::find(tilesToFill.begin(), tilesToFill.end(), p) == tilesToFill.end())
+						tilesToFill.push_back(p);
+					c++;
+				}
+				for (const auto& t : tilesToFill)
+				{
+					if (ImGui::GetIO().KeyCtrl)
+					{
+						if (std::find(newSelection.begin(), newSelection.end(), t) != newSelection.end())
+							newSelection.erase(std::remove_if(newSelection.begin(), newSelection.end(), [&](const glm::ivec2& el) { return el.x == t.x && el.y == t.y; }));
+					}
+					else if (std::find(newSelection.begin(), newSelection.end(), t) == newSelection.end())
+						newSelection.push_back(t);
+				}
+			}
+			else if (tool == Tool::FillHeight)
+			{
+				glm::ivec2 tileHovered((int)glm::floor(mouse3D.x / 10), (gnd->height - (int)glm::floor(mouse3D.z) / 10));
+
+				std::vector<glm::ivec2> tilesToFill;
+				std::queue<glm::ivec2> queue;
+				std::map<int, bool> done;
+
+				glm::ivec2 offsets[4] = { glm::ivec2(-1,0), glm::ivec2(1,0), glm::ivec2(0,-1), glm::ivec2(0,1) };
+				queue.push(tileHovered);
+				int c = 0;
+				while (!queue.empty())
+				{
+					auto p = queue.front();
+					queue.pop();
+					for (const auto& o : offsets)
+					{
+						auto pp = p + o;
+						if (!gnd->inMap(pp) || !gnd->inMap(p))
+							continue;
+						auto c = gnd->cubes[pp.x][pp.y];
+
+						if (!c->sameHeight(*gnd->cubes[p.x][p.y]))
+							continue;
+						if (done.find(pp.x + gnd->width * pp.y) == done.end())
+						{
+							done[pp.x + gnd->width * pp.y] = true;
+							queue.push(pp);
+						}
+					}
+					if (gnd->inMap(p) && std::find(tilesToFill.begin(), tilesToFill.end(), p) == tilesToFill.end())
+						tilesToFill.push_back(p);
+					c++;
+				}
+				for (const auto& t : tilesToFill)
+				{
+					if (ImGui::GetIO().KeyCtrl)
+					{
+						if (std::find(newSelection.begin(), newSelection.end(), t) != newSelection.end())
+							newSelection.erase(std::remove_if(newSelection.begin(), newSelection.end(), [&](const glm::ivec2& el) { return el.x == t.x && el.y == t.y; }));
+					}
+					else if (std::find(newSelection.begin(), newSelection.end(), t) == newSelection.end())
+						newSelection.push_back(t);
+				}
+			}
 
 
 			if (map->tileSelection != newSelection)
@@ -841,7 +943,7 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 		ImGui::Text("Selection: (%d,%d) - (%d,%d)", tileMinX, tileMinY, tileMaxX, tileMaxY);
 		ImGui::End();
 
-		if (tool == 0) // select rectangular area
+		if (tool == Tool::Rectangle) // select rectangular area
 		{
 			if (tileMinX >= 0 && tileMaxX < gnd->width + 1 && tileMinY >= 0 && tileMaxY < gnd->height + 1)
 				for (int x = tileMinX; x < tileMaxX; x++)
@@ -859,7 +961,7 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 					}
 				}
 		}
-		else if (tool == 1) // lasso
+		else if (tool == Tool::Lasso) // lasso
 		{
 			if (tileX >= 0 && tileX < gnd->width && tileY >= 0 && tileY < gnd->height)
 			{

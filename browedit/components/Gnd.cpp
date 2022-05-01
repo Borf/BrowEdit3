@@ -1094,6 +1094,14 @@ void Gnd::Cube::calcNormals(Gnd* gnd, int x, int y)
 	}
 }
 
+bool Gnd::Cube::sameHeight(const Cube& other) const
+{
+	for (int i = 0; i < 4; i++)
+		if (glm::abs(heights[i] - heights[0]) > 0.01f || glm::abs(other.heights[i] - heights[0]) > 0.01f)
+			return false;
+	return true;
+}
+
 
 
 std::vector<glm::vec3> Gnd::getMapQuads()

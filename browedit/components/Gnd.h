@@ -142,6 +142,7 @@ public:
 
 		void calcNormal();
 		void calcNormals(Gnd* gnd, int x, int y);
+		bool sameHeight(const Cube& other) const;
 
 		NLOHMANN_DEFINE_TYPE_INTRUSIVE(Cube, h1, h2, h3, h4, tileUp, tileFront, tileSide, normal, normals);
 	};
