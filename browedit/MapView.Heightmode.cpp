@@ -5,6 +5,7 @@
 #include <browedit/BrowEdit.h>
 #include <browedit/Map.h>
 #include <browedit/Node.h>
+#include <browedit/Icons.h>
 #include <browedit/gl/FBO.h>
 #include <browedit/gl/Texture.h>
 #include <browedit/shaders/SimpleShader.h>
@@ -62,8 +63,8 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 	{
 		Rectangle,
 		Lasso,
-		FillTex,
-		FillHeight
+		WandTex,
+		WandHeight
 	} tool = Tool::Rectangle;
 
 	ImGui::Begin("Height Edit");
@@ -74,14 +75,17 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 
 		if (ImGui::TreeNodeEx("Tool", ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed))
 		{
-			ImGui::RadioButton("Rectangle", &((int&)tool), (int)Tool::Rectangle);
+			if (browEdit->toolBarToggleButton("Rectangle", ICON_SELECT_RECTANGLE, tool == Tool::Rectangle, "Rectangle Select", ImVec4(1, 1, 1, 1)))
+				tool = Tool::Rectangle;
 			ImGui::SameLine();
-			ImGui::RadioButton("Lasso", &((int&)tool), (int)Tool::Lasso);
-
-			ImGui::RadioButton("Fill (Texture)", &((int&)tool), (int)Tool::FillTex);
+			if (browEdit->toolBarToggleButton("Lasso", ICON_SELECT_LASSO, tool == Tool::Lasso, "Rectangle Select", ImVec4(1, 1, 1, 1)))
+				tool = Tool::Lasso;
 			ImGui::SameLine();
-			ImGui::RadioButton("Fill (Height)", &((int&)tool), (int)Tool::FillHeight);
-			ImGui::TreePop();
+			if (browEdit->toolBarToggleButton("WandTex", ICON_SELECT_WAND_TEX, tool == Tool::WandTex, "Magic Wand (Texture)", ImVec4(1, 1, 1, 1)))
+				tool = Tool::WandTex;
+			ImGui::SameLine();
+			if (browEdit->toolBarToggleButton("WandHeight", ICON_SELECT_WAND_HEIGHT, tool == Tool::WandHeight, "Magic Wand (Height)", ImVec4(1, 1, 1, 1)))
+				tool = Tool::WandHeight;
 		}
 
 		if (tool == Tool::Rectangle || tool == Tool::Lasso)
@@ -823,7 +827,7 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 						newSelection.push_back(glm::ivec2(t.x, t.y));
 				selectLasso.clear();
 			}
-			else if (tool == Tool::FillTex)
+			else if (tool == Tool::WandTex)
 			{
 				glm::ivec2 tileHovered((int)glm::floor(mouse3D.x / 10), (gnd->height - (int)glm::floor(mouse3D.z) / 10));
 
@@ -870,7 +874,7 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 						newSelection.push_back(t);
 				}
 			}
-			else if (tool == Tool::FillHeight)
+			else if (tool == Tool::WandHeight)
 			{
 				glm::ivec2 tileHovered((int)glm::floor(mouse3D.x / 10), (gnd->height - (int)glm::floor(mouse3D.z) / 10));
 

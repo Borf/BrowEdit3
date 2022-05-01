@@ -25,7 +25,7 @@ $order = array(
 	"pivot_rotation01.png",	"pivot_rotation02.png",		"",							"",						"",						//60-64
 	"object_window_opened.png","object_window_closed.png","texture_window_opened.png","texture_window_closed.png","",				//65-69
 	"texture_stamp.png",	"texture_bucket.png",		"texture_select.png",		"",						"",						//70-74
-	"",						"",							"",							"",						"",						//75-79
+	"select_rectangle.png",	"select_lasso.png",			"select_wand_tex.png",		"select_wand_height.png","",					//75-79
 	"",						"",							"",							"",						"",						//80-84
 	"",						"",							"",							"",						"",						//85-89
 	"",						"",							"",							"",						"",						//90-94
