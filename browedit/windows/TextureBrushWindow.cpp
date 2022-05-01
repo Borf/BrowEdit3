@@ -64,6 +64,22 @@ void BrowEdit::showTextureBrushWindow()
 		if(toolBarToggleButton("select", ICON_TEXTUREBRUSH_SELECT, textureBrushMode == TextureBrushMode::Select, "Texture Selecting & fill"))
 			textureBrushMode = TextureBrushMode::Select;
 		
+
+		if (textureBrushMode == TextureBrushMode::Select)
+		{
+			if (toolBarToggleButton("Rectangle", ICON_SELECT_RECTANGLE, selectTool == SelectTool::Rectangle, "Rectangle Select", ImVec4(1, 1, 1, 1)))
+				selectTool = SelectTool::Rectangle;
+			ImGui::SameLine();
+			if (toolBarToggleButton("Lasso", ICON_SELECT_LASSO, selectTool == SelectTool::Lasso, "Rectangle Select", ImVec4(1, 1, 1, 1)))
+				selectTool = SelectTool::Lasso;
+			ImGui::SameLine();
+			if (toolBarToggleButton("WandTex", ICON_SELECT_WAND_TEX, selectTool == SelectTool::WandTex, "Magic Wand (Texture)", ImVec4(1, 1, 1, 1)))
+				selectTool = SelectTool::WandTex;
+			ImGui::SameLine();
+			if (toolBarToggleButton("WandHeight", ICON_SELECT_WAND_HEIGHT, selectTool == SelectTool::WandHeight, "Magic Wand (Height)", ImVec4(1, 1, 1, 1)))
+				selectTool = SelectTool::WandHeight;
+		}
+
 		if (ImGui::BeginCombo("Texture", util::iso_8859_1_to_utf8(gnd->textures[activeMapView->textureSelected]->file).c_str(), ImGuiComboFlags_HeightLargest))
 		{
 			for (auto i = 0; i < gnd->textures.size(); i++)
