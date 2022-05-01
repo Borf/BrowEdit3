@@ -13,7 +13,7 @@
 
 Gnd::Gnd(const std::string& fileName)
 {
-	auto file = util::FileIO::open("data\\" + fileName);
+	auto file = util::FileIO::open(fileName);
 	if (!file)
 	{
 		width = 0;

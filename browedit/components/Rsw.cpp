@@ -254,7 +254,10 @@ void Rsw::load(const std::string& fileName, Map* map, BrowEdit* browEdit, bool l
 
 	if (loadGnd)
 	{
-		node->addComponent(new Gnd(gndFile));
+		std::string path = fileName;
+		if (path.find("\\") != std::string::npos)
+			path = path.substr(0, path.rfind("\\")+1);
+		node->addComponent(new Gnd(path + gndFile));
 		node->addComponent(new GndRenderer());
 		node->addComponent(new WaterRenderer());
 		//TODO: read GND & GAT here
