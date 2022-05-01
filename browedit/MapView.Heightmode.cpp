@@ -86,6 +86,7 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 			ImGui::SameLine();
 			if (browEdit->toolBarToggleButton("WandHeight", ICON_SELECT_WAND_HEIGHT, tool == Tool::WandHeight, "Magic Wand (Height)", ImVec4(1, 1, 1, 1)))
 				tool = Tool::WandHeight;
+			ImGui::TreePop();
 		}
 
 		if (tool == Tool::Rectangle || tool == Tool::Lasso)
