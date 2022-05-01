@@ -475,7 +475,7 @@ void Rsw::save(const std::string& fileName, BrowEdit* browEdit)
 		mapName = mapName.substr(0, mapName.find(".rsw"));
 	if (mapName.find("\\") != std::string::npos)
 		mapName = mapName.substr(mapName.rfind("\\")+1);
-	std::string luaMapName = util::replace("@", "", mapName);
+	std::string luaMapName = util::replace(mapName, "@", "");
 	
 	if (lubEffects.size() > 0)
 	{

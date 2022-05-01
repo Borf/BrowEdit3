@@ -100,7 +100,7 @@ public:
 		Object,
 		Wall,
 		Gat,
-	} editMode = EditMode::Height;
+	} editMode = EditMode::Texture;
 
 	enum TextureBrushMode
 	{
