@@ -512,7 +512,7 @@ void Rsw::save(const std::string& fileName, BrowEdit* browEdit)
 			SAVEPROP0("srcmode", lubEffects[i]->srcmode) << "," << std::endl;
 			SAVEPROP0("destmode", lubEffects[i]->destmode) << "," << std::endl;
 			SAVEPROP0("maxcount", lubEffects[i]->maxcount) << "," << std::endl;
-			SAVEPROP0("zenable", lubEffects[i]->zenable) << std::endl;
+			SAVEPROP0("zenable", lubEffects[i]->zenable) << "," <<std::endl;
 			SAVEPROP3("rotate_angle", lubEffects[i]->rotate_angle) << std::endl;
 
 

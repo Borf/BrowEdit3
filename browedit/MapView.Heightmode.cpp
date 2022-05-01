@@ -202,7 +202,7 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 		if (map->tileSelection.size() > 1)
 			ImGui::TextColored(ImVec4(1, 0, 0, 1), "WARNING, THESE SETTINGS ONLY\nWORK ON THE FIRST TILE");
 		auto cube = gnd->cubes[map->tileSelection[0].x][map->tileSelection[0].y];
-		if (ImGui::TreeNodeEx("Tile Details", ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed))
+		if (ImGui::TreeNodeEx("Tile Details", ImGuiTreeNodeFlags_Framed))
 		{
 			bool changed = false;
 			changed |= util::DragFloat(browEdit, map, map->rootNode, "H1", &cube->h1);
