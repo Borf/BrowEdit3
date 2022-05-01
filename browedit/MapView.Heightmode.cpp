@@ -197,8 +197,10 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 		}
 	}
 
-	if (map->tileSelection.size() == 1)
+	if (map->tileSelection.size() > 0)
 	{
+		if (map->tileSelection.size() > 1)
+			ImGui::TextColored(ImVec4(1, 0, 0, 1), "WARNING, THESE SETTINGS ONLY\nWORK ON THE FIRST TILE");
 		auto cube = gnd->cubes[map->tileSelection[0].x][map->tileSelection[0].y];
 		if (ImGui::TreeNodeEx("Tile Details", ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed))
 		{
