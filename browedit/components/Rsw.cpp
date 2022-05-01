@@ -676,20 +676,23 @@ void Rsw::recalculateQuadtree(QuadTreeNode* node)
 			if (rswModel)
 			{
 				auto collider = n->getComponent<RswModelCollider>();
-				auto vertices = collider->getVerticesWorldSpace();
-				for (auto i = 0; i < vertices.size(); i += 3)
+				if (collider)
 				{
-					math::AABB aabb(std::span<glm::vec3>(vertices.begin() + i, 3));
-					for (int x = (int)glm::floor(aabb.min.x / 10); x < (int)glm::ceil(aabb.max.x / 10); x++)
-						for (int y = (int)glm::floor(aabb.min.z / 10); y < (int)glm::ceil(aabb.max.z / 10); y++)
-						{
-							if (x >= 0 && x < gnd->width && y >= 0 && y < gnd->height)
+					auto vertices = collider->getVerticesWorldSpace();
+					for (auto i = 0; i < vertices.size(); i += 3)
+					{
+						math::AABB aabb(std::span<glm::vec3>(vertices.begin() + i, 3));
+						for (int x = (int)glm::floor(aabb.min.x / 10); x < (int)glm::ceil(aabb.max.x / 10); x++)
+							for (int y = (int)glm::floor(aabb.min.z / 10); y < (int)glm::ceil(aabb.max.z / 10); y++)
 							{
-								heights[x][y].x = glm::min(heights[x][y].x, aabb.min.y);
-								heights[x][y].y = glm::max(heights[x][y].y, aabb.max.y);
+								if (x >= 0 && x < gnd->width && y >= 0 && y < gnd->height)
+								{
+									heights[x][y].x = glm::min(heights[x][y].x, aabb.min.y);
+									heights[x][y].y = glm::max(heights[x][y].y, aabb.max.y);
+								}
 							}
-						}
 
+					}
 				}
 			}
 			});
