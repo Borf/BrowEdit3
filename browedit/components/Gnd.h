@@ -32,6 +32,7 @@ public:
 	void makeTilesUnique();
 	void cleanLightmaps();
 	void cleanTiles();
+	void recalculateNormals();
 
 	void flattenTiles(Map* map, BrowEdit* browEdit, const std::vector<glm::ivec2>& tiles);
 	void smoothTiles(Map* map, BrowEdit* browEdit, const std::vector<glm::ivec2>& tiles, int axis);

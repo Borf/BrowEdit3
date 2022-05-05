@@ -190,8 +190,8 @@ Gnd::Gnd(const std::string& fileName)
 	delete file;
 	std::cout << "GND: Done reading gnd file" << std::endl;
 
-	for (int x = 1; x < width - 1; x++)
-		for (int y = 1; y < height - 1; y++)
+	for (int x = 0; x < width; x++)
+		for (int y = 0; y < height; y++)
 			cubes[x][y]->calcNormals(this, x, y);
 	std::cout << "GND: Done calculating normals" << std::endl;
 }
@@ -860,6 +860,17 @@ void Gnd::cleanTiles()
 	std::cout<< "Tiles cleanup, ending with " << tiles.size() << " tiles" << std::endl;
 }
 
+void Gnd::recalculateNormals()
+{
+	for (int x = 0; x < width; x++)
+		for (int y = 0; y < height; y++)
+			cubes[x][y]->calcNormal();
+
+	for (int x = 0; x < width; x++)
+		for (int y = 0; y < height; y++)
+			cubes[x][y]->calcNormals(this, x, y);
+}
+
 void Gnd::flattenTiles(Map* map, BrowEdit* browEdit, const std::vector<glm::ivec2>& tiles)
 {
 	CubeHeightChangeAction* action = new CubeHeightChangeAction(this, tiles);
@@ -1087,7 +1098,7 @@ void Gnd::Cube::calcNormals(Gnd* gnd, int x, int y)
 		{
 			int xx = (ii % 2) * ((i % 2 == 0) ? -1 : 1);
 			int yy = (ii / 2) * (i < 2 ? -1 : 1);
-			if (x + xx >= 0 && x + xx < gnd->width && y + yy >= 0 && y + yy < gnd->height)
+			if (gnd->inMap(glm::ivec2(x + xx,y+yy)))
 				normals[i] += gnd->cubes[x + xx][y + yy]->normal;
 		}
 		normals[i] = glm::normalize(normals[i]);

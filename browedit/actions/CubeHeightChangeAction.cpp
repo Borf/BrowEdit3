@@ -29,6 +29,9 @@ void CubeHeightChangeAction::perform(Map* map, BrowEdit* browEdit)
 	for (auto kv : newValues)
 		for (int i = 0; i < 4; i++)
 			kv.first->heights[i] = kv.second[i];
+	auto gnd = map->rootNode->getComponent<Gnd>();
+	if (gnd)
+		gnd->recalculateNormals();
 	auto gndRenderer = map->rootNode->getComponent<GndRenderer>();
 	if (gndRenderer)
 		gndRenderer->setChunksDirty();
@@ -39,6 +42,9 @@ void CubeHeightChangeAction::undo(Map* map, BrowEdit* browEdit)
 	for (auto kv : oldValues)
 		for (int i = 0; i < 4; i++)
 			kv.first->heights[i] = kv.second[i];
+	auto gnd = map->rootNode->getComponent<Gnd>();
+	if (gnd)
+		gnd->recalculateNormals();
 	auto gndRenderer = map->rootNode->getComponent<GndRenderer>();
 	if (gndRenderer)
 		gndRenderer->setChunksDirty();
