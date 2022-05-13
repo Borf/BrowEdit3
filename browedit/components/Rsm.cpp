@@ -317,7 +317,7 @@ Rsm::Mesh::Mesh(Rsm* model, std::istream* rsmFile)
 		if (model->version >= 0x0102)
 		{
 			rsmFile->read(reinterpret_cast<char*>(&todo), sizeof(float));
-			assert(todo == 0);
+			//assert(todo == 0);
 		}
 		rsmFile->read(reinterpret_cast<char*>(glm::value_ptr(texCoords[i])), sizeof(float) * 2);
 		texCoords[i].y = texCoords[i].y;

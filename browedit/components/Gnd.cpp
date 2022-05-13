@@ -10,6 +10,7 @@
 #include <iostream>
 #include <fstream>
 #include <FastNoiseLite.h>
+#include <glm/gtc/type_ptr.hpp>
 
 Gnd::Gnd(const std::string& fileName)
 {
@@ -32,8 +33,7 @@ Gnd::Gnd(const std::string& fileName)
 	else
 	{
 		version = 0;
-		std::cerr<< "GND: Invalid GND file" << std::endl;
-		return;
+		std::cerr<< "GND: Invalid GND file, attempting to load" << std::endl;
 	}
 
 	int textureCount = 0;
@@ -48,10 +48,10 @@ Gnd::Gnd(const std::string& fileName)
 	}
 	else
 	{
-		file->seekg(6, std::ios_base::cur);//TODO: test this
+		file->seekg(0, std::ios_base::beg);//TODO: test this
+		file->read(reinterpret_cast<char*>(&textureCount), sizeof(int));
 		file->read(reinterpret_cast<char*>(&width), sizeof(int));
 		file->read(reinterpret_cast<char*>(&height), sizeof(int));
-		file->read(reinterpret_cast<char*>(&textureCount), sizeof(int));
 	}
 
 	textures.reserve(textureCount);
@@ -130,7 +130,7 @@ Gnd::Gnd(const std::string& fileName)
 			tile->color.a = (unsigned char)file->get();
 			tiles.push_back(tile);
 		}
-
+		std::cout << "At " << file->tellg() << std::endl;
 		cubes.resize(width, std::vector<Cube*>(height, NULL));
 		for (int y = 0; y < height; y++)
 		{
@@ -153,10 +153,11 @@ Gnd::Gnd(const std::string& fileName)
 				}
 				else
 				{
-					unsigned short up, side, front;
-					file->read(reinterpret_cast<char*>(&up), sizeof(unsigned short));
-					file->read(reinterpret_cast<char*>(&front), sizeof(unsigned short));
-					file->read(reinterpret_cast<char*>(&side), sizeof(unsigned short));
+					short up, side, front, unknown;
+					file->read(reinterpret_cast<char*>(&up), sizeof(short));
+					file->read(reinterpret_cast<char*>(&front), sizeof(short));
+					file->read(reinterpret_cast<char*>(&side), sizeof(short));
+					file->read(reinterpret_cast<char*>(&unknown), sizeof(short));
 
 					cube->tileUp = up;
 					cube->tileSide = side;
@@ -185,7 +186,59 @@ Gnd::Gnd(const std::string& fileName)
 	}
 	else
 	{
-		//TODO: port code...too lazy for now
+		cubes.resize(width, std::vector<Cube*>(height, NULL));
+		for (int y = 0; y < height; y++)
+		{
+			for (int x = 0; x < width; x++)
+			{
+				Cube* cube = new Cube();
+
+				int textureUp = -1;
+				int textureFront = -1;
+				int textureSide = -1;
+
+				file->read(reinterpret_cast<char*>(&textureUp), sizeof(int));
+				file->read(reinterpret_cast<char*>(&textureFront), sizeof(int));
+				file->read(reinterpret_cast<char*>(&textureSide), sizeof(int));
+
+				file->read(reinterpret_cast<char*>(&cube->h1), sizeof(float));
+				file->read(reinterpret_cast<char*>(&cube->h2), sizeof(float));
+				file->read(reinterpret_cast<char*>(&cube->h3), sizeof(float));
+				file->read(reinterpret_cast<char*>(&cube->h4), sizeof(float));
+
+				char buf[132];
+				file->read(buf, 4); // dunno?
+
+				if (textureUp > -1)
+				{
+					cube->tileUp = (int)tiles.size();
+					Tile* t = new Tile();
+					tiles.push_back(t);
+					for(int i = 0; i < 4; i++)
+						file->read(reinterpret_cast<char*>(glm::value_ptr(t->texCoords[i])), 2 * sizeof(float));
+					t->textureIndex = textureUp;
+				}
+				if (textureSide > -1)
+				{
+					cube->tileSide = (int)tiles.size();
+					Tile* t = new Tile();
+					tiles.push_back(t);
+					for (int i = 0; i < 4; i++)
+						file->read(reinterpret_cast<char*>(glm::value_ptr(t->texCoords[i])), 2 * sizeof(float));
+					t->textureIndex = textureSide;
+				}
+				if (textureFront > -1)
+				{
+					cube->tileFront = (int)tiles.size();
+					Tile* t = new Tile();
+					tiles.push_back(t);
+					for (int i = 0; i < 4; i++)
+						file->read(reinterpret_cast<char*>(glm::value_ptr(t->texCoords[i])), 2 * sizeof(float));
+					t->textureIndex = textureFront;
+				}
+				cubes[x][y] = cube;
+			}
+		}
 	}
 	delete file;
 	std::cout << "GND: Done reading gnd file" << std::endl;

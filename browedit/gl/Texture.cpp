@@ -180,9 +180,12 @@ namespace gl
 
 	void Texture::bind()
 	{
-		if (frameCount > 1)
-			glBindTexture(GL_TEXTURE_2D, ids[(int)(glfwGetTime() * 10) % frameCount]);
-		else
-			glBindTexture(GL_TEXTURE_2D, ids[0]);
+		if (loaded)
+		{
+			if (frameCount > 1)
+				glBindTexture(GL_TEXTURE_2D, ids[(int)(glfwGetTime() * 10) % frameCount]);
+			else
+				glBindTexture(GL_TEXTURE_2D, ids[0]);
+		}
 	}
 }

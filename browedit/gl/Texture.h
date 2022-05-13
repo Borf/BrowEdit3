@@ -12,7 +12,10 @@ namespace gl
 		Texture(const std::string& fileName, bool flipSelection = false);
 		GLuint* ids = nullptr;
 	public:
-		inline GLuint id() { return ids[0]; }
+		inline GLuint id() {
+			if (loaded) { return ids[0]; }
+			else { return 0; }
+		}
 		int frameCount = 1;
 		std::string fileName;
 		int width, height;

@@ -109,6 +109,9 @@ public:
 		Cube()
 		{
 			selected = false;
+			tileUp = -1;
+			tileFront = -1;
+			tileSide = -1;
 		}
 		Cube(Cube* other)
 		{

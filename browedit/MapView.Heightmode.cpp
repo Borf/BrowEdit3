@@ -115,8 +115,12 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 		}
 		if (ImGui::TreeNodeEx("Actions", ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed))
 		{
-			if (ImGui::Button("Smooth selection", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
+			ImGui::BeginGroup();
+			if (ImGui::Button("Smooth selection", ImVec2(ImGui::GetContentRegionAvailWidth()-12-browEdit->config.toolbarButtonSize, 0)))
 				gnd->smoothTiles(map, browEdit, map->tileSelection, 3);
+			ImGui::SameLine();
+			browEdit->toolBarToggleButton("Connect", ICON_NOICON, false, "Connects tiles around selection");
+			ImGui::EndGroup();
 			if (ImGui::Button("Smooth selection Horizontal", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
 				gnd->smoothTiles(map, browEdit, map->tileSelection, 1);
 			if (ImGui::Button("Smooth selection Vertical", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))

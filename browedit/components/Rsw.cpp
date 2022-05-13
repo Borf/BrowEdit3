@@ -248,7 +248,7 @@ void Rsw::load(const std::string& fileName, Map* map, BrowEdit* browEdit, bool l
 		else
 		{
 			water.textureAnimSpeed = 100;
-			throw "todo";
+	//		throw "todo";
 		}
 	}
 
