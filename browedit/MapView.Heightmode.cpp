@@ -407,7 +407,8 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 		{
 			std::vector<glm::ivec2> cubeSelected;
 			for (auto c : browEdit->newCubes)
-				cubeSelected.push_back(c->pos + tileHovered);
+				if(gnd->inMap(c->pos + tileHovered))
+					cubeSelected.push_back(c->pos + tileHovered);
 			auto action1 = new CubeHeightChangeAction(gnd, cubeSelected);
 			auto action2 = new CubeTileChangeAction(gnd, cubeSelected);
 			for (auto cube : browEdit->newCubes)
