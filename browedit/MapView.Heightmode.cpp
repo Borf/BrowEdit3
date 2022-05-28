@@ -75,13 +75,21 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 		ImGui::SameLine();
 		if (browEdit->toolBarToggleButton("WandHeight", ICON_SELECT_WAND_HEIGHT, browEdit->selectTool == BrowEdit::SelectTool::WandHeight, "Magic Wand (Height)", ImVec4(1, 1, 1, 1)))
 			browEdit->selectTool = BrowEdit::SelectTool::WandHeight;
+		ImGui::SameLine();
+		if (browEdit->toolBarToggleButton("AllTex", ICON_SELECT_ALL_TEX, browEdit->selectTool == BrowEdit::SelectTool::AllTex, "Select All (Texture)", ImVec4(1, 1, 1, 1)))
+			browEdit->selectTool = BrowEdit::SelectTool::AllTex;
+		ImGui::SameLine();
+		if (browEdit->toolBarToggleButton("AllHeight", ICON_SELECT_ALL_HEIGHT, browEdit->selectTool == BrowEdit::SelectTool::AllHeight, "Select All (Height)", ImVec4(1, 1, 1, 1)))
+			browEdit->selectTool = BrowEdit::SelectTool::AllHeight;
 		ImGui::TreePop();
 	}
 
 	if (browEdit->selectTool == BrowEdit::SelectTool::Rectangle || 
 		browEdit->selectTool == BrowEdit::SelectTool::Lasso ||
 		browEdit->selectTool == BrowEdit::SelectTool::WandTex ||
-		browEdit->selectTool == BrowEdit::SelectTool::WandHeight)
+		browEdit->selectTool == BrowEdit::SelectTool::WandHeight ||
+		browEdit->selectTool == BrowEdit::SelectTool::AllTex ||
+		browEdit->selectTool == BrowEdit::SelectTool::AllHeight)
 	{
 		if (ImGui::TreeNodeEx("Selection Options", ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed))
 		{
@@ -944,6 +952,53 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 					}
 					else if (std::find(newSelection.begin(), newSelection.end(), t) == newSelection.end())
 						newSelection.push_back(t);
+				}
+			}
+			else if (browEdit->selectTool == BrowEdit::SelectTool::AllTex)
+			{
+				glm::ivec2 tileHovered((int)glm::floor(mouse3D.x / 10), (gnd->height - (int)glm::floor(mouse3D.z) / 10));
+				if (gnd->inMap(tileHovered))
+				{
+					std::vector<glm::ivec2> tilesToFill;
+					auto c = gnd->cubes[tileHovered.x][tileHovered.y];
+					for (int x = 0; x < gnd->width; x++)
+						for (int y = 0; y < gnd->height; y++)
+							if (c->tileUp != -1 && gnd->cubes[x][y]->tileUp != -1 && gnd->tiles[c->tileUp]->textureIndex == gnd->tiles[gnd->cubes[x][y]->tileUp]->textureIndex)
+								tilesToFill.push_back(glm::ivec2(x, y));
+
+					for (const auto& t : tilesToFill)
+					{
+						if (ImGui::GetIO().KeyCtrl)
+						{
+							if (std::find(newSelection.begin(), newSelection.end(), t) != newSelection.end())
+								newSelection.erase(std::remove_if(newSelection.begin(), newSelection.end(), [&](const glm::ivec2& el) { return el.x == t.x && el.y == t.y; }));
+						}
+						else if (std::find(newSelection.begin(), newSelection.end(), t) == newSelection.end())
+							newSelection.push_back(t);
+					}
+				}
+			}
+			else if (browEdit->selectTool == BrowEdit::SelectTool::AllHeight)
+			{
+				glm::ivec2 tileHovered((int)glm::floor(mouse3D.x / 10), (gnd->height - (int)glm::floor(mouse3D.z) / 10));
+				if (gnd->inMap(tileHovered))
+				{
+					std::vector<glm::ivec2> tilesToFill;
+					auto c = gnd->cubes[tileHovered.x][tileHovered.y];
+					for (int x = 0; x < gnd->width; x++)
+						for (int y = 0; y < gnd->height; y++)
+							if (c->sameHeight(*gnd->cubes[x][y]))
+								tilesToFill.push_back(glm::ivec2(x, y));
+					for (const auto& t : tilesToFill)
+					{
+						if (ImGui::GetIO().KeyCtrl)
+						{
+							if (std::find(newSelection.begin(), newSelection.end(), t) != newSelection.end())
+								newSelection.erase(std::remove_if(newSelection.begin(), newSelection.end(), [&](const glm::ivec2& el) { return el.x == t.x && el.y == t.y; }));
+						}
+						else if (std::find(newSelection.begin(), newSelection.end(), t) == newSelection.end())
+							newSelection.push_back(t);
+					}
 				}
 			}
 

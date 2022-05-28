@@ -66,7 +66,7 @@ void BrowEdit::showTextureBrushWindow()
 		
 
 		if (textureBrushMode == TextureBrushMode::Select)
-		{
+		{ //todo: put this somewhere shared between height & texture mode
 			if (toolBarToggleButton("Rectangle", ICON_SELECT_RECTANGLE, selectTool == SelectTool::Rectangle, "Rectangle Select", ImVec4(1, 1, 1, 1)))
 				selectTool = SelectTool::Rectangle;
 			ImGui::SameLine();
@@ -78,6 +78,12 @@ void BrowEdit::showTextureBrushWindow()
 			ImGui::SameLine();
 			if (toolBarToggleButton("WandHeight", ICON_SELECT_WAND_HEIGHT, selectTool == SelectTool::WandHeight, "Magic Wand (Height)", ImVec4(1, 1, 1, 1)))
 				selectTool = SelectTool::WandHeight;
+			ImGui::SameLine();
+			if (toolBarToggleButton("AllTex", ICON_SELECT_ALL_TEX, selectTool == BrowEdit::SelectTool::AllTex, "Select All (Texture)", ImVec4(1, 1, 1, 1)))
+				selectTool = BrowEdit::SelectTool::AllTex;
+			ImGui::SameLine();
+			if (toolBarToggleButton("AllHeight", ICON_SELECT_ALL_HEIGHT, selectTool == BrowEdit::SelectTool::AllHeight, "Select All (Height)", ImVec4(1, 1, 1, 1)))
+				selectTool = BrowEdit::SelectTool::AllHeight;
 		}
 
 		if (ImGui::BeginCombo("Texture", util::iso_8859_1_to_utf8(gnd->textures[activeMapView->textureSelected]->file).c_str(), ImGuiComboFlags_HeightLargest))

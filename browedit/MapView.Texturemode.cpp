@@ -639,6 +639,57 @@ void MapView::postRenderTextureMode(BrowEdit* browEdit)
 						if (map->tileSelection != newSelection)
 							map->doAction(new TileSelectAction(map, newSelection), browEdit);
 					}
+					else if (browEdit->selectTool == BrowEdit::SelectTool::AllTex)
+					{
+						glm::ivec2 tileHovered((int)glm::floor(mouse3D.x / 10), (gnd->height - (int)glm::floor(mouse3D.z) / 10));
+						if (gnd->inMap(tileHovered))
+						{
+							std::vector<glm::ivec2> tilesToFill;
+							auto c = gnd->cubes[tileHovered.x][tileHovered.y];
+							for (int x = 0; x < gnd->width; x++)
+								for (int y = 0; y < gnd->height; y++)
+									if (c->tileUp != -1 && gnd->cubes[x][y]->tileUp != -1 && gnd->tiles[c->tileUp]->textureIndex == gnd->tiles[gnd->cubes[x][y]->tileUp]->textureIndex)
+										tilesToFill.push_back(glm::ivec2(x, y));
+
+							for (const auto& t : tilesToFill)
+							{
+								if (ImGui::GetIO().KeyCtrl)
+								{
+									if (std::find(newSelection.begin(), newSelection.end(), t) != newSelection.end())
+										newSelection.erase(std::remove_if(newSelection.begin(), newSelection.end(), [&](const glm::ivec2& el) { return el.x == t.x && el.y == t.y; }));
+								}
+								else if (std::find(newSelection.begin(), newSelection.end(), t) == newSelection.end())
+									newSelection.push_back(t);
+							}
+							if (map->tileSelection != newSelection)
+								map->doAction(new TileSelectAction(map, newSelection), browEdit);
+						}
+					}
+					else if (browEdit->selectTool == BrowEdit::SelectTool::AllHeight)
+					{
+						glm::ivec2 tileHovered((int)glm::floor(mouse3D.x / 10), (gnd->height - (int)glm::floor(mouse3D.z) / 10));
+						if (gnd->inMap(tileHovered))
+						{
+							std::vector<glm::ivec2> tilesToFill;
+							auto c = gnd->cubes[tileHovered.x][tileHovered.y];
+							for (int x = 0; x < gnd->width; x++)
+								for (int y = 0; y < gnd->height; y++)
+									if (c->sameHeight(*gnd->cubes[x][y]))
+										tilesToFill.push_back(glm::ivec2(x, y));
+							for (const auto& t : tilesToFill)
+							{
+								if (ImGui::GetIO().KeyCtrl)
+								{
+									if (std::find(newSelection.begin(), newSelection.end(), t) != newSelection.end())
+										newSelection.erase(std::remove_if(newSelection.begin(), newSelection.end(), [&](const glm::ivec2& el) { return el.x == t.x && el.y == t.y; }));
+								}
+								else if (std::find(newSelection.begin(), newSelection.end(), t) == newSelection.end())
+									newSelection.push_back(t);
+							}
+							if (map->tileSelection != newSelection)
+								map->doAction(new TileSelectAction(map, newSelection), browEdit);
+						}
+					}
 
 
 

@@ -24,8 +24,8 @@ $order = array(
 	"camera_ortho.png",		"camera_perspective.png",	"mirror_horizontal.png",	"mirror_vertical.png",	"",						//55-59
 	"pivot_rotation01.png",	"pivot_rotation02.png",		"height_triangle_1.png",	"height_triangle_2.png","",						//60-64
 	"object_window_opened.png","object_window_closed.png","texture_window_opened.png","texture_window_closed.png","",				//65-69
-	"texture_stamp.png",	"texture_bucket.png",		"texture_select.png",		"",						"",						//70-74
-	"select_rectangle.png",	"select_lasso.png",			"select_wand_tex.png",		"select_wand_height.png","",					//75-79
+	"texture_stamp.png",	"texture_bucket.png",		"texture_select.png",		"",						"select_all_height.png",//70-74
+	"select_rectangle.png",	"select_lasso.png",			"select_wand_tex.png",		"select_wand_height.png","select_all_tex.png",	//75-79
 	"height_select_center.png","height_select_corners.png","height_select_sides.png","",					"",						//80-84
 	"",						"",							"",							"",						"",						//85-89
 	"",						"",							"",							"",						"",						//90-94

@@ -107,7 +107,9 @@ public:
 		Rectangle,
 		Lasso,
 		WandTex,
-		WandHeight
+		WandHeight,
+		AllTex,
+		AllHeight,
 	} selectTool = SelectTool::Rectangle;
 	enum TextureBrushMode
 	{
