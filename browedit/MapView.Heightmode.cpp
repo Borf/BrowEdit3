@@ -78,7 +78,7 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 			browEdit->heightDoodle = false;
 		}
 		ImGui::SameLine();
-		if (browEdit->toolBarToggleButton("Lasso", ICON_SELECT_LASSO, !browEdit->heightDoodle && browEdit->selectTool == BrowEdit::SelectTool::Lasso, "Rectangle Select", ImVec4(1, 1, 1, 1)))
+		if (browEdit->toolBarToggleButton("Lasso", ICON_SELECT_LASSO, !browEdit->heightDoodle && browEdit->selectTool == BrowEdit::SelectTool::Lasso, "Lasso Select", ImVec4(1, 1, 1, 1)))
 		{
 			browEdit->selectTool = BrowEdit::SelectTool::Lasso;
 			browEdit->heightDoodle = false;
@@ -167,7 +167,7 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 				ImGui::InputFloat("Height", &height);
 				if (ImGui::Button("Set selection to height"))
 				{
-					auto action = new CubeHeightChangeAction(gnd, map->tileSelection);
+					auto action = new CubeHeightChangeAction<Gnd, Gnd::Cube>(gnd, map->tileSelection);
 					for (auto t : map->tileSelection)
 						for(int i = 0; i < 4; i++)
 							gnd->cubes[t.x][t.y]->heights[i] = height;
@@ -413,7 +413,7 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 
 	ImGui::Begin("Statusbar");
 	ImGui::SetNextItemWidth(100.0f);
-	ImGui::InputInt2("Cursor:", glm::value_ptr(tileHovered));
+	ImGui::Text("Cursor: %d,%d", tileHovered.x, tileHovered.y);
 	ImGui::SameLine();
 	ImGui::End();
 
@@ -456,7 +456,7 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 			for (auto c : browEdit->newCubes)
 				if(gnd->inMap(c->pos + tileHovered))
 					cubeSelected.push_back(c->pos + tileHovered);
-			auto action1 = new CubeHeightChangeAction(gnd, cubeSelected);
+			auto action1 = new CubeHeightChangeAction<Gnd, Gnd::Cube>(gnd, cubeSelected);
 			auto action2 = new CubeTileChangeAction(gnd, cubeSelected);
 			for (auto cube : browEdit->newCubes)
 			{
@@ -573,7 +573,7 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 					for (int i = 0; i < 4; i++)
 						newHeights[kv.first][i] = kv.first->heights[i];
 
-				map->doAction(new CubeHeightChangeAction(originalHeights, newHeights), browEdit);
+				map->doAction(new CubeHeightChangeAction<Gnd, Gnd::Cube>(originalHeights, newHeights), browEdit);
 			}
 			originalHeights.clear();
 		}
@@ -589,13 +589,13 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 			for (auto& tile : map->tileSelection)
 			{
 				auto cube = gnd->cubes[tile.x][tile.y];
-				verts.push_back(VertexP3T2N3(glm::vec3(10 * tile.x, -cube->h3 + dist, 10 * gnd->height - 10 * tile.y), glm::vec2(0), cube->normals[2]));
-				verts.push_back(VertexP3T2N3(glm::vec3(10 * tile.x + 10, -cube->h2 + dist, 10 * gnd->height - 10 * tile.y + 10), glm::vec2(0), cube->normals[1]));
-				verts.push_back(VertexP3T2N3(glm::vec3(10 * tile.x + 10, -cube->h4 + dist, 10 * gnd->height - 10 * tile.y), glm::vec2(0), cube->normals[3]));
+				verts.push_back(VertexP3T2N3(glm::vec3(10 * tile.x,		-cube->h3 + dist, 10 * gnd->height - 10 * tile.y), glm::vec2(0), cube->normals[2]));
+				verts.push_back(VertexP3T2N3(glm::vec3(10 * tile.x + 10,-cube->h2 + dist, 10 * gnd->height - 10 * tile.y + 10), glm::vec2(0), cube->normals[1]));
+				verts.push_back(VertexP3T2N3(glm::vec3(10 * tile.x + 10,-cube->h4 + dist, 10 * gnd->height - 10 * tile.y), glm::vec2(0), cube->normals[3]));
 
-				verts.push_back(VertexP3T2N3(glm::vec3(10 * tile.x, -cube->h1 + dist, 10 * gnd->height - 10 * tile.y + 10), glm::vec2(0), cube->normals[0]));
-				verts.push_back(VertexP3T2N3(glm::vec3(10 * tile.x, -cube->h3 + dist, 10 * gnd->height - 10 * tile.y), glm::vec2(0), cube->normals[2]));
-				verts.push_back(VertexP3T2N3(glm::vec3(10 * tile.x + 10, -cube->h2 + dist, 10 * gnd->height - 10 * tile.y + 10), glm::vec2(0), cube->normals[1]));
+				verts.push_back(VertexP3T2N3(glm::vec3(10 * tile.x,		-cube->h1 + dist, 10 * gnd->height - 10 * tile.y + 10), glm::vec2(0), cube->normals[0]));
+				verts.push_back(VertexP3T2N3(glm::vec3(10 * tile.x,		-cube->h3 + dist, 10 * gnd->height - 10 * tile.y), glm::vec2(0), cube->normals[2]));
+				verts.push_back(VertexP3T2N3(glm::vec3(10 * tile.x + 10,-cube->h2 + dist, 10 * gnd->height - 10 * tile.y + 10), glm::vec2(0), cube->normals[1]));
 			}
 			glEnableVertexAttribArray(0);
 			glEnableVertexAttribArray(1);
@@ -701,7 +701,7 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 					for (auto& t : originalValues)
 						for (int ii = 0; ii < 4; ii++)
 							newValues[t.first][ii] = t.first->heights[ii];
-					map->doAction(new CubeHeightChangeAction(originalValues, newValues), browEdit);
+					map->doAction(new CubeHeightChangeAction<Gnd, Gnd::Cube>(originalValues, newValues), browEdit);
 				}
 				else if (gadgetHeight[i].axisDragged)
 				{
@@ -738,10 +738,6 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 						if (tileHovered.x >= 0 && tileHovered.x < gnd->width && tileHovered.y >= 0 && tileHovered.y < gnd->height)
 						{
 							glm::vec2 tileHoveredOffset((mouse3D.x / 10) - tileHovered.x, tileHovered.y - (gnd->height - mouse3D.z / 10));
-
-							ImGui::Begin("Statusbar");
-							ImGui::InputFloat2("Offset", glm::value_ptr(tileHoveredOffset));
-							ImGui::End();
 
 							int index = 0;
 							if (tileHoveredOffset.x > 0.5 && tileHoveredOffset.y > 0.5)

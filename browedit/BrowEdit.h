@@ -36,12 +36,12 @@ class BrowEdit
 	gl::Texture* lightTexture;
 	gl::Texture* effectTexture;
 	gl::Texture* soundTexture;
-
-
+	
 	std::vector<Map*> maps;
 public:
 	std::list<MapView> mapViews; //list, because vector reallocates mapviews when pushing back, which breaks activeMapview pointer
 	gl::Texture* iconsTexture;
+	gl::Texture* gatTexture;
 	Lightmapper* lightmapper = nullptr;
 
 	struct WindowData
@@ -100,7 +100,7 @@ public:
 		Object,
 		Wall,
 		Gat,
-	} editMode = EditMode::Height;
+	} editMode = EditMode::Gat;
 	
 	enum class SelectTool
 	{
@@ -119,6 +119,7 @@ public:
 	} textureBrushMode = TextureBrushMode::Stamp;
 	
 	bool heightDoodle = true;
+	bool gatDoodle = false;
 
 	std::map<std::string, std::vector<std::string>> tagList; // tag -> [ file ], utf8
 	std::map<std::string, std::vector<std::string>> tagListReverse; // file -> [ tag ], kr

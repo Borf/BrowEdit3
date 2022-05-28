@@ -2,9 +2,11 @@
 #include <glad/glad.h>
 #include "Rsw.h"
 #include "Gnd.h"
+#include "Gat.h"
 #include "Rsm.h"
 #include "GndRenderer.h"
 #include "RsmRenderer.h"
+#include "GatRenderer.h"
 #include "LubRenderer.h"
 #include "WaterRenderer.h"
 
@@ -261,6 +263,9 @@ void Rsw::load(const std::string& fileName, Map* map, BrowEdit* browEdit, bool l
 		node->addComponent(new GndRenderer());
 		node->addComponent(new WaterRenderer());
 		//TODO: read GND & GAT here
+
+		node->addComponent(new Gat(path + gatFile));
+		node->addComponent(new GatRenderer(browEdit->gatTexture));
 	}
 
 

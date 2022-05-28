@@ -34,6 +34,7 @@ public:
 	ImVec4 toolbarButtonsObjectEdit = ImVec4(255 / 255.0f, 184 / 255.0f, 108/ 255.0f, 1.0f); //orange
 	ImVec4 toolbarButtonsTextureEdit = ImVec4(255 / 255.0f, 121 / 255.0f, 198 / 255.0f, 1.0f); //pink
 	ImVec4 toolbarButtonsWallEdit = ImVec4(189 / 255.0f, 147 / 255.0f, 249 / 255.0f, 1.0f); //purple
+	ImVec4 toolbarButtonsGatEdit = ImVec4(255 / 255.0f, 85 / 255.0f, 85 / 255.0f, 1.0f); //red
 
 	std::vector<float> translateGridSizes = { 0.25f, 0.5f, 1.0f, 2.0f, 2.5f, 5.0f, 10.0f, 20.0f };
 	std::vector<float> rotateGridSizes = { 1,22.5, 45,90,180 };
@@ -66,6 +67,7 @@ public:
 		toolbarButtonsObjectEdit,
 		toolbarButtonsTextureEdit,
 		toolbarButtonsWallEdit,
+		toolbarButtonsGatEdit,
 		translateGridSizes,
 		rotateGridSizes,
 		grfEditorPath,

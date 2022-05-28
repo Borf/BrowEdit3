@@ -19,6 +19,7 @@ public:
 	std::vector<Action*> redoStack;
 	std::vector<Node*> selectedNodes;
 	std::vector<glm::ivec2> tileSelection;
+	std::vector<glm::ivec2> gatSelection;
 
 	std::vector<glm::ivec2> getSelectionAroundTiles();
 

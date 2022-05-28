@@ -129,6 +129,7 @@ void BrowEdit::run()
 	lightTexture = util::ResourceManager<gl::Texture>::load("data\\light.png");
 	effectTexture = util::ResourceManager<gl::Texture>::load("data\\effect.png");
 	soundTexture = util::ResourceManager<gl::Texture>::load("data\\sound.png");
+	gatTexture = util::ResourceManager<gl::Texture>::load("data\\gat.png");
 	
 	NodeRenderer::begin();
 	Gadget::init();
@@ -143,13 +144,13 @@ void BrowEdit::run()
 //		loadMap("data\\icecastle.rsw");
 //		loadMap("data\\bl_ice.rsw");
 //		loadMap("data\\comodo.rsw");
-//		loadMap("data\\guild_vs1.rsw");
+		loadMap("data\\guild_vs1.rsw");
 //		loadMap("data\\effects_ro.rsw");
 //		loadMap("data\\prt_in.rsw");
 //		loadMap("data\\wall_colour.rsw");
 //		loadMap("data\\easter_la.rsw");
 //		loadMap("data\\2@alice_mad.rsw");
-		loadMap("data\\prt_vilg01.rsw");
+//		loadMap("data\\prt_vilg01.rsw");
 #endif
 
 
@@ -465,6 +466,8 @@ void BrowEdit::showMapWindow(MapView& mapView)
 				mapView.postRenderObjectMode(this);
 			else if (editMode == EditMode::Texture)
 				mapView.postRenderTextureMode(this);
+			else if (editMode == EditMode::Gat)
+				mapView.postRenderGatMode(this);
 			mapView.prevMouseState = mapView.mouseState; //meh
 		}
 

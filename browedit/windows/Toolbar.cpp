@@ -36,6 +36,8 @@ void BrowEdit::toolbar()
 		ImGui::Text("Height");
 	else if (editMode == EditMode::Object)
 		ImGui::Text("Object");
+	else if (editMode == EditMode::Gat)
+			ImGui::Text("GAT\nGround Altitude");
 	else if (editMode == EditMode::Wall)
 		ImGui::Text("Wall");
 	else
@@ -43,18 +45,21 @@ void BrowEdit::toolbar()
 	ImGui::SameLine();
 	ImGui::SetCursorPosX(125);
 
-	if (toolBarToggleButton("heightmode", 0, editMode == EditMode::Height, "Height edit mode", config.toolbarButtonsHeightEdit))
+	if (toolBarToggleButton("heightmode", ICON_EDIT_HEIGHT, editMode == EditMode::Height, "Height edit mode", config.toolbarButtonsHeightEdit))
 		editMode = EditMode::Height;
 	ImGui::SameLine();
-	if (toolBarToggleButton("texturemode", 1, editMode == EditMode::Texture, "Texture edit mode", config.toolbarButtonsTextureEdit))
+	if (toolBarToggleButton("texturemode", ICON_EDIT_TEXTURE, editMode == EditMode::Texture, "Texture edit mode", config.toolbarButtonsTextureEdit))
 		editMode = EditMode::Texture;
 	ImGui::SameLine();
-	if (toolBarToggleButton("objectmode", 2, editMode == EditMode::Object, "Object edit mode", config.toolbarButtonsObjectEdit))
+	if (toolBarToggleButton("objectmode", ICON_EDIT_OBJECT, editMode == EditMode::Object, "Object edit mode", config.toolbarButtonsObjectEdit))
 		editMode = EditMode::Object;
 	ImGui::SameLine();
-	if (toolBarToggleButton("wallmode", 3, editMode == EditMode::Wall, "Wall edit mode", config.toolbarButtonsWallEdit))
+	if (toolBarToggleButton("gatmode", ICON_EDIT_GAT, editMode == EditMode::Gat, "Gat edit mode", config.toolbarButtonsGatEdit))
+		editMode = EditMode::Gat;
+	ImGui::SameLine();
+	if (toolBarToggleButton("wallmode", ICON_EDIT_WALL, editMode == EditMode::Wall, "Wall edit mode", config.toolbarButtonsWallEdit))
 		editMode = EditMode::Wall;
-	ImGui::SameLine(125 + 4 * (config.toolbarButtonSize + 5) + 20 );
+	ImGui::SameLine(130 + 5 * (config.toolbarButtonSize + 5) + 20 );
 
 	if (editMode == EditMode::Object)
 	{

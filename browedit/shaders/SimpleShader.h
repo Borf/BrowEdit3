@@ -17,6 +17,7 @@ public:
 			textureFac,
 			lightMin,
 			color,
+			colorMult,
 			End
 		};
 	};
@@ -29,5 +30,6 @@ public:
 		bindUniform(Uniforms::textureFac, "textureFac");
 		bindUniform(Uniforms::lightMin, "lightMin");
 		bindUniform(Uniforms::color, "color");
+		bindUniform(Uniforms::colorMult, "colorMult");
 	}
 };

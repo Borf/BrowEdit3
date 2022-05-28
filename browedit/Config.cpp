@@ -195,7 +195,8 @@ bool Config::showWindow(BrowEdit* browEdit)
 		ImGui::ColorEdit4("Toolbar Texture Edit", &toolbarButtonsTextureEdit.x);
 		ImGui::ColorEdit4("Toolbar Object Edit", &toolbarButtonsObjectEdit.x);
 		ImGui::ColorEdit4("Toolbar Wall Edit", &toolbarButtonsWallEdit.x);
-			
+		ImGui::ColorEdit4("Toolbar Gat Edit", &toolbarButtonsGatEdit.x);
+
 		ImGui::Checkbox("Save a backup of maps when saving", &backup);
 
 		ImGui::Text("Grid Sizes");

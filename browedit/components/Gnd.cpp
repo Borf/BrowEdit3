@@ -926,7 +926,7 @@ void Gnd::recalculateNormals()
 
 void Gnd::flattenTiles(Map* map, BrowEdit* browEdit, const std::vector<glm::ivec2>& tiles)
 {
-	CubeHeightChangeAction* action = new CubeHeightChangeAction(this, tiles);
+	auto action = new CubeHeightChangeAction<Gnd, Gnd::Cube>(this, tiles);
 	float avg = 0;
 	for (auto& t : map->tileSelection)
 		for (int i = 0; i < 4; i++)
@@ -942,7 +942,7 @@ void Gnd::flattenTiles(Map* map, BrowEdit* browEdit, const std::vector<glm::ivec
 
 void Gnd::smoothTiles(Map* map, BrowEdit* browEdit, const std::vector<glm::ivec2>& tiles, int axis)
 {
-	CubeHeightChangeAction* action = new CubeHeightChangeAction(this, tiles);
+	auto action = new CubeHeightChangeAction<Gnd, Gnd::Cube>(this, tiles);
 	glm::ivec2 offsets[] = {glm::ivec2(0, 0), glm::ivec2(1, 0) ,glm::ivec2(0, 1), glm::ivec2(1, 1)};
 
 
@@ -1002,7 +1002,7 @@ void Gnd::smoothTiles(Map* map, BrowEdit* browEdit, const std::vector<glm::ivec2
 
 void Gnd::addRandomHeight(Map* map, BrowEdit* browEdit, const std::vector<glm::ivec2>& tiles, float min, float max)
 {
-	CubeHeightChangeAction* action = new CubeHeightChangeAction(this, tiles);
+	auto action = new CubeHeightChangeAction<Gnd, Gnd::Cube>(this, tiles);
 	auto gndRenderer = node->getComponent<GndRenderer>();
 	for (auto tile : tiles)
 	{
@@ -1016,7 +1016,7 @@ void Gnd::addRandomHeight(Map* map, BrowEdit* browEdit, const std::vector<glm::i
 
 void Gnd::connectHigh(Map* map, BrowEdit* browEdit, const std::vector<glm::ivec2>& tiles)
 {
-	CubeHeightChangeAction* action = new CubeHeightChangeAction(this, tiles);
+	auto action = new CubeHeightChangeAction<Gnd, Gnd::Cube>(this, tiles);
 	auto gndRenderer = node->getComponent<GndRenderer>();
 	for (auto t : tiles)
 		for (int i = 0; i < 4; i++)
@@ -1034,7 +1034,7 @@ void Gnd::connectHigh(Map* map, BrowEdit* browEdit, const std::vector<glm::ivec2
 
 void Gnd::connectLow(Map* map, BrowEdit* browEdit, const std::vector<glm::ivec2>& tiles)
 {
-	CubeHeightChangeAction* action = new CubeHeightChangeAction(this, tiles);
+	auto action = new CubeHeightChangeAction<Gnd, Gnd::Cube>(this, tiles);
 	auto gndRenderer = node->getComponent<GndRenderer>();
 	for (auto t : tiles)
 		for (int i = 0; i < 4; i++)
@@ -1053,7 +1053,7 @@ void Gnd::connectLow(Map* map, BrowEdit* browEdit, const std::vector<glm::ivec2>
 
 void Gnd::perlinNoise(const std::vector<glm::ivec2>& tiles)
 {
-	CubeHeightChangeAction* action = new CubeHeightChangeAction(this, tiles);
+	auto action = new CubeHeightChangeAction<Gnd, Gnd::Cube>(this, tiles);
 	auto gndRenderer = node->getComponent<GndRenderer>();
 
 	FastNoiseLite noise;

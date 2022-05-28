@@ -3,6 +3,7 @@
 #define ICON_EDIT_TEXTURE		1
 #define ICON_EDIT_OBJECT		2
 #define ICON_EDIT_WALL			3
+#define ICON_EDIT_GAT			4
 
 
 #define ICON_SHADOWMAP_ON		10

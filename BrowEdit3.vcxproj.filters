@@ -340,6 +340,15 @@
     <ClCompile Include="browedit\actions\GndTextureActions.cpp">
       <Filter>browedit\actions</Filter>
     </ClCompile>
+    <ClCompile Include="browedit\MapView.Gatmode.cpp">
+      <Filter>browedit</Filter>
+    </ClCompile>
+    <ClCompile Include="browedit\components\Gat.cpp">
+      <Filter>browedit\components</Filter>
+    </ClCompile>
+    <ClCompile Include="browedit\components\GatRenderer.cpp">
+      <Filter>browedit\components</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="lib\imgui\imgui.h">
@@ -593,6 +602,12 @@
     </ClInclude>
     <ClInclude Include="browedit\actions\GndTextureActions.h">
       <Filter>browedit\actions</Filter>
+    </ClInclude>
+    <ClInclude Include="browedit\components\Gat.h">
+      <Filter>browedit\components</Filter>
+    </ClInclude>
+    <ClInclude Include="browedit\components\GatRenderer.h">
+      <Filter>browedit\components</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

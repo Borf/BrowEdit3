@@ -10,6 +10,7 @@
 #include "components/Gnd.h"
 #include "components/GndRenderer.h"
 #include "components/RsmRenderer.h"
+#include "components/GatRenderer.h"
 #include "components/WaterRenderer.h"
 #include "components/BillboardRenderer.h"
 
@@ -86,6 +87,15 @@ void MapView::toolbar(BrowEdit* browEdit)
 			browEdit->toolBarToggleButton("smoothColors", smoothColors ? ICON_SMOOTH_COLOR_ON : ICON_SMOOTH_COLOR_OFF, &smoothColors, "Smooth colormap", browEdit->config.toolbarButtonsViewOptions);
 			ImGui::SameLine();
 			browEdit->toolBarToggleButton("viewEmptyTiles", viewEmptyTiles ? ICON_EMPTYTILE_ON : ICON_EMPTYTILE_OFF, &viewEmptyTiles, "View empty tiles", browEdit->config.toolbarButtonsViewOptions);
+			ImGui::SameLine();
+			if(browEdit->editMode == BrowEdit::EditMode::Gat)
+				browEdit->toolBarToggleButton("viewGat", viewGatGat ? ICON_EDIT_GAT : ICON_EDIT_GAT, &viewGatGat, "View GAT tiles", browEdit->config.toolbarButtonsGatEdit);
+			else
+				browEdit->toolBarToggleButton("viewGat", viewGat ? ICON_EDIT_GAT : ICON_EDIT_GAT, &viewGat, "View GAT tiles", browEdit->config.toolbarButtonsGatEdit);
+
+			if (browEdit->editMode == BrowEdit::EditMode::Gat ? viewGatGat : viewGat)
+				ImGui::DragFloat("Gat Opacity", &gatOpacity, 0.025f, 0.0f, 1.0f);
+
 
 			ImGui::Text("Object render settings");
 			browEdit->toolBarToggleButton("viewModels", viewModels ? ICON_VIEW_MODEL_ON : ICON_VIEW_MODEL_OFF, &viewModels, "View Models", browEdit->config.toolbarButtonsViewOptions);
@@ -272,6 +282,11 @@ void MapView::render(BrowEdit* browEdit)
 
 	RsmRenderer::RsmRenderContext::getInstance()->viewLighting = viewLighting;
 	RsmRenderer::RsmRenderContext::getInstance()->viewTextures = viewTextures;
+
+	map->rootNode->getComponent<GatRenderer>()->cameraDistance = cameraDistance;
+	map->rootNode->getComponent<GatRenderer>()->enabled = browEdit->editMode == BrowEdit::EditMode::Gat ? viewGatGat : viewGat;
+	map->rootNode->getComponent<GatRenderer>()->opacity = gatOpacity;
+
 
 	//TODO: this does not seem so efficient
 	for (auto rc : nodeRenderContext.renderers[map->rootNode])

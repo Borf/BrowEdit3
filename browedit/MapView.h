@@ -134,6 +134,7 @@ public:
 	void postRenderTextureMode(BrowEdit* browEdit);
 	void postRenderHeightMode(BrowEdit* browEdit);
 	void postRenderObjectMode(BrowEdit* browEdit);
+	void postRenderGatMode(BrowEdit* browEdit);
 
 
 	void rebuildObjectModeGrid();
@@ -146,6 +147,9 @@ public:
 	bool smoothColors = false;
 	bool viewTextures = true;
 	bool viewEmptyTiles = true;
+	bool viewGat = false;
+	bool viewGatGat = true;
+	float gatOpacity = 0.5f;
 
 	bool viewModels = true;
 	bool viewEffects = true;
