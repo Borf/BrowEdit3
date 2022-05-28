@@ -136,7 +136,7 @@ void MapView::postRenderGatMode(BrowEdit* browEdit)
 		ImGui::TreePop();
 	}
 
-	if (!browEdit->heightDoodle)
+	if (!browEdit->heightDoodle && !browEdit->gatDoodle)
 	{
 		if (ImGui::TreeNodeEx("Selection Options", ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed))
 		{
@@ -203,24 +203,35 @@ void MapView::postRenderGatMode(BrowEdit* browEdit)
 			ImGui::TreePop();
 		}
 	} 
-	else //heightDoodle
+	else if(browEdit->heightDoodle && !browEdit->gatDoodle)
 	{
 		if (ImGui::TreeNodeEx("Brush Options", ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			ImGui::DragInt("Brush Size", &doodleSize, 1.0f, 0, 10);
-			
+			ImGui::DragFloat("Brush Hardness", &doodleHardness, 0.1f, 0.0f, 1.0f);
+			ImGui::DragFloat("Brush Speed", &doodleSpeed, 0.01f, 0, 1);
+
 			ImGui::TreePop();
 			if (ImGui::IsKeyPressed(GLFW_KEY_KP_ADD))
 				doodleSize++;
 			if (ImGui::IsKeyPressed(GLFW_KEY_KP_SUBTRACT))
 				doodleSize = glm::max(doodleSize-1,0);
-
-
-
+		}
+	}
+	else if (browEdit->gatDoodle && !browEdit->heightDoodle)
+	{
+		if (ImGui::TreeNodeEx("Brush Options", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			ImGui::DragInt("Brush Size", &doodleSize, 1.0f, 0, 10);
+			ImGui::TreePop();
+			if (ImGui::IsKeyPressed(GLFW_KEY_KP_ADD))
+				doodleSize++;
+			if (ImGui::IsKeyPressed(GLFW_KEY_KP_SUBTRACT))
+				doodleSize = glm::max(doodleSize - 1, 0);
 		}
 	}
 
-	if (map->gatSelection.size() > 0 && !browEdit->heightDoodle)
+	/*if (map->gatSelection.size() > 0 && !browEdit->heightDoodle)
 	{
 		if (map->gatSelection.size() > 1)
 			ImGui::TextColored(ImVec4(1, 0, 0, 1), "WARNING, THESE SETTINGS ONLY\nWORK ON THE FIRST TILE");
@@ -238,7 +249,7 @@ void MapView::postRenderGatMode(BrowEdit* browEdit)
 				gatRenderer->setChunkDirty(map->gatSelection[0].x, map->gatSelection[0].y);
 			ImGui::TreePop();
 		}
-	}
+	}*/
 	ImGui::PopItemWidth();
 	ImGui::End();
 
@@ -395,6 +406,11 @@ void MapView::postRenderGatMode(BrowEdit* browEdit)
 							for (int i = 0; i < 4; i++)
 								originalHeights[gat->cubes[tt.x][tt.y]][i] = gat->cubes[tt.x][tt.y]->heights[i];
 
+						if (ImGui::GetIO().KeyShift)
+							snapHeight = glm::min(minMax, snapHeight + doodleSpeed * (glm::mix(1.0f, glm::max(0.0f, 1.0f - glm::length(glm::vec2(x, y)) / doodleSize), doodleHardness)));
+						else
+							snapHeight = glm::max(minMax, snapHeight - doodleSpeed * (glm::mix(1.0f, glm::max(0.0f, 1.0f - glm::length(glm::vec2(x, y)) / doodleSize), doodleHardness)));
+
 						gat->cubes[tt.x][tt.y]->calcNormal();
 						gatRenderer->setChunkDirty(tt.x, tt.y);
 					}
@@ -424,7 +440,61 @@ void MapView::postRenderGatMode(BrowEdit* browEdit)
 		}
 
 	}
-	else
+	else if (browEdit->gatDoodle && hovered)
+	{
+		std::vector<VertexP3T2N3> verts;
+		float dist = 0.002f * cameraDistance;
+
+		for (int x = 0; x <= doodleSize; x++)
+		{
+			for (int y = 0; y <= doodleSize; y++)
+			{
+				glm::ivec2 tile = tileHovered + glm::ivec2(x,y+1) - glm::ivec2(doodleSize/2, doodleSize/2);
+				if (gat->inMap(tile))
+				{
+					auto cube = gat->cubes[tile.x][tile.y];
+					glm::vec2 t1(.25f * (gatIndex % 4), .25f * (gatIndex / 4));
+					glm::vec2 t2 = t1 + glm::vec2(.25f);
+
+					verts.push_back(VertexP3T2N3(glm::vec3(5 * tile.x, -cube->h3 + dist, 5 * gat->height - 5 * tile.y + 5), glm::vec2(t1.x, t1.y), cube->normal));
+					verts.push_back(VertexP3T2N3(glm::vec3(5 * tile.x + 5, -cube->h2 + dist, 5 * gat->height - 5 * tile.y + 10), glm::vec2(t2.x, t2.y), cube->normal));
+					verts.push_back(VertexP3T2N3(glm::vec3(5 * tile.x + 5, -cube->h4 + dist, 5 * gat->height - 5 * tile.y + 5), glm::vec2(t2.x, t1.y), cube->normal));
+
+					verts.push_back(VertexP3T2N3(glm::vec3(5 * tile.x, -cube->h1 + dist, 5 * gat->height - 5 * tile.y + 10), glm::vec2(t1.x, t2.y), cube->normal));
+					verts.push_back(VertexP3T2N3(glm::vec3(5 * tile.x, -cube->h3 + dist, 5 * gat->height - 5 * tile.y + 5), glm::vec2(t1.x, t1.y), cube->normal));
+					verts.push_back(VertexP3T2N3(glm::vec3(5 * tile.x + 5, -cube->h2 + dist, 5 * gat->height - 5 * tile.y + 10), glm::vec2(t2.x, t2.y), cube->normal));
+
+					if (ImGui::IsMouseDown(ImGuiMouseButton_Left))
+					{
+						gat->cubes[tile.x][tile.y]->gatType = gatIndex;
+						gatRenderer->setChunkDirty(tile.x, tile.y);
+					}
+				}
+			}
+		}
+
+
+
+		if(verts.size() > 0)
+		{
+			glEnableVertexAttribArray(0);
+			glEnableVertexAttribArray(1);
+			glEnableVertexAttribArray(2);
+			glDisableVertexAttribArray(3);
+			glDisableVertexAttribArray(4); //TODO: vao
+			glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexP3T2N3), verts[0].data);
+			glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexP3T2N3), verts[0].data + 3);
+			glVertexAttribPointer(2, 3, GL_FLOAT, false, sizeof(VertexP3T2N3), verts[0].data + 5);
+
+
+			browEdit->gatTexture->bind();
+			simpleShader->setUniform(SimpleShader::Uniforms::textureFac, 1.0f);
+			simpleShader->setUniform(SimpleShader::Uniforms::lightMin, 1.0f);
+			glDrawArrays(GL_TRIANGLES, 0, (int)verts.size());
+		}
+
+	}
+	else if(hovered)
 	{
 		//draw selection
 		if (map->gatSelection.size() > 0 && canSelect)
