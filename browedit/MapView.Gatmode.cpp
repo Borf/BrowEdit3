@@ -556,7 +556,7 @@ void MapView::postRenderGatMode(BrowEdit* browEdit)
 			pos[7] = (pos[0] + pos[2]) / 2.0f;
 			pos[8] = (pos[1] + pos[3]) / 2.0f;
 
-			ImGui::Begin("Height Edit");
+			ImGui::Begin("Gat Edit");
 			if (ImGui::CollapsingHeader("Selection Details", ImGuiTreeNodeFlags_DefaultOpen))
 			{
 				ImGui::DragFloat("Corner 1", &pos[0].y);

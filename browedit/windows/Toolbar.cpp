@@ -37,7 +37,7 @@ void BrowEdit::toolbar()
 	else if (editMode == EditMode::Object)
 		ImGui::Text("Object");
 	else if (editMode == EditMode::Gat)
-			ImGui::Text("GAT\nGround Altitude");
+			ImGui::Text("GAT");
 	else if (editMode == EditMode::Wall)
 		ImGui::Text("Wall");
 	else
