@@ -300,16 +300,19 @@ void BrowEdit::run()
 			}
 			if (editMode == EditMode::Height && activeMapView)
 			{
-				if (ImGui::IsKeyPressed(GLFW_KEY_KP_ADD))
-					activeMapView->map->growTileSelection(this);
-				if (ImGui::IsKeyPressed(GLFW_KEY_KP_SUBTRACT))
-					activeMapView->map->shrinkTileSelection(this);
-				if (ImGui::GetIO().KeyCtrl)
+				if (!heightDoodle)
 				{
-					if (ImGui::IsKeyPressed('C'))
-						copyTiles();
-					if (ImGui::IsKeyPressed('V'))
-						pasteTiles();
+					if (ImGui::IsKeyPressed(GLFW_KEY_KP_ADD))
+						activeMapView->map->growTileSelection(this);
+					if (ImGui::IsKeyPressed(GLFW_KEY_KP_SUBTRACT))
+						activeMapView->map->shrinkTileSelection(this);
+					if (ImGui::GetIO().KeyCtrl)
+					{
+						if (ImGui::IsKeyPressed('C'))
+							copyTiles();
+						if (ImGui::IsKeyPressed('V'))
+							pasteTiles();
+					}
 				}
 
 			}	

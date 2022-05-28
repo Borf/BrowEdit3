@@ -100,7 +100,7 @@ public:
 		Object,
 		Wall,
 		Gat,
-	} editMode = EditMode::Texture;
+	} editMode = EditMode::Height;
 	
 	enum class SelectTool
 	{
@@ -117,6 +117,8 @@ public:
 		Select,
 		Fill
 	} textureBrushMode = TextureBrushMode::Stamp;
+	
+	bool heightDoodle = true;
 
 	std::map<std::string, std::vector<std::string>> tagList; // tag -> [ file ], utf8
 	std::map<std::string, std::vector<std::string>> tagListReverse; // file -> [ tag ], kr
