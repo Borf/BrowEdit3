@@ -460,13 +460,16 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 			auto action2 = new CubeTileChangeAction(gnd, cubeSelected);
 			for (auto cube : browEdit->newCubes)
 			{
-				for (int i = 0; i < 4; i++)
-					gnd->cubes[tileHovered.x + cube->pos.x][tileHovered.y + cube->pos.y]->heights[i] = cube->heights[i];
-				for (int i = 0; i < 3; i++)
-					gnd->cubes[tileHovered.x + cube->pos.x][tileHovered.y + cube->pos.y]->tileIds[i] = cube->tileIds[i];
-				for (int i = 0; i < 4; i++)
-					gnd->cubes[tileHovered.x + cube->pos.x][tileHovered.y + cube->pos.y]->normals[i] = cube->normals[i];
-				gnd->cubes[tileHovered.x + cube->pos.x][tileHovered.y + cube->pos.y]->normal = cube->normal;
+				if (gnd->inMap(tileHovered + cube->pos))
+				{
+					for (int i = 0; i < 4; i++)
+						gnd->cubes[tileHovered.x + cube->pos.x][tileHovered.y + cube->pos.y]->heights[i] = cube->heights[i];
+					for (int i = 0; i < 3; i++)
+						gnd->cubes[tileHovered.x + cube->pos.x][tileHovered.y + cube->pos.y]->tileIds[i] = cube->tileIds[i];
+					for (int i = 0; i < 4; i++)
+						gnd->cubes[tileHovered.x + cube->pos.x][tileHovered.y + cube->pos.y]->normals[i] = cube->normals[i];
+					gnd->cubes[tileHovered.x + cube->pos.x][tileHovered.y + cube->pos.y]->normal = cube->normal;
+				}
 			}
 			action1->setNewHeights(gnd, cubeSelected);
 			action2->setNewTiles(gnd, cubeSelected);
