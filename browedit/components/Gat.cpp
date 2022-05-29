@@ -349,13 +349,13 @@ glm::vec3 Gat::getPos(int x, int y, int index)
 {
 	auto cube = cubes[x][y];
 	if (index == 0)
-		return glm::vec3((x + 0) * 5, -cube->heights[0], 5 * height - (y + 0) * 5 + 5);//2
+		return glm::vec3((x + 0) * 5, -cube->heights[0], 5 * height - (y + 0) * 5 + 10);//2
 	if (index == 1)
-		return glm::vec3((x + 1) * 5, -cube->heights[1], 5 * height - (y + 0) * 5 + 5);//3
+		return glm::vec3((x + 1) * 5, -cube->heights[1], 5 * height - (y + 0) * 5 + 10);//3
 	if(index == 2)
-		return glm::vec3((x + 0) * 5, -cube->heights[2], 5 * height - (y + 1) * 5 + 5);//1
+		return glm::vec3((x + 0) * 5, -cube->heights[2], 5 * height - (y + 1) * 5 + 10);//1
 	if(index == 3)
-		return glm::vec3((x + 1) * 5, -cube->heights[3], 5 * height - (y + 1) * 5 + 5);//4
+		return glm::vec3((x + 1) * 5, -cube->heights[3], 5 * height - (y + 1) * 5 + 10);//4
 
 	return glm::vec3(0, 0,0);
 }

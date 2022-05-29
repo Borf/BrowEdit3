@@ -274,7 +274,7 @@ void MapView::postRenderGatMode(BrowEdit* browEdit)
 
 
 	auto mouse3D = gat->rayCast(mouseRay, viewEmptyTiles);
-	glm::ivec2 tileHovered((int)glm::floor(mouse3D.x / 5), (gat->height - (int)glm::floor(mouse3D.z) / 5));
+	glm::ivec2 tileHovered((int)glm::floor(mouse3D.x / 5), gat->height - (int)glm::floor(mouse3D.z / 5)+1);
 
 	ImGui::Begin("Statusbar");
 	ImGui::SetNextItemWidth(100.0f);
@@ -348,7 +348,7 @@ void MapView::postRenderGatMode(BrowEdit* browEdit)
 	if (browEdit->heightDoodle && hovered)
 	{
 		static std::map<Gat::Cube*, float[4]> originalHeights;
-		glm::vec2 tileHoveredOffset((mouse3D.x / 5) - tileHovered.x, tileHovered.y - (gat->height - mouse3D.z / 5));
+		glm::vec2 tileHoveredOffset((mouse3D.x / 5) - tileHovered.x, tileHovered.y - (gat->height - mouse3D.z / 5) - 1);
 		int index = 0;
 		if (tileHoveredOffset.x < 0.5 && tileHoveredOffset.y > 0.5)
 			index = 0;
@@ -368,7 +368,7 @@ void MapView::postRenderGatMode(BrowEdit* browEdit)
 			{
 				for (int y = -doodleSize; y <= doodleSize; y++)
 				{
-					glm::ivec2 t = tileHovered + glm::ivec2(x, y);
+					glm::ivec2 t = tileHovered + glm::ivec2(x, y+1);
 					for (int ii = 0; ii < 4; ii++)
 					{
 						glm::ivec2 tt(t.x + gat->connectInfo[index][ii].x, t.y + gat->connectInfo[index][ii].y);
@@ -419,7 +419,7 @@ void MapView::postRenderGatMode(BrowEdit* browEdit)
 					glBegin(GL_POINTS);
 					glVertex3f(tt.x * 5.0f + ((ti % 2) == 1 ? 5.0f : 0.0f),
 						-snapHeight + 1,
-						(gat->height - tt.y) * 5.0f + ((ti / 2) == 0 ? 5.0f : 0.0f));
+						5+(gat->height - tt.y) * 5.0f + ((ti / 2) == 0 ? 5.0f : 0.0f));
 					glEnd();
 				}
 			}
@@ -449,7 +449,7 @@ void MapView::postRenderGatMode(BrowEdit* browEdit)
 		{
 			for (int y = 0; y <= doodleSize; y++)
 			{
-				glm::ivec2 tile = tileHovered + glm::ivec2(x,y+1) - glm::ivec2(doodleSize/2, doodleSize/2);
+				glm::ivec2 tile = tileHovered + glm::ivec2(x,y) - glm::ivec2(doodleSize/2, doodleSize/2);
 				if (gat->inMap(tile))
 				{
 					auto cube = gat->cubes[tile.x][tile.y];
@@ -826,8 +826,8 @@ void MapView::postRenderGatMode(BrowEdit* browEdit)
 					int tileMinX = (int)glm::floor(glm::min(mouseDragStart.x, mouseDragEnd.x) / 5);
 					int tileMaxX = (int)glm::ceil(glm::max(mouseDragStart.x, mouseDragEnd.x) / 5);
 
-					int tileMaxY = gat->height - (int)glm::floor(glm::min(mouseDragStart.z, mouseDragEnd.z) / 5) + 1;
-					int tileMinY = gat->height - (int)glm::ceil(glm::max(mouseDragStart.z, mouseDragEnd.z) / 5) + 1;
+					int tileMaxY = gat->height - (int)glm::floor(glm::min(mouseDragStart.z, mouseDragEnd.z) / 5) + 2;
+					int tileMinY = gat->height - (int)glm::ceil(glm::max(mouseDragStart.z, mouseDragEnd.z) / 5) + 2;
 
 					if (tileMinX >= 0 && tileMaxX < gat->width + 1 && tileMinY >= 0 && tileMaxY < gat->height + 1)
 						for (int x = tileMinX; x < tileMaxX; x++)
@@ -985,7 +985,7 @@ void MapView::postRenderGatMode(BrowEdit* browEdit)
 				}
 				else if (browEdit->selectTool == BrowEdit::SelectTool::AllHeight)
 				{
-					glm::ivec2 tileHovered((int)glm::floor(mouse3D.x / 5), (gat->height - (int)glm::floor(mouse3D.z) / 5));
+					glm::ivec2 tileHovered((int)glm::floor(mouse3D.x / 5), (gat->height - (int)glm::floor(mouse3D.z / 5)));
 					if (gat->inMap(tileHovered))
 					{
 						std::vector<glm::ivec2> tilesToFill;
@@ -1021,13 +1021,13 @@ void MapView::postRenderGatMode(BrowEdit* browEdit)
 			float dist = 0.002f * cameraDistance;
 
 			int tileX = (int)glm::floor(mouseDragEnd.x / 5);
-			int tileY = gat->height - (int)glm::floor(mouseDragEnd.z / 5);
+			int tileY = gat->height - (int)glm::floor(mouseDragEnd.z / 5)+1;
 
 			int tileMinX = (int)glm::floor(glm::min(mouseDragStart.x, mouseDragEnd.x) / 5);
 			int tileMaxX = (int)glm::ceil(glm::max(mouseDragStart.x, mouseDragEnd.x) / 5);
 
-			int tileMaxY = gat->height - (int)glm::floor(glm::min(mouseDragStart.z, mouseDragEnd.z) / 5) + 1;
-			int tileMinY = gat->height - (int)glm::ceil(glm::max(mouseDragStart.z, mouseDragEnd.z) / 5) + 1;
+			int tileMaxY = gat->height - (int)glm::floor(glm::min(mouseDragStart.z, mouseDragEnd.z) / 5) + 2;
+			int tileMinY = gat->height - (int)glm::ceil(glm::max(mouseDragStart.z, mouseDragEnd.z) / 5) + 2;
 
 
 			ImGui::Begin("Statusbar");
@@ -1042,13 +1042,13 @@ void MapView::postRenderGatMode(BrowEdit* browEdit)
 						for (int y = tileMinY; y < tileMaxY; y++)
 						{
 							auto cube = gat->cubes[x][y];
-							verts.push_back(VertexP3T2N3(glm::vec3(5 * x, -cube->h3 + dist, 5 * gat->height - 5 * y), glm::vec2(0), cube->normal));
-							verts.push_back(VertexP3T2N3(glm::vec3(5 * x, -cube->h1 + dist, 5 * gat->height - 5 * y + 5), glm::vec2(0), cube->normal));
-							verts.push_back(VertexP3T2N3(glm::vec3(5 * x + 5, -cube->h4 + dist, 5 * gat->height - 5 * y), glm::vec2(0), cube->normal));
+							verts.push_back(VertexP3T2N3(glm::vec3(5 * x,		-cube->h3 + dist, 5 * gat->height - 5 * y + 5), glm::vec2(0), cube->normal));
+							verts.push_back(VertexP3T2N3(glm::vec3(5 * x,		-cube->h1 + dist, 5 * gat->height - 5 * y + 10), glm::vec2(0), cube->normal));
+							verts.push_back(VertexP3T2N3(glm::vec3(5 * x + 5,	-cube->h4 + dist, 5 * gat->height - 5 * y + 5), glm::vec2(0), cube->normal));
 
-							verts.push_back(VertexP3T2N3(glm::vec3(5 * x, -cube->h1 + dist, 5 * gat->height - 5 * y + 5), glm::vec2(0), cube->normal));
-							verts.push_back(VertexP3T2N3(glm::vec3(5 * x + 5, -cube->h4 + dist, 5 * gat->height - 5 * y), glm::vec2(0), cube->normal));
-							verts.push_back(VertexP3T2N3(glm::vec3(5 * x + 5, -cube->h2 + dist, 5 * gat->height - 5 * y + 5), glm::vec2(0), cube->normal));
+							verts.push_back(VertexP3T2N3(glm::vec3(5 * x,		-cube->h1 + dist, 5 * gat->height - 5 * y + 10), glm::vec2(0), cube->normal));
+							verts.push_back(VertexP3T2N3(glm::vec3(5 * x + 5,	-cube->h4 + dist, 5 * gat->height - 5 * y + 5), glm::vec2(0), cube->normal));
+							verts.push_back(VertexP3T2N3(glm::vec3(5 * x + 5,	-cube->h2 + dist, 5 * gat->height - 5 * y + 10), glm::vec2(0), cube->normal));
 						}
 					}
 			}
@@ -1066,13 +1066,13 @@ void MapView::postRenderGatMode(BrowEdit* browEdit)
 				for (auto& t : selectLasso)
 				{
 					auto cube = gat->cubes[t.x][t.y];
-					verts.push_back(VertexP3T2N3(glm::vec3(5 * t.x, -cube->h3 + dist, 5 * gat->height - 5 * t.y), glm::vec2(0), cube->normal));
-					verts.push_back(VertexP3T2N3(glm::vec3(5 * t.x, -cube->h1 + dist, 5 * gat->height - 5 * t.y + 5), glm::vec2(0), cube->normal));
-					verts.push_back(VertexP3T2N3(glm::vec3(5 * t.x + 5, -cube->h4 + dist, 5 * gat->height - 5 * t.y), glm::vec2(0), cube->normal));
+					verts.push_back(VertexP3T2N3(glm::vec3(5 * t.x, -cube->h3 + dist, 5 * gat->height - 5 * t.y + 5), glm::vec2(0), cube->normal));
+					verts.push_back(VertexP3T2N3(glm::vec3(5 * t.x, -cube->h1 + dist, 5 * gat->height - 5 * t.y + 10), glm::vec2(0), cube->normal));
+					verts.push_back(VertexP3T2N3(glm::vec3(5 * t.x + 5, -cube->h4 + dist, 5 * gat->height - 5 * t.y + 5), glm::vec2(0), cube->normal));
 
-					verts.push_back(VertexP3T2N3(glm::vec3(5 * t.x, -cube->h1 + dist, 5 * gat->height - 5 * t.y + 5), glm::vec2(0), cube->normal));
-					verts.push_back(VertexP3T2N3(glm::vec3(5 * t.x + 5, -cube->h4 + dist, 5 * gat->height - 5 * t.y), glm::vec2(0), cube->normal));
-					verts.push_back(VertexP3T2N3(glm::vec3(5 * t.x + 5, -cube->h2 + dist, 5 * gat->height - 5 * t.y + 5), glm::vec2(0), cube->normal));
+					verts.push_back(VertexP3T2N3(glm::vec3(5 * t.x, -cube->h1 + dist, 5 * gat->height - 5 * t.y + 10), glm::vec2(0), cube->normal));
+					verts.push_back(VertexP3T2N3(glm::vec3(5 * t.x + 5, -cube->h4 + dist, 5 * gat->height - 5 * t.y + 5), glm::vec2(0), cube->normal));
+					verts.push_back(VertexP3T2N3(glm::vec3(5 * t.x + 5, -cube->h2 + dist, 5 * gat->height - 5 * t.y + 10), glm::vec2(0), cube->normal));
 				}
 			}
 
