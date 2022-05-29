@@ -504,11 +504,11 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 		if (ImGui::GetIO().KeyCtrl)
 		{
 			minMax = ImGui::GetIO().KeyShift ? -std::numeric_limits<float>::max() : std::numeric_limits<float>::max();
-			for (int x = -doodleSize; x <= doodleSize; x++)
+			for (int x = 0; x <= doodleSize; x++)
 			{
-				for (int y = -doodleSize; y <= doodleSize; y++)
+				for (int y = 0; y <= doodleSize; y++)
 				{
-					glm::ivec2 t = tileHovered + glm::ivec2(x, y);
+					glm::ivec2 t = tileHovered + glm::ivec2(x, y) - glm::ivec2(doodleSize / 2);
 					for (int ii = 0; ii < 4; ii++)
 					{
 						glm::ivec2 tt(t.x + gnd->connectInfo[index][ii].x, t.y + gnd->connectInfo[index][ii].y);
@@ -528,11 +528,11 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 		ImGui::Text("Change Height, hold shift to lower, hold Ctrl to snap");
 		ImGui::End();
 
-		for (int x = -doodleSize; x <= doodleSize; x++)
+		for (int x = 0; x <= doodleSize; x++)
 		{
-			for (int y = -doodleSize; y <= doodleSize; y++)
+			for (int y = 0; y <= doodleSize; y++)
 			{
-				glm::ivec2 t = tileHovered + glm::ivec2(x, y);
+				glm::ivec2 t = tileHovered + glm::ivec2(x, y) - glm::ivec2(doodleSize/2);
 				for (int ii = 0; ii < 4; ii++)
 				{
 					glm::ivec2 tt(t.x + gnd->connectInfo[index][ii].x, t.y + gnd->connectInfo[index][ii].y);
@@ -547,9 +547,9 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 								originalHeights[gnd->cubes[tt.x][tt.y]][i] = gnd->cubes[tt.x][tt.y]->heights[i];
 
 						if (ImGui::GetIO().KeyShift)
-							snapHeight = glm::min(minMax, snapHeight + doodleSpeed * (glm::mix(1.0f, glm::max(0.0f, 1.0f - glm::length(glm::vec2(x,y))/doodleSize), doodleHardness)));
+							snapHeight = glm::min(minMax, snapHeight + doodleSpeed * (glm::mix(1.0f, glm::max(0.0f, 1.0f - glm::length(glm::vec2(x - doodleSize / 2.0f, y - doodleSize / 2.0f))/doodleSize), doodleHardness)));
 						else
-							snapHeight = glm::max(minMax, snapHeight - doodleSpeed * (glm::mix(1.0f, glm::max(0.0f, 1.0f - glm::length(glm::vec2(x, y)) / doodleSize), doodleHardness)));
+							snapHeight = glm::max(minMax, snapHeight - doodleSpeed * (glm::mix(1.0f, glm::max(0.0f, 1.0f - glm::length(glm::vec2(x - doodleSize / 2.0f, y - doodleSize / 2.0f)) / doodleSize), doodleHardness)));
 						gnd->cubes[tt.x][tt.y]->calcNormal();
 						gndRenderer->setChunkDirty(tt.x, tt.y);
 					}
