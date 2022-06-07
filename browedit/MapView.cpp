@@ -426,7 +426,7 @@ void MapView::update(BrowEdit* browEdit, const ImVec2 &size)
 			}
 		}
 		cameraDistance *= (1 - (ImGui::GetIO().MouseWheel * 0.1f));
-		cameraDistance = glm::clamp(0.0f, 2000.0f, cameraDistance);
+		cameraDistance = glm::clamp(0.0f, 4000.0f, cameraDistance);
 	}
 
 
