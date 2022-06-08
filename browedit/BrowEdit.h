@@ -100,7 +100,7 @@ public:
 		Object,
 		Wall,
 		Gat,
-	} editMode = EditMode::Gat;
+	} editMode = EditMode::Texture;
 	
 	enum class SelectTool
 	{
