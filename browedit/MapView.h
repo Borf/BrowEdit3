@@ -69,6 +69,11 @@ public:
 	float cameraDistance = 500;
 	bool hovered = false;
 
+	bool cameraAnimating = false;
+	float cameraTargetRotX;
+	float cameraTargetRotY;
+
+
 	bool snapToGrid = false;
 	bool gridLocal = true;
 	float gridSizeTranslate = 5;

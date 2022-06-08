@@ -403,6 +403,29 @@ void MapView::update(BrowEdit* browEdit, const ImVec2 &size)
 		(ImGui::IsMouseDown(1) ? 0x02 : 0x00) |
 		(ImGui::IsMouseDown(2) ? 0x04 : 0x00);
 
+	if (cameraAnimating)
+	{
+		float dX = cameraTargetRotX - cameraRotX;
+		float dY = cameraTargetRotY - cameraRotY;
+		if (dX > 180)
+			dX -= 360;
+		if (dX < -180)
+			dX += 360;
+		if (dY > 180)
+			dY -= 360;
+		if (dY < -180)
+			dY += 360;
+		cameraRotX += 0.5f * glm::sign(dX);
+		cameraRotY += 0.5f * glm::sign(dY);
+
+		if (glm::abs(dX) < 0.6 && glm::abs(dY) < 0.6)
+		{
+			cameraRotX = cameraTargetRotX;
+			cameraRotY = cameraTargetRotY;
+			cameraAnimating = false;
+		}
+	}
+
 	if (hovered)
 	{
 		if ((mouseState.buttons&6) != 0)
@@ -489,6 +512,22 @@ bool MapView::drawCameraWidget()
 			{
 				glm::vec3 point = cubeMesh.getCollision(ray, glm::mat4(1.0f));
 				std::cout << point.x << "\t" << point.y << "\t" << point.z << std::endl;
+				if (glm::abs(point.y - 1) < 0.001)
+				{
+					cameraTargetRotY = 0;
+					cameraTargetRotX = 90;
+					cameraAnimating = true;
+				}
+				else if (glm::abs(point.z) - 1 < 0.001 || glm::abs(point.x) - 1 < 0.001) //side
+				{
+					float angle = std::atan2(glm::round(point.z), glm::round(point.x));
+					cameraTargetRotY = glm::degrees(angle)-90.0f;
+					cameraTargetRotX = 0;
+					if (glm::abs(point.y-1) < 0.25f)
+						cameraTargetRotX = 45;
+					cameraAnimating = true;
+				}
+
 			}
 			return true;
 		}
