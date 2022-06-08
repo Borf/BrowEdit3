@@ -15,22 +15,22 @@ private:
 	class ArrowMesh : public Mesh
 	{
 	public:
-		virtual std::vector<glm::vec3> buildVertices() override;
+		virtual void buildVertices(std::vector<VertexP3T2N3>& verts) override;
 	};
 	class ScaleMesh : public Mesh
 	{
 	public:
-		virtual std::vector<glm::vec3> buildVertices() override;
+		virtual void buildVertices(std::vector<VertexP3T2N3>& verts) override;
 	};
 	class ScaleCubeMesh : public Mesh
 	{
 	public:
-		virtual std::vector<glm::vec3> buildVertices() override;
+		virtual void buildVertices(std::vector<VertexP3T2N3>& verts) override;
 	};
 	class RotateMesh : public Mesh
 	{
 	public:
-		virtual std::vector<glm::vec3> buildVertices() override;
+		virtual void buildVertices(std::vector<VertexP3T2N3>& verts) override;
 	};
 
 	static inline SimpleShader* shader;

@@ -112,12 +112,13 @@ int Gadget::selectedAxisIndex()
 
 
 
-std::vector<glm::vec3> Gadget::ArrowMesh::buildVertices()
+void Gadget::ArrowMesh::buildVertices(std::vector<VertexP3T2N3>& verts)
 {
 	int height = 20;
 	int tip = 30;
 
-	std::vector<glm::vec3> verts = math::AABB::box(glm::vec3(-Gadget::thickness, 5, -Gadget::thickness), glm::vec3(Gadget::thickness, height, Gadget::thickness));
+	for (const auto& v : math::AABB::box(glm::vec3(-Gadget::thickness, 5, -Gadget::thickness), glm::vec3(Gadget::thickness, height, Gadget::thickness)))
+		verts.push_back(v);
 	verts.push_back(glm::vec3(-5, height, -5));
 	verts.push_back(glm::vec3(-5, height, 5));
 	verts.push_back(glm::vec3(0, tip, 0));
@@ -133,28 +134,27 @@ std::vector<glm::vec3> Gadget::ArrowMesh::buildVertices()
 	verts.push_back(glm::vec3(5, height, -5));
 	verts.push_back(glm::vec3(-5, height, -5));
 	verts.push_back(glm::vec3(0, tip, 0));
-	return verts;
 }
 
 
-std::vector<glm::vec3> Gadget::ScaleMesh::buildVertices()
+void Gadget::ScaleMesh::buildVertices(std::vector<VertexP3T2N3>& verts)
 {
 	int height = 20;
 	int tip = 30;
-	std::vector<glm::vec3> verts = math::AABB::box(glm::vec3(-Gadget::thickness, 5, -Gadget::thickness), glm::vec3(Gadget::thickness, height, Gadget::thickness));
+	for (const auto& v : math::AABB::box(glm::vec3(-Gadget::thickness, 5, -Gadget::thickness), glm::vec3(Gadget::thickness, height, Gadget::thickness)))
+		verts.push_back(v);
 	auto b = math::AABB::box(glm::vec3(-5, height, -5), glm::vec3(5, height + 10, 5));
 	verts.insert(verts.begin(), b.begin(), b.end());
-	return verts;
 }
 
-std::vector<glm::vec3> Gadget::ScaleCubeMesh::buildVertices()
+void Gadget::ScaleCubeMesh::buildVertices(std::vector<VertexP3T2N3>& verts)
 {
-	return math::AABB::box(glm::vec3(-5, -5, -5), glm::vec3(5, 5, 5));
+	for (const auto& v : math::AABB::box(glm::vec3(-5, -5, -5), glm::vec3(5, 5, 5)))
+		verts.push_back(v);
 }
 
-std::vector<glm::vec3> Gadget::RotateMesh::buildVertices()
+void Gadget::RotateMesh::buildVertices(std::vector<VertexP3T2N3>& verts)
 {
-	std::vector<glm::vec3> verts;
 	/*verts.push_back(glm::vec3(0.836100, 0.835598, 10.379000)); verts.push_back(glm::vec3(0.769100, 3.931098, 8.954101)); verts.push_back(glm::vec3(-0.769100, 3.931098, 8.954101));
 	verts.push_back(glm::vec3(-0.769100, 3.931098, 8.954101)); verts.push_back(glm::vec3(-0.836100, 0.835598, 10.379000)); verts.push_back(glm::vec3(0.836100, 0.835598, 10.379000));
 	verts.push_back(glm::vec3(0.836100, 0.835598, 10.379000)); verts.push_back(glm::vec3(1.038300, 0.054898, 9.960600)); verts.push_back(glm::vec3(1.121500, 2.505899, 7.821900));
@@ -341,6 +341,4 @@ std::vector<glm::vec3> Gadget::RotateMesh::buildVertices()
 		verts.push_back(v7);
 
 	}
-
-	return verts;
 }

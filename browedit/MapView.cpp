@@ -49,8 +49,13 @@ MapView::MapView(Map* map, const std::string &viewName) : map(map), viewName(vie
 	}
 	billboardShader = util::ResourceManager<gl::Shader>::load<BillboardRenderer::BillboardShader>();
 	whiteTexture = util::ResourceManager<gl::Texture>::load("data\\texture\\white.png");
-	if(!sphereMesh.vbo)
+	if (!sphereMesh.vbo)
 		sphereMesh.init();
+	if (!cubeMesh.vbo)
+	{
+		cubeMesh.init();
+		cubeTexture = util::ResourceManager<gl::Texture>::load("data\\model\\cube.png");
+	}
 	if (!simpleShader)
 		simpleShader = util::ResourceManager<gl::Shader>::load<SimpleShader>();
 
@@ -443,6 +448,50 @@ void MapView::update(BrowEdit* browEdit, const ImVec2 &size)
 
 
 
+bool MapView::drawCameraWidget()
+{
+	fbo->bind();
+	cubeTexture->bind();
+	simpleShader->use();
+
+	glm::mat4 projectionMatrix = glm::ortho(-fbo->getWidth() + 50.0f, 50.0f, -fbo->getHeight() + 50.0f, 50.0f, -1000.0f, 1000.0f);
+	glm::mat4 viewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0));
+	viewMatrix = glm::rotate(viewMatrix, glm::radians(cameraRotX), glm::vec3(1, 0, 0));
+	viewMatrix = glm::rotate(viewMatrix, glm::radians(cameraRotY), glm::vec3(0, 1, 0));
+	viewMatrix = glm::scale(viewMatrix, glm::vec3(40, 40, 40));
+
+	simpleShader->setUniform(SimpleShader::Uniforms::projectionMatrix, projectionMatrix);
+	simpleShader->setUniform(SimpleShader::Uniforms::viewMatrix, viewMatrix);
+	simpleShader->setUniform(SimpleShader::Uniforms::modelMatrix, glm::mat4(1.0f));
+
+	simpleShader->setUniform(SimpleShader::Uniforms::textureFac, 1.0f);
+	simpleShader->setUniform(SimpleShader::Uniforms::lightMin, 1.0f);
+	simpleShader->setUniform(SimpleShader::Uniforms::color, glm::vec4(1,1,1,1));
+	glDisable(GL_BLEND);
+
+	cubeMesh.draw();
+	glUseProgram(0);
+	fbo->unbind();
+
+
+
+	if (ImGui::GetIO().MouseDown[0])
+	{
+		int viewPort[4]{ 0, 0, fbo->getWidth(), fbo->getHeight() };
+		glm::vec2 mousePosScreenSpace(mouseState.position);
+		mousePosScreenSpace.y = fbo->getHeight() - mousePosScreenSpace.y;
+		glm::vec3 retNear = glm::unProject(glm::vec3(mousePosScreenSpace, 0.0f), viewMatrix, projectionMatrix, glm::vec4(viewPort[0], viewPort[1], viewPort[2], viewPort[3]));
+		glm::vec3 retFar = glm::unProject(glm::vec3(mousePosScreenSpace, 1.0f), viewMatrix, projectionMatrix, glm::vec4(viewPort[0], viewPort[1], viewPort[2], viewPort[3]));
+		
+		math::Ray ray(retNear, glm::normalize(retFar - retNear));
+		if (cubeMesh.collision(ray, glm::mat4(1.0f)))
+		{
+			std::cout << "Clicked cube!" << std::endl;
+		}
+	}
+	return false;
+}
+
 
 void MapView::focusSelection()
 {
@@ -539,14 +588,12 @@ namespace icosphere
 	}
 }
 
-std::vector<glm::vec3> MapView::SphereMesh::buildVertices()
+void MapView::SphereMesh::buildVertices(std::vector<VertexP3T2N3>& verts)
 {
-	std::vector<glm::vec3> verts;
 	auto ico = icosphere::make_icosphere(3);
 	for (const auto &triangle : ico.second)
 		for(int i = 0; i < 3; i++)
 			verts.push_back(ico.first[triangle.vertex[i]]);
-	return verts;
 }
 
 void MapView::drawLight(Node* n)
@@ -595,4 +642,148 @@ void MapView::drawLight(Node* n)
 		glDrawArrays(GL_LINE_LOOP, 0, (int)vertsCircle.size());
 		glUseProgram(0);
 	}
+}
+
+
+
+
+
+void MapView::CubeMesh::buildVertices(std::vector<VertexP3T2N3> &verts)
+{//https://dotnetfiddle.net/tPcv8S
+	//https://gist.github.com/Borf/940cc411e814a0164a361f34bd13c4ee
+	verts.push_back({ glm::vec3(0.66667, -1, -0.66667), glm::vec2(0.723148, 0.506202) });
+	verts.push_back({ glm::vec3(-0.66667, -1, 0.66667), glm::vec2(0.433888, 0.795462) });
+	verts.push_back({ glm::vec3(-0.66667, -1, -0.66667), glm::vec2(0.433888, 0.506202) });
+	verts.push_back({ glm::vec3(-1, 0.66667, 0.66667), glm::vec2(1, 0.28926) });
+	verts.push_back({ glm::vec3(-1, -0.66667, -0.66667), glm::vec2(0.795462, 0) });
+	verts.push_back({ glm::vec3(-1, -0.66667, 0.66667), glm::vec2(1, 0) });
+	verts.push_back({ glm::vec3(0.66667, 0.66667, 1), glm::vec2(0.361574, 0.306805) });
+	verts.push_back({ glm::vec3(-0.66667, -0.66667, 1), glm::vec2(0.072314, 0.511343) });
+	verts.push_back({ glm::vec3(0.66667, -0.66667, 1), glm::vec2(0.072314, 0.306805) });
+	verts.push_back({ glm::vec3(-0.66667, 1, -0.66667), glm::vec2(0.795462, 0.072314) });
+	verts.push_back({ glm::vec3(0.66667, 1, 0.66667), glm::vec2(0.506202, 0.361574) });
+	verts.push_back({ glm::vec3(0.66667, 1, -0.66667), glm::vec2(0.506202, 0.072314) });
+	verts.push_back({ glm::vec3(1, 0.66667, -0.66667), glm::vec2(0.361574, 0) });
+	verts.push_back({ glm::vec3(1, -0.66667, 0.66667), glm::vec2(0.072314, 0.204538) });
+	verts.push_back({ glm::vec3(1, -0.66667, -0.66667), glm::vec2(0.072314, 0) });
+	verts.push_back({ glm::vec3(0.66667, 0.66667, -1), glm::vec2(0.204538, 0.583657) });
+	verts.push_back({ glm::vec3(0.66667, 1, -0.66667), glm::vec2(0.255672, 0.511343) });
+	verts.push_back({ glm::vec3(1, 0.66667, -0.66667), glm::vec2(0.306805, 0.583657) });
+	verts.push_back({ glm::vec3(0.66667, -1, -0.66667), glm::vec2(0.255672, 0.945231) });
+	verts.push_back({ glm::vec3(0.66667, -0.66667, -1), glm::vec2(0.204538, 0.872917) });
+	verts.push_back({ glm::vec3(1, -0.66667, -0.66667), glm::vec2(0.306805, 0.872917) });
+	verts.push_back({ glm::vec3(1, 0.66667, 0.66667), glm::vec2(0.361574, 0.204538) });
+	verts.push_back({ glm::vec3(0.66667, 1, 0.66667), glm::vec2(0.433888, 0.255672) });
+	verts.push_back({ glm::vec3(0.66667, 0.66667, 1), glm::vec2(0.361574, 0.306805) });
+	verts.push_back({ glm::vec3(1, -0.66667, 0.66667), glm::vec2(0.072314, 0.204538) });
+	verts.push_back({ glm::vec3(0.66667, -0.66667, 1), glm::vec2(0.072314, 0.306805) });
+	verts.push_back({ glm::vec3(0.66667, -1, 0.66667), glm::vec2(0, 0.255672) });
+	verts.push_back({ glm::vec3(-0.66667, 0.66667, -1), glm::vec2(0.409073, 0.583657) });
+	verts.push_back({ glm::vec3(-1, 0.66667, -0.66667), glm::vec2(0.306805, 0.583657) });
+	verts.push_back({ glm::vec3(-0.66667, 1, -0.66667), glm::vec2(0.357939, 0.511343) });
+	verts.push_back({ glm::vec3(-1, -0.66667, -0.66667), glm::vec2(0.306805, 0.872917) });
+	verts.push_back({ glm::vec3(-0.66667, -0.66667, -1), glm::vec2(0.409073, 0.872917) });
+	verts.push_back({ glm::vec3(-0.66667, -1, -0.66667), glm::vec2(0.357939, 0.945231) });
+	verts.push_back({ glm::vec3(-1, 0.66667, 0.66667), glm::vec2(0.897729, 0.361574) });
+	verts.push_back({ glm::vec3(-0.66667, 0.66667, 1), glm::vec2(0.795462, 0.361574) });
+	verts.push_back({ glm::vec3(-0.66667, 1, 0.66667), glm::vec2(0.846596, 0.28926) });
+	verts.push_back({ glm::vec3(-0.66667, -1, 0.66667), glm::vec2(0.846596, 0.723148) });
+	verts.push_back({ glm::vec3(-0.66667, -0.66667, 1), glm::vec2(0.795462, 0.650834) });
+	verts.push_back({ glm::vec3(-1, -0.66667, 0.66667), glm::vec2(0.897729, 0.650834) });
+	verts.push_back({ glm::vec3(-0.66667, -1, 0.66667), glm::vec2(0.970043, 0.86778) });
+	verts.push_back({ glm::vec3(-1, -0.66667, -0.66667), glm::vec2(0.89773, 0.57852) });
+	verts.push_back({ glm::vec3(-0.66667, -1, -0.66667), glm::vec2(0.970043, 0.57852) });
+	verts.push_back({ glm::vec3(-0.66667, -1, -0.66667), glm::vec2(0.433888, 0.506202) });
+	verts.push_back({ glm::vec3(0.66667, -0.66667, -1), glm::vec2(0.723148, 0.433888) });
+	verts.push_back({ glm::vec3(0.66667, -1, -0.66667), glm::vec2(0.723148, 0.506202) });
+	verts.push_back({ glm::vec3(1, -0.66667, -0.66667), glm::vec2(0.306805, 0.872917) });
+	verts.push_back({ glm::vec3(0.66667, 0.66667, -1), glm::vec2(0.204538, 0.583657) });
+	verts.push_back({ glm::vec3(1, 0.66667, -0.66667), glm::vec2(0.306805, 0.583657) });
+	verts.push_back({ glm::vec3(-0.66667, 0.66667, 1), glm::vec2(0.795462, 0.361574) });
+	verts.push_back({ glm::vec3(-1, -0.66667, 0.66667), glm::vec2(0.897729, 0.650834) });
+	verts.push_back({ glm::vec3(-0.66667, -0.66667, 1), glm::vec2(0.795462, 0.650834) });
+	verts.push_back({ glm::vec3(0.66667, -0.66667, 1), glm::vec2(0.072314, 0.306805) });
+	verts.push_back({ glm::vec3(1, 0.66667, 0.66667), glm::vec2(0.361574, 0.204538) });
+	verts.push_back({ glm::vec3(0.66667, 0.66667, 1), glm::vec2(0.361574, 0.306805) });
+	verts.push_back({ glm::vec3(-0.66667, -0.66667, -1), glm::vec2(0.409073, 0.872917) });
+	verts.push_back({ glm::vec3(-1, 0.66667, -0.66667), glm::vec2(0.306805, 0.583657) });
+	verts.push_back({ glm::vec3(-0.66667, 0.66667, -1), glm::vec2(0.409073, 0.583657) });
+	verts.push_back({ glm::vec3(-0.66667, 1, 0.66667), glm::vec2(0.795462, 0.361574) });
+	verts.push_back({ glm::vec3(0.66667, 0.66667, 1), glm::vec2(0.506202, 0.433888) });
+	verts.push_back({ glm::vec3(0.66667, 1, 0.66667), glm::vec2(0.506202, 0.361574) });
+	verts.push_back({ glm::vec3(0.66667, 1, 0.66667), glm::vec2(0.506202, 0.361574) });
+	verts.push_back({ glm::vec3(1, 0.66667, -0.66667), glm::vec2(0.433888, 0.072314) });
+	verts.push_back({ glm::vec3(0.66667, 1, -0.66667), glm::vec2(0.506202, 0.072314) });
+	verts.push_back({ glm::vec3(0.66667, -1, 0.66667), glm::vec2(0.723148, 0.795462) });
+	verts.push_back({ glm::vec3(-0.66667, -0.66667, 1), glm::vec2(0.433888, 0.867776) });
+	verts.push_back({ glm::vec3(-0.66667, -1, 0.66667), glm::vec2(0.433888, 0.795462) });
+	verts.push_back({ glm::vec3(-0.66667, 1, -0.66667), glm::vec2(0.89773, 0.28926) });
+	verts.push_back({ glm::vec3(-1, 0.66667, 0.66667), glm::vec2(0.970043, 0.57852) });
+	verts.push_back({ glm::vec3(-0.66667, 1, 0.66667), glm::vec2(0.89773, 0.57852) });
+	verts.push_back({ glm::vec3(0.66667, 1, -0.66667), glm::vec2(0.506202, 0.072314) });
+	verts.push_back({ glm::vec3(-0.66667, 0.66667, -1), glm::vec2(0.795462, 0) });
+	verts.push_back({ glm::vec3(-0.66667, 1, -0.66667), glm::vec2(0.795462, 0.072314) });
+	verts.push_back({ glm::vec3(0.66667, -1, -0.66667), glm::vec2(0.723148, 0.506202) });
+	verts.push_back({ glm::vec3(1, -0.66667, 0.66667), glm::vec2(0.795462, 0.795462) });
+	verts.push_back({ glm::vec3(0.66667, -1, 0.66667), glm::vec2(0.723148, 0.795462) });
+	verts.push_back({ glm::vec3(-0.66667, 0.66667, -1), glm::vec2(0, 0.583657) });
+	verts.push_back({ glm::vec3(0.66667, -0.66667, -1), glm::vec2(0.204538, 0.872917) });
+	verts.push_back({ glm::vec3(-0.66667, -0.66667, -1), glm::vec2(0, 0.872917) });
+	verts.push_back({ glm::vec3(0.66667, -1, -0.66667), glm::vec2(0.723148, 0.506202) });
+	verts.push_back({ glm::vec3(0.66667, -1, 0.66667), glm::vec2(0.723148, 0.795462) });
+	verts.push_back({ glm::vec3(-0.66667, -1, 0.66667), glm::vec2(0.433888, 0.795462) });
+	verts.push_back({ glm::vec3(-1, 0.66667, 0.66667), glm::vec2(1, 0.28926) });
+	verts.push_back({ glm::vec3(-1, 0.66667, -0.66667), glm::vec2(0.795462, 0.28926) });
+	verts.push_back({ glm::vec3(-1, -0.66667, -0.66667), glm::vec2(0.795462, 0) });
+	verts.push_back({ glm::vec3(0.66667, 0.66667, 1), glm::vec2(0.361574, 0.306805) });
+	verts.push_back({ glm::vec3(-0.66667, 0.66667, 1), glm::vec2(0.361574, 0.511343) });
+	verts.push_back({ glm::vec3(-0.66667, -0.66667, 1), glm::vec2(0.072314, 0.511343) });
+	verts.push_back({ glm::vec3(-0.66667, 1, -0.66667), glm::vec2(0.795462, 0.072314) });
+	verts.push_back({ glm::vec3(-0.66667, 1, 0.66667), glm::vec2(0.795462, 0.361574) });
+	verts.push_back({ glm::vec3(0.66667, 1, 0.66667), glm::vec2(0.506202, 0.361574) });
+	verts.push_back({ glm::vec3(1, 0.66667, -0.66667), glm::vec2(0.361574, 0) });
+	verts.push_back({ glm::vec3(1, 0.66667, 0.66667), glm::vec2(0.361574, 0.204538) });
+	verts.push_back({ glm::vec3(1, -0.66667, 0.66667), glm::vec2(0.072314, 0.204538) });
+	verts.push_back({ glm::vec3(-0.66667, -1, 0.66667), glm::vec2(0.970043, 0.86778) });
+	verts.push_back({ glm::vec3(-1, -0.66667, 0.66667), glm::vec2(0.89773, 0.86778) });
+	verts.push_back({ glm::vec3(-1, -0.66667, -0.66667), glm::vec2(0.89773, 0.57852) });
+	verts.push_back({ glm::vec3(-0.66667, -1, -0.66667), glm::vec2(0.433888, 0.506202) });
+	verts.push_back({ glm::vec3(-0.66667, -0.66667, -1), glm::vec2(0.433888, 0.433888) });
+	verts.push_back({ glm::vec3(0.66667, -0.66667, -1), glm::vec2(0.723148, 0.433888) });
+	verts.push_back({ glm::vec3(1, -0.66667, -0.66667), glm::vec2(0.306805, 0.872917) });
+	verts.push_back({ glm::vec3(0.66667, -0.66667, -1), glm::vec2(0.204538, 0.872917) });
+	verts.push_back({ glm::vec3(0.66667, 0.66667, -1), glm::vec2(0.204538, 0.583657) });
+	verts.push_back({ glm::vec3(-0.66667, 0.66667, 1), glm::vec2(0.795462, 0.361574) });
+	verts.push_back({ glm::vec3(-1, 0.66667, 0.66667), glm::vec2(0.897729, 0.361574) });
+	verts.push_back({ glm::vec3(-1, -0.66667, 0.66667), glm::vec2(0.897729, 0.650834) });
+	verts.push_back({ glm::vec3(0.66667, -0.66667, 1), glm::vec2(0.072314, 0.306805) });
+	verts.push_back({ glm::vec3(1, -0.66667, 0.66667), glm::vec2(0.072314, 0.204538) });
+	verts.push_back({ glm::vec3(1, 0.66667, 0.66667), glm::vec2(0.361574, 0.204538) });
+	verts.push_back({ glm::vec3(-0.66667, -0.66667, -1), glm::vec2(0.409073, 0.872917) });
+	verts.push_back({ glm::vec3(-1, -0.66667, -0.66667), glm::vec2(0.306805, 0.872917) });
+	verts.push_back({ glm::vec3(-1, 0.66667, -0.66667), glm::vec2(0.306805, 0.583657) });
+	verts.push_back({ glm::vec3(-0.66667, 1, 0.66667), glm::vec2(0.795462, 0.361574) });
+	verts.push_back({ glm::vec3(-0.66667, 0.66667, 1), glm::vec2(0.795462, 0.433888) });
+	verts.push_back({ glm::vec3(0.66667, 0.66667, 1), glm::vec2(0.506202, 0.433888) });
+	verts.push_back({ glm::vec3(0.66667, 1, 0.66667), glm::vec2(0.506202, 0.361574) });
+	verts.push_back({ glm::vec3(1, 0.66667, 0.66667), glm::vec2(0.433888, 0.361574) });
+	verts.push_back({ glm::vec3(1, 0.66667, -0.66667), glm::vec2(0.433888, 0.072314) });
+	verts.push_back({ glm::vec3(0.66667, -1, 0.66667), glm::vec2(0.723148, 0.795462) });
+	verts.push_back({ glm::vec3(0.66667, -0.66667, 1), glm::vec2(0.723148, 0.867776) });
+	verts.push_back({ glm::vec3(-0.66667, -0.66667, 1), glm::vec2(0.433888, 0.867776) });
+	verts.push_back({ glm::vec3(-0.66667, 1, -0.66667), glm::vec2(0.89773, 0.28926) });
+	verts.push_back({ glm::vec3(-1, 0.66667, -0.66667), glm::vec2(0.970043, 0.28926) });
+	verts.push_back({ glm::vec3(-1, 0.66667, 0.66667), glm::vec2(0.970043, 0.57852) });
+	verts.push_back({ glm::vec3(0.66667, 1, -0.66667), glm::vec2(0.506202, 0.072314) });
+	verts.push_back({ glm::vec3(0.66667, 0.66667, -1), glm::vec2(0.506202, 0) });
+	verts.push_back({ glm::vec3(-0.66667, 0.66667, -1), glm::vec2(0.795462, 0) });
+	verts.push_back({ glm::vec3(0.66667, -1, -0.66667), glm::vec2(0.723148, 0.506202) });
+	verts.push_back({ glm::vec3(1, -0.66667, -0.66667), glm::vec2(0.795462, 0.506202) });
+	verts.push_back({ glm::vec3(1, -0.66667, 0.66667), glm::vec2(0.795462, 0.795462) });
+	verts.push_back({ glm::vec3(-0.66667, 0.66667, -1), glm::vec2(0, 0.583657) });
+	verts.push_back({ glm::vec3(0.66667, 0.66667, -1), glm::vec2(0.204538, 0.583657) });
+	verts.push_back({ glm::vec3(0.66667, -0.66667, -1), glm::vec2(0.204538, 0.872917) });
+
+	for (auto& v : verts)
+		v.data[4] = 1 - v.data[4];
 }

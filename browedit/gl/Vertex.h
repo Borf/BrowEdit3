@@ -83,11 +83,6 @@
 		}
 	};
 
-#define ATTR(name, size, index) \
-	glm::vec##size name##() {\
-		return glm::vec##size();\
-	}
-
 	class VertexP3T2T2T2N3 : public Vert<3+2+2+2+3>
 	{
 	public:
@@ -100,7 +95,6 @@
 			set(t3, index);
 			set(n, index);
 		}
-		ATTR(p, 3, 0);
 	};
 
 	class VertexP3T2T2C4N3 : public Vert<3 + 2 + 2 + 4 + 3>
@@ -115,7 +109,6 @@
 			set(c1, index);
 			set(n, index);
 		}
-		ATTR(p, 3, 0);
 	};
 
 
@@ -129,6 +122,12 @@
 			set(t, index);
 			set(n, index);
 		}
+		VertexP3T2N3(const glm::vec3& pos, const glm::vec2& t)
+		{
+			int index = 0;
+			set(pos, index);
+			set(t, index);
+		}
 		VertexP3T2N3(const glm::vec3& pos, const glm::vec3& n)
 		{
 			int index = 0;
@@ -136,7 +135,11 @@
 			index += 2;
 			set(n, index);
 		}
-		ATTR(p, 3, 0);
+		VertexP3T2N3(const glm::vec3& pos)
+		{
+			int index = 0;
+			set(pos, index);
+		}
 	};
 
 
@@ -149,7 +152,6 @@
 			set(pos, index);
 			set(t, index);
 		}
-		ATTR(p, 3, 0);
 	};
 
 	class VertexP3T2A1 : public Vert<3 + 2 + 1>

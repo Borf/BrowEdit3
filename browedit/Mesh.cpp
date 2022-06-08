@@ -1,22 +1,25 @@
 #include "Mesh.h"
-
+#include <glm/gtc/type_ptr.hpp>
 
 
 void Mesh::init()
 {
 	std::vector<VertexP3T2N3> verts;
-	vertices = buildVertices();
-	for (size_t i = 0; i < vertices.size(); i += 3)
+	buildVertices(verts);
+	for (size_t i = 0; i < verts.size(); i += 3)
 	{
-		glm::vec3 normal = glm::normalize(glm::cross(vertices[i + 1] - vertices[i], vertices[i + 2] - vertices[i]));
+		glm::vec3 normal = glm::normalize(glm::cross(glm::make_vec3(verts[i + 1].data) - glm::make_vec3(verts[i].data), glm::make_vec3(verts[i + 2].data) - glm::make_vec3(verts[i].data)));
 		for (size_t ii = i; ii < i + 3; ii++)
-			verts.push_back(VertexP3T2N3(vertices[ii], normal));
+		{
+			verts[ii].data[3 + 2 + 0] = normal.x;
+			verts[ii].data[3 + 2 + 1] = normal.y;
+			verts[ii].data[3 + 2 + 2] = normal.z;
+		}
 	}
 	if(!vbo)
 		vbo = new gl::VBO<VertexP3T2N3>();
 	vbo->setData(verts, GL_STATIC_DRAW);
 }
-
 
 void Mesh::draw()
 {
@@ -45,3 +48,4 @@ bool Mesh::collision(const math::Ray& ray, const glm::mat4& modelMatrix)
 			return true;
 	return false;
 }
+

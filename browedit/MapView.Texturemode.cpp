@@ -937,7 +937,7 @@ void MapView::postRenderTextureMode(BrowEdit* browEdit)
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		}
 
-		if (ImGui::IsMouseClicked(0) && tilesToFill.size() > 0)
+		if (hovered && ImGui::IsMouseClicked(0) && tilesToFill.size() > 0)
 		{
 			auto ga = new GroupAction();
 			int id = (int)gnd->tiles.size();

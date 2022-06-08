@@ -14,6 +14,7 @@ struct ImVec2;
 namespace gl 
 { 
 	class FBO; 
+	class Texture;
 }
 
 struct MouseState
@@ -27,12 +28,18 @@ struct MouseState
 };
 
 
+
 class MapView
 {
+	class CubeMesh : public Mesh
+	{
+	public:
+		virtual void buildVertices(std::vector<VertexP3T2N3>& verts) override;
+	};
 	class SphereMesh : public Mesh
 	{
 	public:
-		std::vector<glm::vec3> buildVertices();
+		virtual void buildVertices(std::vector<VertexP3T2N3>& verts) override;
 	};
 public:
 	Map* map = nullptr;
@@ -47,6 +54,8 @@ public:
 	BillboardRenderer::BillboardShader* billboardShader;
 	SimpleShader* simpleShader = nullptr;
 	static inline SphereMesh sphereMesh;
+	static inline CubeMesh cubeMesh;
+	static inline gl::Texture* cubeTexture = nullptr;
 	gl::Texture* whiteTexture;
 
 	bool opened = true;
@@ -135,6 +144,8 @@ public:
 	void postRenderHeightMode(BrowEdit* browEdit);
 	void postRenderObjectMode(BrowEdit* browEdit);
 	void postRenderGatMode(BrowEdit* browEdit);
+
+	bool drawCameraWidget();
 
 
 	void rebuildObjectModeGrid();
