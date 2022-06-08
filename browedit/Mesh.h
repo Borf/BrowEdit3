@@ -16,6 +16,7 @@ public:
 	void init();
 	void draw();
 	bool collision(const math::Ray& ray, const glm::mat4& modelMatrix);
+	glm::vec3 getCollision(const math::Ray& ray, const glm::mat4& modelMatrix);
 
 
 	void addVertex(const glm::vec3& pos, const glm::vec2& tex = glm::vec2(0, 0));

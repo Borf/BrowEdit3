@@ -1,6 +1,6 @@
 #include "Mesh.h"
 #include <glm/gtc/type_ptr.hpp>
-
+#include <algorithm>
 
 void Mesh::init()
 {
@@ -14,6 +14,7 @@ void Mesh::init()
 			verts[ii].data[3 + 2 + 0] = normal.x;
 			verts[ii].data[3 + 2 + 1] = normal.y;
 			verts[ii].data[3 + 2 + 2] = normal.z;
+			vertices.push_back(glm::make_vec3(verts[ii].data));
 		}
 	}
 	if(!vbo)
@@ -47,5 +48,18 @@ bool Mesh::collision(const math::Ray& ray, const glm::mat4& modelMatrix)
 		if (invRay.LineIntersectPolygon(std::span<glm::vec3>(vertices.data() + i, 3), t))
 			return true;
 	return false;
+}
+
+glm::vec3 Mesh::getCollision(const math::Ray& ray, const glm::mat4& modelMatrix)
+{
+	math::Ray invRay(ray * glm::inverse(modelMatrix));
+	float t;
+	std::vector<glm::vec3> points;
+	for (size_t i = 0; i < vertices.size(); i += 3)
+		if (invRay.LineIntersectPolygon(std::span<glm::vec3>(vertices.data() + i, 3), t))
+			points.push_back(invRay.origin + t * invRay.dir);
+
+	std::sort(points.begin(), points.end(), [&](const glm::vec3& a, const glm::vec3& b) { return glm::distance(a, invRay.origin) < glm::distance(b, invRay.origin); });
+	return points[0];
 }
 

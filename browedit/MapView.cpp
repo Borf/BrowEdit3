@@ -475,7 +475,6 @@ bool MapView::drawCameraWidget()
 
 
 
-	if (ImGui::GetIO().MouseDown[0])
 	{
 		int viewPort[4]{ 0, 0, fbo->getWidth(), fbo->getHeight() };
 		glm::vec2 mousePosScreenSpace(mouseState.position);
@@ -483,10 +482,15 @@ bool MapView::drawCameraWidget()
 		glm::vec3 retNear = glm::unProject(glm::vec3(mousePosScreenSpace, 0.0f), viewMatrix, projectionMatrix, glm::vec4(viewPort[0], viewPort[1], viewPort[2], viewPort[3]));
 		glm::vec3 retFar = glm::unProject(glm::vec3(mousePosScreenSpace, 1.0f), viewMatrix, projectionMatrix, glm::vec4(viewPort[0], viewPort[1], viewPort[2], viewPort[3]));
 		
-		math::Ray ray(retNear, glm::normalize(retFar - retNear));
+		math::Ray ray(retNear, glm::normalize(retFar-retNear));
 		if (cubeMesh.collision(ray, glm::mat4(1.0f)))
 		{
-			std::cout << "Clicked cube!" << std::endl;
+			if (ImGui::IsMouseClicked(0))
+			{
+				glm::vec3 point = cubeMesh.getCollision(ray, glm::mat4(1.0f));
+				std::cout << point.x << "\t" << point.y << "\t" << point.z << std::endl;
+			}
+			return true;
 		}
 	}
 	return false;
