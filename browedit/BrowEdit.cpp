@@ -21,6 +21,7 @@
 #include <browedit/Gadget.h>
 #include <browedit/Lightmapper.h>
 #include <browedit/components/Rsw.h>
+#include <browedit/components/Gat.h>
 #include <browedit/components/Gnd.h>
 #include <browedit/components/RsmRenderer.h>
 #include <browedit/util/FileIO.h>
@@ -543,6 +544,7 @@ void BrowEdit::saveMap(Map* map)
 
 	std::string rswName = config.ropath + map->name;
 	std::string gndName = config.ropath + map->name.substr(0, map->name.size() - 4) + ".gnd";
+	std::string gatName = config.ropath + map->name.substr(0, map->name.size() - 4) + ".gat";
 	std::string lubName = config.ropath + "data\\luafiles514\\lua files\\effecttool\\" + mapName + ".lub";
 	if (fullPath)
 	{
@@ -553,11 +555,13 @@ void BrowEdit::saveMap(Map* map)
 
 	std::string backupRswName = "backups\\" + map->name;
 	std::string backupGndName = "backups\\" + map->name.substr(0, map->name.size() - 4) + ".gnd";
+	std::string backupGatName = "backups\\" + map->name.substr(0, map->name.size() - 4) + ".gat";
 	std::string backupLubName = "backups\\data\\luafiles514\\lua files\\effecttool\\" + mapName + ".lub";
 	if (fullPath)
 	{
 		rswName = map->name;
 		gndName = map->name.substr(0, map->name.size() - 4) + ".gnd";
+		gatName = map->name.substr(0, map->name.size() - 4) + ".gat";
 		//dunno what to do with lub
 	}
 
@@ -566,11 +570,13 @@ void BrowEdit::saveMap(Map* map)
 	{
 		fixBackup(rswName, backupRswName);
 		fixBackup(gndName, backupGndName);
+		fixBackup(gatName, backupGndName);
 		fixBackup(lubName, backupGndName);
 	}
 
 	map->rootNode->getComponent<Rsw>()->save(rswName, this);
 	map->rootNode->getComponent<Gnd>()->save(gndName);
+	map->rootNode->getComponent<Gat>()->save(gatName);
 }
 
 void BrowEdit::saveAsMap(Map* map)

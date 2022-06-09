@@ -165,43 +165,6 @@ void MapView::postRenderGatMode(BrowEdit* browEdit)
 
 			ImGui::TreePop();
 		}
-		if (ImGui::TreeNodeEx("Actions", ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed))
-		{
-		/*	ImGui::BeginGroup();
-			if (ImGui::Button("Smooth selection", ImVec2(ImGui::GetContentRegionAvailWidth() - 12 - browEdit->config.toolbarButtonSize, 0)))
-				gnd->smoothTiles(map, browEdit, map->gatSelection, 3);
-			ImGui::SameLine();
-			browEdit->toolBarToggleButton("Connect", ICON_NOICON, false, "Connects tiles around selection");
-			ImGui::EndGroup();
-			if (ImGui::Button("Smooth selection Horizontal", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
-				gnd->smoothTiles(map, browEdit, map->gatSelection, 1);
-			if (ImGui::Button("Smooth selection Vertical", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
-				gnd->smoothTiles(map, browEdit, map->gatSelection, 2);
-			if (ImGui::Button("Flatten selection", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
-				gnd->flattenTiles(map, browEdit, map->gatSelection);
-			if (ImGui::Button("Connect tiles high", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
-				gnd->connectHigh(map, browEdit, map->gatSelection);
-			if (ImGui::Button("Connect tiles low", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
-				gnd->connectLow(map, browEdit, map->gatSelection);
-
-			if(ImGui::TreeNodeEx("Set Height", ImGuiTreeNodeFlags_Framed))
-			{
-				static float height = 0;
-				ImGui::InputFloat("Height", &height);
-				if (ImGui::Button("Set selection to height"))
-				{
-					auto action = new CubeHeightChangeAction(gnd, map->gatSelection);
-					for (auto t : map->gatSelection)
-						for(int i = 0; i < 4; i++)
-							gnd->cubes[t.x][t.y]->heights[i] = height;
-		
-					action->setNewHeights(gnd, map->gatSelection);
-					map->doAction(action, browEdit);
-				}
-				ImGui::TreePop();
-			}*/
-			ImGui::TreePop();
-		}
 	} 
 	else if(browEdit->heightDoodle && !browEdit->gatDoodle)
 	{
@@ -229,6 +192,53 @@ void MapView::postRenderGatMode(BrowEdit* browEdit)
 			if (ImGui::IsKeyPressed(GLFW_KEY_KP_SUBTRACT))
 				doodleSize = glm::max(doodleSize - 1, 0);
 		}
+	}
+	if (ImGui::TreeNodeEx("Actions", ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed))
+	{
+		/*	ImGui::BeginGroup();
+			if (ImGui::Button("Smooth selection", ImVec2(ImGui::GetContentRegionAvailWidth() - 12 - browEdit->config.toolbarButtonSize, 0)))
+				gnd->smoothTiles(map, browEdit, map->gatSelection, 3);
+			ImGui::SameLine();
+			browEdit->toolBarToggleButton("Connect", ICON_NOICON, false, "Connects tiles around selection");
+			ImGui::EndGroup();
+			if (ImGui::Button("Smooth selection Horizontal", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
+				gnd->smoothTiles(map, browEdit, map->gatSelection, 1);
+			if (ImGui::Button("Smooth selection Vertical", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
+				gnd->smoothTiles(map, browEdit, map->gatSelection, 2);
+			if (ImGui::Button("Flatten selection", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
+				gnd->flattenTiles(map, browEdit, map->gatSelection);
+			if (ImGui::Button("Connect tiles high", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
+				gnd->connectHigh(map, browEdit, map->gatSelection);
+			if (ImGui::Button("Connect tiles low", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
+				gnd->connectLow(map, browEdit, map->gatSelection);
+
+			if(ImGui::TreeNodeEx("Set Height", ImGuiTreeNodeFlags_Framed))
+			{
+				static float height = 0;
+				ImGui::InputFloat("Height", &height);
+				if (ImGui::Button("Set selection to height"))
+				{
+					auto action = new CubeHeightChangeAction(gnd, map->gatSelection);
+					for (auto t : map->gatSelection)
+						for(int i = 0; i < 4; i++)
+							gnd->cubes[t.x][t.y]->heights[i] = height;
+
+					action->setNewHeights(gnd, map->gatSelection);
+					map->doAction(action, browEdit);
+				}
+				ImGui::TreePop();
+			}*/
+
+		if (ImGui::Button("AutoGat"))
+		{
+
+
+
+			gatRenderer->allDirty = true;
+		}
+
+
+		ImGui::TreePop();
 	}
 
 	/*if (map->gatSelection.size() > 0 && !browEdit->heightDoodle)

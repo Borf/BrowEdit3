@@ -33,9 +33,6 @@ Gat::Gat(const std::string& fileName)
 	}
 
 	file->read(reinterpret_cast<char*>(&version), sizeof(short));
-
-	int textureCount = 0;
-
 	file->read(reinterpret_cast<char*>(&width), sizeof(int));
 	file->read(reinterpret_cast<char*>(&height), sizeof(int));
 
@@ -77,10 +74,7 @@ void Gat::save(const std::string& fileName)
 	std::cout << "GAT: writing gat file" << std::endl;
 	char header[4] = { 'G', 'R', 'A', 'T'};
 	file.write(header, 4);
-	version = util::swapShort(version);
 	file.write(reinterpret_cast<char*>(&version), sizeof(short));
-	version = util::swapShort(version);
-
 	file.write(reinterpret_cast<char*>(&width), sizeof(int));
 	file.write(reinterpret_cast<char*>(&height), sizeof(int));
 	for (int y = 0; y < height; y++)
@@ -92,7 +86,7 @@ void Gat::save(const std::string& fileName)
 			file.write(reinterpret_cast<char*>(&cube->h2), sizeof(float));
 			file.write(reinterpret_cast<char*>(&cube->h3), sizeof(float));
 			file.write(reinterpret_cast<char*>(&cube->h4), sizeof(float));
-			file.write(reinterpret_cast<char*>(&cube->gatType), sizeof(unsigned char));
+			file.write(reinterpret_cast<char*>(&cube->gatType), sizeof(int));
 		}
 	}
 	std::cout << "GAT: Done saving gat" << std::endl;
