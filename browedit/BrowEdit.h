@@ -156,7 +156,7 @@ public:
 	void saveMap(Map* map);
 	void saveAsMap(Map* map);
 	void exportMap(Map* map);
-	void showMapWindow(MapView& map);
+	void showMapWindow(MapView& map, float deltaTime);
 
 	void saveTagList();
 

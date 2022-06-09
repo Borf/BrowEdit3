@@ -394,7 +394,7 @@ void MapView::render(BrowEdit* browEdit)
 
 
 //update just fixes the camera
-void MapView::update(BrowEdit* browEdit, const ImVec2 &size)
+void MapView::update(BrowEdit* browEdit, const ImVec2 &size, float deltaTime)
 {
 	if (fbo->getWidth() != (int)size.x || fbo->getHeight() != (int)size.y)
 		fbo->resize((int)size.x, (int)size.y);
@@ -415,10 +415,11 @@ void MapView::update(BrowEdit* browEdit, const ImVec2 &size)
 			dY -= 360;
 		if (dY < -180)
 			dY += 360;
-		cameraRotX += 0.5f * glm::sign(dX);
-		cameraRotY += 0.5f * glm::sign(dY);
 
-		if (glm::abs(dX) < 0.6 && glm::abs(dY) < 0.6)
+		cameraRotX += 180 * deltaTime * glm::sign(dX);
+		cameraRotY += 180 * deltaTime * glm::sign(dY);
+
+		if (glm::abs(dX) < 180*deltaTime && glm::abs(dY) < 180*deltaTime)
 		{
 			cameraRotX = cameraTargetRotX;
 			cameraRotY = cameraTargetRotY;
@@ -511,7 +512,7 @@ bool MapView::drawCameraWidget()
 			if (ImGui::IsMouseClicked(0))
 			{
 				glm::vec3 point = cubeMesh.getCollision(ray, glm::mat4(1.0f));
-				std::cout << point.x << "\t" << point.y << "\t" << point.z << std::endl;
+				//std::cout << point.x << "\t" << point.y << "\t" << point.z << std::endl;
 				if (glm::abs(point.y - 1) < 0.001)
 				{
 					cameraTargetRotY = 0;

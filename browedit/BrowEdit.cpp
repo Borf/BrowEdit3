@@ -153,12 +153,16 @@ void BrowEdit::run()
 //		loadMap("data\\prt_vilg01.rsw");
 #endif
 
-
+	double time = ImGui::GetTime();
 	while (true)
 	{
 		if (!glfwLoopBegin())
 			break;
 		imguiLoopBegin();
+
+		double newTime = ImGui::GetTime();
+		double deltaTime = newTime - time;
+		time = newTime;
 
 		menuBar();
 		toolbar();
@@ -223,7 +227,7 @@ void BrowEdit::run()
 		firstRender.clear(); //DIRTY HACK
 		for (auto it = mapViews.begin(); it != mapViews.end(); )
 		{
-			showMapWindow(*it);
+			showMapWindow(*it, (float)deltaTime);
 			if (!it->opened)
 			{
 				if (activeMapView == &(*it))
@@ -443,7 +447,7 @@ bool BrowEdit::toolBarToggleButton(const std::string_view& name, int icon, bool 
 	ImGui::PopID();
 	return clicked;
 }
-void BrowEdit::showMapWindow(MapView& mapView)
+void BrowEdit::showMapWindow(MapView& mapView, float deltaTime)
 {
 	ImGui::SetNextWindowSizeConstraints(ImVec2(300, 300), ImVec2(2048, 2048));
 	if (ImGui::Begin(mapView.viewName.c_str(), &mapView.opened))
@@ -452,7 +456,7 @@ void BrowEdit::showMapWindow(MapView& mapView)
 		auto size = ImGui::GetContentRegionAvail();
 		if (mapView.map->rootNode->getComponent<Gnd>())
 		{
-			mapView.update(this, size);
+			mapView.update(this, size, deltaTime);
 			if (firstRender.find(mapView.map) != firstRender.end()) //TODO: THIS IS A DIRTY HACK
 			{
 				mapView.nodeRenderContext.renderers = firstRender[mapView.map]->nodeRenderContext.renderers;

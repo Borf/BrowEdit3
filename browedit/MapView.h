@@ -143,7 +143,7 @@ public:
 
 	void toolbar(BrowEdit* browEdit);
 
-	void update(BrowEdit* browEdit, const ImVec2& size);
+	void update(BrowEdit* browEdit, const ImVec2& size, float deltaTime);
 	void render(BrowEdit* browEdit);
 	void postRenderTextureMode(BrowEdit* browEdit);
 	void postRenderHeightMode(BrowEdit* browEdit);
