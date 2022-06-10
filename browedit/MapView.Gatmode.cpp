@@ -233,6 +233,10 @@ void MapView::postRenderGatMode(BrowEdit* browEdit)
 		static bool selectionOnly = false;
 		static bool setWalkable = true;
 		static bool setObjectWalkable = true;
+		static std::vector<int> textureMap; //TODO: this won't work well with multiple maps
+		auto gnd = map->rootNode->getComponent<Gnd>();
+		if (textureMap.size() != gnd->textures.size())
+			textureMap.resize(gnd->textures.size(), -1);
 
 		if (ImGui::Button("AutoGat"))
 		{
@@ -240,9 +244,8 @@ void MapView::postRenderGatMode(BrowEdit* browEdit)
 			browEdit->windowData.progressWindowProgres = 0;
 			browEdit->windowData.progressWindowText = "Calculating gat";
 
-			std::thread t([this, gat, browEdit, gatRenderer]()
+			std::thread t([this, gnd, gat, browEdit, gatRenderer]()
 			{
-				auto gnd = map->rootNode->getComponent<Gnd>();
 				for (int x = 0; x < gat->width; x++)
 				{
 					for (int y = 0; y < gat->height; y++)
@@ -257,7 +260,7 @@ void MapView::postRenderGatMode(BrowEdit* browEdit)
 
 						for (int i = 0; i < 4; i++)
 						{
-							glm::vec3 pos = gat->getPos(x, y, i, 0.01f);
+							glm::vec3 pos = gat->getPos(x, y, i, 0.025f);
 							pos.y = 1000;
 							math::Ray ray(pos, glm::vec3(0, -1, 0));
 							auto height = gnd->rayCast(ray, true, x / 2 - 2, y / 2 - 2, x / 2 + 2, y / 2 + 2);
@@ -287,7 +290,32 @@ void MapView::postRenderGatMode(BrowEdit* browEdit)
 
 						if (setWalkable)
 						{
+							gat->cubes[x][y]->calcNormal();
 							gat->cubes[x][y]->gatType = 0;
+							float angle = glm::dot(gat->cubes[x][y]->normal, glm::vec3(0, -1, 0));
+							if(angle < 0.9)
+								gat->cubes[x][y]->gatType = 1;
+							else
+							{
+								bool stepHeight = false;
+								glm::ivec2 t(x, y);
+								for (int i = 0; i < 4; i++)
+								{
+									for (int ii = 0; ii < 4; ii++)
+									{
+										auto& connectInfo = gat->connectInfo[i][ii];
+										glm::ivec2 tt = t + glm::ivec2(connectInfo.x, connectInfo.y);
+										if (!gat->inMap(tt))
+											continue;
+										if (gat->cubes[x][y]->heights[i] - gat->cubes[tt.x][tt.y]->heights[connectInfo.z] > 5)
+											stepHeight = true;
+									}
+								}
+								if (stepHeight)
+									gat->cubes[x][y]->gatType = 1;
+
+							}
+
 						}
 						if (gatType > -1 && setObjectWalkable)
 							gat->cubes[x][y]->gatType = gatType;
