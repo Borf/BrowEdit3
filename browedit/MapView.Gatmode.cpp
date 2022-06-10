@@ -276,7 +276,7 @@ void MapView::postRenderGatMode(BrowEdit* browEdit)
 									if (rswModel->gatCollision)
 									{
 										for (const auto& c : collisions)
-											height = glm::max(height, c.y);
+											height.y = glm::max(height.y, c.y);
 										if (collisions.size() > 0 && rswModel->gatStraightType > 0)
 											raiseType = rswModel->gatStraightType;
 									}
@@ -355,7 +355,52 @@ void MapView::postRenderGatMode(BrowEdit* browEdit)
 		ImGui::Checkbox("Set object walkability", &setObjectWalkable);
 		ImGui::Checkbox("Make tiles under water unwalkable", &blockUnderWater);
 		
+		if (ImGui::Button("WaterGat"))
+		{
+			browEdit->windowData.progressWindowVisible = true;
+			browEdit->windowData.progressWindowProgres = 0;
+			browEdit->windowData.progressWindowText = "Calculating watergat";
 
+			std::thread t([this, gnd, gat, browEdit, gatRenderer]()
+				{
+					auto rsw = map->rootNode->getComponent<Rsw>();
+					for (int x = 0; x < gat->width; x++)
+					{
+						for (int y = 0; y < gat->height; y++)
+						{
+							if (selectionOnly && std::find(map->gatSelection.begin(), map->gatSelection.end(), glm::ivec2(x, y)) == map->gatSelection.end())
+								continue;
+							browEdit->windowData.progressWindowProgres = (x / (float)gat->width) + (1.0f / gat->width) * (y / (float)gat->height);
+							bool underWater = false;
+							for (int i = 0; i < 4; i++)
+							{
+								glm::vec3 pos = gat->getPos(x, y, i, 0.025f);
+								pos.y = 1000;
+								math::Ray ray(pos, glm::vec3(0, -1, 0));
+								auto height = gnd->rayCast(ray, true, x / 2 - 2, y / 2 - 2, x / 2 + 2, y / 2 + 2);
+								map->rootNode->traverse([&](Node* n) {
+									auto rswModel = n->getComponent<RswModel>();
+									if (rswModel && rswModel->gatCollision)
+									{
+										auto collider = n->getComponent<RswModelCollider>();
+										auto collisions = collider->getCollisions(ray);
+										for (const auto& c : collisions)
+											height.y = glm::max(height.y, c.y);
+									}
+									});
+								gat->cubes[x][y]->heights[i] = rsw->water.height;
+								underWater |= height.y < -rsw->water.height;
+							}
+							gat->cubes[x][y]->gatType = underWater ? 0 : 1;
+						}
+					}
+					browEdit->windowData.progressWindowProgres = 1;
+					browEdit->windowData.progressWindowVisible = false;
+
+					gatRenderer->allDirty = true;
+				});
+			t.detach();
+		}
 
 		ImGui::TreePop();
 	}
