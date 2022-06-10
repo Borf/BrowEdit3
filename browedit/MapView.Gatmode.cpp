@@ -233,6 +233,7 @@ void MapView::postRenderGatMode(BrowEdit* browEdit)
 		static bool selectionOnly = false;
 		static bool setWalkable = true;
 		static bool setObjectWalkable = true;
+		static bool blockUnderWater = true;
 		static std::vector<int> textureMap; //TODO: this won't work well with multiple maps
 		auto gnd = map->rootNode->getComponent<Gnd>();
 		if (textureMap.size() != gnd->textures.size())
@@ -246,6 +247,7 @@ void MapView::postRenderGatMode(BrowEdit* browEdit)
 
 			std::thread t([this, gnd, gat, browEdit, gatRenderer]()
 			{
+				auto rsw = map->rootNode->getComponent<Rsw>();
 				for (int x = 0; x < gat->width; x++)
 				{
 					for (int y = 0; y < gat->height; y++)
@@ -315,7 +317,15 @@ void MapView::postRenderGatMode(BrowEdit* browEdit)
 									gat->cubes[x][y]->gatType = 1;
 
 							}
-
+						}
+						if (blockUnderWater)
+						{
+							bool underWater = false;
+							for (int i = 0; i < 4; i++)
+								if (gat->cubes[x][y]->heights[i] > rsw->water.height)
+									underWater = true;
+							if (underWater)
+								gat->cubes[x][y]->gatType = 1;
 						}
 						if (gatType > -1 && setObjectWalkable)
 							gat->cubes[x][y]->gatType = gatType;
@@ -343,6 +353,8 @@ void MapView::postRenderGatMode(BrowEdit* browEdit)
 		ImGui::Checkbox("Gat selection only", &selectionOnly);
 		ImGui::Checkbox("Set walkability", &setWalkable);
 		ImGui::Checkbox("Set object walkability", &setObjectWalkable);
+		ImGui::Checkbox("Make tiles under water unwalkable", &blockUnderWater);
+		
 
 
 		ImGui::TreePop();
