@@ -213,7 +213,8 @@ void BrowEdit::run()
 		else if (windowData.progressWindowProgres >= 1.0f)
 		{
 			windowData.progressWindowProgres = 0;
-			windowData.progressWindowOnDone();
+			if(windowData.progressWindowOnDone)
+				windowData.progressWindowOnDone();
 			windowData.progressWindowOnDone = nullptr;
 			windowData.progressCancel = nullptr;
 		}

@@ -104,6 +104,9 @@ public:
 
 	//custom properties
 	bool givesShadow = true;
+	bool gatCollision = true;
+	int gatStraightType = 0;
+	int gatType = -1;
 
 	RswModel() : aabb(glm::vec3(), glm::vec3()) {}
 	RswModel(const std::string &fileName) : aabb(glm::vec3(), glm::vec3()), animType(0), animSpeed(1), blockType(0), fileName(fileName) {}
@@ -114,7 +117,7 @@ public:
 	nlohmann::json saveExtra();
 	static void buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>&);
 
-	NLOHMANN_DEFINE_TYPE_INTRUSIVE(RswModel, animType, animSpeed, blockType, fileName, givesShadow);
+	NLOHMANN_DEFINE_TYPE_INTRUSIVE(RswModel, animType, animSpeed, blockType, fileName, givesShadow, gatCollision, gatStraightType, gatType);
 };
 
 class RswLight : public Component

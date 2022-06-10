@@ -52,6 +52,9 @@ void RswModel::loadExtra(nlohmann::json data)
 {
 	try {
 		givesShadow = data["shadow"];
+		gatCollision = data["gatCollision"];
+		gatStraightType = data["gatStraightType"];
+		gatType = data["gatType"];
 	}
 	catch (...) {}
 }
@@ -80,6 +83,9 @@ nlohmann::json RswModel::saveExtra()
 {
 	nlohmann::json ret;
 	ret["shadow"] = givesShadow;
+	ret["gatCollision"] = gatCollision;
+	ret["gatStraightType"] = gatStraightType;
+	ret["gatType"] = gatType;
 	return ret;
 }
 
@@ -138,4 +144,10 @@ void RswModel::buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>& nod
 				m->objectName = util::iso_8859_1_to_utf8(util::utf8_to_iso_8859_1(m->objectName).substr(0, 80));
 
 	util::CheckboxMulti<RswModel>(browEdit, browEdit->activeMapView->map, rswModels, "Cast Shadow", [](RswModel* m) { return &m->givesShadow; });
+	if (ImGui::CollapsingHeader("AutoGat properties", ImGuiTreeNodeFlags_DefaultOpen))
+	{
+		util::CheckboxMulti<RswModel>(browEdit, browEdit->activeMapView->map, rswModels, "Use for height", [](RswModel* m) { return &m->gatCollision; });
+		util::ComboBoxMulti<RswModel>(browEdit, browEdit->activeMapView->map, rswModels, "Flattening", "Not flattening\0Max\0Min", [](RswModel* m) { return &m->gatStraightType; });
+		util::DragIntMulti<RswModel>(browEdit, browEdit->activeMapView->map, rswModels, "Force gat tiles on model", [](RswModel* m) { return &m->gatType; }, 1, -1, 10);
+	}
 }

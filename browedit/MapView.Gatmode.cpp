@@ -11,6 +11,7 @@
 #include <browedit/shaders/SimpleShader.h>
 #include <browedit/components/Gat.h>
 #include <browedit/components/GatRenderer.h>
+#include <browedit/components/Rsw.h>
 #include <browedit/math/Polygon.h>
 #include <browedit/actions/GroupAction.h>
 #include <browedit/actions/TileSelectAction.h>
@@ -229,13 +230,91 @@ void MapView::postRenderGatMode(BrowEdit* browEdit)
 				ImGui::TreePop();
 			}*/
 
+		static bool selectionOnly = false;
+		static bool setWalkable = true;
+		static bool setObjectWalkable = true;
+
 		if (ImGui::Button("AutoGat"))
 		{
+			browEdit->windowData.progressWindowVisible = true;
+			browEdit->windowData.progressWindowProgres = 0;
+			browEdit->windowData.progressWindowText = "Calculating gat";
 
+			std::thread t([this, gat, browEdit, gatRenderer]()
+			{
+				auto gnd = map->rootNode->getComponent<Gnd>();
+				for (int x = 0; x < gat->width; x++)
+				{
+					for (int y = 0; y < gat->height; y++)
+					{
+						if (selectionOnly && std::find(map->gatSelection.begin(), map->gatSelection.end(), glm::ivec2(x, y)) == map->gatSelection.end())
+							continue;
 
+						browEdit->windowData.progressWindowProgres = (x / (float)gat->width) + (1.0f / gat->width) * (y / (float)gat->height);
 
-			gatRenderer->allDirty = true;
+						int raiseType = -1;
+						int gatType = -1;
+
+						for (int i = 0; i < 4; i++)
+						{
+							glm::vec3 pos = gat->getPos(x, y, i, 0.01f);
+							pos.y = 1000;
+							math::Ray ray(pos, glm::vec3(0, -1, 0));
+							auto height = gnd->rayCast(ray, true, x / 2 - 2, y / 2 - 2, x / 2 + 2, y / 2 + 2);
+
+							map->rootNode->traverse([&](Node* n) {
+								auto rswModel = n->getComponent<RswModel>();
+								if (rswModel)
+								{
+									auto collider = n->getComponent<RswModelCollider>();
+									auto collisions = collider->getCollisions(ray);
+									if (rswModel->gatCollision)
+									{
+										for (const auto& c : collisions)
+											height = glm::max(height, c.y);
+										if (collisions.size() > 0 && rswModel->gatStraightType > 0)
+											raiseType = rswModel->gatStraightType;
+									}
+									if (rswModel->gatType > -1 && collisions.size() > 0)
+									{
+										gatType = rswModel->gatType;
+									}
+								}
+							});
+
+							gat->cubes[x][y]->heights[i] = -height.y;
+						}
+
+						if (setWalkable)
+						{
+							gat->cubes[x][y]->gatType = 0;
+						}
+						if (gatType > -1 && setObjectWalkable)
+							gat->cubes[x][y]->gatType = gatType;
+						if (raiseType > -1)
+						{
+							for (int i = 1; i < 4; i++)
+							{
+								if(raiseType == 1)
+									gat->cubes[x][y]->heights[0] = glm::min(gat->cubes[x][y]->heights[0], gat->cubes[x][y]->heights[i]);
+								else if(raiseType == 2)
+									gat->cubes[x][y]->heights[0] = glm::max(gat->cubes[x][y]->heights[0], gat->cubes[x][y]->heights[i]);
+							}
+							for (int i = 1; i < 4; i++)
+								gat->cubes[x][y]->heights[i] = gat->cubes[x][y]->heights[0];
+						}
+					}
+				}
+				browEdit->windowData.progressWindowProgres = 1;
+				browEdit->windowData.progressWindowVisible = false;
+
+				gatRenderer->allDirty = true;
+			});
+			t.detach();
 		}
+		ImGui::Checkbox("Gat selection only", &selectionOnly);
+		ImGui::Checkbox("Set walkability", &setWalkable);
+		ImGui::Checkbox("Set object walkability", &setObjectWalkable);
 
 
 		ImGui::TreePop();
