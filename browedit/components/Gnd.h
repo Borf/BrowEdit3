@@ -97,7 +97,7 @@ public:
 			glm::vec2 texCoords[4];
 		};
 		short textureIndex;
-		unsigned short lightmapIndex;
+		int lightmapIndex;
 		glm::ivec4 color;
 		const unsigned char hash() const;
 		bool operator == (const Tile& other) const;

@@ -145,13 +145,14 @@ void BrowEdit::run()
 //		loadMap("data\\icecastle.rsw");
 //		loadMap("data\\bl_ice.rsw");
 //		loadMap("data\\comodo.rsw");
-		loadMap("data\\guild_vs1.rsw");
+//		loadMap("data\\guild_vs1.rsw");
 //		loadMap("data\\effects_ro.rsw");
 //		loadMap("data\\prt_in.rsw");
 //		loadMap("data\\wall_colour.rsw");
 //		loadMap("data\\easter_la.rsw");
 //		loadMap("data\\2@alice_mad.rsw");
 //		loadMap("data\\prt_vilg01.rsw");
+		loadMap("data\\dae_paysq.rsw");
 #endif
 
 	double time = ImGui::GetTime();

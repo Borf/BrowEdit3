@@ -174,6 +174,8 @@ void BrowEdit::menuBar()
 					map->rootNode->getComponent<Gnd>()->makeLightmapsSmooth();
 				if (ImGui::MenuItem("Make lightmaps unique"))
 					map->rootNode->getComponent<Gnd>()->makeLightmapsUnique();
+				if (ImGui::MenuItem("Clean up lightmaps"))
+					map->rootNode->getComponent<Gnd>()->cleanLightmaps();
 
 				if (map->name == "data\\effects_ro.rsw" && ImGui::MenuItem("Generate effects")) //speedrun map
 				{

@@ -457,7 +457,6 @@ void Lightmapper::onDone()
 {
 	std::cout << "Done!" << std::endl;
 	gnd->makeLightmapBorders();
-	gnd->cleanLightmaps();
 	map->rootNode->getComponent<GndRenderer>()->gndShadowDirty = true;
 	util::ResourceManager<Image>::clear();
 }

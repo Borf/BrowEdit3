@@ -108,8 +108,9 @@ Gnd::Gnd(const std::string& fileName)
 			file->read(reinterpret_cast<char*>(&tile->v4.y), sizeof(float));
 
 			file->read(reinterpret_cast<char*>(&tile->textureIndex), sizeof(short));
-			file->read(reinterpret_cast<char*>(&tile->lightmapIndex), sizeof(unsigned short));
-
+			unsigned short lightmapIndex;
+			file->read(reinterpret_cast<char*>(&lightmapIndex), sizeof(unsigned short));
+			tile->lightmapIndex = lightmapIndex;
 
 			if (tile->lightmapIndex < 0 || tile->lightmapIndex == (unsigned short)-1)
 			{
@@ -122,7 +123,6 @@ Gnd::Gnd(const std::string& fileName)
 				std::cout << "GND: TextureIndex < 0" << std::endl;
 				tile->textureIndex = 0;
 			}
-
 
 			tile->color.b = (unsigned char)file->get();
 			tile->color.g = (unsigned char)file->get();
@@ -150,6 +150,9 @@ Gnd::Gnd(const std::string& fileName)
 					file->read(reinterpret_cast<char*>(&cube->tileUp), sizeof(int));
 					file->read(reinterpret_cast<char*>(&cube->tileFront), sizeof(int));
 					file->read(reinterpret_cast<char*>(&cube->tileSide), sizeof(int));
+					for (int i = 0; i < 3; i++)
+						if (cube->tileIds[i] < 0)
+							cube->tileIds[i] = -1;
 				}
 				else
 				{
@@ -162,6 +165,9 @@ Gnd::Gnd(const std::string& fileName)
 					cube->tileUp = up;
 					cube->tileSide = side;
 					cube->tileFront = front;
+					for(int i = 0; i < 3; i++)
+						if (cube->tileIds[i] < 0)
+							cube->tileIds[i] = -1;
 				}
 
 				if (cube->tileUp >= (int)tiles.size() || cube->tileUp < -1)
@@ -326,7 +332,11 @@ void Gnd::save(const std::string& fileName)
 			file.write(reinterpret_cast<char*>(&tile->v4.y), sizeof(float));
 
 			file.write(reinterpret_cast<char*>(&tile->textureIndex), sizeof(short));
-			file.write(reinterpret_cast<char*>(&tile->lightmapIndex), sizeof(unsigned short));
+			unsigned short lightmapIndex;
+			if (tile->lightmapIndex < -1 || tile->lightmapIndex > std::numeric_limits<unsigned short>::max())
+				std::cout << "ERROR, LIGHTMAP INDEX OUT OF BOUNDS" << std::endl;
+			lightmapIndex = tile->lightmapIndex;
+			file.write(reinterpret_cast<char*>(&lightmapIndex), sizeof(unsigned short));
 
 
 			if (tile->lightmapIndex < 0 || tile->lightmapIndex == (unsigned short)-1)
@@ -494,6 +504,7 @@ glm::vec3 Gnd::rayCast(const math::Ray& ray, bool emptyTiles, int xMin, int yMin
 void Gnd::makeLightmapsUnique()
 {
 	makeTilesUnique();
+	cleanLightmaps(); 
 	std::set<int> taken;
 	for (Tile* t : tiles)
 	{
@@ -813,7 +824,7 @@ void Gnd::cleanLightmaps()
 			{
 				if ((*lightmaps[i]) == (*lightmaps[ii]))
 				{// if it is found
-					assert(i > ii);
+					assert(i > (int)ii);
 					//change all tiles with lightmap i to ii
 					for (auto tile : tiles)
 						if (tile->lightmapIndex == i)
@@ -907,7 +918,7 @@ void Gnd::cleanTiles()
 		for (int y = 0; y < height; y++)
 			for (int x = 0; x < width; x++)
 				for(int ii = 0; ii < 3; ii++)
-					if (cubes[x][y]->tileIds[ii] > i)
+					if (cubes[x][y]->tileIds[ii] > (int)i)
 						cubes[x][y]->tileIds[ii]--;
 	}
 	std::cout<< "Tiles cleanup, ending with " << tiles.size() << " tiles" << std::endl;
