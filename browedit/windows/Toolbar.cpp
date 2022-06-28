@@ -77,7 +77,7 @@ void BrowEdit::toolbar()
 		activeMapView->map->undo(this);
 	ImGui::SameLine();
 	if (toolBarToggleButton("redo", ICON_REDO, false, "Redo") && activeMapView)
-		activeMapView->map->undo(this);
+		activeMapView->map->redo(this);
 	ImGui::SameLine();
 	if (toolBarToggleButton("copy", ICON_COPY, false, "Copy") && activeMapView)
 		activeMapView->map->copySelection();
