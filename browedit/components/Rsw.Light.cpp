@@ -24,6 +24,9 @@ void RswLight::load(std::istream* is)
 
 	is->read(reinterpret_cast<char*>(glm::value_ptr(color)), sizeof(float) * 3);
 	is->read(reinterpret_cast<char*>(&range), sizeof(float));
+
+	this->cutOff = 0.5f;
+	this->intensity = 1.0f;
 }
 
 
@@ -139,7 +142,7 @@ void RswLight::buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>& nod
 		util::DragFloatMulti<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Intensity", [](RswLight* l) { return &l->intensity; }, 1.00f, 0.0f, 100000.0f);
 		if (falloffStyle == FalloffStyle::Magic)
 		{
-			util::DragFloatMulti<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Cutoff", [](RswLight* l) { return &l->cutOff; }, 0.01f, 0.0f, 1.0f);
+			util::DragFloatMulti<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Cutoff", [](RswLight* l) { return &l->cutOff; }, 0.01f, 0.0f, 10.0f);
 		}
 		else if (falloffStyle == FalloffStyle::SplineTweak)
 			util::EditableGraphMulti<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Light Falloff", [](RswLight* l) {return &l->falloff; }, util::interpolateSpline);
@@ -150,7 +153,7 @@ void RswLight::buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>& nod
 		else if (falloffStyle == FalloffStyle::Exponential)
 		{
 			bool differentFalloff = !std::all_of(rswLights.begin(), rswLights.end(), [&](RswLight* o) { return o->falloffStyle == rswLights.front()->falloffStyle; });
-			util::DragFloatMulti<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Cutoff", [](RswLight* l) { return &l->cutOff; }, 0.01f, 0.0f, 1.0f);
+			util::DragFloatMulti<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Falloff", [](RswLight* l) { return &l->cutOff; }, 0.01f, 0.0f, 10.0f);
 			if(differentFalloff)
 				util::Graph("Light Falloff", [&](float x) { return 0.0f; });
 			else

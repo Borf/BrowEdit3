@@ -4,9 +4,9 @@
   0.0,
   0.0
  ],
- "cutOff": 0.0,
+ "cutOff": 0.5,
  "givesShadow": true,
- "intensity": 1000.0,
+ "intensity": 1.0,
  "range": 50.0,
  "type": "rswlight"
 }
