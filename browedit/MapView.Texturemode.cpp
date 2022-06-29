@@ -197,7 +197,7 @@ void MapView::postRenderTextureMode(BrowEdit* browEdit)
 #endif
 			}
 		}
-		else if (!ImGui::GetIO().KeyShift) //imagestamp
+		else if (!ImGui::GetIO().KeyShift && browEdit->textureStampMap && browEdit->textureStampMap->rootNode) //imagestamp
 		{
 			glm::ivec2 tileHovered((int)glm::floor(mouse3D.x / 10), (gnd->height - (int)glm::floor(mouse3D.z) / 10));
 			glm::ivec2 topleft = tileHovered - glm::ivec2(browEdit->textureStamp.size() / 2, browEdit->textureStamp[0].size() / 2);
