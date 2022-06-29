@@ -112,7 +112,7 @@ void Rsw::load(const std::string& fileName, Map* map, BrowEdit* browEdit, bool l
 		}
 		delete lub;
 		
-		if (data != "" && data.find("{") != std::string::npos)
+		if (data != "" && data.find("{") != std::string::npos && data.find("version =") != std::string::npos)
 		{
 			std::string ver = data;
 			ver = ver.substr(ver.find("version ="));
@@ -184,6 +184,10 @@ void Rsw::load(const std::string& fileName, Map* map, BrowEdit* browEdit, bool l
 				std::cerr << "Error loading json from lub data: " << e.what() << std::endl;
 				std::cout << jsondata << std::endl;
 			}
+		}
+		else
+		{
+			std::cerr << "Error loading lua" << std::endl << data << std::endl;
 		}
 	}
 
