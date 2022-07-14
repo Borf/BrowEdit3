@@ -54,7 +54,7 @@ MapView::MapView(Map* map, const std::string &viewName) : map(map), viewName(vie
 	if (!cubeMesh.vbo)
 	{
 		cubeMesh.init();
-		cubeTexture = util::ResourceManager<gl::Texture>::load("data\\model\\cube.png");
+		cubeTexture = util::ResourceManager<gl::Texture>::load("data\\model\\cube2.png");
 	}
 	if (!simpleShader)
 		simpleShader = util::ResourceManager<gl::Shader>::load<SimpleShader>();
@@ -698,18 +698,18 @@ void MapView::CubeMesh::buildVertices(std::vector<VertexP3T2N3> &verts)
 	verts.push_back({ glm::vec3(0.66667, -1, -0.66667), glm::vec2(0.25, 0.4375) });
 	verts.push_back({ glm::vec3(-0.66667, -1, 0.66667), glm::vec2(0.125, 0.5625) });
 	verts.push_back({ glm::vec3(-0.66667, -1, -0.66667), glm::vec2(0.125, 0.4375) });
-	verts.push_back({ glm::vec3(-1, 0.66667, 0.66667), glm::vec2(0.5625, 0.25) });
-	verts.push_back({ glm::vec3(-1, -0.66667, -0.66667), glm::vec2(0.4375, 0.125) });
-	verts.push_back({ glm::vec3(-1, -0.66667, 0.66667), glm::vec2(0.5625, 0.125) });
-	verts.push_back({ glm::vec3(0.66667, 0.66667, 1), glm::vec2(0.875, 0.5625) });
-	verts.push_back({ glm::vec3(-0.66667, -0.66667, 1), glm::vec2(0.75, 0.4375) });
-	verts.push_back({ glm::vec3(0.66667, -0.66667, 1), glm::vec2(0.875, 0.4375) });
+	verts.push_back({ glm::vec3(-1, 0.66667, 0.66667), glm::vec2(0.304688, 0.304688) });
+	verts.push_back({ glm::vec3(-1, -0.66667, -0.66667), glm::vec2(0.070312, 0.070312) });
+	verts.push_back({ glm::vec3(-1, -0.66667, 0.66667), glm::vec2(0.304688, 0.070312) });
+	verts.push_back({ glm::vec3(0.66667, 0.66667, 1), glm::vec2(0.929688, 0.617188) });
+	verts.push_back({ glm::vec3(-0.66667, -0.66667, 1), glm::vec2(0.695312, 0.382812) });
+	verts.push_back({ glm::vec3(0.66667, -0.66667, 1), glm::vec2(0.929688, 0.382812) });
 	verts.push_back({ glm::vec3(-0.66667, 1, -0.66667), glm::vec2(0.25, 0.4375) });
 	verts.push_back({ glm::vec3(0.66667, 1, 0.66667), glm::vec2(0.125, 0.5625) });
 	verts.push_back({ glm::vec3(0.66667, 1, -0.66667), glm::vec2(0.125, 0.4375) });
-	verts.push_back({ glm::vec3(1, 0.66667, -0.66667), glm::vec2(0.5625, 0.25) });
-	verts.push_back({ glm::vec3(1, -0.66667, 0.66667), glm::vec2(0.4375, 0.125) });
-	verts.push_back({ glm::vec3(1, -0.66667, -0.66667), glm::vec2(0.5625, 0.125) });
+	verts.push_back({ glm::vec3(1, 0.66667, -0.66667), glm::vec2(0.617188, 0.304688) });
+	verts.push_back({ glm::vec3(1, -0.66667, 0.66667), glm::vec2(0.382812, 0.070312) });
+	verts.push_back({ glm::vec3(1, -0.66667, -0.66667), glm::vec2(0.617188, 0.070312) });
 	verts.push_back({ glm::vec3(0.66667, 0.66667, -1), glm::vec2(0.25, 0.75) });
 	verts.push_back({ glm::vec3(0.66667, 1, -0.66667), glm::vec2(0.25, 0.875) });
 	verts.push_back({ glm::vec3(1, 0.66667, -0.66667), glm::vec2(0.125, 0.75) });
@@ -770,24 +770,24 @@ void MapView::CubeMesh::buildVertices(std::vector<VertexP3T2N3> &verts)
 	verts.push_back({ glm::vec3(0.66667, -1, -0.66667), glm::vec2(0.75, 0.75) });
 	verts.push_back({ glm::vec3(1, -0.66667, 0.66667), glm::vec2(0.875, 0.875) });
 	verts.push_back({ glm::vec3(0.66667, -1, 0.66667), glm::vec2(0.75, 0.875) });
-	verts.push_back({ glm::vec3(-0.66667, 0.66667, -1), glm::vec2(0.875, 0.5625) });
-	verts.push_back({ glm::vec3(0.66667, -0.66667, -1), glm::vec2(0.75, 0.4375) });
-	verts.push_back({ glm::vec3(-0.66667, -0.66667, -1), glm::vec2(0.875, 0.4375) });
+	verts.push_back({ glm::vec3(-0.66667, 0.66667, -1), glm::vec2(0.929688, 0.304688) });
+	verts.push_back({ glm::vec3(0.66667, -0.66667, -1), glm::vec2(0.695312, 0.070312) });
+	verts.push_back({ glm::vec3(-0.66667, -0.66667, -1), glm::vec2(0.929688, 0.070312) });
 	verts.push_back({ glm::vec3(0.66667, -1, -0.66667), glm::vec2(0.25, 0.4375) });
 	verts.push_back({ glm::vec3(0.66667, -1, 0.66667), glm::vec2(0.25, 0.5625) });
 	verts.push_back({ glm::vec3(-0.66667, -1, 0.66667), glm::vec2(0.125, 0.5625) });
-	verts.push_back({ glm::vec3(-1, 0.66667, 0.66667), glm::vec2(0.5625, 0.25) });
-	verts.push_back({ glm::vec3(-1, 0.66667, -0.66667), glm::vec2(0.4375, 0.25) });
-	verts.push_back({ glm::vec3(-1, -0.66667, -0.66667), glm::vec2(0.4375, 0.125) });
-	verts.push_back({ glm::vec3(0.66667, 0.66667, 1), glm::vec2(0.875, 0.5625) });
-	verts.push_back({ glm::vec3(-0.66667, 0.66667, 1), glm::vec2(0.75, 0.5625) });
-	verts.push_back({ glm::vec3(-0.66667, -0.66667, 1), glm::vec2(0.75, 0.4375) });
+	verts.push_back({ glm::vec3(-1, 0.66667, 0.66667), glm::vec2(0.304688, 0.304688) });
+	verts.push_back({ glm::vec3(-1, 0.66667, -0.66667), glm::vec2(0.070312, 0.304688) });
+	verts.push_back({ glm::vec3(-1, -0.66667, -0.66667), glm::vec2(0.070312, 0.070312) });
+	verts.push_back({ glm::vec3(0.66667, 0.66667, 1), glm::vec2(0.929688, 0.617188) });
+	verts.push_back({ glm::vec3(-0.66667, 0.66667, 1), glm::vec2(0.695312, 0.617188) });
+	verts.push_back({ glm::vec3(-0.66667, -0.66667, 1), glm::vec2(0.695312, 0.382812) });
 	verts.push_back({ glm::vec3(-0.66667, 1, -0.66667), glm::vec2(0.25, 0.4375) });
 	verts.push_back({ glm::vec3(-0.66667, 1, 0.66667), glm::vec2(0.25, 0.5625) });
 	verts.push_back({ glm::vec3(0.66667, 1, 0.66667), glm::vec2(0.125, 0.5625) });
-	verts.push_back({ glm::vec3(1, 0.66667, -0.66667), glm::vec2(0.5625, 0.25) });
-	verts.push_back({ glm::vec3(1, 0.66667, 0.66667), glm::vec2(0.4375, 0.25) });
-	verts.push_back({ glm::vec3(1, -0.66667, 0.66667), glm::vec2(0.4375, 0.125) });
+	verts.push_back({ glm::vec3(1, 0.66667, -0.66667), glm::vec2(0.617188, 0.304688) });
+	verts.push_back({ glm::vec3(1, 0.66667, 0.66667), glm::vec2(0.382812, 0.304688) });
+	verts.push_back({ glm::vec3(1, -0.66667, 0.66667), glm::vec2(0.382812, 0.070312) });
 	verts.push_back({ glm::vec3(-0.66667, -1, 0.66667), glm::vec2(0.875, 0.875) });
 	verts.push_back({ glm::vec3(-1, -0.66667, 0.66667), glm::vec2(0.75, 0.875) });
 	verts.push_back({ glm::vec3(-1, -0.66667, -0.66667), glm::vec2(0.75, 0.75) });
@@ -824,9 +824,9 @@ void MapView::CubeMesh::buildVertices(std::vector<VertexP3T2N3> &verts)
 	verts.push_back({ glm::vec3(0.66667, -1, -0.66667), glm::vec2(0.75, 0.75) });
 	verts.push_back({ glm::vec3(1, -0.66667, -0.66667), glm::vec2(0.875, 0.75) });
 	verts.push_back({ glm::vec3(1, -0.66667, 0.66667), glm::vec2(0.875, 0.875) });
-	verts.push_back({ glm::vec3(-0.66667, 0.66667, -1), glm::vec2(0.875, 0.5625) });
-	verts.push_back({ glm::vec3(0.66667, 0.66667, -1), glm::vec2(0.75, 0.5625) });
-	verts.push_back({ glm::vec3(0.66667, -0.66667, -1), glm::vec2(0.75, 0.4375) });
+	verts.push_back({ glm::vec3(-0.66667, 0.66667, -1), glm::vec2(0.929688, 0.304688) });
+	verts.push_back({ glm::vec3(0.66667, 0.66667, -1), glm::vec2(0.695312, 0.304688) });
+	verts.push_back({ glm::vec3(0.66667, -0.66667, -1), glm::vec2(0.695312, 0.070312) });
 
 	for (auto& v : verts)
 		v.data[4] = 1 - v.data[4];
