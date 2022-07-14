@@ -235,6 +235,8 @@ void BrowEdit::run()
 			{
 				if (activeMapView == &(*it))
 					activeMapView = nullptr;
+				if (textureStampMap == it->map)
+					textureStampMap = nullptr;
 				Map* map = it->map;
 				it = mapViews.erase(it);
 
