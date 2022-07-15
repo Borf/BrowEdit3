@@ -5,6 +5,7 @@
 #include <vector>
 #include <imgui.h>
 #include <iostream>
+#include <browedit/Hotkey.h>
 #include <browedit/util/Util.h>
 class BrowEdit;
 
@@ -38,6 +39,7 @@ public:
 
 	std::vector<float> translateGridSizes = { 0.25f, 0.5f, 1.0f, 2.0f, 2.5f, 5.0f, 10.0f, 20.0f };
 	std::vector<float> rotateGridSizes = { 1,22.5, 45,90,180 };
+	std::map<std::string, Hotkey> hotkeys;
 
 	std::string grfEditorPath = "";
 	std::vector<std::string> recentFiles;
@@ -71,5 +73,6 @@ public:
 		translateGridSizes,
 		rotateGridSizes,
 		grfEditorPath,
-		recentFiles);
+		recentFiles,
+		hotkeys);
 };

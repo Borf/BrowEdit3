@@ -13,6 +13,7 @@ class Lightmapper;
 using json = nlohmann::json;
 
 class Map;
+class Hotkey;
 struct GLFWwindow;
 namespace gl
 {
@@ -77,6 +78,8 @@ public:
 		util::FileIO::Node* objectWindowSelectedTreeNode = nullptr;
 
 		bool demoWindowVisible = false;
+
+		bool hotkeyEditWindowVisible = true;
 
 		bool openLightmapSettings = false;
 
@@ -175,6 +178,7 @@ public:
 	void showLightmapSettingsWindow();
 	void showTextureBrushWindow();
 	void showTextureManageWindow();
+	void showHotkeyEditorWindow();
 
 	void copyTiles();
 	void pasteTiles();
@@ -182,4 +186,6 @@ public:
 	bool toolBarToggleButton(const std::string_view &name, int icon, bool* status, const char* tooltip, ImVec4 tint = ImVec4(1,1,1,1));
 	bool toolBarToggleButton(const std::string_view &name, int icon, bool status, const char* tooltip, ImVec4 tint = ImVec4(1, 1, 1, 1));
 	bool toolBarButton(const std::string_view& name, int icon, const char* tooltip, ImVec4 tint);
+
+	bool hotkeyInputBox(const char* title, Hotkey& hotkey);
 };

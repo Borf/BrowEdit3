@@ -50,6 +50,7 @@
     <ClCompile Include="browedit\gl\FBO.cpp" />
     <ClCompile Include="browedit\gl\Shader.cpp" />
     <ClCompile Include="browedit\gl\Texture.cpp" />
+    <ClCompile Include="browedit\HotkeyRegistry.cpp" />
     <ClCompile Include="browedit\Image.cpp" />
     <ClCompile Include="browedit\Lightmapper.cpp" />
     <ClCompile Include="browedit\Map.cpp" />
@@ -69,6 +70,7 @@
     <ClCompile Include="browedit\util\Util.cpp" />
     <ClCompile Include="browedit\windows\ExportMapWindow.cpp" />
     <ClCompile Include="browedit\windows\HelpWindow.cpp" />
+    <ClCompile Include="browedit\windows\HotkeyEditorWindow.cpp" />
     <ClCompile Include="browedit\windows\LightmapSettingsWindow.cpp" />
     <ClCompile Include="browedit\windows\MenuBar.cpp" />
     <ClCompile Include="browedit\windows\ObjectPropertiesWindow.cpp" />
@@ -151,6 +153,8 @@
     <ClInclude Include="browedit\gl\VBO.h" />
     <ClInclude Include="browedit\gl\Vertex.h" />
     <ClInclude Include="browedit\gl\VIO.h" />
+    <ClInclude Include="browedit\Hotkey.h" />
+    <ClInclude Include="browedit\HotkeyRegistry.h" />
     <ClInclude Include="browedit\Icons.h" />
     <ClInclude Include="browedit\Image.h" />
     <ClInclude Include="browedit\Lightmapper.h" />
@@ -168,6 +172,7 @@
     <ClInclude Include="browedit\shaders\SimpleShader.h" />
     <ClInclude Include="browedit\shaders\WaterShader.h" />
     <ClInclude Include="browedit\util\FileIO.h" />
+    <ClInclude Include="browedit\util\glfw_keycodes_to_string.h" />
     <ClInclude Include="browedit\util\ResourceManager.h" />
     <ClInclude Include="browedit\util\Tree.h" />
     <ClInclude Include="browedit\util\Util.h" />
@@ -272,7 +277,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NOMINMAX;GRF_STATIC;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>lib/imgui/;lib/glfw-3.3.6/include;lib/grflib;lib/zlib;lib/sfl;lib/glm;lib/glad/include;$(SolutionDir);lib/bugtrap</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>lib/imgui/;lib/glfw-3.3.6/include;lib/grflib;lib/zlib;lib/sfl;lib/glm;lib/glad/include;$(SolutionDir);lib/bugtrap;lib/magic_enum/include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -298,7 +303,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NOMINMAX;GRF_STATIC;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>lib/imgui/;lib/glfw-3.3.6/include;lib/grflib;lib/zlib;lib/sfl;lib/glm;lib/glad/include;$(SolutionDir);lib/bugtrap</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>lib/imgui/;lib/glfw-3.3.6/include;lib/grflib;lib/zlib;lib/sfl;lib/glm;lib/glad/include;$(SolutionDir);lib/bugtrap;lib/magic_enum/include</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <BrowseInformation>true</BrowseInformation>

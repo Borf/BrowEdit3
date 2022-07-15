@@ -27,6 +27,7 @@
 #include <browedit/util/FileIO.h>
 #include <browedit/util/Util.h>
 #include <browedit/util/ResourceManager.h>
+#include <browedit/util/glfw_keycodes_to_string.h>
 
 #define Q(x) #x
 #define QUOTE(x) Q(x)
@@ -148,11 +149,11 @@ void BrowEdit::run()
 //		loadMap("data\\guild_vs1.rsw");
 //		loadMap("data\\effects_ro.rsw");
 //		loadMap("data\\prt_in.rsw");
-//		loadMap("data\\wall_colour.rsw");
+		loadMap("data\\wall_colour.rsw");
 //		loadMap("data\\easter_la.rsw");
 //		loadMap("data\\2@alice_mad.rsw");
 //		loadMap("data\\prt_vilg01.rsw");
-		loadMap("data\\dae_paysq.rsw");
+//		loadMap("data\\dae_paysq.rsw");
 #endif
 
 	double time = ImGui::GetTime();
@@ -187,6 +188,9 @@ void BrowEdit::run()
 			showTextureBrushWindow();
 			showTextureManageWindow();
 		}
+
+		if(windowData.hotkeyEditWindowVisible)
+			showHotkeyEditorWindow();
 
 		showLightmapSettingsWindow();
 
@@ -716,4 +720,36 @@ void BrowEdit::saveTagList()
 	json tagListJson = tagList;
 	std::ofstream tagListFile("data\\tags.json");
 	tagListFile << std::setw(2) << tagListJson;
+}
+
+
+bool BrowEdit::hotkeyInputBox(const char* title, Hotkey& hotkey)
+{
+	std::string text = "";
+	if ((hotkey.modifiers & ImGuiKeyModFlags_Ctrl) != 0)
+		text += "Ctrl+";
+	if ((hotkey.modifiers & ImGuiKeyModFlags_Shift) != 0)
+		text += "Shift+";
+	if ((hotkey.modifiers & ImGuiKeyModFlags_Alt) != 0)
+		text += "Alt+";
+	text += util::KeyCodeToStringSwitch((util::KeyCode)hotkey.keyCode);
+
+	if (hotkey.keyCode == 0)
+		text = "-";
+
+	ImGui::InputText(title, &text, ImGuiInputTextFlags_ReadOnly);
+	if (ImGui::IsItemFocused())
+	{
+		for (int i = 0; i < IM_ARRAYSIZE(ImGui::GetIO().KeysDown); i++)
+		{
+			if (ImGui::IsKeyPressed(i) && i != 340 && i != 341 && i != 342)
+			{
+				hotkey.keyCode = i;
+				hotkey.modifiers = ImGui::GetIO().KeyMods;
+				return true;
+			}
+		}
+		
+	}
+	return false;
 }

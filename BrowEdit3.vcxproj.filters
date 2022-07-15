@@ -349,6 +349,12 @@
     <ClCompile Include="browedit\components\GatRenderer.cpp">
       <Filter>browedit\components</Filter>
     </ClCompile>
+    <ClCompile Include="browedit\HotkeyRegistry.cpp">
+      <Filter>browedit</Filter>
+    </ClCompile>
+    <ClCompile Include="browedit\windows\HotkeyEditorWindow.cpp">
+      <Filter>browedit\windows</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="lib\imgui\imgui.h">
@@ -608,6 +614,15 @@
     </ClInclude>
     <ClInclude Include="browedit\components\GatRenderer.h">
       <Filter>browedit\components</Filter>
+    </ClInclude>
+    <ClInclude Include="browedit\util\glfw_keycodes_to_string.h">
+      <Filter>browedit\util</Filter>
+    </ClInclude>
+    <ClInclude Include="browedit\HotkeyRegistry.h">
+      <Filter>browedit</Filter>
+    </ClInclude>
+    <ClInclude Include="browedit\Hotkey.h">
+      <Filter>browedit</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
