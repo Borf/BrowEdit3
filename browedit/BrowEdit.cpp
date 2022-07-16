@@ -14,6 +14,7 @@
 #include <misc/cpp/imgui_stdlib.h>
 
 #include <browedit/Map.h>
+#include <browedit/HotkeyRegistry.h>
 #include <browedit/gl/FBO.h>
 #include <browedit/gl/Texture.h>
 #include <browedit/NodeRenderer.h>
@@ -115,7 +116,8 @@ void BrowEdit::run()
 	configBegin();
 	if (config.closeObjectWindowOnAdd)
 		windowData.objectWindowVisible = false;
-
+	registerActions();
+	HotkeyRegistry::init(config.hotkeys);
 	{
 		try {
 			tagList = util::FileIO::getJson("data\\tags.json").get<std::map<std::string, std::vector<std::string>>>();
@@ -257,7 +259,8 @@ void BrowEdit::run()
 
 		if (!ImGui::GetIO().WantTextInput)
 		{
-			if (ImGui::GetIO().KeyCtrl)
+			HotkeyRegistry::checkHotkeys();
+/*			if (ImGui::GetIO().KeyCtrl)
 			{
 				if (ImGui::IsKeyPressed('Z') && activeMapView)
 					if (ImGui::GetIO().KeyShift)
@@ -337,7 +340,7 @@ void BrowEdit::run()
 				if (ImGui::IsKeyPressed(GLFW_KEY_RIGHT_BRACKET))
 					activeMapView->textureSelected = (activeMapView->textureSelected + 1) % activeMapView->map->rootNode->getComponent<Gnd>()->textures.size();
 
-			}
+			}*/
 		}
 		int display_w, display_h;
 		glfwGetFramebufferSize(window, &display_w, &display_h);
@@ -725,17 +728,7 @@ void BrowEdit::saveTagList()
 
 bool BrowEdit::hotkeyInputBox(const char* title, Hotkey& hotkey)
 {
-	std::string text = "";
-	if ((hotkey.modifiers & ImGuiKeyModFlags_Ctrl) != 0)
-		text += "Ctrl+";
-	if ((hotkey.modifiers & ImGuiKeyModFlags_Shift) != 0)
-		text += "Shift+";
-	if ((hotkey.modifiers & ImGuiKeyModFlags_Alt) != 0)
-		text += "Alt+";
-	text += util::KeyCodeToStringSwitch((util::KeyCode)hotkey.keyCode);
-
-	if (hotkey.keyCode == 0)
-		text = "-";
+	std::string text = hotkey.toString();
 
 	ImGui::InputText(title, &text, ImGuiInputTextFlags_ReadOnly);
 	if (ImGui::IsItemFocused())

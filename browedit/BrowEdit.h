@@ -15,6 +15,7 @@ using json = nlohmann::json;
 class Map;
 class Hotkey;
 struct GLFWwindow;
+enum class HotkeyAction;
 namespace gl
 {
 	class Texture;
@@ -79,7 +80,8 @@ public:
 
 		bool demoWindowVisible = false;
 
-		bool hotkeyEditWindowVisible = true;
+		bool hotkeyEditWindowVisible = false;
+		std::map<std::string, Hotkey> hotkeys;
 
 		bool openLightmapSettings = false;
 
@@ -152,6 +154,8 @@ public:
 
 	void imguiLoopBegin();
 	void imguiLoopEnd();
+	void registerActions();
+	bool hotkeyMenuItem(const std::string& title, HotkeyAction action);
 
 	void run();
 

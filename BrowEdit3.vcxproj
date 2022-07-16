@@ -50,6 +50,8 @@
     <ClCompile Include="browedit\gl\FBO.cpp" />
     <ClCompile Include="browedit\gl\Shader.cpp" />
     <ClCompile Include="browedit\gl\Texture.cpp" />
+    <ClCompile Include="browedit\Hotkey.cpp" />
+    <ClCompile Include="browedit\HotkeyActions.cpp" />
     <ClCompile Include="browedit\HotkeyRegistry.cpp" />
     <ClCompile Include="browedit\Image.cpp" />
     <ClCompile Include="browedit\Lightmapper.cpp" />

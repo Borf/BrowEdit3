@@ -9,6 +9,7 @@
 #include <browedit/util/ResourceManager.h>
 #include <browedit/gl/Texture.h>
 #include <browedit/Node.h>
+#include <browedit/HotkeyRegistry.h>
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui.h>
@@ -46,19 +47,19 @@ void BrowEdit::toolbar()
 	ImGui::SetCursorPosX(125);
 
 	if (toolBarToggleButton("heightmode", ICON_EDIT_HEIGHT, editMode == EditMode::Height, "Height edit mode", config.toolbarButtonsHeightEdit))
-		editMode = EditMode::Height;
+		HotkeyRegistry::runAction(HotkeyAction::EditMode_Height);
 	ImGui::SameLine();
 	if (toolBarToggleButton("texturemode", ICON_EDIT_TEXTURE, editMode == EditMode::Texture, "Texture edit mode", config.toolbarButtonsTextureEdit))
-		editMode = EditMode::Texture;
+		HotkeyRegistry::runAction(HotkeyAction::EditMode_Texture);
 	ImGui::SameLine();
 	if (toolBarToggleButton("objectmode", ICON_EDIT_OBJECT, editMode == EditMode::Object, "Object edit mode", config.toolbarButtonsObjectEdit))
-		editMode = EditMode::Object;
+		HotkeyRegistry::runAction(HotkeyAction::EditMode_Object);
 	ImGui::SameLine();
 	if (toolBarToggleButton("gatmode", ICON_EDIT_GAT, editMode == EditMode::Gat, "Gat edit mode", config.toolbarButtonsGatEdit))
-		editMode = EditMode::Gat;
+		HotkeyRegistry::runAction(HotkeyAction::EditMode_Gat);
 	ImGui::SameLine();
 	if (toolBarToggleButton("wallmode", ICON_EDIT_WALL, editMode == EditMode::Wall, "Wall edit mode", config.toolbarButtonsWallEdit))
-		editMode = EditMode::Wall;
+		HotkeyRegistry::runAction(HotkeyAction::EditMode_Wall);
 	ImGui::SameLine(130 + 5 * (config.toolbarButtonSize + 5) + 20 );
 
 	if (editMode == EditMode::Object)
@@ -74,10 +75,10 @@ void BrowEdit::toolbar()
 
 
 	if (toolBarToggleButton("undo", ICON_UNDO, false, "Undo") && activeMapView)
-		activeMapView->map->undo(this);
+		HotkeyRegistry::runAction(HotkeyAction::Global_Undo);
 	ImGui::SameLine();
 	if (toolBarToggleButton("redo", ICON_REDO, false, "Redo") && activeMapView)
-		activeMapView->map->redo(this);
+		HotkeyRegistry::runAction(HotkeyAction::Global_Redo);
 	ImGui::SameLine();
 	if (toolBarToggleButton("copy", ICON_COPY, false, "Copy") && activeMapView)
 		activeMapView->map->copySelection();

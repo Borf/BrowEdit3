@@ -14,6 +14,7 @@
 #include <browedit/components/Rsw.h>
 #include <browedit/components/BillboardRenderer.h>
 #include <browedit/util/ResourceManager.h>
+#include <browedit/HotkeyRegistry.h>
 #include <GLFW/glfw3.h>
 #include <imgui_internal.h>
 
@@ -22,11 +23,10 @@ void BrowEdit::menuBar()
 	ImGui::BeginMainMenuBar();
 	if (ImGui::BeginMenu("File"))
 	{
-		ImGui::MenuItem("New", "Ctrl+n");
-		if (ImGui::MenuItem("Open", "Ctrl+o"))
-			showOpenWindow();
-		if (activeMapView && ImGui::MenuItem(("Save " + activeMapView->map->name).c_str(), "Ctrl+s"))
-			saveMap(activeMapView->map);
+		//ImGui::MenuItem("New", "Ctrl+n");
+		hotkeyMenuItem("Open", HotkeyAction::Global_Load);
+		if(activeMapView)
+			hotkeyMenuItem("Save " + activeMapView->map->name, HotkeyAction::Global_Save);
 		if (activeMapView && ImGui::MenuItem("Save as "))
 			saveAsMap(activeMapView->map);
 		if (activeMapView && ImGui::MenuItem("Export to folder"))
@@ -41,36 +41,27 @@ void BrowEdit::menuBar()
 				}
 			ImGui::EndMenu();
 		}
-		if (ImGui::MenuItem("Quit"))
-			glfwSetWindowShouldClose(window, 1);
+		hotkeyMenuItem("Quit", HotkeyAction::Global_Exit);
 		ImGui::EndMenu();
 	}
 	if (ImGui::BeginMenu("Edit"))
 	{
-		if (ImGui::MenuItem("Undo", "Ctrl+z") && activeMapView)
-			activeMapView->map->undo(this);
-		if (ImGui::MenuItem("Redo", "Ctrl+shift+z") && activeMapView)
-			activeMapView->map->redo(this);
-		if (ImGui::MenuItem("Undo Window", nullptr, windowData.undoVisible))
+		hotkeyMenuItem("Undo", HotkeyAction::Global_Undo);
+		hotkeyMenuItem("Redo", HotkeyAction::Global_Redo);
+
+		if (ImGui::MenuItem("Toggle Undo Window", nullptr, windowData.undoVisible))
 			windowData.undoVisible = !windowData.undoVisible;
-		if (ImGui::MenuItem("Configure"))
-			windowData.configVisible = true;
+		hotkeyMenuItem("Global Settings", HotkeyAction::Global_Settings);
+
+		if (ImGui::MenuItem("Hotkey Settings"))
+		{
+			windowData.hotkeyEditWindowVisible = true;
+			windowData.hotkeys = config.hotkeys;
+		}			
 		if (ImGui::MenuItem("Demo Window", nullptr, windowData.demoWindowVisible))
 			windowData.demoWindowVisible = !windowData.demoWindowVisible;
-		if (ImGui::MenuItem("Reload Textures", "Ctrl+R"))
-			for (auto t : util::ResourceManager<gl::Texture>::getAll())
-				t->reload();
-		if (ImGui::MenuItem("Reload Models", "Shift+R"))
-		{
-			for (auto rsm : util::ResourceManager<Rsm>::getAll())
-				rsm->reload();
-			for (auto m : maps)
-				m->rootNode->traverse([](Node* n) {
-					auto rsmRenderer = n->getComponent<RsmRenderer>();
-					if(rsmRenderer)
-						rsmRenderer->begin();
-				});
-		}
+		hotkeyMenuItem("Reload Textures", HotkeyAction::Global_ReloadTextures);
+		hotkeyMenuItem("Reload Models", HotkeyAction::Global_ReloadModels);
 		ImGui::EndMenu();
 	}
 	if (editMode == EditMode::Object && activeMapView && ImGui::BeginMenu("Selection"))

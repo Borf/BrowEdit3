@@ -3,13 +3,10 @@
 #include <browedit/HotkeyRegistry.h>
 #include <misc/cpp/imgui_stdlib.h>
 
-std::map<std::string, Hotkey> hotkeys;
+
 
 void BrowEdit::showHotkeyEditorWindow()
 {
-	if (hotkeys.size() == 0)
-		hotkeys = config.hotkeys;
-
 	ImGui::Begin("Hotkey Editor");
 
 	std::string filter = "";
@@ -41,14 +38,17 @@ void BrowEdit::showHotkeyEditorWindow()
 		lastCat = cat;
 
 		Hotkey hotkey;
-		if (hotkeys.find(strHotkey) != hotkeys.end())
-			hotkey = hotkeys[strHotkey];
+		if (windowData.hotkeys.find(strHotkey) != windowData.hotkeys.end())
+			hotkey = windowData.hotkeys[strHotkey];
 		if (hotkeyInputBox(title.c_str(), hotkey))
-			hotkeys[strHotkey] = hotkey;
+			windowData.hotkeys[strHotkey] = hotkey;
 	}
 
 	if (ImGui::Button("Ok"))
 	{
+		config.hotkeys = windowData.hotkeys;
+		HotkeyRegistry::init(config.hotkeys);
+		config.save();
 		windowData.hotkeyEditWindowVisible = false;
 	}
 	ImGui::SameLine();
