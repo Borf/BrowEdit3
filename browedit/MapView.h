@@ -72,6 +72,7 @@ public:
 	bool cameraAnimating = false;
 	float cameraTargetRotX;
 	float cameraTargetRotY;
+	glm::vec3 cameraTargetPos;
 
 
 	bool snapToGrid = false;

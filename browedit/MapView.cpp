@@ -419,12 +419,20 @@ void MapView::update(BrowEdit* browEdit, const ImVec2 &size, float deltaTime)
 		cameraRotX += 180 * deltaTime * glm::sign(dX);
 		cameraRotY += 180 * deltaTime * glm::sign(dY);
 
-		if (glm::abs(dX) < 180*deltaTime && glm::abs(dY) < 180*deltaTime)
+
+		
+		cameraCenter -= glm::normalize(cameraCenter - cameraTargetPos) * 2000.0f * deltaTime;
+		if(glm::distance(cameraCenter, cameraTargetPos) < 2000.0f * deltaTime)
+			cameraCenter = cameraTargetPos;
+
+		if (glm::abs(dX) < 180 * deltaTime && glm::abs(dY) < 180 * deltaTime)
 		{
 			cameraRotX = cameraTargetRotX;
 			cameraRotY = cameraTargetRotY;
-			cameraAnimating = false;
 		}
+
+		if (glm::abs(dX) < 180 * deltaTime && glm::abs(dY) < 180 * deltaTime && glm::distance(cameraCenter, cameraTargetPos) < 2000.0f * deltaTime)
+			cameraAnimating = false;
 	}
 
 	if (hovered)
@@ -517,6 +525,7 @@ bool MapView::drawCameraWidget()
 				{
 					cameraTargetRotY = 0;
 					cameraTargetRotX = 90;
+					cameraTargetPos = cameraCenter;
 					cameraAnimating = true;
 				}
 				else if (glm::abs(point.z) - 1 < 0.001 || glm::abs(point.x) - 1 < 0.001) //side
@@ -526,6 +535,7 @@ bool MapView::drawCameraWidget()
 					cameraTargetRotX = 0;
 					if (glm::abs(point.y-1) < 0.25f)
 						cameraTargetRotX = 45;
+					cameraTargetPos = cameraCenter;
 					cameraAnimating = true;
 				}
 
@@ -539,7 +549,12 @@ bool MapView::drawCameraWidget()
 
 void MapView::focusSelection()
 {
-
+	cameraAnimating = true;
+	cameraTargetRotX = cameraRotX;
+	cameraTargetRotY = cameraRotY;
+	auto center = map->getSelectionCenter();
+	auto gnd = map->rootNode->getComponent<Gnd>();
+	cameraTargetPos = glm::vec3(5*gnd->width + center.x, -center.y, 5*gnd->height - center.z);
 }
 
 

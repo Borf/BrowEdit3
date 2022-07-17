@@ -4,6 +4,7 @@
 #include <browedit/actions/SelectAction.h>
 #include <browedit/components/Rsw.h>
 #include <browedit/components/Gnd.h>
+#include <browedit/HotkeyRegistry.h>
 
 
 void BrowEdit::showObjectTree()
@@ -61,20 +62,7 @@ void BrowEdit::buildObjectTree(Node* node, Map* map)
 
 		if (ImGui::IsItemClicked() && ImGui::IsMouseDoubleClicked(0))
 		{
-			auto rswObject = node->getComponent<RswObject>();
-			if (rswObject)
-			{
-				auto gnd = map->rootNode->getComponent<Gnd>();
-				for (auto& m : mapViews)
-				{
-					if (m.map->rootNode == node->root)
-					{
-						m.cameraCenter.x = 5 * gnd->width + rswObject->position.x;
-						m.cameraCenter.y = -rswObject->position.y;
-						m.cameraCenter.z = -1 * (-10 - 5 * gnd->height + rswObject->position.z);
-					}
-				}
-			}
+			HotkeyRegistry::runAction(HotkeyAction::ObjectEdit_FocusOnSelection);
 		}
 		if (ImGui::IsItemClicked())
 		{
