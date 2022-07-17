@@ -197,6 +197,7 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 			Gadget::setMatrices(nodeRenderContext.projectionMatrix, nodeRenderContext.viewMatrix);
 			glClear(GL_DEPTH_BUFFER_BIT);
 			glDisable(GL_CULL_FACE);
+			glEnable(GL_BLEND);
 
 			glm::mat4 mat = glm::scale(glm::mat4(1.0f), glm::vec3(1, 1, -1));
 			mat = glm::translate(mat, glm::vec3(5 * gnd->width + avgPos.x, -avgPos.y, (-10 - 5 * gnd->height + avgPos.z)));

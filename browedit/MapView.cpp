@@ -675,6 +675,7 @@ void MapView::drawLight(Node* n)
 		simpleShader->setUniform(SimpleShader::Uniforms::textureFac, 0.0f);
 		simpleShader->setUniform(SimpleShader::Uniforms::color, glm::vec4(rswLight->color, 0.25f));
 		glDepthMask(0);
+		glEnable(GL_BLEND);
 		sphereMesh.draw();
 		glDepthMask(1);
 		glUseProgram(0);
