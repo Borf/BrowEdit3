@@ -31,7 +31,7 @@ void HotkeyRegistry::runAction(HotkeyAction action)
 {
 	for (const auto& hotkey : hotkeys)
 	{
-		if (hotkey.condition() && hotkey.callback)
+		if (hotkey.action == action && hotkey.condition() && hotkey.callback)
 			hotkey.callback();
 	}
 }
