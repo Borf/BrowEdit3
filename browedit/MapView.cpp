@@ -421,9 +421,10 @@ void MapView::update(BrowEdit* browEdit, const ImVec2 &size, float deltaTime)
 
 
 		
-		cameraCenter -= glm::normalize(cameraCenter - cameraTargetPos) * 2000.0f * deltaTime;
 		if(glm::distance(cameraCenter, cameraTargetPos) < 2000.0f * deltaTime)
 			cameraCenter = cameraTargetPos;
+		else
+			cameraCenter -= glm::normalize(cameraCenter - cameraTargetPos) * 2000.0f * deltaTime;
 
 		if (glm::abs(dX) < 180 * deltaTime && glm::abs(dY) < 180 * deltaTime)
 		{
