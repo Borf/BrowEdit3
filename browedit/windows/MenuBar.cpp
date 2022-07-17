@@ -49,6 +49,12 @@ void BrowEdit::menuBar()
 		hotkeyMenuItem("Undo", HotkeyAction::Global_Undo);
 		hotkeyMenuItem("Redo", HotkeyAction::Global_Redo);
 
+		if (editMode == EditMode::Object)
+		{
+			hotkeyMenuItem("Copy", HotkeyAction::Global_Copy);
+			hotkeyMenuItem("Paste", HotkeyAction::Global_Paste);
+		}
+
 		if (ImGui::MenuItem("Toggle Undo Window", nullptr, windowData.undoVisible))
 			windowData.undoVisible = !windowData.undoVisible;
 		hotkeyMenuItem("Global Settings", HotkeyAction::Global_Settings);
@@ -64,12 +70,8 @@ void BrowEdit::menuBar()
 		hotkeyMenuItem("Reload Models", HotkeyAction::Global_ReloadModels);
 		ImGui::EndMenu();
 	}
-	if (editMode == EditMode::Object && activeMapView && ImGui::BeginMenu("Selection"))
+	if (editMode == EditMode::Object && activeMapView && ImGui::BeginMenu("Object Selection"))
 	{
-		if (ImGui::MenuItem("Copy", "Ctrl+c"))
-			activeMapView->map->copySelection();
-		if (ImGui::MenuItem("Paste", "Ctrl+v"))
-			activeMapView->map->pasteSelection(this);
 		if (ImGui::BeginMenu("Grow/shrink Selection"))
 		{
 			if (ImGui::MenuItem("Select same models"))
@@ -81,274 +83,249 @@ void BrowEdit::menuBar()
 				activeMapView->map->selectNear(nearDistance, this);
 			if (ImGui::BeginMenu("Select all"))
 			{
-				if (ImGui::MenuItem("Select all"))
-					activeMapView->map->selectAll(this);
-				if (ImGui::MenuItem("Select all models"))
-					activeMapView->map->selectAll<RswModel>(this);
-				if (ImGui::MenuItem("Select all effects"))
-					activeMapView->map->selectAll<RswEffect>(this);
-				if (ImGui::MenuItem("Select all sounds"))
-					activeMapView->map->selectAll<RswSound>(this);
-				if (ImGui::MenuItem("Select all lights"))
-					activeMapView->map->selectAll<RswLight>(this);
+				hotkeyMenuItem("Select all", HotkeyAction::ObjectEdit_SelectAll);
+				hotkeyMenuItem("Select all models", HotkeyAction::ObjectEdit_SelectAllModels);
+				hotkeyMenuItem("Select all effects", HotkeyAction::ObjectEdit_SelectAllEffects);
+				hotkeyMenuItem("Select all sounds", HotkeyAction::ObjectEdit_SelectAllSounds);
+				hotkeyMenuItem("Select all lights", HotkeyAction::ObjectEdit_SelectAllLights);
 				ImGui::EndMenu();
 			}
-			if (ImGui::MenuItem("Invert selection"))
-				activeMapView->map->selectInvert(this);
+			hotkeyMenuItem("Invert selection", HotkeyAction::ObjectEdit_InvertSelection);
 			ImGui::EndMenu();
 		}
-		if (ImGui::MenuItem("Flip horizontally"))
-			activeMapView->map->flipSelection(0, this);
-		if (ImGui::MenuItem("Flip vertically"))
-			activeMapView->map->flipSelection(2, this);
-		if (ImGui::MenuItem("Delete", "Delete"))
-			activeMapView->map->deleteSelection(this);
-		if (ImGui::MenuItem("Go to selection", "F"))
-			activeMapView->focusSelection();
+		hotkeyMenuItem("Flip horizontally", HotkeyAction::ObjectEdit_FlipHorizontal);
+		hotkeyMenuItem("Flip vertically", HotkeyAction::ObjectEdit_FlipVertical);
+		hotkeyMenuItem("Delete", HotkeyAction::ObjectEdit_Delete);
+		hotkeyMenuItem("Focus on selection", HotkeyAction::ObjectEdit_FocusOnSelection);
 		ImGui::EndMenu();
 	}
 
-	if (ImGui::BeginMenu("Maps"))
+	if(activeMapView)
+	if (ImGui::BeginMenu(activeMapView->map->name.c_str()))
 	{
-		for (auto map : maps)
+		if (ImGui::MenuItem("Open new view"))
+			loadMap(activeMapView->map->name);
+		if (ImGui::BeginMenu("Import/Export maps"))
 		{
-			if (ImGui::BeginMenu(map->name.c_str()))
+			static bool exportWalls = true;
+			static bool exportBorders = true;
+			ImGui::PushItemFlag(ImGuiItemFlags_SelectableDontClosePopup, true);
+			ImGui::MenuItem("Import/Export Walls", nullptr, &exportWalls);
+			ImGui::MenuItem("Import/Export Borders", nullptr, &exportBorders);
+			ImGui::PopItemFlag();
+			ImGui::Separator();
+			if (ImGui::MenuItem("Export shadowmap"))
+				activeMapView->map->exportShadowMap(this, exportWalls, exportBorders);
+			if (ImGui::MenuItem("Export colormap"))
+				activeMapView->map->exportLightMap(this, exportWalls, exportBorders);
+			if (ImGui::MenuItem("Export tile colors"))
+				activeMapView->map->exportTileColors(this, exportWalls);
+			ImGui::Separator();
+			if (ImGui::MenuItem("Import shadowmap"))
+				activeMapView->map->importShadowMap(this, exportWalls, exportBorders);
+			if (ImGui::MenuItem("Import colormap"))
+				activeMapView->map->importLightMap(this, exportWalls, exportBorders);
+			if (ImGui::MenuItem("Import tile colors"))
+				activeMapView->map->importTileColors(this, exportWalls);
+
+
+			ImGui::EndMenu();
+		}
+		hotkeyMenuItem("Calculate Quadtree", HotkeyAction::Global_CalculateQuadtree);
+		hotkeyMenuItem("Calculate lightmaps", HotkeyAction::Global_CalculateLightmaps);
+		if (ImGui::MenuItem("Make tiles unique"))
+			activeMapView->map->rootNode->getComponent<Gnd>()->makeTilesUnique();
+		if (ImGui::MenuItem("Clean Tiles"))
+			activeMapView->map->rootNode->getComponent<Gnd>()->cleanTiles();
+		if (ImGui::MenuItem("Fix lightmap borders"))
+			activeMapView->map->rootNode->getComponent<Gnd>()->makeLightmapBorders();
+		if (ImGui::MenuItem("Clear lightmaps"))
+			activeMapView->map->rootNode->getComponent<Gnd>()->makeLightmapsClear();
+		if (ImGui::MenuItem("Smoothen lightmaps"))
+			activeMapView->map->rootNode->getComponent<Gnd>()->makeLightmapsSmooth();
+		if (ImGui::MenuItem("Make lightmaps unique"))
+			activeMapView->map->rootNode->getComponent<Gnd>()->makeLightmapsUnique();
+		if (ImGui::MenuItem("Clean up lightmaps"))
+			activeMapView->map->rootNode->getComponent<Gnd>()->cleanLightmaps();
+
+		if (activeMapView->map->name == "data\\effects_ro.rsw" && ImGui::MenuItem("Generate effects")) //speedrun map
+		{
+			auto effectsFile = util::FileIO::open("data\\EffectTable.json");
+			int braces = 0;
+			bool singleQuote = false;
+			bool doubleQuote = false;
+			int comment = 0;
+			int mlComment = 0;
+			std::string buffer = "";
+			std::set<int> ids;
+			while (!effectsFile->eof())
 			{
-				if (ImGui::MenuItem("Save"))
-					saveMap(map);
-				if (ImGui::MenuItem("Save as"))
-					saveAsMap(map);
-				if (ImGui::MenuItem("Open new view"))
-					loadMap(map->name);
-				if (ImGui::BeginMenu("Import/Export maps"))
+				char c = effectsFile->get();
+				if (c == '{' && !singleQuote && !doubleQuote)
+					braces++;
+				else if (c == '}' && !singleQuote && !doubleQuote)
+					braces--;
+				else if (c == '[' && !singleQuote && !doubleQuote)
+					braces++;
+				else if (c == ']' && !singleQuote && !doubleQuote)
+					braces--;
+				else if (c == '\'')
+					singleQuote = !singleQuote;
+				else if (c == '\"')
+					doubleQuote = !doubleQuote;
+				else if (c == ',')
+					buffer = "";
+				else if (c == '/' && mlComment == 2)
+					mlComment = 0;
+				else if (c == '/')
+					comment++;
+				else if (c == '*' && mlComment == 1)
+					mlComment = 2;
+				else if (c == '*' && comment == 1)
+					mlComment = 1;
+				else if (c == '\t')
+					;
+				else if (c == ' ')
+					;
+				else if (c == '\r')
+					;
+				else if (c == '\n')
 				{
-					static bool exportWalls = true;
-					static bool exportBorders = true;
-					ImGui::PushItemFlag(ImGuiItemFlags_SelectableDontClosePopup, true);
-					ImGui::MenuItem("Import/Export Walls", nullptr, &exportWalls);
-					ImGui::MenuItem("Import/Export Borders", nullptr, &exportBorders);
-					ImGui::PopItemFlag();
-					ImGui::Separator();
-					if (ImGui::MenuItem("Export shadowmap"))
-						map->exportShadowMap(this, exportWalls, exportBorders);
-					if (ImGui::MenuItem("Export colormap"))
-						map->exportLightMap(this, exportWalls, exportBorders);
-					if (ImGui::MenuItem("Export tile colors"))
-						map->exportTileColors(this, exportWalls);
-					ImGui::Separator();
-					if (ImGui::MenuItem("Import shadowmap"))
-						map->importShadowMap(this, exportWalls, exportBorders);
-					if (ImGui::MenuItem("Import colormap"))
-						map->importLightMap(this, exportWalls, exportBorders);
-					if (ImGui::MenuItem("Import tile colors"))
-						map->importTileColors(this, exportWalls);
+					comment = 0;
+					doubleQuote = false;
+					singleQuote = false;
+				}
+				else if (c == ':')
+				{
+					if (buffer != "")
+					{
+						try
+						{
+							int id = std::stoi(buffer);
+							if (id != 0)
+								ids.insert(id);
+						}
+						catch (...) {}
+						buffer = "";
+					}
+				}
+				else if (braces == 1 && comment == 0 && mlComment == 0)
+					buffer += c;
+			}
+			delete effectsFile;
+
+			activeMapView->map->rootNode->children.clear(); //oops
+			auto gnd = activeMapView->map->rootNode->getComponent<Gnd>();
+
+			int tU[6][6];
+			int tF[6][6];
+			int tS[6][6];
+			int digits[10];
+
+			int xx = 5 + 6 * (0 % 40) - 1;
+			int yy = 17 + 6 * (0 / 40) - 1;
+			for (int x = xx; x < xx + 6; x++)
+			{
+				for (int y = yy; y < yy + 6; y++)
+				{
+					tU[x - xx][y - yy] = gnd->cubes[x][gnd->height - 1 - y]->tileUp;
+					tF[x - xx][y - yy] = gnd->cubes[x][gnd->height - 1 - y]->tileFront;
+					tS[x - xx][y - yy] = gnd->cubes[x][gnd->height - 1 - y]->tileSide;
+				}
+			}
+			for (int x = 0; x < 10; x++)
+			{
+				xx = 5 + 6 * (x % 40) - 1;
+				yy = 17 + 6 * (0 / 40) - 1;
+				digits[x] = gnd->cubes[xx + 1][gnd->height - 1 - (yy + 5)]->tileUp;
+			}
+
+			for (int x = 0; x < gnd->width; x++)
+			{
+				for (int y = 0; y < gnd->height-15; y++)
+				{
+					gnd->cubes[x][y]->h1 = -30;
+					gnd->cubes[x][y]->h2 = -30;
+					gnd->cubes[x][y]->h3 = -30;
+					gnd->cubes[x][y]->h4 = -30;
+					activeMapView->map->rootNode->getComponent<GndRenderer>()->setChunkDirty(x, y);
+				}
+			}
+			for (int i = 0; i < 1000; i++)
+			{
+				bool enabled = std::find(ids.begin(), ids.end(), i) != ids.end();
+
+				int xx = 5+  6 * (i % 40)-1;
+				int yy = 17+ 6 * (i / 40)-1;
+				for (int x = xx; x < xx + 6; x++)
+				{
+					for (int y = yy; y < yy + 6; y++)
+					{
+						float h = -40;
+						if (x == xx || x == xx + 5 || y == yy || y == yy + 5)
+							h = -30;
+						gnd->cubes[x][gnd->height - 1 - y]->h1 = h;
+						gnd->cubes[x][gnd->height - 1 - y]->h2 = h;
+						gnd->cubes[x][gnd->height - 1 - y]->h3 = h;
+						gnd->cubes[x][gnd->height - 1 - y]->h4 = h;
+						gnd->cubes[x][gnd->height - 1 - y]->tileFront = tF[x-xx][y-yy];
+						gnd->cubes[x][gnd->height - 1 - y]->tileSide = tS[x - xx][y - yy];
+						gnd->cubes[x][gnd->height - 1 - y]->tileUp = tU[x - xx][y - yy];
+					}
+				}
+				if (enabled)
+				{
+					int nr = i;
+					int len = (int)floor(log10(nr));
+					while (nr > 0)
+					{
+						gnd->cubes[xx + 1 + len][gnd->height - 1 - (yy + 5)]->tileUp = digits[nr % 10];
+						nr /= 10;
+						len--;
+					}
+
+					auto e = new RswEffect();
+					auto o = new RswObject();
+					o->position.x = -1180.0f + 60 * (i % 40);
+					o->position.y = -48.0f;
+					o->position.z = 1060.0f - 60 * (i / 40);
+					e->id = i;
+					Node* newNode = new Node("Effect" + std::to_string(i));
+					newNode->addComponent(o);
+					newNode->addComponent(e);
+					newNode->addComponent(new BillboardRenderer("data\\effect.png", "data\\effect_selected.png"));
+					newNode->addComponent(new CubeCollider(5));
+					newNode->setParent(activeMapView->map->rootNode);
+				}
+			}
+
+		}
 
 
+		for (auto mv : mapViews)
+		{
+			if (mv.map == activeMapView->map)
+			{
+				if (ImGui::BeginMenu(mv.viewName.c_str()))
+				{
+					if (ImGui::BeginMenu("High Res Screenshot"))
+					{
+						static int size[2] = { 2048, 2048 };
+						ImGui::DragInt2("Size", size);
+						if (ImGui::MenuItem("Save"))
+						{
+							std::string filename = util::SaveAsDialog("screenshot.png", "All\0*.*\0Png\0*.png");
+							if (filename != "")
+							{
+								mv.fbo->resize(size[0], size[1]);
+								mv.render(this);
+								mv.fbo->saveAsFile(filename);
+							}
+						}
+						ImGui::EndMenu();
+					}
 					ImGui::EndMenu();
 				}
-				if(ImGui::MenuItem("Calculate Quadtree", "Ctrl+Q"))
-					map->recalculateQuadTree(this);
-				if (ImGui::MenuItem("Calculate lightmaps", "Ctrl+L") && !lightmapper)
-				{
-					lightmapper = new Lightmapper(map, this);
-					windowData.openLightmapSettings = true;
-				}
-				if (ImGui::MenuItem("Make tiles unique"))
-					map->rootNode->getComponent<Gnd>()->makeTilesUnique();
-				if (ImGui::MenuItem("Clean Tiles"))
-					map->rootNode->getComponent<Gnd>()->cleanTiles();
-				if (ImGui::MenuItem("Fix lightmap borders"))
-					map->rootNode->getComponent<Gnd>()->makeLightmapBorders();
-				if (ImGui::MenuItem("Clear lightmaps"))
-					map->rootNode->getComponent<Gnd>()->makeLightmapsClear();
-				if (ImGui::MenuItem("Smoothen lightmaps"))
-					map->rootNode->getComponent<Gnd>()->makeLightmapsSmooth();
-				if (ImGui::MenuItem("Make lightmaps unique"))
-					map->rootNode->getComponent<Gnd>()->makeLightmapsUnique();
-				if (ImGui::MenuItem("Clean up lightmaps"))
-					map->rootNode->getComponent<Gnd>()->cleanLightmaps();
-
-				if (map->name == "data\\effects_ro.rsw" && ImGui::MenuItem("Generate effects")) //speedrun map
-				{
-					auto effectsFile = util::FileIO::open("data\\EffectTable.json");
-					int braces = 0;
-					bool singleQuote = false;
-					bool doubleQuote = false;
-					int comment = 0;
-					int mlComment = 0;
-					std::string buffer = "";
-					std::set<int> ids;
-					while (!effectsFile->eof())
-					{
-						char c = effectsFile->get();
-						if (c == '{' && !singleQuote && !doubleQuote)
-							braces++;
-						else if (c == '}' && !singleQuote && !doubleQuote)
-							braces--;
-						else if (c == '[' && !singleQuote && !doubleQuote)
-							braces++;
-						else if (c == ']' && !singleQuote && !doubleQuote)
-							braces--;
-						else if (c == '\'')
-							singleQuote = !singleQuote;
-						else if (c == '\"')
-							doubleQuote = !doubleQuote;
-						else if (c == ',')
-							buffer = "";
-						else if (c == '/' && mlComment == 2)
-							mlComment = 0;
-						else if (c == '/')
-							comment++;
-						else if (c == '*' && mlComment == 1)
-							mlComment = 2;
-						else if (c == '*' && comment == 1)
-							mlComment = 1;
-						else if (c == '\t')
-							;
-						else if (c == ' ')
-							;
-						else if (c == '\r')
-							;
-						else if (c == '\n')
-						{
-							comment = 0;
-							doubleQuote = false;
-							singleQuote = false;
-						}
-						else if (c == ':')
-						{
-							if (buffer != "")
-							{
-								try
-								{
-									int id = std::stoi(buffer);
-									if (id != 0)
-										ids.insert(id);
-								}
-								catch (...) {}
-								buffer = "";
-							}
-						}
-						else if (braces == 1 && comment == 0 && mlComment == 0)
-							buffer += c;
-					}
-					delete effectsFile;
-
-					map->rootNode->children.clear(); //oops
-					auto gnd = map->rootNode->getComponent<Gnd>();
-
-					int tU[6][6];
-					int tF[6][6];
-					int tS[6][6];
-					int digits[10];
-
-					int xx = 5 + 6 * (0 % 40) - 1;
-					int yy = 17 + 6 * (0 / 40) - 1;
-					for (int x = xx; x < xx + 6; x++)
-					{
-						for (int y = yy; y < yy + 6; y++)
-						{
-							tU[x - xx][y - yy] = gnd->cubes[x][gnd->height - 1 - y]->tileUp;
-							tF[x - xx][y - yy] = gnd->cubes[x][gnd->height - 1 - y]->tileFront;
-							tS[x - xx][y - yy] = gnd->cubes[x][gnd->height - 1 - y]->tileSide;
-						}
-					}
-					for (int x = 0; x < 10; x++)
-					{
-						xx = 5 + 6 * (x % 40) - 1;
-						yy = 17 + 6 * (0 / 40) - 1;
-						digits[x] = gnd->cubes[xx + 1][gnd->height - 1 - (yy + 5)]->tileUp;
-					}
-
-					for (int x = 0; x < gnd->width; x++)
-					{
-						for (int y = 0; y < gnd->height-15; y++)
-						{
-							gnd->cubes[x][y]->h1 = -30;
-							gnd->cubes[x][y]->h2 = -30;
-							gnd->cubes[x][y]->h3 = -30;
-							gnd->cubes[x][y]->h4 = -30;
-							map->rootNode->getComponent<GndRenderer>()->setChunkDirty(x, y);
-						}
-					}
-					for (int i = 0; i < 1000; i++)
-					{
-						bool enabled = std::find(ids.begin(), ids.end(), i) != ids.end();
-
-						int xx = 5+  6 * (i % 40)-1;
-						int yy = 17+ 6 * (i / 40)-1;
-						for (int x = xx; x < xx + 6; x++)
-						{
-							for (int y = yy; y < yy + 6; y++)
-							{
-								float h = -40;
-								if (x == xx || x == xx + 5 || y == yy || y == yy + 5)
-									h = -30;
-								gnd->cubes[x][gnd->height - 1 - y]->h1 = h;
-								gnd->cubes[x][gnd->height - 1 - y]->h2 = h;
-								gnd->cubes[x][gnd->height - 1 - y]->h3 = h;
-								gnd->cubes[x][gnd->height - 1 - y]->h4 = h;
-								gnd->cubes[x][gnd->height - 1 - y]->tileFront = tF[x-xx][y-yy];
-								gnd->cubes[x][gnd->height - 1 - y]->tileSide = tS[x - xx][y - yy];
-								gnd->cubes[x][gnd->height - 1 - y]->tileUp = tU[x - xx][y - yy];
-							}
-						}
-						if (enabled)
-						{
-							int nr = i;
-							int len = (int)floor(log10(nr));
-							while (nr > 0)
-							{
-								gnd->cubes[xx + 1 + len][gnd->height - 1 - (yy + 5)]->tileUp = digits[nr % 10];
-								nr /= 10;
-								len--;
-							}
-
-							auto e = new RswEffect();
-							auto o = new RswObject();
-							o->position.x = -1180.0f + 60 * (i % 40);
-							o->position.y = -48.0f;
-							o->position.z = 1060.0f - 60 * (i / 40);
-							e->id = i;
-							Node* newNode = new Node("Effect" + std::to_string(i));
-							newNode->addComponent(o);
-							newNode->addComponent(e);
-							newNode->addComponent(new BillboardRenderer("data\\effect.png", "data\\effect_selected.png"));
-							newNode->addComponent(new CubeCollider(5));
-							newNode->setParent(map->rootNode);
-						}
-					}
-
-				}
-
-
-				for (auto mv : mapViews)
-				{
-					if (mv.map == map)
-					{
-						if (ImGui::BeginMenu(mv.viewName.c_str()))
-						{
-							if (ImGui::BeginMenu("High Res Screenshot"))
-							{
-								static int size[2] = { 2048, 2048 };
-								ImGui::DragInt2("Size", size);
-								if (ImGui::MenuItem("Save"))
-								{
-									std::string filename = util::SaveAsDialog("screenshot.png", "All\0*.*\0Png\0*.png");
-									if (filename != "")
-									{
-										mv.fbo->resize(size[0], size[1]);
-										mv.render(this);
-										mv.fbo->saveAsFile(filename);
-									}
-								}
-								ImGui::EndMenu();
-							}
-							ImGui::EndMenu();
-						}
-					}
-				}
-				ImGui::EndMenu();
 			}
 		}
 		ImGui::EndMenu();

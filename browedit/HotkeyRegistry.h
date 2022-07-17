@@ -17,11 +17,32 @@ enum class HotkeyAction
 	Global_ReloadTextures,
 	Global_ReloadModels,
 
+	Global_Copy,
+	Global_Paste,
+	Global_PasteChangeHeight,
+
+	Global_CalculateQuadtree,
+	Global_CalculateLightmaps,
+
+	ObjectEdit_FlipHorizontal,
+	ObjectEdit_FlipVertical,
+	ObjectEdit_Delete,
+	ObjectEdit_FocusOnSelection,
+	
+	ObjectEdit_InvertSelection,
+	ObjectEdit_SelectAll,
+	ObjectEdit_SelectAllModels,
+	ObjectEdit_SelectAllEffects,
+	ObjectEdit_SelectAllSounds,
+	ObjectEdit_SelectAllLights,
+
+
 	EditMode_Height,
 	EditMode_Texture,
 	EditMode_Object,
 	EditMode_Wall,
 	EditMode_Gat,
+
 
 	Texture_RotateLeft,
 	Texture_RotateRight,

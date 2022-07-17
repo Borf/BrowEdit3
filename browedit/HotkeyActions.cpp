@@ -3,14 +3,18 @@
 #include <browedit/Map.h>
 #include <browedit/util/ResourceManager.h>
 #include <browedit/gl/Texture.h>
+#include <browedit/components/Rsw.h>
 #include <browedit/components/Rsm.h>
 #include <browedit/components/RsmRenderer.h>
+#include <browedit/Lightmapper.h>
 #include <browedit/Node.h>
 #include <GLFW/glfw3.h>
 
 void BrowEdit::registerActions()
 {
 	auto hasActiveMapView = [this]() {return activeMapView != nullptr; };
+	auto hasActiveMapViewObjectMode = [this]() { return activeMapView != nullptr && editMode == EditMode::Object; };
+
 	HotkeyRegistry::registerAction(HotkeyAction::Global_Save,			[this]() { saveMap(activeMapView->map); }, hasActiveMapView);
 	HotkeyRegistry::registerAction(HotkeyAction::Global_Load,			[this]() { showOpenWindow(); });
 	HotkeyRegistry::registerAction(HotkeyAction::Global_Exit,			[this]() { glfwSetWindowShouldClose(window, 1); });
@@ -30,7 +34,28 @@ void BrowEdit::registerActions()
 				rsmRenderer->begin();
 				});
 		});
+	HotkeyRegistry::registerAction(HotkeyAction::Global_Copy,					[this]() { if (editMode == EditMode::Object) { activeMapView->map->copySelection(); } }, hasActiveMapView);
+	HotkeyRegistry::registerAction(HotkeyAction::Global_Paste,					[this]() { if (editMode == EditMode::Object) { activeMapView->map->pasteSelection(this); } }, hasActiveMapView);
+	HotkeyRegistry::registerAction(HotkeyAction::Global_PasteChangeHeight,		[this]() { if (editMode == EditMode::Object) { newNodeHeight = !newNodeHeight; } }, hasActiveMapView);
 
+	HotkeyRegistry::registerAction(HotkeyAction::Global_CalculateQuadtree,		[this]() { activeMapView->map->recalculateQuadTree(this); }, hasActiveMapView);
+	HotkeyRegistry::registerAction(HotkeyAction::Global_CalculateLightmaps,		[this]() {
+		lightmapper = new Lightmapper(activeMapView->map, this);
+		windowData.openLightmapSettings = true; 
+	}, [this]() { return activeMapView && !lightmapper;});
+	
+
+
+	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_FlipHorizontal,		[this]() { activeMapView->map->flipSelection(0, this); }, hasActiveMapViewObjectMode);
+	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_FlipVertical,		[this]() { activeMapView->map->flipSelection(2, this); }, hasActiveMapViewObjectMode);
+	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_Delete,				[this]() { activeMapView->map->deleteSelection(this); }, hasActiveMapViewObjectMode);
+	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_FocusOnSelection,	[this]() { activeMapView->focusSelection(); }, hasActiveMapViewObjectMode);
+	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_InvertSelection,	[this]() { activeMapView->map->selectInvert(this); }, hasActiveMapViewObjectMode);
+	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_SelectAll,			[this]() { activeMapView->map->selectAll(this); }, hasActiveMapViewObjectMode);
+	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_SelectAllModels,	[this]() { activeMapView->map->selectAll<RswModel>(this); }, hasActiveMapViewObjectMode);
+	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_SelectAllEffects,	[this]() { activeMapView->map->selectAll<RswEffect>(this); }, hasActiveMapViewObjectMode);
+	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_SelectAllSounds,	[this]() { activeMapView->map->selectAll<RswSound>(this); }, hasActiveMapViewObjectMode);
+	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_SelectAllLights,	[this]() { activeMapView->map->selectAll<RswLight>(this); }, hasActiveMapViewObjectMode);
 
 
 	HotkeyRegistry::registerAction(HotkeyAction::EditMode_Height,		[this]() { editMode = EditMode::Height; });

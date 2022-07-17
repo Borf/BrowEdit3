@@ -260,61 +260,6 @@ void BrowEdit::run()
 		if (!ImGui::GetIO().WantTextInput)
 		{
 			HotkeyRegistry::checkHotkeys();
-/*			if (ImGui::GetIO().KeyCtrl)
-			{
-				if (ImGui::IsKeyPressed('Z') && activeMapView)
-					if (ImGui::GetIO().KeyShift)
-						activeMapView->map->redo(this);
-					else
-						activeMapView->map->undo(this);
-				if (ImGui::IsKeyPressed('Y') && activeMapView)
-					activeMapView->map->redo(this);
-				if (ImGui::IsKeyPressed('S') && activeMapView)
-					saveMap(activeMapView->map);
-				if (ImGui::IsKeyPressed('O'))
-					showOpenWindow();
-				if (ImGui::IsKeyPressed('Q') && activeMapView)
-					activeMapView->map->recalculateQuadTree(this);
-				if (ImGui::IsKeyPressed('L') && activeMapView)
-				{
-					lightmapper = new Lightmapper(activeMapView->map, this);
-					windowData.openLightmapSettings = true;
-				}
-				if(ImGui::IsKeyPressed('R'))
-					for (auto t : util::ResourceManager<gl::Texture>::getAll())
-						t->reload();
-			}
-			if (ImGui::GetIO().KeyShift)
-			{
-				if (ImGui::IsKeyPressed('R'))
-				{
-					for (auto rsm : util::ResourceManager<Rsm>::getAll())
-						rsm->reload();
-					for (auto m : maps)
-						m->rootNode->traverse([](Node* n) {
-						auto rsmRenderer = n->getComponent<RsmRenderer>();
-						if (rsmRenderer)
-							rsmRenderer->begin();
-							});
-				}
-			}
-			if (editMode == EditMode::Object && activeMapView)
-			{
-				if (ImGui::IsKeyPressed(GLFW_KEY_DELETE) && activeMapView)
-					activeMapView->map->deleteSelection(this);
-				if (ImGui::IsKeyPressed('F'))
-					activeMapView->focusSelection();
-
-				if (ImGui::GetIO().KeyCtrl)
-				{
-					if (ImGui::IsKeyPressed('C'))
-						activeMapView->map->copySelection();
-					if (ImGui::IsKeyPressed('V'))
-						activeMapView->map->pasteSelection(this);
-				}
-				else if (ImGui::IsKeyPressed('V') && newNodes.size() > 0)
-					newNodeHeight = !newNodeHeight;
-			}
 			if (editMode == EditMode::Height && activeMapView)
 			{
 				if (!heightDoodle)
@@ -340,7 +285,7 @@ void BrowEdit::run()
 				if (ImGui::IsKeyPressed(GLFW_KEY_RIGHT_BRACKET))
 					activeMapView->textureSelected = (activeMapView->textureSelected + 1) % activeMapView->map->rootNode->getComponent<Gnd>()->textures.size();
 
-			}*/
+			}
 		}
 		int display_w, display_h;
 		glfwGetFramebufferSize(window, &display_w, &display_h);
