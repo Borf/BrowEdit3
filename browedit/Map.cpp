@@ -154,6 +154,25 @@ glm::vec3 Map::getSelectionCenter()
 }
 
 
+void Map::invertScale(int axis, BrowEdit* browEdit)
+{
+	auto ga = new GroupAction();
+	for (auto n : selectedNodes)
+	{
+		auto rswObject = n->getComponent<RswObject>();
+		auto rsmRenderer = n->getComponent<RsmRenderer>();
+		if (rswObject)
+		{
+			float orig = rswObject->position[axis];
+			rswObject->scale[axis] = -rswObject->scale[axis];
+			ga->addAction(new ObjectChangeAction(n, &rswObject->scale[axis], orig, "Invert Scale"));
+		}
+		if (rsmRenderer)
+			rsmRenderer->setDirty();
+	}
+	doAction(ga, browEdit);
+}
+
 void Map::flipSelection(int axis, BrowEdit* browEdit)
 {
 	glm::vec3 center = getSelectionCenter();

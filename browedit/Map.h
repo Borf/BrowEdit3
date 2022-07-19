@@ -49,6 +49,7 @@ public:
 	void pasteSelection(BrowEdit* browEdit);
 	void deleteSelection(BrowEdit* browEdit);
 	void flipSelection(int axis, BrowEdit* browEdit);
+	void invertScale(int axis, BrowEdit* browEdit);
 	void setSelectedItemsToFloorHeight(BrowEdit* browEdit);
 
 	void exportShadowMap(BrowEdit* browEdit, bool exportWalls, bool exportBorders);

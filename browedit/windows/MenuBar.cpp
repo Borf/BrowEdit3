@@ -95,6 +95,11 @@ void BrowEdit::menuBar()
 		}
 		hotkeyMenuItem("Flip horizontally", HotkeyAction::ObjectEdit_FlipHorizontal);
 		hotkeyMenuItem("Flip vertically", HotkeyAction::ObjectEdit_FlipVertical);
+
+		hotkeyMenuItem("Invert Scale X", HotkeyAction::ObjectEdit_InvertScaleX);
+		hotkeyMenuItem("Invert Scale Y", HotkeyAction::ObjectEdit_InvertScaleY);
+		hotkeyMenuItem("Invert Scale Z", HotkeyAction::ObjectEdit_InvertScaleZ);
+
 		hotkeyMenuItem("Delete", HotkeyAction::ObjectEdit_Delete);
 		hotkeyMenuItem("Focus on selection", HotkeyAction::ObjectEdit_FocusOnSelection);
 		ImGui::EndMenu();
