@@ -43,7 +43,7 @@ public:
 
 	std::string grfEditorPath = "";
 	std::vector<std::string> recentFiles;
-
+	int defaultEditMode = 0;
 	float toolbarHeight() { return toolbarButtonSize + 8; }
 
 	std::string isValid() const;
@@ -74,5 +74,6 @@ public:
 		rotateGridSizes,
 		grfEditorPath,
 		recentFiles,
-		hotkeys);
+		hotkeys,
+		defaultEditMode);
 };

@@ -114,6 +114,7 @@ void BrowEdit::run()
 		return;
 	}
 	configBegin();
+	editMode = (EditMode)config.defaultEditMode;
 	if (config.closeObjectWindowOnAdd)
 		windowData.objectWindowVisible = false;
 	registerActions();

@@ -12,6 +12,7 @@
 #include <glfw/glfw3native.h>
 #include <glm/gtc/type_ptr.hpp>
 #include <ShlObj_core.h>
+#include <magic_enum.hpp>
 
 using json = nlohmann::json;
 
@@ -196,6 +197,16 @@ bool Config::showWindow(BrowEdit* browEdit)
 		ImGui::ColorEdit4("Toolbar Object Edit", &toolbarButtonsObjectEdit.x);
 		ImGui::ColorEdit4("Toolbar Wall Edit", &toolbarButtonsWallEdit.x);
 		ImGui::ColorEdit4("Toolbar Gat Edit", &toolbarButtonsGatEdit.x);
+
+
+		std::string editModes = "";
+		for (auto e : magic_enum::enum_entries<BrowEdit::EditMode>())
+		{
+			editModes += std::string(e.second) + '\0';
+		}
+
+		ImGui::Combo("Default Editmode", &defaultEditMode, editModes.c_str());
+
 
 		ImGui::Checkbox("Save a backup of maps when saving", &backup);
 
