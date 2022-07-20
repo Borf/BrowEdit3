@@ -165,7 +165,7 @@ void Map::invertScale(int axis, BrowEdit* browEdit)
 		auto rsmRenderer = n->getComponent<RsmRenderer>();
 		if (rswObject)
 		{
-			float orig = rswObject->position[axis];
+			float orig = rswObject->scale[axis];
 			rswObject->scale[axis] = -rswObject->scale[axis];
 			ga->addAction(new ObjectChangeAction(n, &rswObject->scale[axis], orig, "Invert Scale"));
 		}

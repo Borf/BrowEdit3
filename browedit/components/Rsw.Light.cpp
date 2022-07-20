@@ -172,5 +172,6 @@ void RswLight::buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>& nod
 		to_json(out, *rswLights[0]);
 		std::ofstream file(("data\\lights\\" + templateName).c_str());
 		file << std::setw(2) << out;
+		util::FileIO::reload("data\\lights");
 	}
 }
