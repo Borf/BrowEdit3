@@ -205,6 +205,7 @@ void BrowEdit::showObjectWindow()
 	startTree("Sounds", "data\\wav\\");
 	startTree("Lights", "data\\lights\\");
 	startTree("Effects", "data\\effects\\");
+	startTree("Prefabs", "data\\prefabs\\");
 	ImGui::EndChild();
 	ImGui::SameLine();
 
@@ -246,6 +247,8 @@ void BrowEdit::showObjectWindow()
 			{
 				if (path.find("data\\lights") != std::string::npos)
 					texture = (ImTextureID)(long long)lightTexture->id();
+				if (path.find("data\\prefabs") != std::string::npos)
+					texture = (ImTextureID)(long long)prefabTexture->id();
 				if (path.find("data\\effects") != std::string::npos)
 				{
 					static std::map<std::string, int> effectIds;
@@ -314,6 +317,80 @@ void BrowEdit::showObjectWindow()
 						newNodes.push_back(std::pair<Node*, glm::vec3>(newNode, glm::vec3(0, 0, 0)));
 						newNodesCenter = glm::vec3(0, 0, 0);
 						newNodeHeight = false;
+					}
+					else if (file.substr(file.size() - 5) == ".json" &&
+						path.find("data\\prefabs") != std::string::npos)
+					{
+						json clipboard = util::FileIO::getJson(path);
+						if (clipboard.size() > 0)
+						{
+							for (auto n : newNodes) //TODO: should I do this?
+								delete n.first;
+							newNodes.clear();
+
+							for (auto n : clipboard)
+							{
+								auto newNode = new Node(n["name"].get<std::string>());
+								for (auto c : n["components"])
+								{
+									if (c["type"] == "rswobject")
+									{
+										auto rswObject = new RswObject();
+										from_json(c, *rswObject);
+										newNode->addComponent(rswObject);
+									}
+									if (c["type"] == "rswmodel")
+									{
+										auto rswModel = new RswModel();
+										from_json(c, *rswModel);
+										newNode->addComponent(rswModel);
+										newNode->addComponent(util::ResourceManager<Rsm>::load("data\\model\\" + util::utf8_to_iso_8859_1(rswModel->fileName)));
+										newNode->addComponent(new RsmRenderer());
+										newNode->addComponent(new RswModelCollider());
+									}
+									if (c["type"] == "rswlight")
+									{
+										auto rswLight = new RswLight();
+										from_json(c, *rswLight);
+										newNode->addComponent(rswLight);
+										newNode->addComponent(new BillboardRenderer("data\\light.png", "data\\light_selected.png"));
+										newNode->addComponent(new CubeCollider(5));
+									}
+									if (c["type"] == "rsweffect")
+									{
+										auto rswEffect = new RswEffect();
+										from_json(c, *rswEffect);
+										newNode->addComponent(rswEffect);
+										newNode->addComponent(new BillboardRenderer("data\\effect.png", "data\\effect_selected.png"));
+										newNode->addComponent(new CubeCollider(5));
+									}
+									if (c["type"] == "lubeffect")
+									{
+										auto lubEffect = new LubEffect();
+										from_json(c, *lubEffect);
+										newNode->addComponent(lubEffect);
+									}
+									if (c["type"] == "rswsound")
+									{
+										auto rswSound = new RswSound();
+										from_json(c, *rswSound);
+										newNode->addComponent(rswSound);
+										newNode->addComponent(new BillboardRenderer("data\\sound.png", "data\\sound_selected.png"));
+										newNode->addComponent(new CubeCollider(5));
+									}
+								}
+								newNodes.push_back(std::pair<Node*, glm::vec3>(newNode, newNode->getComponent<RswObject>()->position));
+							}
+							glm::vec3 center(0, 0, 0);
+							for (auto& n : newNodes)
+								center += n.second;
+							center /= newNodes.size();
+
+							newNodesCenter = center;
+							for (auto& n : newNodes)
+								n.second = n.second - center;
+							newNodeHeight = false;
+						}
 					}
 					else if (file.substr(file.size() - 4) == ".wav")
 					{

@@ -61,6 +61,8 @@ namespace util
 		static void addDirectory(const std::string&);
 		static void end();
 
+		static void reload(const std::string&); // to reload a path
+
 		// FileIO for opening from GRF
 		static std::istream* open(const std::string& fileName);
 		static bool exists(const std::string& fileName);

@@ -135,7 +135,8 @@ void BrowEdit::run()
 	effectTexture = util::ResourceManager<gl::Texture>::load("data\\effect.png");
 	soundTexture = util::ResourceManager<gl::Texture>::load("data\\sound.png");
 	gatTexture = util::ResourceManager<gl::Texture>::load("data\\gat.png");
-	
+	prefabTexture = util::ResourceManager<gl::Texture>::load("data\\prefab.png");
+
 	NodeRenderer::begin();
 	Gadget::init();
 

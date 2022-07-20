@@ -13,6 +13,8 @@
 #include <browedit/components/BillboardRenderer.h>
 #include <browedit/BrowEdit.h>
 #include <browedit/util/ResourceManager.h>
+#include <filesystem>
+#include <fstream>
 
 #include <json.hpp>
 using json = nlohmann::json;
@@ -741,5 +743,12 @@ void Map::shrinkTileSelection(BrowEdit* browEdit)
 
 void Map::createPrefab(const std::string& fileName, BrowEdit* browEdit)
 {
-
+	std::filesystem::path filePath("data\\prefabs\\" + fileName);
+	std::filesystem::create_directories(filePath.parent_path());
+	std::ofstream outFile(filePath);
+	json clipboard;
+	for (auto n : selectedNodes)
+		clipboard.push_back(*n);
+	outFile << clipboard;
+	util::FileIO::reload("data\\prefabs");
 }
