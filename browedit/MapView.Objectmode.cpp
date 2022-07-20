@@ -14,6 +14,7 @@
 #include <browedit/actions/ObjectChangeAction.h>
 #include <browedit/shaders/SimpleShader.h>
 #include <browedit/math/Polygon.h>
+#include <browedit/HotkeyRegistry.h>
 
 #include <glm/gtc/type_ptr.hpp>
 #include <mutex>
@@ -129,10 +130,8 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 	{
 		if (ImGui::MenuItem("Set to floor height"))
 			map->setSelectedItemsToFloorHeight(browEdit);
-		if (ImGui::MenuItem("Copy", "Ctrl+c"))
-			map->copySelection();
-		if (ImGui::MenuItem("Paste", "Ctrl+v"))
-			map->pasteSelection(browEdit);
+		browEdit->hotkeyMenuItem("Copy", HotkeyAction::Global_Copy);
+		browEdit->hotkeyMenuItem("Paste", HotkeyAction::Global_Paste);
 		if (ImGui::MenuItem("Select Same"))
 			map->selectSameModels(browEdit);
 		static float distance = 50.0f;
@@ -140,6 +139,20 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 		ImGui::DragFloat("Near Distance", &distance, 1.0f, 0.0f, 1000.0f);
 		if (ImGui::MenuItem("Select near"))
 			map->selectNear(distance, browEdit);
+		browEdit->hotkeyMenuItem("Create Prefab", HotkeyAction::ObjectEdit_CreatePrefab);
+
+
+		ImGui::EndPopup();
+	}
+	if (ImGui::BeginPopup("CreatePrefab"))
+	{
+		static char fileName[1000] = "prefab";
+		ImGui::InputText("Filename", fileName, 1000);
+		if (ImGui::Button("Create"))
+		{
+			map->createPrefab(std::string(fileName) + ".json", browEdit);
+			ImGui::CloseCurrentPopup();
+		}
 		ImGui::EndPopup();
 	}
 

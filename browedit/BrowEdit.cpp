@@ -443,6 +443,12 @@ void BrowEdit::showMapWindow(MapView& mapView, float deltaTime)
 		ImGui::ImageButton(id, size, ImVec2(0,1), ImVec2(1,0), 0, ImVec4(0,0,0,1), ImVec4(1,1,1,1));
 		//ImGui::Image(id, size, ImVec2(0, 1), ImVec2(1, 0));
 		mapView.hovered = ImGui::IsItemHovered() || ImGui::IsItemClicked();
+
+		if (&mapView == activeMapView)
+		{
+
+		}
+
 	}
 	if (ImGui::IsWindowFocused() || (ImGui::IsWindowHovered() && (ImGui::IsMouseClicked(0) || ImGui::IsMouseClicked(1) || ImGui::IsMouseClicked(2))))
 	{

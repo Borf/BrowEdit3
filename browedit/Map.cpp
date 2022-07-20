@@ -737,3 +737,9 @@ void Map::shrinkTileSelection(BrowEdit* browEdit)
 	auto action = new TileSelectAction(this, shrunk);
 	doAction(action, browEdit);
 }
+
+
+void Map::createPrefab(const std::string& fileName, BrowEdit* browEdit)
+{
+
+}

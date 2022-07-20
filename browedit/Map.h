@@ -51,6 +51,7 @@ public:
 	void flipSelection(int axis, BrowEdit* browEdit);
 	void invertScale(int axis, BrowEdit* browEdit);
 	void setSelectedItemsToFloorHeight(BrowEdit* browEdit);
+	void createPrefab(const std::string &fileName, BrowEdit* browEdit);
 
 	void exportShadowMap(BrowEdit* browEdit, bool exportWalls, bool exportBorders);
 	void exportLightMap(BrowEdit* browEdit, bool exportWalls, bool exportBorders);
