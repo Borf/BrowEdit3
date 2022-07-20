@@ -59,9 +59,7 @@ void BrowEdit::registerActions()
 	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_InvertScaleX,		[this]() { activeMapView->map->invertScale(0, this); }, hasActiveMapViewObjectMode);
 	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_InvertScaleY,		[this]() { activeMapView->map->invertScale(1, this); }, hasActiveMapViewObjectMode);
 	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_InvertScaleZ,		[this]() { activeMapView->map->invertScale(2, this); }, hasActiveMapViewObjectMode);
-	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_CreatePrefab, [this]() {
-		ImGui::OpenPopup("CreatePrefab");
-	}, hasActiveMapViewObjectMode);
+	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_CreatePrefab, [this]() { windowData.openPrefabPopup = true; }, hasActiveMapViewObjectMode);
 
 
 	HotkeyRegistry::registerAction(HotkeyAction::EditMode_Height,		[this]() { editMode = EditMode::Height; });

@@ -144,6 +144,11 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 
 		ImGui::EndPopup();
 	}
+	if (browEdit->windowData.openPrefabPopup)
+	{
+		ImGui::OpenPopup("CreatePrefab");
+		browEdit->windowData.openPrefabPopup = false;
+	}
 	if (ImGui::BeginPopup("CreatePrefab"))
 	{
 		static char fileName[1000] = "prefab";

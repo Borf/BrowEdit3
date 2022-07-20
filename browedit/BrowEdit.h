@@ -85,6 +85,10 @@ public:
 
 		bool openLightmapSettings = false;
 
+
+		bool openPrefabPopup = false;
+
+
 		//progress
 		std::mutex progressMutex;
 		bool progressWindowVisible = false;
