@@ -174,6 +174,26 @@ void Map::invertScale(int axis, BrowEdit* browEdit)
 	}
 	doAction(ga, browEdit);
 }
+void Map::nudgeSelection(int axis, int sign, BrowEdit* browEdit)
+{
+	auto ga = new GroupAction();
+	for (auto n : selectedNodes)
+	{
+		auto rswObject = n->getComponent<RswObject>();
+		auto rsmRenderer = n->getComponent<RsmRenderer>();
+		if (rswObject)
+		{
+			float orig = rswObject->position[axis];
+			rswObject->position[axis] += sign;
+			ga->addAction(new ObjectChangeAction(n, &rswObject->position[axis], orig, "Nudge"));
+		}
+		if (rsmRenderer)
+			rsmRenderer->setDirty();
+	}
+	doAction(ga, browEdit);
+}
+
+
 
 void Map::flipSelection(int axis, BrowEdit* browEdit)
 {

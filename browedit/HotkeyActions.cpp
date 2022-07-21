@@ -59,8 +59,14 @@ void BrowEdit::registerActions()
 	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_InvertScaleX,		[this]() { activeMapView->map->invertScale(0, this); }, hasActiveMapViewObjectMode);
 	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_InvertScaleY,		[this]() { activeMapView->map->invertScale(1, this); }, hasActiveMapViewObjectMode);
 	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_InvertScaleZ,		[this]() { activeMapView->map->invertScale(2, this); }, hasActiveMapViewObjectMode);
-	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_CreatePrefab, [this]() { windowData.openPrefabPopup = true; }, hasActiveMapViewObjectMode);
+	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_CreatePrefab,		[this]() { windowData.openPrefabPopup = true; }, hasActiveMapViewObjectMode);
 
+	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_InvertNudgeXNeg,	[this]() { activeMapView->map->nudgeSelection(0, -1, this); }, hasActiveMapViewObjectMode);
+	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_InvertNudgeXPos,	[this]() { activeMapView->map->nudgeSelection(0, 1, this); }, hasActiveMapViewObjectMode);
+	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_InvertNudgeYNeg,	[this]() { activeMapView->map->nudgeSelection(1, -1, this); }, hasActiveMapViewObjectMode);
+	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_InvertNudgeYPos,	[this]() { activeMapView->map->nudgeSelection(1, 1, this); }, hasActiveMapViewObjectMode);
+	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_InvertNudgeZNeg,	[this]() { activeMapView->map->nudgeSelection(2, -1, this); }, hasActiveMapViewObjectMode);
+	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_InvertNudgeZPos,	[this]() { activeMapView->map->nudgeSelection(2, 1, this); }, hasActiveMapViewObjectMode);
 
 	HotkeyRegistry::registerAction(HotkeyAction::EditMode_Height,		[this]() { editMode = EditMode::Height; });
 	HotkeyRegistry::registerAction(HotkeyAction::EditMode_Texture,		[this]() { editMode = EditMode::Texture; });

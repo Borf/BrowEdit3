@@ -32,6 +32,14 @@ enum class HotkeyAction
 	ObjectEdit_Delete,
 	ObjectEdit_FocusOnSelection,
 	ObjectEdit_CreatePrefab,
+
+	ObjectEdit_InvertNudgeXNeg,
+	ObjectEdit_InvertNudgeXPos,
+	ObjectEdit_InvertNudgeYNeg,
+	ObjectEdit_InvertNudgeYPos,
+	ObjectEdit_InvertNudgeZNeg,
+	ObjectEdit_InvertNudgeZPos,
+
 	
 	ObjectEdit_InvertSelection,
 	ObjectEdit_SelectAll,
