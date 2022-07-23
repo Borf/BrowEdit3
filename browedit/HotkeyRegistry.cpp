@@ -112,7 +112,8 @@ void HotkeyRegistry::showHotkeyPopup(BrowEdit* browEdit)
 				std::string itemText(hotkeyEnum.second);
 				if (combi.hotkey.keyCode != 0)
 					itemText += " (" + combi.hotkey.toString() + ")";
-				if (ImGui::Selectable(itemText.c_str(), browEdit->windowData.hotkeyPopupSelectedIndex == itemCount))
+				ImGui::Selectable(itemText.c_str(), browEdit->windowData.hotkeyPopupSelectedIndex == itemCount);
+				if(ImGui::IsItemClicked())
 					browEdit->windowData.hotkeyPopupSelectedIndex = itemCount;
 				if ((ImGui::IsItemClicked() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) || (runSelected && itemCount == browEdit->windowData.hotkeyPopupSelectedIndex))
 				{
