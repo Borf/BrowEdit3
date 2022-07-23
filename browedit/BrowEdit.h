@@ -78,6 +78,7 @@ public:
 
 		bool objectWindowVisible = true; //TODO: load from config
 		util::FileIO::Node* objectWindowSelectedTreeNode = nullptr;
+		std::string objectWindowScrollToModel;
 
 		bool demoWindowVisible = false;
 

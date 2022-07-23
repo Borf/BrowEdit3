@@ -140,6 +140,7 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 		if (ImGui::MenuItem("Select near"))
 			map->selectNear(distance, browEdit);
 		browEdit->hotkeyMenuItem("Create Prefab", HotkeyAction::ObjectEdit_CreatePrefab);
+		browEdit->hotkeyMenuItem("Highlight in Object Picker", HotkeyAction::ObjectEdit_HighlightInObjectPicker);
 
 
 		ImGui::EndPopup();

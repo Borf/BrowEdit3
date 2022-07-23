@@ -214,19 +214,25 @@ void BrowEdit::showObjectWindow()
 
 
 	auto buildBox = [&](const std::string& file, bool fullPath) {
+		std::string path = util::utf8_to_iso_8859_1(file);
+		if (!fullPath)
+		{
+			auto n = windowData.objectWindowSelectedTreeNode;
+			while (n)
+			{
+				if (n->name != "")
+					path = util::utf8_to_iso_8859_1(n->name) + "\\" + path;
+				n = n->parent;
+			}
+		}
+
+		if (path == windowData.objectWindowScrollToModel)
+		{
+			windowData.objectWindowScrollToModel = "";
+			ImGui::SetScrollHereY();
+		}
 		if (ImGui::BeginChild(file.c_str(), ImVec2(config.thumbnailSize.x, config.thumbnailSize.y + 50), true, ImGuiWindowFlags_NoScrollbar))
 		{
-			std::string path = util::utf8_to_iso_8859_1(file);
-			if (!fullPath)
-			{
-				auto n = windowData.objectWindowSelectedTreeNode;
-				while (n)
-				{
-					if (n->name != "")
-						path = util::utf8_to_iso_8859_1(n->name) + "\\" + path;
-					n = n->parent;
-				}
-			}
 			
 			ImTextureID texture = 0;
 			if (path.substr(path.size() - 4) == ".rsm" ||

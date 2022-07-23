@@ -8,6 +8,7 @@
 #include <browedit/components/RsmRenderer.h>
 #include <browedit/Lightmapper.h>
 #include <browedit/Node.h>
+#include <browedit/util/Util.h>
 #include <GLFW/glfw3.h>
 
 void BrowEdit::registerActions()
@@ -55,6 +56,19 @@ void BrowEdit::registerActions()
 	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_FlipVertical,		[this]() { activeMapView->map->flipSelection(2, this); }, hasActiveMapViewObjectMode);
 	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_Delete,				[this]() { activeMapView->map->deleteSelection(this); }, hasActiveMapViewObjectMode);
 	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_FocusOnSelection,	[this]() { activeMapView->focusSelection(); }, hasActiveMapViewObjectMode);
+	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_HighlightInObjectPicker,	[this]() { 
+		if (activeMapView->map->selectedNodes.size() < 1)
+			return;
+		auto selected = activeMapView->map->selectedNodes[0]->getComponent<RswModel>();
+		if (!selected)
+			return;
+		std::filesystem::path path(util::utf8_to_iso_8859_1(selected->fileName));
+		std::string dir = path.parent_path().string();
+		windowData.objectWindowSelectedTreeNode = util::FileIO::directoryNode("data\\model\\" + dir);
+		windowData.objectWindowScrollToModel = "data\\model\\" + util::utf8_to_iso_8859_1(selected->fileName);
+
+
+	}, hasActiveMapViewObjectMode);
 	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_InvertSelection,	[this]() { activeMapView->map->selectInvert(this); }, hasActiveMapViewObjectMode);
 	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_SelectAll,			[this]() { activeMapView->map->selectAll(this); }, hasActiveMapViewObjectMode);
 	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_SelectAllModels,	[this]() { activeMapView->map->selectAll<RswModel>(this); }, hasActiveMapViewObjectMode);

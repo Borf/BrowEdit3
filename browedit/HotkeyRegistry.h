@@ -33,6 +33,7 @@ enum class HotkeyAction
 	ObjectEdit_FlipVertical,
 	ObjectEdit_Delete,
 	ObjectEdit_FocusOnSelection,
+	ObjectEdit_HighlightInObjectPicker,
 	ObjectEdit_CreatePrefab,
 
 	ObjectEdit_NudgeXNeg,
