@@ -46,20 +46,15 @@ void BrowEdit::toolbar()
 	ImGui::SameLine();
 	ImGui::SetCursorPosX(125);
 
-	if (toolBarToggleButton("heightmode", ICON_EDIT_HEIGHT, editMode == EditMode::Height, "Height edit mode", config.toolbarButtonsHeightEdit))
-		HotkeyRegistry::runAction(HotkeyAction::EditMode_Height);
+	toolBarToggleButton("heightmode", ICON_EDIT_HEIGHT, editMode == EditMode::Height, "Height edit mode", HotkeyAction::EditMode_Height, config.toolbarButtonsHeightEdit);
 	ImGui::SameLine();
-	if (toolBarToggleButton("texturemode", ICON_EDIT_TEXTURE, editMode == EditMode::Texture, "Texture edit mode", config.toolbarButtonsTextureEdit))
-		HotkeyRegistry::runAction(HotkeyAction::EditMode_Texture);
+	toolBarToggleButton("texturemode", ICON_EDIT_TEXTURE, editMode == EditMode::Texture, "Texture edit mode", HotkeyAction::EditMode_Texture, config.toolbarButtonsTextureEdit);
 	ImGui::SameLine();
-	if (toolBarToggleButton("objectmode", ICON_EDIT_OBJECT, editMode == EditMode::Object, "Object edit mode", config.toolbarButtonsObjectEdit))
-		HotkeyRegistry::runAction(HotkeyAction::EditMode_Object);
+	toolBarToggleButton("objectmode", ICON_EDIT_OBJECT, editMode == EditMode::Object, "Object edit mode", HotkeyAction::EditMode_Object, config.toolbarButtonsObjectEdit);
 	ImGui::SameLine();
-	if (toolBarToggleButton("gatmode", ICON_EDIT_GAT, editMode == EditMode::Gat, "Gat edit mode", config.toolbarButtonsGatEdit))
-		HotkeyRegistry::runAction(HotkeyAction::EditMode_Gat);
+	toolBarToggleButton("gatmode", ICON_EDIT_GAT, editMode == EditMode::Gat, "Gat edit mode", HotkeyAction::EditMode_Gat, config.toolbarButtonsGatEdit);
 	ImGui::SameLine();
-	if (toolBarToggleButton("wallmode", ICON_EDIT_WALL, editMode == EditMode::Wall, "Wall edit mode", config.toolbarButtonsWallEdit))
-		HotkeyRegistry::runAction(HotkeyAction::EditMode_Wall);
+	toolBarToggleButton("wallmode", ICON_EDIT_WALL, editMode == EditMode::Wall, "Wall edit mode", HotkeyAction::EditMode_Wall, config.toolbarButtonsWallEdit);
 	ImGui::SameLine(130 + 5 * (config.toolbarButtonSize + 5) + 20 );
 
 	if (editMode == EditMode::Object)

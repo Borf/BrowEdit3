@@ -99,6 +99,16 @@ void BrowEdit::registerActions()
 	HotkeyRegistry::registerAction(HotkeyAction::EditMode_Object,		[this]() { editMode = EditMode::Object; });
 	HotkeyRegistry::registerAction(HotkeyAction::EditMode_Wall,			[this]() { editMode = EditMode::Wall; });
 	HotkeyRegistry::registerAction(HotkeyAction::EditMode_Gat,			[this]() { editMode = EditMode::Gat; });
+	
+	HotkeyRegistry::registerAction(HotkeyAction::View_ShadowMap,		[this]() { activeMapView->viewLightmapShadow = !activeMapView->viewLightmapShadow; }, hasActiveMapView);
+	HotkeyRegistry::registerAction(HotkeyAction::View_ColorMap,			[this]() { activeMapView->viewLightmapColor = !activeMapView->viewLightmapColor; }, hasActiveMapView);
+	HotkeyRegistry::registerAction(HotkeyAction::View_TileColors,		[this]() { activeMapView->viewColors = !activeMapView->viewColors; }, hasActiveMapView);
+	HotkeyRegistry::registerAction(HotkeyAction::View_Lighting,			[this]() { activeMapView->viewLighting = !activeMapView->viewLighting; }, hasActiveMapView);
+	HotkeyRegistry::registerAction(HotkeyAction::View_Textures,			[this]() { activeMapView->viewTextures = !activeMapView->viewTextures; }, hasActiveMapView);
+	HotkeyRegistry::registerAction(HotkeyAction::View_SmoothColormap,	[this]() { activeMapView->smoothColors = !activeMapView->smoothColors; }, hasActiveMapView);
+	HotkeyRegistry::registerAction(HotkeyAction::View_EmptyTiles,		[this]() { activeMapView->viewEmptyTiles = !activeMapView->viewEmptyTiles; }, hasActiveMapView);
+	HotkeyRegistry::registerAction(HotkeyAction::View_GatTiles,			[this]() { if (editMode == BrowEdit::EditMode::Gat) { activeMapView->viewGatGat = !activeMapView->viewGatGat; } else { activeMapView->viewGat = !activeMapView->viewGat; } }, hasActiveMapView);
+
 }
 
 bool BrowEdit::hotkeyMenuItem(const std::string& title, HotkeyAction action)

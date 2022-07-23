@@ -200,8 +200,9 @@ public:
 	void copyTiles();
 	void pasteTiles();
 
-	bool toolBarToggleButton(const std::string_view &name, int icon, bool* status, const char* tooltip, ImVec4 tint = ImVec4(1,1,1,1));
-	bool toolBarToggleButton(const std::string_view &name, int icon, bool status, const char* tooltip, ImVec4 tint = ImVec4(1, 1, 1, 1));
+	bool toolBarToggleButton(const std::string_view &name, int icon, bool status, const char* tooltip, HotkeyAction action, ImVec4 tint = ImVec4(1, 1, 1, 1));
+	bool toolBarToggleButton(const std::string_view& name, int icon, bool* status, const char* tooltip, ImVec4 tint = ImVec4(1, 1, 1, 1));
+	bool toolBarToggleButton(const std::string_view& name, int icon, bool status, const char* tooltip, ImVec4 tint = ImVec4(1, 1, 1, 1));
 	bool toolBarButton(const std::string_view& name, int icon, const char* tooltip, ImVec4 tint);
 
 	bool hotkeyInputBox(const char* title, Hotkey& hotkey);

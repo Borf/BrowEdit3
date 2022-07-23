@@ -64,6 +64,15 @@ enum class HotkeyAction
 	EditMode_Wall,
 	EditMode_Gat,
 
+	View_ShadowMap,
+	View_ColorMap,
+	View_TileColors,
+	View_Lighting,
+	View_Textures,
+	View_SmoothColormap,
+	View_EmptyTiles,
+	View_GatTiles,
+
 
 /*	Texture_RotateLeft,
 	Texture_RotateRight,

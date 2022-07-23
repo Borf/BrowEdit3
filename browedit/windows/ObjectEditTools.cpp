@@ -9,6 +9,9 @@ void BrowEdit::showObjectEditToolsWindow()
 	hotkeyButton("Copy", HotkeyAction::Global_Copy);
 	ImGui::SameLine();
 	hotkeyButton("Paste", HotkeyAction::Global_Paste);
+	ImGui::SameLine();
+	hotkeyButton("Delete", HotkeyAction::ObjectEdit_Delete);
+
 	hotkeyButton("Flip horizontally", HotkeyAction::ObjectEdit_FlipHorizontal);
 	ImGui::SameLine();
 	hotkeyButton("Flip vertically", HotkeyAction::ObjectEdit_FlipVertical);
@@ -20,7 +23,6 @@ void BrowEdit::showObjectEditToolsWindow()
 	hotkeyButton("Invert Scale Z", HotkeyAction::ObjectEdit_InvertScaleZ);
 
 	hotkeyButton("Create Prefab", HotkeyAction::ObjectEdit_CreatePrefab);
-	hotkeyButton("Delete", HotkeyAction::ObjectEdit_Delete);
 	hotkeyButton("Focus on selection", HotkeyAction::ObjectEdit_FocusOnSelection);
 
 	ImGui::InputFloat("Nudge distance", &nudgeDistance);

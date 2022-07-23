@@ -232,8 +232,7 @@ void BrowEdit::showObjectWindow()
 			ImGui::SetScrollHereY();
 		}
 		if (ImGui::BeginChild(file.c_str(), ImVec2(config.thumbnailSize.x, config.thumbnailSize.y + 50), true, ImGuiWindowFlags_NoScrollbar))
-		{
-			
+		{			
 			ImTextureID texture = 0;
 			if (path.substr(path.size() - 4) == ".rsm" ||
 				path.substr(path.size() - 5) == ".rsm2")

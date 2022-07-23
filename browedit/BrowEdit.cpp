@@ -371,6 +371,19 @@ void BrowEdit::configBegin()
 ImVec4 enabledColor(144 / 255.0f, 193 / 255.0f, 249 / 255.0f, 0.5f);
 ImVec4 disabledColor(72 / 255.0f, 96 / 255.0f, 125 / 255.0f, 0.5f);
 
+bool BrowEdit::toolBarToggleButton(const std::string_view& name, int icon, bool status, const char* tooltip, HotkeyAction action, ImVec4 tint)
+{
+	std::string strTooltip = tooltip;
+	auto hk = HotkeyRegistry::getHotkey(action);
+	if (hk.hotkey.keyCode != 0)
+		strTooltip += "(" + hk.hotkey.toString() + ")";
+	bool clicked = toolBarToggleButton(name, icon, status, strTooltip.c_str(), tint);
+	if(clicked)
+		HotkeyRegistry::runAction(action);
+	return clicked;
+}
+
+
 bool BrowEdit::toolBarToggleButton(const std::string_view &name, int icon, bool* status, const char* tooltip, ImVec4 tint)
 {
 	tint = ImVec4(config.toolbarButtonTint.x * tint.x, config.toolbarButtonTint.y * tint.y, config.toolbarButtonTint.z * tint.z, config.toolbarButtonTint.w * tint.w);
