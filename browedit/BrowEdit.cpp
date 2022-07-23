@@ -177,6 +177,14 @@ void BrowEdit::run()
 		if (windowData.configVisible)
 			windowData.configVisible = !config.showWindow(this);
 
+		if (windowData.showHotkeyPopup)
+		{
+			windowData.showHotkeyPopup = false;
+			windowData.hotkeyPopupFilter = "";
+			ImGui::OpenPopup("HotkeyPopup");
+		}
+		HotkeyRegistry::showHotkeyPopup(this);
+
 		openWindow();
 		showExportWindow();
 		if (windowData.undoVisible)

@@ -5,15 +5,17 @@
 #include <map>
 #include <browedit/Hotkey.h>
 
+class BrowEdit;
+
 enum class HotkeyAction
 {
+	Global_HotkeyPopup,
 	Global_Save,
 	Global_Load,
 	Global_Exit,
 	Global_Undo,
 	Global_Redo,
 	Global_Settings,
-	Global_Lightmap,
 	Global_ReloadTextures,
 	Global_ReloadModels,
 
@@ -62,12 +64,12 @@ enum class HotkeyAction
 	EditMode_Gat,
 
 
-	Texture_RotateLeft,
+/*	Texture_RotateLeft,
 	Texture_RotateRight,
 	Texture_FlipHorizontal,
 	Texture_FlipVertical,
 
-	Gat_RaiseToHeight,
+	Gat_RaiseToHeight,*/
 };
 
 class HotkeyCombi
@@ -89,4 +91,5 @@ public:
 	static const HotkeyCombi& getHotkey(HotkeyAction action);
 	static bool checkHotkeys();
 	static void runAction(HotkeyAction action);
+	static void showHotkeyPopup(BrowEdit* browEdit);
 };

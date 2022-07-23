@@ -2,7 +2,7 @@
 #include <browedit/util/glfw_keycodes_to_string.h>
 #include <imgui.h>
 
-std::string Hotkey::toString()
+std::string Hotkey::toString() const
 {
 	std::string text;
 	if ((modifiers & ImGuiKeyModFlags_Ctrl) != 0)

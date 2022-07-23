@@ -1,6 +1,9 @@
 #include "HotkeyRegistry.h"
 #include <magic_enum.hpp>
 #include <imgui.h>
+#include <misc/cpp/imgui_stdlib.h>
+#include <browedit/BrowEdit.h>
+#include <browedit/Hotkey.h>
 
 void HotkeyRegistry::init(const std::map<std::string, Hotkey> &config)
 {
@@ -68,4 +71,34 @@ const HotkeyCombi& HotkeyRegistry::getHotkey(HotkeyAction action)
 		if (h.action == action)
 			return h;
 	throw "Could not find action ";
+}
+
+
+void HotkeyRegistry::showHotkeyPopup(BrowEdit* browEdit)
+{
+
+	if (ImGui::BeginPopupModal("HotkeyPopup"))
+	{
+		ImGui::SetWindowFocus("HotkeyPopup");
+		ImGui::SetItemDefaultFocus();
+		ImGui::InputText("Filter", &browEdit->windowData.hotkeyPopupFilter);
+		if (ImGui::BeginListBox("Items"))
+		{
+			for (auto& hotkeyEnum : magic_enum::enum_entries<HotkeyAction>())
+			{
+				const auto& combi = getHotkey(hotkeyEnum.first);
+				if (combi.condition != nullptr && !combi.condition())
+					continue;
+				std::string str(hotkeyEnum.second);
+				if (browEdit->windowData.hotkeyPopupFilter != "" && str.find(browEdit->windowData.hotkeyPopupFilter) == std::string::npos)
+					continue;
+				if (ImGui::Selectable((str + " " + combi.hotkey.toString()).c_str()))
+				{
+					runAction(hotkeyEnum.first);
+				}
+			}
+			ImGui::EndListBox();
+		}
+		ImGui::EndPopup();
+	}
 }

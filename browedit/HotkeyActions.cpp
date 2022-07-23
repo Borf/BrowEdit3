@@ -15,6 +15,10 @@ void BrowEdit::registerActions()
 	auto hasActiveMapView = [this]() {return activeMapView != nullptr; };
 	auto hasActiveMapViewObjectMode = [this]() { return activeMapView != nullptr && editMode == EditMode::Object; };
 
+	HotkeyRegistry::registerAction(HotkeyAction::Global_HotkeyPopup,	[this]() { 
+		windowData.showHotkeyPopup = true;
+	});
+	
 	HotkeyRegistry::registerAction(HotkeyAction::Global_Save,			[this]() { saveMap(activeMapView->map); }, hasActiveMapView);
 	HotkeyRegistry::registerAction(HotkeyAction::Global_Load,			[this]() { showOpenWindow(); });
 	HotkeyRegistry::registerAction(HotkeyAction::Global_Exit,			[this]() { glfwSetWindowShouldClose(window, 1); });

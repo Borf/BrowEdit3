@@ -88,6 +88,8 @@ public:
 
 
 		bool openPrefabPopup = false;
+		bool showHotkeyPopup = false;
+		std::string hotkeyPopupFilter = "";
 
 
 		//progress
