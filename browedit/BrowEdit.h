@@ -90,6 +90,7 @@ public:
 		bool openPrefabPopup = false;
 		bool showHotkeyPopup = false;
 		std::string hotkeyPopupFilter = "";
+		int hotkeyPopupSelectedIndex = 0;
 
 
 		//progress

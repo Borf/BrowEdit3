@@ -17,6 +17,7 @@ void BrowEdit::registerActions()
 
 	HotkeyRegistry::registerAction(HotkeyAction::Global_HotkeyPopup,	[this]() { 
 		windowData.showHotkeyPopup = true;
+		std::cout << "Opening hotkey popup" << std::endl;
 	});
 	
 	HotkeyRegistry::registerAction(HotkeyAction::Global_Save,			[this]() { saveMap(activeMapView->map); }, hasActiveMapView);
