@@ -183,6 +183,8 @@ void BrowEdit::run()
 			showUndoWindow();
 		if (windowData.objectWindowVisible && editMode == EditMode::Object)
 			showObjectWindow();
+		if (editMode == EditMode::Object)
+			showObjectEditToolsWindow();
 		if (windowData.demoWindowVisible)
 			ImGui::ShowDemoWindow(&windowData.demoWindowVisible);
 		if (windowData.helpWindowVisible)

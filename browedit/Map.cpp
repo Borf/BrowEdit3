@@ -184,13 +184,46 @@ void Map::nudgeSelection(int axis, int sign, BrowEdit* browEdit)
 		if (rswObject)
 		{
 			float orig = rswObject->position[axis];
-			rswObject->position[axis] += sign;
+			rswObject->position[axis] += sign * browEdit->nudgeDistance;
 			ga->addAction(new ObjectChangeAction(n, &rswObject->position[axis], orig, "Nudge"));
 		}
 		if (rsmRenderer)
 			rsmRenderer->setDirty();
 	}
 	doAction(ga, browEdit);
+}
+
+void Map::rotateSelection(int axis, int sign, BrowEdit* browEdit)
+{
+	auto ga = new GroupAction();
+	glm::vec3 groupCenter = getSelectionCenter();
+
+	for (auto n : selectedNodes)
+	{
+		auto rswObject = n->getComponent<RswObject>();
+		auto rsmRenderer = n->getComponent<RsmRenderer>();
+		if (rswObject)
+		{
+			float orig = rswObject->rotation[axis];
+			rswObject->rotation[axis] += sign * browEdit->rotateDistance;
+			ga->addAction(new ObjectChangeAction(n, &rswObject->rotation[axis], orig, "Rotate"));
+			if (browEdit->activeMapView->pivotPoint == MapView::PivotPoint::GroupCenter)
+			{
+				auto originalPos = rswObject->position;
+				float originalAngle = atan2(rswObject->position.z - groupCenter.z, rswObject->position.x - groupCenter.x);
+				float dist = glm::length(glm::vec2(rswObject->position.z - groupCenter.z, rswObject->position.x - groupCenter.x));
+				originalAngle -= glm::radians(sign * browEdit->rotateDistance);
+
+				rswObject->position.x = groupCenter.x + dist * glm::cos(originalAngle);
+				rswObject->position.z = groupCenter.z + dist * glm::sin(originalAngle);
+				ga->addAction(new ObjectChangeAction(n, &rswObject->position, originalPos, "Translate"));
+			}
+		}
+		if (rsmRenderer)
+			rsmRenderer->setDirty();
+	}
+	doAction(ga, browEdit);
+
 }
 
 

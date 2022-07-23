@@ -61,12 +61,19 @@ void BrowEdit::registerActions()
 	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_InvertScaleZ,		[this]() { activeMapView->map->invertScale(2, this); }, hasActiveMapViewObjectMode);
 	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_CreatePrefab,		[this]() { windowData.openPrefabPopup = true; }, hasActiveMapViewObjectMode);
 
-	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_InvertNudgeXNeg,	[this]() { activeMapView->map->nudgeSelection(0, -1, this); }, hasActiveMapViewObjectMode);
-	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_InvertNudgeXPos,	[this]() { activeMapView->map->nudgeSelection(0, 1, this); }, hasActiveMapViewObjectMode);
-	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_InvertNudgeYNeg,	[this]() { activeMapView->map->nudgeSelection(1, -1, this); }, hasActiveMapViewObjectMode);
-	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_InvertNudgeYPos,	[this]() { activeMapView->map->nudgeSelection(1, 1, this); }, hasActiveMapViewObjectMode);
-	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_InvertNudgeZNeg,	[this]() { activeMapView->map->nudgeSelection(2, -1, this); }, hasActiveMapViewObjectMode);
-	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_InvertNudgeZPos,	[this]() { activeMapView->map->nudgeSelection(2, 1, this); }, hasActiveMapViewObjectMode);
+	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_NudgeXNeg,	[this]() { activeMapView->map->nudgeSelection(0, -1, this); }, hasActiveMapViewObjectMode);
+	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_NudgeXPos,	[this]() { activeMapView->map->nudgeSelection(0, 1, this); }, hasActiveMapViewObjectMode);
+	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_NudgeYNeg,	[this]() { activeMapView->map->nudgeSelection(1, -1, this); }, hasActiveMapViewObjectMode);
+	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_NudgeYPos,	[this]() { activeMapView->map->nudgeSelection(1, 1, this); }, hasActiveMapViewObjectMode);
+	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_NudgeZNeg,	[this]() { activeMapView->map->nudgeSelection(2, -1, this); }, hasActiveMapViewObjectMode);
+	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_NudgeZPos,	[this]() { activeMapView->map->nudgeSelection(2, 1, this); }, hasActiveMapViewObjectMode);
+
+	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_RotXNeg,	[this]() { activeMapView->map->rotateSelection(0, -1, this); }, hasActiveMapViewObjectMode);
+	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_RotXPos,	[this]() { activeMapView->map->rotateSelection(0, 1, this); }, hasActiveMapViewObjectMode);
+	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_RotYNeg,	[this]() { activeMapView->map->rotateSelection(1, -1, this); }, hasActiveMapViewObjectMode);
+	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_RotYPos,	[this]() { activeMapView->map->rotateSelection(1, 1, this); }, hasActiveMapViewObjectMode);
+	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_RotZNeg,	[this]() { activeMapView->map->rotateSelection(2, -1, this); }, hasActiveMapViewObjectMode);
+	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_RotZPos,	[this]() { activeMapView->map->rotateSelection(2, 1, this); }, hasActiveMapViewObjectMode);
 
 	HotkeyRegistry::registerAction(HotkeyAction::EditMode_Height,		[this]() { editMode = EditMode::Height; });
 	HotkeyRegistry::registerAction(HotkeyAction::EditMode_Texture,		[this]() { editMode = EditMode::Texture; });
@@ -79,6 +86,17 @@ bool BrowEdit::hotkeyMenuItem(const std::string& title, HotkeyAction action)
 {
 	auto hotkey = HotkeyRegistry::getHotkey(action);
 	bool clicked = ImGui::MenuItem(title.c_str(), hotkey.hotkey.toString().c_str());
+
+	if (clicked && hotkey.callback)
+		hotkey.callback();
+	return clicked;
+}
+bool BrowEdit::hotkeyButton(const std::string& title, HotkeyAction action)
+{
+	auto hotkey = HotkeyRegistry::getHotkey(action);
+	bool clicked = ImGui::Button(title.c_str());
+	if (ImGui::IsItemHovered() && hotkey.hotkey.keyCode != 0)
+		ImGui::SetTooltip(hotkey.hotkey.toString().c_str());
 
 	if (clicked && hotkey.callback)
 		hotkey.callback();

@@ -145,6 +145,8 @@ public:
 	Map* textureStampMap = nullptr;
 	std::vector<std::vector<Gnd::Tile*>> textureStamp;
 	glm::ivec2 textureFillOffset;
+	float nudgeDistance = 1.0f;
+	float rotateDistance = 45.0f;
 
 
 	void configBegin();
@@ -161,6 +163,7 @@ public:
 	void imguiLoopEnd();
 	void registerActions();
 	bool hotkeyMenuItem(const std::string& title, HotkeyAction action);
+	bool hotkeyButton(const std::string& title, HotkeyAction action);
 
 	void run();
 
@@ -180,6 +183,7 @@ public:
 	void openWindow();
 	void showObjectTree();
 	void buildObjectTree(Node* node, Map* map);
+	void showObjectEditToolsWindow();
 	void showObjectProperties();
 	void showUndoWindow();
 	void showObjectWindow();
