@@ -13,6 +13,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <ShlObj_core.h>
 #include <magic_enum.hpp>
+#include <browedit/HotkeyRegistry.h>
 
 using json = nlohmann::json;
 
@@ -390,4 +391,15 @@ void Config::setStyle(int style)
 		colors[ImGuiCol_NavWindowingDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.20f);
 		colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.35f);
 	}
+}
+
+void Config::defaultHotkeys()
+{
+	hotkeys.clear();
+	std::ifstream in("data\\defaulthotkeys.json");
+	json j;
+	in >> j;
+
+	HotkeyRegistry::defaultHotkeys = j.get< std::map<std::string, Hotkey>>();
+	hotkeys = HotkeyRegistry::defaultHotkeys;
 }

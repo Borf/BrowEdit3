@@ -51,6 +51,7 @@ public:
 	void setupFileIO();
 	void setStyle(int style);
 	void save();
+	void defaultHotkeys();
 public:
 	NLOHMANN_DEFINE_TYPE_INTRUSIVE_CHECKED(Config,
 		ropath,

@@ -8,7 +8,8 @@
 
 void HotkeyRegistry::init(const std::map<std::string, Hotkey> &config)
 {
-	//auto hotkeys = magic_enum::enum_entries<HotkeyAction>();
+	defaultHotkeys = util::FileIO::getJson("data\\defaulthotkeys.json").get< std::map<std::string, Hotkey>>();
+
 	for (auto& c : config)
 	{
 		auto action = magic_enum::enum_cast<HotkeyAction>(c.first);

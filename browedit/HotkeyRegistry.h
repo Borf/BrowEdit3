@@ -85,6 +85,7 @@ class HotkeyRegistry
 {
 public:
 	inline static std::vector<std::string> actions;
+	inline static std::map<std::string, Hotkey> defaultHotkeys;
 	inline static std::vector<HotkeyCombi> hotkeys;
 	static void init(const std::map<std::string, Hotkey>& config);
 	static void registerAction(HotkeyAction, const std::function<void()>&, const std::function<bool()>& condition = []() {return true; });

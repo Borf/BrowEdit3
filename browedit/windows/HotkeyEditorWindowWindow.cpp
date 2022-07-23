@@ -2,6 +2,7 @@
 #include <magic_enum.hpp>
 #include <browedit/HotkeyRegistry.h>
 #include <misc/cpp/imgui_stdlib.h>
+#include <fstream>
 
 
 
@@ -37,6 +38,7 @@ void BrowEdit::showHotkeyEditorWindow()
 			ImGui::Text(cat.c_str());
 		lastCat = cat;
 
+		title += "\nDefault: " + HotkeyRegistry::defaultHotkeys[strHotkey].toString();
 		Hotkey hotkey;
 		if (windowData.hotkeys.find(strHotkey) != windowData.hotkeys.end())
 			hotkey = windowData.hotkeys[strHotkey];
@@ -56,6 +58,17 @@ void BrowEdit::showHotkeyEditorWindow()
 	{
 		windowData.hotkeyEditWindowVisible = false;
 	}
+
+	if (ImGui::Button("Export for defaults"))
+	{
+		HotkeyRegistry::defaultHotkeys = windowData.hotkeys;
+		json j = HotkeyRegistry::defaultHotkeys;
+		std::ofstream out("data\\defaulthotkeys.json");
+		out << j;
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Load defaults"))
+		windowData.hotkeys = HotkeyRegistry::defaultHotkeys;
 
 	ImGui::End();
 }

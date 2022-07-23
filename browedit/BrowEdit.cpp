@@ -345,6 +345,7 @@ void BrowEdit::configBegin()
 		}
 		catch (...) {
 			std::cerr << "Config file invalid, resetting config" << std::endl;
+			config.defaultHotkeys();
 		}
 		if (config.isValid() != "")
 		{
@@ -358,6 +359,7 @@ void BrowEdit::configBegin()
 	}
 	else
 	{
+		config.defaultHotkeys();
 		windowData.configVisible = true;
 		util::FileIO::begin();
 		util::FileIO::addDirectory(".\\");
