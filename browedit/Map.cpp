@@ -13,6 +13,8 @@
 #include <browedit/components/BillboardRenderer.h>
 #include <browedit/BrowEdit.h>
 #include <browedit/util/ResourceManager.h>
+#include <filesystem>
+#include <fstream>
 
 #include <json.hpp>
 using json = nlohmann::json;
@@ -152,6 +154,78 @@ glm::vec3 Map::getSelectionCenter()
 	center /= count;
 	return center;
 }
+
+
+void Map::invertScale(int axis, BrowEdit* browEdit)
+{
+	auto ga = new GroupAction();
+	for (auto n : selectedNodes)
+	{
+		auto rswObject = n->getComponent<RswObject>();
+		auto rsmRenderer = n->getComponent<RsmRenderer>();
+		if (rswObject)
+		{
+			float orig = rswObject->scale[axis];
+			rswObject->scale[axis] = -rswObject->scale[axis];
+			ga->addAction(new ObjectChangeAction(n, &rswObject->scale[axis], orig, "Invert Scale"));
+		}
+		if (rsmRenderer)
+			rsmRenderer->setDirty();
+	}
+	doAction(ga, browEdit);
+}
+void Map::nudgeSelection(int axis, int sign, BrowEdit* browEdit)
+{
+	auto ga = new GroupAction();
+	for (auto n : selectedNodes)
+	{
+		auto rswObject = n->getComponent<RswObject>();
+		auto rsmRenderer = n->getComponent<RsmRenderer>();
+		if (rswObject)
+		{
+			float orig = rswObject->position[axis];
+			rswObject->position[axis] += sign * browEdit->nudgeDistance;
+			ga->addAction(new ObjectChangeAction(n, &rswObject->position[axis], orig, "Nudge"));
+		}
+		if (rsmRenderer)
+			rsmRenderer->setDirty();
+	}
+	doAction(ga, browEdit);
+}
+
+void Map::rotateSelection(int axis, int sign, BrowEdit* browEdit)
+{
+	auto ga = new GroupAction();
+	glm::vec3 groupCenter = getSelectionCenter();
+
+	for (auto n : selectedNodes)
+	{
+		auto rswObject = n->getComponent<RswObject>();
+		auto rsmRenderer = n->getComponent<RsmRenderer>();
+		if (rswObject)
+		{
+			float orig = rswObject->rotation[axis];
+			rswObject->rotation[axis] += sign * browEdit->rotateDistance;
+			ga->addAction(new ObjectChangeAction(n, &rswObject->rotation[axis], orig, "Rotate"));
+			if (browEdit->activeMapView->pivotPoint == MapView::PivotPoint::GroupCenter)
+			{
+				auto originalPos = rswObject->position;
+				float originalAngle = atan2(rswObject->position.z - groupCenter.z, rswObject->position.x - groupCenter.x);
+				float dist = glm::length(glm::vec2(rswObject->position.z - groupCenter.z, rswObject->position.x - groupCenter.x));
+				originalAngle -= glm::radians(sign * browEdit->rotateDistance);
+
+				rswObject->position.x = groupCenter.x + dist * glm::cos(originalAngle);
+				rswObject->position.z = groupCenter.z + dist * glm::sin(originalAngle);
+				ga->addAction(new ObjectChangeAction(n, &rswObject->position, originalPos, "Translate"));
+			}
+		}
+		if (rsmRenderer)
+			rsmRenderer->setDirty();
+	}
+	doAction(ga, browEdit);
+
+}
+
 
 
 void Map::flipSelection(int axis, BrowEdit* browEdit)
@@ -717,4 +791,17 @@ void Map::shrinkTileSelection(BrowEdit* browEdit)
 
 	auto action = new TileSelectAction(this, shrunk);
 	doAction(action, browEdit);
+}
+
+
+void Map::createPrefab(const std::string& fileName, BrowEdit* browEdit)
+{
+	std::filesystem::path filePath("data\\prefabs\\" + fileName);
+	std::filesystem::create_directories(filePath.parent_path());
+	std::ofstream outFile(filePath);
+	json clipboard;
+	for (auto n : selectedNodes)
+		clipboard.push_back(*n);
+	outFile << clipboard;
+	util::FileIO::reload("data\\prefabs");
 }

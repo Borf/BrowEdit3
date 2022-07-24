@@ -72,9 +72,10 @@
     <ClCompile Include="browedit\util\Util.cpp" />
     <ClCompile Include="browedit\windows\ExportMapWindow.cpp" />
     <ClCompile Include="browedit\windows\HelpWindow.cpp" />
-    <ClCompile Include="browedit\windows\HotkeyEditorWindow.cpp" />
+    <ClCompile Include="browedit\windows\HotkeyEditorWindowWindow.cpp" />
     <ClCompile Include="browedit\windows\LightmapSettingsWindow.cpp" />
     <ClCompile Include="browedit\windows\MenuBar.cpp" />
+    <ClCompile Include="browedit\windows\ObjectEditTools.cpp" />
     <ClCompile Include="browedit\windows\ObjectPropertiesWindow.cpp" />
     <ClCompile Include="browedit\windows\ObjectSelectWindow.cpp" />
     <ClCompile Include="browedit\windows\ObjectTreeWindow.cpp" />

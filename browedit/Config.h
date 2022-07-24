@@ -43,7 +43,7 @@ public:
 
 	std::string grfEditorPath = "";
 	std::vector<std::string> recentFiles;
-
+	int defaultEditMode = 0;
 	float toolbarHeight() { return toolbarButtonSize + 8; }
 
 	std::string isValid() const;
@@ -51,6 +51,7 @@ public:
 	void setupFileIO();
 	void setStyle(int style);
 	void save();
+	void defaultHotkeys();
 public:
 	NLOHMANN_DEFINE_TYPE_INTRUSIVE_CHECKED(Config,
 		ropath,
@@ -74,5 +75,6 @@ public:
 		rotateGridSizes,
 		grfEditorPath,
 		recentFiles,
-		hotkeys);
+		hotkeys,
+		defaultEditMode);
 };

@@ -14,6 +14,7 @@
 #include "components/WaterRenderer.h"
 #include "components/BillboardRenderer.h"
 
+#include <browedit/HotkeyRegistry.h>
 #include <browedit/gl/FBO.h>
 #include <browedit/gl/Shader.h>
 #include <browedit/gl/Vertex.h>
@@ -80,24 +81,24 @@ void MapView::toolbar(BrowEdit* browEdit)
 		if (ImGui::Begin(("ViewOptions##" + viewName).c_str(), 0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav))
 		{
 			ImGui::Text("Render Settings");
-			browEdit->toolBarToggleButton("viewLightMapShadow", viewLightmapShadow ? ICON_SHADOWMAP_ON : ICON_SHADOWMAP_OFF, &viewLightmapShadow, "Toggle shadowmap", browEdit->config.toolbarButtonsViewOptions);
+			browEdit->toolBarToggleButton("viewLightMapShadow", viewLightmapShadow ? ICON_SHADOWMAP_ON : ICON_SHADOWMAP_OFF, viewLightmapShadow, "Toggle shadowmap", HotkeyAction::View_ShadowMap, browEdit->config.toolbarButtonsViewOptions);
 			ImGui::SameLine();
-			browEdit->toolBarToggleButton("viewLightmapColor", viewLightmapColor ? ICON_COLORMAP_ON : ICON_COLORMAP_OFF, &viewLightmapColor, "Toggle colormap", browEdit->config.toolbarButtonsViewOptions);
+			browEdit->toolBarToggleButton("viewLightmapColor", viewLightmapColor ? ICON_COLORMAP_ON : ICON_COLORMAP_OFF, viewLightmapColor, "Toggle colormap", HotkeyAction::View_ColorMap, browEdit->config.toolbarButtonsViewOptions);
 			ImGui::SameLine();
-			browEdit->toolBarToggleButton("viewColors", viewColors ? ICON_TILECOLOR_ON : ICON_TILECOLOR_OFF, &viewColors, "Toggle tile colors", browEdit->config.toolbarButtonsViewOptions);
+			browEdit->toolBarToggleButton("viewColors", viewColors ? ICON_TILECOLOR_ON : ICON_TILECOLOR_OFF, viewColors, "Toggle tile colors", HotkeyAction::View_TileColors, browEdit->config.toolbarButtonsViewOptions);
 			ImGui::SameLine();
-			browEdit->toolBarToggleButton("viewLighting", viewLighting ? ICON_LIGHTING_ON : ICON_LIGHTING_OFF, &viewLighting, "Toggle lighting", browEdit->config.toolbarButtonsViewOptions);
+			browEdit->toolBarToggleButton("viewLighting", viewLighting ? ICON_LIGHTING_ON : ICON_LIGHTING_OFF, viewLighting, "Toggle lighting", HotkeyAction::View_Lighting, browEdit->config.toolbarButtonsViewOptions);
 			ImGui::SameLine();
-			browEdit->toolBarToggleButton("viewTextures", viewTextures ? ICON_TEXTURE_ON : ICON_TEXTURE_OFF, &viewTextures, "Toggle textures", browEdit->config.toolbarButtonsViewOptions);
+			browEdit->toolBarToggleButton("viewTextures", viewTextures ? ICON_TEXTURE_ON : ICON_TEXTURE_OFF, viewTextures, "Toggle textures", HotkeyAction::View_Textures, browEdit->config.toolbarButtonsViewOptions);
 			ImGui::SameLine();
-			browEdit->toolBarToggleButton("smoothColors", smoothColors ? ICON_SMOOTH_COLOR_ON : ICON_SMOOTH_COLOR_OFF, &smoothColors, "Smooth colormap", browEdit->config.toolbarButtonsViewOptions);
+			browEdit->toolBarToggleButton("smoothColors", smoothColors ? ICON_SMOOTH_COLOR_ON : ICON_SMOOTH_COLOR_OFF, smoothColors, "Smooth colormap", HotkeyAction::View_SmoothColormap, browEdit->config.toolbarButtonsViewOptions);
 			ImGui::SameLine();
-			browEdit->toolBarToggleButton("viewEmptyTiles", viewEmptyTiles ? ICON_EMPTYTILE_ON : ICON_EMPTYTILE_OFF, &viewEmptyTiles, "View empty tiles", browEdit->config.toolbarButtonsViewOptions);
+			browEdit->toolBarToggleButton("viewEmptyTiles", viewEmptyTiles ? ICON_EMPTYTILE_ON : ICON_EMPTYTILE_OFF, viewEmptyTiles, "View empty tiles", HotkeyAction::View_EmptyTiles, browEdit->config.toolbarButtonsViewOptions);
 			ImGui::SameLine();
 			if(browEdit->editMode == BrowEdit::EditMode::Gat)
-				browEdit->toolBarToggleButton("viewGat", viewGatGat ? ICON_EDIT_GAT : ICON_EDIT_GAT, &viewGatGat, "View GAT tiles", browEdit->config.toolbarButtonsGatEdit);
+				browEdit->toolBarToggleButton("viewGat", viewGatGat ? ICON_EDIT_GAT : ICON_EDIT_GAT, viewGatGat, "View GAT tiles", HotkeyAction::View_GatTiles, browEdit->config.toolbarButtonsGatEdit);
 			else
-				browEdit->toolBarToggleButton("viewGat", viewGat ? ICON_EDIT_GAT : ICON_EDIT_GAT, &viewGat, "View GAT tiles", browEdit->config.toolbarButtonsGatEdit);
+				browEdit->toolBarToggleButton("viewGat", viewGat ? ICON_EDIT_GAT : ICON_EDIT_GAT, viewGat, "View GAT tiles", HotkeyAction::View_GatTiles, browEdit->config.toolbarButtonsGatEdit);
 
 			if (browEdit->editMode == BrowEdit::EditMode::Gat ? viewGatGat : viewGat)
 				ImGui::DragFloat("Gat Opacity", &gatOpacity, 0.025f, 0.0f, 1.0f);

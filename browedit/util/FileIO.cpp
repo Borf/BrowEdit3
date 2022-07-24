@@ -104,6 +104,27 @@ namespace util
 		std::cout << "FileIO: done building tree" << std::endl;
 	}
 
+	void FileIO::reload(const std::string& path)
+	{
+		auto files = listFiles(path);
+		std::map<std::string, Node*> cache;
+		for (const auto& file : files)
+		{
+			auto isDir = file.rfind("\\");
+			if (isDir == std::string::npos)
+				rootNode->addFile(file);
+			else
+			{
+				std::string dir = file.substr(0, isDir);
+				auto cacheHit = cache.find(dir);
+				if (cacheHit == cache.end())
+					cache[dir] = rootNode->addFile(file);
+				else
+					cacheHit->second->addFile(file.substr(isDir + 1));
+			}
+		}
+	}
+
 	FileIO::Node* FileIO::Node::addFile(const std::string& fileName)
 	{
 		if (fileName.find("\\") == std::string::npos)

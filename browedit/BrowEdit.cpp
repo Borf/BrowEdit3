@@ -114,6 +114,7 @@ void BrowEdit::run()
 		return;
 	}
 	configBegin();
+	editMode = (EditMode)config.defaultEditMode;
 	if (config.closeObjectWindowOnAdd)
 		windowData.objectWindowVisible = false;
 	registerActions();
@@ -134,7 +135,8 @@ void BrowEdit::run()
 	effectTexture = util::ResourceManager<gl::Texture>::load("data\\effect.png");
 	soundTexture = util::ResourceManager<gl::Texture>::load("data\\sound.png");
 	gatTexture = util::ResourceManager<gl::Texture>::load("data\\gat.png");
-	
+	prefabTexture = util::ResourceManager<gl::Texture>::load("data\\prefab.png");
+
 	NodeRenderer::begin();
 	Gadget::init();
 
@@ -175,12 +177,22 @@ void BrowEdit::run()
 		if (windowData.configVisible)
 			windowData.configVisible = !config.showWindow(this);
 
+		if (windowData.showHotkeyPopup)
+		{
+			windowData.showHotkeyPopup = false;
+			windowData.hotkeyPopupFilter = "";
+			ImGui::OpenPopup("HotkeyPopup");
+		}
+		HotkeyRegistry::showHotkeyPopup(this);
+
 		openWindow();
 		showExportWindow();
 		if (windowData.undoVisible)
 			showUndoWindow();
 		if (windowData.objectWindowVisible && editMode == EditMode::Object)
 			showObjectWindow();
+		if (editMode == EditMode::Object)
+			showObjectEditToolsWindow();
 		if (windowData.demoWindowVisible)
 			ImGui::ShowDemoWindow(&windowData.demoWindowVisible);
 		if (windowData.helpWindowVisible)
@@ -333,6 +345,7 @@ void BrowEdit::configBegin()
 		}
 		catch (...) {
 			std::cerr << "Config file invalid, resetting config" << std::endl;
+			config.defaultHotkeys();
 		}
 		if (config.isValid() != "")
 		{
@@ -346,6 +359,7 @@ void BrowEdit::configBegin()
 	}
 	else
 	{
+		config.defaultHotkeys();
 		windowData.configVisible = true;
 		util::FileIO::begin();
 		util::FileIO::addDirectory(".\\");
@@ -356,6 +370,19 @@ void BrowEdit::configBegin()
 
 ImVec4 enabledColor(144 / 255.0f, 193 / 255.0f, 249 / 255.0f, 0.5f);
 ImVec4 disabledColor(72 / 255.0f, 96 / 255.0f, 125 / 255.0f, 0.5f);
+
+bool BrowEdit::toolBarToggleButton(const std::string_view& name, int icon, bool status, const char* tooltip, HotkeyAction action, ImVec4 tint)
+{
+	std::string strTooltip = tooltip;
+	auto hk = HotkeyRegistry::getHotkey(action);
+	if (hk.hotkey.keyCode != 0)
+		strTooltip += "(" + hk.hotkey.toString() + ")";
+	bool clicked = toolBarToggleButton(name, icon, status, strTooltip.c_str(), tint);
+	if(clicked)
+		HotkeyRegistry::runAction(action);
+	return clicked;
+}
+
 
 bool BrowEdit::toolBarToggleButton(const std::string_view &name, int icon, bool* status, const char* tooltip, ImVec4 tint)
 {
@@ -442,6 +469,12 @@ void BrowEdit::showMapWindow(MapView& mapView, float deltaTime)
 		ImGui::ImageButton(id, size, ImVec2(0,1), ImVec2(1,0), 0, ImVec4(0,0,0,1), ImVec4(1,1,1,1));
 		//ImGui::Image(id, size, ImVec2(0, 1), ImVec2(1, 0));
 		mapView.hovered = ImGui::IsItemHovered() || ImGui::IsItemClicked();
+
+		if (&mapView == activeMapView)
+		{
+
+		}
+
 	}
 	if (ImGui::IsWindowFocused() || (ImGui::IsWindowHovered() && (ImGui::IsMouseClicked(0) || ImGui::IsMouseClicked(1) || ImGui::IsMouseClicked(2))))
 	{

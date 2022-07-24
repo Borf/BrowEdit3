@@ -47,12 +47,6 @@ jobs:
         xcopy /y /q /s data dist\data\
         xcopy /y /q /s doc dist\doc\
 
-    - name: Package
-      uses: papeloto/action-zip@v1
-      with:
-        files: dist
-        dest: BrowEdit3_${{ github.run_number }}.zip
-
     - name: UploadArtifact
       uses: actions/upload-artifact@master
       with:
@@ -63,6 +57,13 @@ jobs:
           imgui.ini
           doc/
           data/
+
+    - name: Package
+      uses: vimtor/action-zip@v1
+      with:
+        files: dist
+        dest: BrowEdit3_${{ github.run_number }}.zip
+
 
     - name: Release
       uses: ncipollo/release-action@v1

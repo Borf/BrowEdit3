@@ -95,8 +95,17 @@ void BrowEdit::menuBar()
 		}
 		hotkeyMenuItem("Flip horizontally", HotkeyAction::ObjectEdit_FlipHorizontal);
 		hotkeyMenuItem("Flip vertically", HotkeyAction::ObjectEdit_FlipVertical);
+
+		hotkeyMenuItem("Invert Scale X", HotkeyAction::ObjectEdit_InvertScaleX);
+		hotkeyMenuItem("Invert Scale Y", HotkeyAction::ObjectEdit_InvertScaleY);
+		hotkeyMenuItem("Invert Scale Z", HotkeyAction::ObjectEdit_InvertScaleZ);
+
+		hotkeyMenuItem("Create Prefab", HotkeyAction::ObjectEdit_CreatePrefab);
 		hotkeyMenuItem("Delete", HotkeyAction::ObjectEdit_Delete);
 		hotkeyMenuItem("Focus on selection", HotkeyAction::ObjectEdit_FocusOnSelection);
+		if (ImGui::MenuItem("Set to floor height") && activeMapView)
+			activeMapView->map->setSelectedItemsToFloorHeight(this);
+
 		ImGui::EndMenu();
 	}
 
@@ -335,5 +344,7 @@ void BrowEdit::menuBar()
 		windowData.helpWindowVisible = true;
 
 	ImGui::EndMainMenuBar();
+
+
 }
 

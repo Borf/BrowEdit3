@@ -617,6 +617,7 @@ void Rsw::buildImGui(BrowEdit* browEdit)
 		ImGui::EndCombo();
 	}
 	
+	ImGui::InputScalar("Build Number", ImGuiDataType_U8, &buildNumber);
 	
 	if (ImGui::BeginCombo("LubEffect Version", std::to_string(lubVersion).c_str()))
 	{

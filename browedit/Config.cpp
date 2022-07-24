@@ -12,6 +12,8 @@
 #include <glfw/glfw3native.h>
 #include <glm/gtc/type_ptr.hpp>
 #include <ShlObj_core.h>
+#include <magic_enum.hpp>
+#include <browedit/HotkeyRegistry.h>
 
 using json = nlohmann::json;
 
@@ -197,6 +199,16 @@ bool Config::showWindow(BrowEdit* browEdit)
 		ImGui::ColorEdit4("Toolbar Wall Edit", &toolbarButtonsWallEdit.x);
 		ImGui::ColorEdit4("Toolbar Gat Edit", &toolbarButtonsGatEdit.x);
 
+
+		std::string editModes = "";
+		for (auto e : magic_enum::enum_entries<BrowEdit::EditMode>())
+		{
+			editModes += std::string(e.second) + '\0';
+		}
+
+		ImGui::Combo("Default Editmode", &defaultEditMode, editModes.c_str());
+
+
 		ImGui::Checkbox("Save a backup of maps when saving", &backup);
 
 		ImGui::Text("Grid Sizes");
@@ -379,4 +391,15 @@ void Config::setStyle(int style)
 		colors[ImGuiCol_NavWindowingDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.20f);
 		colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.35f);
 	}
+}
+
+void Config::defaultHotkeys()
+{
+	hotkeys.clear();
+	std::ifstream in("data\\defaulthotkeys.json");
+	json j;
+	in >> j;
+
+	HotkeyRegistry::defaultHotkeys = j.get< std::map<std::string, Hotkey>>();
+	hotkeys = HotkeyRegistry::defaultHotkeys;
 }
