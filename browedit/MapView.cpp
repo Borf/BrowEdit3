@@ -21,6 +21,7 @@
 #include <browedit/math/Ray.h>
 #include <browedit/util/ResourceManager.h>
 #include <browedit/shaders/SimpleShader.h>
+#include <browedit/HotkeyRegistry.h>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -196,13 +197,13 @@ void MapView::toolbar(BrowEdit* browEdit)
 		ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 		ImGui::SameLine();
 		if (browEdit->toolBarToggleButton("translate", ICON_MOVE, gadget.mode == Gadget::Mode::Translate, "Move", browEdit->config.toolbarButtonsObjectEdit))
-			gadget.mode = Gadget::Mode::Translate;
+			HotkeyRegistry::runAction(HotkeyAction::ObjectEdit_Move);
 		ImGui::SameLine();
 		if (browEdit->toolBarToggleButton("rotate", ICON_ROTATE, gadget.mode == Gadget::Mode::Rotate, "Rotate", browEdit->config.toolbarButtonsObjectEdit))
-			gadget.mode = Gadget::Mode::Rotate;
+			HotkeyRegistry::runAction(HotkeyAction::ObjectEdit_Rotate);
 		ImGui::SameLine();
 		if (browEdit->toolBarToggleButton("scale", ICON_SCALE, gadget.mode == Gadget::Mode::Scale, "Scale", browEdit->config.toolbarButtonsObjectEdit))
-			gadget.mode = Gadget::Mode::Scale;
+			HotkeyRegistry::runAction(HotkeyAction::ObjectEdit_Scale);
 
 
 		if (gadget.mode == Gadget::Mode::Rotate || gadget.mode == Gadget::Mode::Scale)

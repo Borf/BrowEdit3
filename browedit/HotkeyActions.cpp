@@ -56,6 +56,9 @@ void BrowEdit::registerActions()
 	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_SelectAllEffects,	[this]() { activeMapView->map->selectAll<RswEffect>(this); }, hasActiveMapViewObjectMode);
 	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_SelectAllSounds,	[this]() { activeMapView->map->selectAll<RswSound>(this); }, hasActiveMapViewObjectMode);
 	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_SelectAllLights,	[this]() { activeMapView->map->selectAll<RswLight>(this); }, hasActiveMapViewObjectMode);
+	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_Move,				[this]() { activeMapView->gadget.mode = Gadget::Mode::Translate; }, hasActiveMapViewObjectMode);
+	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_Rotate,				[this]() { activeMapView->gadget.mode = Gadget::Mode::Rotate; }, hasActiveMapViewObjectMode);
+	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_Scale,				[this]() { activeMapView->gadget.mode = Gadget::Mode::Scale; }, hasActiveMapViewObjectMode);
 
 
 	HotkeyRegistry::registerAction(HotkeyAction::EditMode_Height,		[this]() { editMode = EditMode::Height; });

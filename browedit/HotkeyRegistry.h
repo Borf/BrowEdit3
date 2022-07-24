@@ -36,6 +36,11 @@ enum class HotkeyAction
 	ObjectEdit_SelectAllSounds,
 	ObjectEdit_SelectAllLights,
 
+	ObjectEdit_Rotate,
+	ObjectEdit_Move,
+	ObjectEdit_Scale,
+
+
 
 	EditMode_Height,
 	EditMode_Texture,
