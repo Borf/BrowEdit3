@@ -36,14 +36,16 @@ void BrowEdit::showObjectEditToolsWindow()
 	ImGui::SameLine();
 	hotkeyButton("Nudge Z Positive", HotkeyAction::ObjectEdit_NudgeZPos);
 
-	if (toolBarToggleButton("localglobal", activeMapView->pivotPoint == MapView::PivotPoint::Local ? ICON_PIVOT_ROT_LOCAL : ICON_PIVOT_ROT_GLOBAL, false, "Changes the pivot point for rotations", config.toolbarButtonsObjectEdit))
+	if (activeMapView)
 	{
-		if (activeMapView->pivotPoint == MapView::PivotPoint::Local)
-			activeMapView->pivotPoint = MapView::PivotPoint::GroupCenter;
-		else
-			activeMapView->pivotPoint = MapView::PivotPoint::Local;
+		if (toolBarToggleButton("localglobal", activeMapView->pivotPoint == MapView::PivotPoint::Local ? ICON_PIVOT_ROT_LOCAL : ICON_PIVOT_ROT_GLOBAL, false, "Changes the pivot point for rotations", config.toolbarButtonsObjectEdit))
+		{
+			if (activeMapView->pivotPoint == MapView::PivotPoint::Local)
+				activeMapView->pivotPoint = MapView::PivotPoint::GroupCenter;
+			else
+				activeMapView->pivotPoint = MapView::PivotPoint::Local;
+		}
 	}
-
 	ImGui::InputFloat("Rotate distance", &rotateDistance);
 	hotkeyButton("Rotate X Negative", HotkeyAction::ObjectEdit_RotXNeg);
 	ImGui::SameLine();
