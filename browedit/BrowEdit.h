@@ -87,6 +87,22 @@ public:
 
 		bool openLightmapSettings = false;
 
+		//height edit
+		struct HeightEdit
+		{
+			//options for doodling
+			int doodleSize = 0;
+			float doodleHardness = 0;
+			float doodleSpeed = 0.1f;
+
+			//options for selections
+			bool splitTriangleFlip = false;
+			bool showCenterArrow = true;
+			bool showCornerArrows = true;
+			bool showEdgeArrows = true;
+			int edgeMode = 0;
+		} heightEdit;
+
 
 		bool openPrefabPopup = false;
 		bool showHotkeyPopup = false;
@@ -191,6 +207,7 @@ public:
 	void showObjectProperties();
 	void showUndoWindow();
 	void showObjectWindow();
+	void showHeightWindow();
 	void showHelpWindow();
 	void showLightmapSettingsWindow();
 	void showTextureBrushWindow();

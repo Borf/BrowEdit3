@@ -362,6 +362,9 @@
     <ClCompile Include="browedit\windows\ObjectEditTools.cpp">
       <Filter>browedit\windows</Filter>
     </ClCompile>
+    <ClCompile Include="browedit\windows\HeightEditWindow.cpp">
+      <Filter>browedit\windows</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="lib\imgui\imgui.h">
