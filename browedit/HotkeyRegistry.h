@@ -61,6 +61,8 @@ enum class HotkeyAction
 	ObjectEdit_Move,
 	ObjectEdit_Scale,
 
+	ObjectEdit_ToggleObjectWindow,
+
 
 
 	EditMode_Height,
@@ -78,6 +80,7 @@ enum class HotkeyAction
 	View_EmptyTiles,
 	View_GatTiles,
 
+	TextureEdit_ToggleTextureWindow,
 
 /*	Texture_RotateLeft,
 	Texture_RotateRight,

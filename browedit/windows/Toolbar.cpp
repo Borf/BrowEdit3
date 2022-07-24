@@ -59,12 +59,12 @@ void BrowEdit::toolbar()
 
 	if (editMode == EditMode::Object)
 	{
-		toolBarToggleButton("showObjectWindow", windowData.objectWindowVisible ? ICON_OBJECTPICKER_OPEN : ICON_OBJECTPICKER_CLOSE, &windowData.objectWindowVisible, "Toggle object window", config.toolbarButtonsObjectEdit);
+		toolBarToggleButton("showObjectWindow", windowData.objectWindowVisible ? ICON_OBJECTPICKER_OPEN : ICON_OBJECTPICKER_CLOSE, windowData.objectWindowVisible, "Toggle object window", HotkeyAction::ObjectEdit_ToggleObjectWindow, config.toolbarButtonsObjectEdit);
 		ImGui::SameLine();
 	}
 	if (editMode == EditMode::Texture)
 	{
-		toolBarToggleButton("showTextureWindow", windowData.textureManageWindowVisible ? ICON_TEXTUREPICKER_OPEN : ICON_TEXTUREPICKER_CLOSE, &windowData.textureManageWindowVisible, "Toggle texture window", config.toolbarButtonsTextureEdit);
+		toolBarToggleButton("showTextureWindow", windowData.textureManageWindowVisible ? ICON_TEXTUREPICKER_OPEN : ICON_TEXTUREPICKER_CLOSE, windowData.textureManageWindowVisible, "Toggle texture window", HotkeyAction::TextureEdit_ToggleTextureWindow, config.toolbarButtonsTextureEdit);
 		ImGui::SameLine();
 	}
 
