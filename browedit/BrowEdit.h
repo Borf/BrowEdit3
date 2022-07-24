@@ -102,7 +102,22 @@ public:
 			bool showEdgeArrows = true;
 			int edgeMode = 0;
 		} heightEdit;
+		struct GatEdit
+		{
+			//options for doodling
+			int doodleSize = 0;
+			float doodleHardness = 0;
+			float doodleSpeed = 0.1f;
 
+			int gatIndex = 0;
+
+			//options for selections
+			bool splitTriangleFlip = false;
+			bool showCenterArrow = true;
+			bool showCornerArrows = true;
+			bool showEdgeArrows = true;
+			int edgeMode = 0;
+		} gatEdit;
 
 		bool openPrefabPopup = false;
 		bool showHotkeyPopup = false;
@@ -208,6 +223,7 @@ public:
 	void showUndoWindow();
 	void showObjectWindow();
 	void showHeightWindow();
+	void showGatWindow();
 	void showHelpWindow();
 	void showLightmapSettingsWindow();
 	void showTextureBrushWindow();

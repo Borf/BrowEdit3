@@ -71,6 +71,7 @@
     <ClCompile Include="browedit\util\FileIO.cpp" />
     <ClCompile Include="browedit\util\Util.cpp" />
     <ClCompile Include="browedit\windows\ExportMapWindow.cpp" />
+    <ClCompile Include="browedit\windows\GatEditWindow.cpp" />
     <ClCompile Include="browedit\windows\HeightEditWindow.cpp" />
     <ClCompile Include="browedit\windows\HelpWindow.cpp" />
     <ClCompile Include="browedit\windows\HotkeyEditorWindowWindow.cpp" />

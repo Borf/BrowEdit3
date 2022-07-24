@@ -203,9 +203,9 @@ void BrowEdit::run()
 			showTextureManageWindow();
 		}
 		if (editMode == EditMode::Height)
-		{
 			showHeightWindow();
-		}
+		if (editMode == EditMode::Gat)
+			showGatWindow();
 
 		if(windowData.hotkeyEditWindowVisible)
 			showHotkeyEditorWindow();

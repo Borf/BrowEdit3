@@ -25,8 +25,6 @@
 #include <queue>
 
 std::string gatTypes[] = {"Walkable", "Not Walkable", "??", "Walkable,Water" , "Walkable,NoWater" , "Snipable" , "Walkable?" , "" , "" , "" , "" , "" , "" , "" , "" , ""};
-extern ImVec4 enabledColor;// (144 / 255.0f, 193 / 255.0f, 249 / 255.0f, 0.5f);
-extern ImVec4 disabledColor;// (72 / 255.0f, 96 / 255.0f, 125 / 255.0f, 0.5f);
 
 float TriangleHeight(const glm::vec3& a, const glm::vec3& b, const glm::vec3& c, const glm::vec3& p);
 bool TriangleContainsPoint(const glm::vec3& a, const glm::vec3& b, const glm::vec3& c, const glm::vec3& p);
@@ -40,392 +38,6 @@ void MapView::postRenderGatMode(BrowEdit* browEdit)
 	auto gat = map->rootNode->getComponent<Gat>();
 	auto gatRenderer = map->rootNode->getComponent<GatRenderer>();
 
-	//options for doodling
-	static int doodleSize = 0;
-	static float doodleHardness = 0;
-	static float doodleSpeed = 0.1f;
-	
-	static int gatIndex = 0;
-
-	//options for selections
-	static bool splitTriangleFlip = false;
-	static bool showCenterArrow = true;
-	static bool showCornerArrows = true;
-	static bool showEdgeArrows = true;
-	static int edgeMode = 0;
-
-	ImGui::Begin("Gat Edit");
-	ImGui::PushItemWidth(-200);
-
-	if (browEdit->gatDoodle && browEdit->heightDoodle)
-		browEdit->gatDoodle = false;
-
-	if (ImGui::TreeNodeEx("Tool", ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed))
-	{
-		ImGuiStyle& style = ImGui::GetStyle();
-		float window_visible_x2 = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
-		for (int i = 0; i < 16; i++)
-		{
-			ImVec2 v1(.25f * (i % 4), .25f * (i / 4));
-			ImVec2 v2(v1.x + .25f, v1.y + .25f);
-			ImGui::PushID(i);
-			bool clicked = ImGui::ImageButton((ImTextureID)(long long)browEdit->gatTexture->id(), ImVec2(browEdit->config.toolbarButtonSize, browEdit->config.toolbarButtonSize), v1, v2, 0, gatIndex ==i ? enabledColor : disabledColor);
-			if (ImGui::IsItemHovered())
-				ImGui::SetTooltip(gatTypes[i].c_str());
-
-			float last_button_x2 = ImGui::GetItemRectMax().x;
-			float next_button_x2 = last_button_x2 + style.ItemSpacing.x + browEdit->config.toolbarButtonSize;
-
-
-			ImGui::PopID();
-			if (clicked)
-			{
-				gatIndex = i;
-				browEdit->heightDoodle = false;
-				browEdit->gatDoodle = true;
-			}
-			if (i < 15 && next_button_x2 < window_visible_x2)
-				ImGui::SameLine();
-		}
-		if (browEdit->toolBarToggleButton("Height", ICON_HEIGHT_DOODLE, browEdit->heightDoodle, "Height editing", ImVec4(1, 1, 1, 1)))
-		{
-			browEdit->heightDoodle = true;
-			browEdit->gatDoodle = false;
-		}
-		ImGui::SameLine();
-		if (browEdit->toolBarToggleButton("Rectangle", ICON_SELECT_RECTANGLE, !browEdit->heightDoodle && !browEdit->gatDoodle && browEdit->selectTool == BrowEdit::SelectTool::Rectangle, "Rectangle Select", ImVec4(1, 1, 1, 1)))
-		{
-			browEdit->selectTool = BrowEdit::SelectTool::Rectangle;
-			browEdit->heightDoodle = false;
-			browEdit->gatDoodle = false;
-		}
-		ImGui::SameLine();
-		if (browEdit->toolBarToggleButton("Lasso", ICON_SELECT_LASSO, !browEdit->heightDoodle && !browEdit->gatDoodle && browEdit->selectTool == BrowEdit::SelectTool::Lasso, "Lasso Select", ImVec4(1, 1, 1, 1)))
-		{
-			browEdit->selectTool = BrowEdit::SelectTool::Lasso;
-			browEdit->heightDoodle = false;
-			browEdit->gatDoodle = false;
-		}
-		ImGui::SameLine();
-		if (browEdit->toolBarToggleButton("WandTex", ICON_SELECT_WAND_TEX, !browEdit->heightDoodle && !browEdit->gatDoodle && browEdit->selectTool == BrowEdit::SelectTool::WandTex, "Magic Wand (Texture)", ImVec4(1, 1, 1, 1)))
-		{
-			browEdit->selectTool = BrowEdit::SelectTool::WandTex;
-			browEdit->heightDoodle = false;
-			browEdit->gatDoodle = false;
-		}
-		ImGui::SameLine();
-		if (browEdit->toolBarToggleButton("WandHeight", ICON_SELECT_WAND_HEIGHT, !browEdit->heightDoodle && !browEdit->gatDoodle && browEdit->selectTool == BrowEdit::SelectTool::WandHeight, "Magic Wand (Height)", ImVec4(1, 1, 1, 1)))
-		{
-			browEdit->selectTool = BrowEdit::SelectTool::WandHeight;
-			browEdit->heightDoodle = false;
-			browEdit->gatDoodle = false;
-		}
-		ImGui::SameLine();
-		if (browEdit->toolBarToggleButton("AllTex", ICON_SELECT_ALL_TEX, !browEdit->heightDoodle && !browEdit->gatDoodle && browEdit->selectTool == BrowEdit::SelectTool::AllTex, "Select All (Texture)", ImVec4(1, 1, 1, 1)))
-		{
-			browEdit->selectTool = BrowEdit::SelectTool::AllTex;
-			browEdit->heightDoodle = false;
-			browEdit->gatDoodle = false;
-		}
-		ImGui::SameLine();
-		if (browEdit->toolBarToggleButton("AllHeight", ICON_SELECT_ALL_HEIGHT, !browEdit->heightDoodle && !browEdit->gatDoodle && browEdit->selectTool == BrowEdit::SelectTool::AllHeight, "Select All (Height)", ImVec4(1, 1, 1, 1)))
-		{
-			browEdit->selectTool = BrowEdit::SelectTool::AllHeight;
-			browEdit->heightDoodle = false;
-			browEdit->gatDoodle = false;
-		}
-		ImGui::TreePop();
-	}
-
-	if (!browEdit->heightDoodle && !browEdit->gatDoodle)
-	{
-		if (ImGui::TreeNodeEx("Selection Options", ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed))
-		{
-			browEdit->toolBarToggleButton("TriangleSplit", splitTriangleFlip ? ICON_HEIGHT_SPLIT_1 : ICON_HEIGHT_SPLIT_2, &splitTriangleFlip, "Change the way quads are split into triangles");
-			ImGui::SameLine();
-			browEdit->toolBarToggleButton("CenterArrow", ICON_HEIGHT_SELECT_CENTER, &showCenterArrow, "Show Center Arrow");
-			ImGui::SameLine();
-			browEdit->toolBarToggleButton("CornerArrow", ICON_HEIGHT_SELECT_CORNERS, &showCornerArrows, "Show Corner Arrows");
-			ImGui::SameLine();
-			browEdit->toolBarToggleButton("EdgeArrow", ICON_HEIGHT_SELECT_SIDES, &showEdgeArrows, "Show Edge Arrows");
-
-
-			if (ImGui::TreeNodeEx("Edge handling", ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed))
-			{
-				ImGui::RadioButton("Nothing", &edgeMode, 0);
-				ImGui::SameLine();
-				ImGui::RadioButton("Raise ground", &edgeMode, 1);
-				ImGui::RadioButton("Snap ground", &edgeMode, 2);
-				ImGui::TreePop();
-			}
-
-			//if (ImGui::Button("Grow selection", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
-			//	map->growGatSelection(browEdit);
-			//if (ImGui::Button("Shrink selection", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
-			//	map->shrinkGatSelection(browEdit);
-
-			ImGui::TreePop();
-		}
-	} 
-	else if(browEdit->heightDoodle && !browEdit->gatDoodle)
-	{
-		if (ImGui::TreeNodeEx("Brush Options", ImGuiTreeNodeFlags_DefaultOpen))
-		{
-			ImGui::DragInt("Brush Size", &doodleSize, 1.0f, 0, 10);
-			ImGui::DragFloat("Brush Hardness", &doodleHardness, 0.1f, 0.0f, 1.0f);
-			ImGui::DragFloat("Brush Speed", &doodleSpeed, 0.01f, 0, 1);
-
-			ImGui::TreePop();
-			if (ImGui::IsKeyPressed(GLFW_KEY_KP_ADD))
-				doodleSize++;
-			if (ImGui::IsKeyPressed(GLFW_KEY_KP_SUBTRACT))
-				doodleSize = glm::max(doodleSize-1,0);
-		}
-	}
-	else if (browEdit->gatDoodle && !browEdit->heightDoodle)
-	{
-		if (ImGui::TreeNodeEx("Brush Options", ImGuiTreeNodeFlags_DefaultOpen))
-		{
-			ImGui::DragInt("Brush Size", &doodleSize, 1.0f, 0, 10);
-			ImGui::TreePop();
-			if (ImGui::IsKeyPressed(GLFW_KEY_KP_ADD))
-				doodleSize++;
-			if (ImGui::IsKeyPressed(GLFW_KEY_KP_SUBTRACT))
-				doodleSize = glm::max(doodleSize - 1, 0);
-		}
-	}
-	if (ImGui::TreeNodeEx("Actions", ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed))
-	{
-		/*	ImGui::BeginGroup();
-			if (ImGui::Button("Smooth selection", ImVec2(ImGui::GetContentRegionAvailWidth() - 12 - browEdit->config.toolbarButtonSize, 0)))
-				gnd->smoothTiles(map, browEdit, map->gatSelection, 3);
-			ImGui::SameLine();
-			browEdit->toolBarToggleButton("Connect", ICON_NOICON, false, "Connects tiles around selection");
-			ImGui::EndGroup();
-			if (ImGui::Button("Smooth selection Horizontal", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
-				gnd->smoothTiles(map, browEdit, map->gatSelection, 1);
-			if (ImGui::Button("Smooth selection Vertical", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
-				gnd->smoothTiles(map, browEdit, map->gatSelection, 2);
-			if (ImGui::Button("Flatten selection", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
-				gnd->flattenTiles(map, browEdit, map->gatSelection);
-			if (ImGui::Button("Connect tiles high", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
-				gnd->connectHigh(map, browEdit, map->gatSelection);
-			if (ImGui::Button("Connect tiles low", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
-				gnd->connectLow(map, browEdit, map->gatSelection);
-
-			if(ImGui::TreeNodeEx("Set Height", ImGuiTreeNodeFlags_Framed))
-			{
-				static float height = 0;
-				ImGui::InputFloat("Height", &height);
-				if (ImGui::Button("Set selection to height"))
-				{
-					auto action = new CubeHeightChangeAction(gnd, map->gatSelection);
-					for (auto t : map->gatSelection)
-						for(int i = 0; i < 4; i++)
-							gnd->cubes[t.x][t.y]->heights[i] = height;
-
-					action->setNewHeights(gnd, map->gatSelection);
-					map->doAction(action, browEdit);
-				}
-				ImGui::TreePop();
-			}*/
-
-		static bool selectionOnly = false;
-		static bool setWalkable = true;
-		static bool setObjectWalkable = true;
-		static bool blockUnderWater = true;
-		static std::vector<int> textureMap; //TODO: this won't work well with multiple maps
-		auto gnd = map->rootNode->getComponent<Gnd>();
-		if (textureMap.size() != gnd->textures.size())
-			textureMap.resize(gnd->textures.size(), -1);
-
-		if (ImGui::Button("AutoGat"))
-		{
-			browEdit->windowData.progressWindowVisible = true;
-			browEdit->windowData.progressWindowProgres = 0;
-			browEdit->windowData.progressWindowText = "Calculating gat";
-
-			std::thread t([this, gnd, gat, browEdit, gatRenderer]()
-			{
-				auto rsw = map->rootNode->getComponent<Rsw>();
-				for (int x = 0; x < gat->width; x++)
-				{
-					for (int y = 0; y < gat->height; y++)
-					{
-						if (selectionOnly && std::find(map->gatSelection.begin(), map->gatSelection.end(), glm::ivec2(x, y)) == map->gatSelection.end())
-							continue;
-
-						browEdit->windowData.progressWindowProgres = (x / (float)gat->width) + (1.0f / gat->width) * (y / (float)gat->height);
-
-						int raiseType = -1;
-						int gatType = -1;
-
-						for (int i = 0; i < 4; i++)
-						{
-							glm::vec3 pos = gat->getPos(x, y, i, 0.025f);
-							pos.y = 1000;
-							math::Ray ray(pos, glm::vec3(0, -1, 0));
-							auto height = gnd->rayCast(ray, true, x / 2 - 2, y / 2 - 2, x / 2 + 2, y / 2 + 2);
-
-							map->rootNode->traverse([&](Node* n) {
-								auto rswModel = n->getComponent<RswModel>();
-								if (rswModel)
-								{
-									auto collider = n->getComponent<RswModelCollider>();
-									auto collisions = collider->getCollisions(ray);
-									if (rswModel->gatCollision)
-									{
-										for (const auto& c : collisions)
-											height.y = glm::max(height.y, c.y);
-										if (collisions.size() > 0 && rswModel->gatStraightType > 0)
-											raiseType = rswModel->gatStraightType;
-									}
-									if (rswModel->gatType > -1 && collisions.size() > 0)
-									{
-										gatType = rswModel->gatType;
-									}
-								}
-							});
-
-							gat->cubes[x][y]->heights[i] = -height.y;
-						}
-
-						if (setWalkable)
-						{
-							gat->cubes[x][y]->calcNormal();
-							gat->cubes[x][y]->gatType = 0;
-							float angle = glm::dot(gat->cubes[x][y]->normal, glm::vec3(0, -1, 0));
-							if(angle < 0.9)
-								gat->cubes[x][y]->gatType = 1;
-							else
-							{
-								bool stepHeight = false;
-								glm::ivec2 t(x, y);
-								for (int i = 0; i < 4; i++)
-								{
-									for (int ii = 0; ii < 4; ii++)
-									{
-										auto& connectInfo = gat->connectInfo[i][ii];
-										glm::ivec2 tt = t + glm::ivec2(connectInfo.x, connectInfo.y);
-										if (!gat->inMap(tt))
-											continue;
-										if (gat->cubes[x][y]->heights[i] - gat->cubes[tt.x][tt.y]->heights[connectInfo.z] > 5)
-											stepHeight = true;
-									}
-								}
-								if (stepHeight)
-									gat->cubes[x][y]->gatType = 1;
-
-							}
-						}
-						if (blockUnderWater)
-						{
-							bool underWater = false;
-							for (int i = 0; i < 4; i++)
-								if (gat->cubes[x][y]->heights[i] > rsw->water.height)
-									underWater = true;
-							if (underWater)
-								gat->cubes[x][y]->gatType = 1;
-						}
-						if (gatType > -1 && setObjectWalkable)
-							gat->cubes[x][y]->gatType = gatType;
-						if (raiseType > -1)
-						{
-							for (int i = 1; i < 4; i++)
-							{
-								if(raiseType == 1)
-									gat->cubes[x][y]->heights[0] = glm::min(gat->cubes[x][y]->heights[0], gat->cubes[x][y]->heights[i]);
-								else if(raiseType == 2)
-									gat->cubes[x][y]->heights[0] = glm::max(gat->cubes[x][y]->heights[0], gat->cubes[x][y]->heights[i]);
-							}
-							for (int i = 1; i < 4; i++)
-								gat->cubes[x][y]->heights[i] = gat->cubes[x][y]->heights[0];
-						}
-					}
-				}
-				browEdit->windowData.progressWindowProgres = 1;
-				browEdit->windowData.progressWindowVisible = false;
-
-				gatRenderer->allDirty = true;
-			});
-			t.detach();
-		}
-		ImGui::Checkbox("Gat selection only", &selectionOnly);
-		ImGui::Checkbox("Set walkability", &setWalkable);
-		ImGui::Checkbox("Set object walkability", &setObjectWalkable);
-		ImGui::Checkbox("Make tiles under water unwalkable", &blockUnderWater);
-		
-		if (ImGui::Button("WaterGat"))
-		{
-			browEdit->windowData.progressWindowVisible = true;
-			browEdit->windowData.progressWindowProgres = 0;
-			browEdit->windowData.progressWindowText = "Calculating watergat";
-
-			std::thread t([this, gnd, gat, browEdit, gatRenderer]()
-				{
-					auto rsw = map->rootNode->getComponent<Rsw>();
-					for (int x = 0; x < gat->width; x++)
-					{
-						for (int y = 0; y < gat->height; y++)
-						{
-							if (selectionOnly && std::find(map->gatSelection.begin(), map->gatSelection.end(), glm::ivec2(x, y)) == map->gatSelection.end())
-								continue;
-							browEdit->windowData.progressWindowProgres = (x / (float)gat->width) + (1.0f / gat->width) * (y / (float)gat->height);
-							bool underWater = false;
-							for (int i = 0; i < 4; i++)
-							{
-								glm::vec3 pos = gat->getPos(x, y, i, 0.025f);
-								pos.y = 1000;
-								math::Ray ray(pos, glm::vec3(0, -1, 0));
-								auto height = gnd->rayCast(ray, true, x / 2 - 2, y / 2 - 2, x / 2 + 2, y / 2 + 2);
-								map->rootNode->traverse([&](Node* n) {
-									auto rswModel = n->getComponent<RswModel>();
-									if (rswModel && rswModel->gatCollision)
-									{
-										auto collider = n->getComponent<RswModelCollider>();
-										auto collisions = collider->getCollisions(ray);
-										for (const auto& c : collisions)
-											height.y = glm::max(height.y, c.y);
-									}
-									});
-								gat->cubes[x][y]->heights[i] = rsw->water.height;
-								underWater |= height.y < -rsw->water.height;
-							}
-							gat->cubes[x][y]->gatType = underWater ? 0 : 1;
-						}
-					}
-					browEdit->windowData.progressWindowProgres = 1;
-					browEdit->windowData.progressWindowVisible = false;
-
-					gatRenderer->allDirty = true;
-				});
-			t.detach();
-		}
-
-		ImGui::TreePop();
-	}
-
-	/*if (map->gatSelection.size() > 0 && !browEdit->heightDoodle)
-	{
-		if (map->gatSelection.size() > 1)
-			ImGui::TextColored(ImVec4(1, 0, 0, 1), "WARNING, THESE SETTINGS ONLY\nWORK ON THE FIRST TILE");
-		auto cube = gat->cubes[map->gatSelection[0].x][map->gatSelection[0].y];
-		if (ImGui::TreeNodeEx("Tile Details", ImGuiTreeNodeFlags_Framed))
-		{
-			bool changed = false;
-			changed |= util::DragFloat(browEdit, map, map->rootNode, "H1", &cube->h1);
-			changed |= util::DragFloat(browEdit, map, map->rootNode, "H2", &cube->h2);
-			changed |= util::DragFloat(browEdit, map, map->rootNode, "H3", &cube->h3);
-			changed |= util::DragFloat(browEdit, map, map->rootNode, "H4", &cube->h4);
-
-
-			if (changed)
-				gatRenderer->setChunkDirty(map->gatSelection[0].x, map->gatSelection[0].y);
-			ImGui::TreePop();
-		}
-	}*/
-	ImGui::PopItemWidth();
-	ImGui::End();
 
 	glUseProgram(0);
 	glMatrixMode(GL_PROJECTION);
@@ -538,11 +150,11 @@ void MapView::postRenderGatMode(BrowEdit* browEdit)
 		if (ImGui::GetIO().KeyCtrl)
 		{
 			minMax = ImGui::GetIO().KeyShift ? -std::numeric_limits<float>::max() : std::numeric_limits<float>::max();
-			for (int x = 0; x <= doodleSize; x++)
+			for (int x = 0; x <= browEdit->windowData.gatEdit.doodleSize; x++)
 			{
-				for (int y = 0; y <= doodleSize; y++)
+				for (int y = 0; y <= browEdit->windowData.gatEdit.doodleSize; y++)
 				{
-					glm::ivec2 t = tileHovered + glm::ivec2(x, y) - glm::ivec2(doodleSize / 2);
+					glm::ivec2 t = tileHovered + glm::ivec2(x, y) - glm::ivec2(browEdit->windowData.gatEdit.doodleSize / 2);
 					for (int ii = 0; ii < 4; ii++)
 					{
 						glm::ivec2 tt(t.x + gat->connectInfo[index][ii].x, t.y + gat->connectInfo[index][ii].y);
@@ -562,11 +174,11 @@ void MapView::postRenderGatMode(BrowEdit* browEdit)
 		ImGui::Text("Change Height, hold shift to lower, hold Ctrl to snap");
 		ImGui::End();
 
-		for (int x = 0; x <= doodleSize; x++)
+		for (int x = 0; x <= browEdit->windowData.gatEdit.doodleSize; x++)
 		{
-			for (int y = 0; y <= doodleSize; y++)
+			for (int y = 0; y <= browEdit->windowData.gatEdit.doodleSize; y++)
 			{
-				glm::ivec2 t = tileHovered + glm::ivec2(x, y) - glm::ivec2(doodleSize / 2);
+				glm::ivec2 t = tileHovered + glm::ivec2(x, y) - glm::ivec2(browEdit->windowData.gatEdit.doodleSize / 2);
 				for (int ii = 0; ii < 4; ii++)
 				{
 					glm::ivec2 tt(t.x + gat->connectInfo[index][ii].x, t.y + gat->connectInfo[index][ii].y);
@@ -581,9 +193,9 @@ void MapView::postRenderGatMode(BrowEdit* browEdit)
 								originalHeights[gat->cubes[tt.x][tt.y]][i] = gat->cubes[tt.x][tt.y]->heights[i];
 
 						if (ImGui::GetIO().KeyShift)
-							snapHeight = glm::min(minMax, snapHeight + doodleSpeed * (glm::mix(1.0f, glm::max(0.0f, 1.0f - glm::length(glm::vec2(x - doodleSize / 2.0f, y - doodleSize / 2.0f)) / doodleSize), doodleHardness)));
+							snapHeight = glm::min(minMax, snapHeight + browEdit->windowData.gatEdit.doodleSpeed * (glm::mix(1.0f, glm::max(0.0f, 1.0f - glm::length(glm::vec2(x - browEdit->windowData.gatEdit.doodleSize / 2.0f, y - browEdit->windowData.gatEdit.doodleSize / 2.0f)) / browEdit->windowData.gatEdit.doodleSize), browEdit->windowData.gatEdit.doodleHardness)));
 						else
-							snapHeight = glm::max(minMax, snapHeight - doodleSpeed * (glm::mix(1.0f, glm::max(0.0f, 1.0f - glm::length(glm::vec2(x - doodleSize / 2.0f, y - doodleSize / 2.0f)) / doodleSize), doodleHardness)));
+							snapHeight = glm::max(minMax, snapHeight - browEdit->windowData.gatEdit.doodleSpeed * (glm::mix(1.0f, glm::max(0.0f, 1.0f - glm::length(glm::vec2(x - browEdit->windowData.gatEdit.doodleSize / 2.0f, y - browEdit->windowData.gatEdit.doodleSize / 2.0f)) / browEdit->windowData.gatEdit.doodleSize), browEdit->windowData.gatEdit.doodleHardness)));
 
 						gat->cubes[tt.x][tt.y]->calcNormal();
 						gatRenderer->setChunkDirty(tt.x, tt.y);
@@ -619,15 +231,15 @@ void MapView::postRenderGatMode(BrowEdit* browEdit)
 		std::vector<VertexP3T2N3> verts;
 		float dist = 0.002f * cameraDistance;
 
-		for (int x = 0; x <= doodleSize; x++)
+		for (int x = 0; x <= browEdit->windowData.gatEdit.doodleSize; x++)
 		{
-			for (int y = 0; y <= doodleSize; y++)
+			for (int y = 0; y <= browEdit->windowData.gatEdit.doodleSize; y++)
 			{
-				glm::ivec2 tile = tileHovered + glm::ivec2(x,y) - glm::ivec2(doodleSize/2, doodleSize/2);
+				glm::ivec2 tile = tileHovered + glm::ivec2(x,y) - glm::ivec2(browEdit->windowData.gatEdit.doodleSize/2, browEdit->windowData.gatEdit.doodleSize/2);
 				if (gat->inMap(tile))
 				{
 					auto cube = gat->cubes[tile.x][tile.y];
-					glm::vec2 t1(.25f * (gatIndex % 4), .25f * (gatIndex / 4));
+					glm::vec2 t1(.25f * (browEdit->windowData.gatEdit.gatIndex % 4), .25f * (browEdit->windowData.gatEdit.gatIndex / 4));
 					glm::vec2 t2 = t1 + glm::vec2(.25f);
 
 					verts.push_back(VertexP3T2N3(glm::vec3(5 * tile.x, -cube->h3 + dist, 5 * gat->height - 5 * tile.y + 5), glm::vec2(t1.x, t1.y), cube->normal));
@@ -640,7 +252,7 @@ void MapView::postRenderGatMode(BrowEdit* browEdit)
 
 					if (ImGui::IsMouseDown(ImGuiMouseButton_Left))
 					{
-						gat->cubes[tile.x][tile.y]->gatType = gatIndex;
+						gat->cubes[tile.x][tile.y]->gatType = browEdit->windowData.gatEdit.gatIndex;
 						gatRenderer->setChunkDirty(tile.x, tile.y);
 					}
 				}
@@ -744,11 +356,11 @@ void MapView::postRenderGatMode(BrowEdit* browEdit)
 			static int dragIndex = -1;
 			for (int i = 0; i < 9; i++)
 			{
-				if (!showCornerArrows && i < 4)
+				if (!browEdit->windowData.gatEdit.showCornerArrows && i < 4)
 					continue;
-				if (!showCenterArrow && i == 4)
+				if (!browEdit->windowData.gatEdit.showCenterArrow && i == 4)
 					continue;
-				if (!showEdgeArrows && i > 4)
+				if (!browEdit->windowData.gatEdit.showEdgeArrows && i > 4)
 					continue;
 				glm::mat4 mat = glm::translate(glm::mat4(1.0f), pos[i]);
 				if (maxValues.x - minValues.x <= 1 || maxValues.y - minValues.y <= 1)
@@ -893,7 +505,7 @@ void MapView::postRenderGatMode(BrowEdit* browEdit)
 							// 0 1
 							// 2 3
 							glm::vec3 p = gat->getPos(t.x, t.y, ii);
-							if (!splitTriangleFlip)	// /
+							if (!browEdit->windowData.gatEdit.splitTriangleFlip)	// /
 							{
 								if (TriangleContainsPoint(pos[0], pos[1], pos[2], p))
 									gat->cubes[t.x][t.y]->heights[ii] = originalValues[gat->cubes[t.x][t.y]][ii] + (TriangleHeight(pos[0], pos[1], pos[2], p) - TriangleHeight(originalCorners[0], originalCorners[1], originalCorners[2], p));
@@ -907,7 +519,7 @@ void MapView::postRenderGatMode(BrowEdit* browEdit)
 								if (TriangleContainsPoint(pos[0], pos[1], pos[3], p))
 									gat->cubes[t.x][t.y]->heights[ii] = originalValues[gat->cubes[t.x][t.y]][ii] + (TriangleHeight(pos[0], pos[1], pos[3], p) - TriangleHeight(originalCorners[0], originalCorners[1], originalCorners[3], p));
 							}
-							if (edgeMode == 1 || edgeMode == 2) //smooth raise area around these tiles
+							if (browEdit->windowData.gatEdit.edgeMode == 1 || browEdit->windowData.gatEdit.edgeMode == 2) //smooth raise area around these tiles
 							{
 								for (int xx = -1; xx <= 1; xx++)
 									for (int yy = -1; yy <= 1; yy++)
@@ -951,14 +563,14 @@ void MapView::postRenderGatMode(BrowEdit* browEdit)
 						//h2 bottomright
 						//h3 topleft
 						//h4 topright
-						if (edgeMode == 1) //raise ground
+						if (browEdit->windowData.gatEdit.edgeMode == 1) //raise ground
 						{
 							cube->heights[0] = originalValues[cube][0] - getPointHeightDiff(a.x - 1, a.y - 1, 3, a.x - 1, a.y, 1, a.x, a.y - 1, 2);
 							cube->heights[1] = originalValues[cube][1] - getPointHeightDiff(a.x + 1, a.y - 1, 2, a.x + 1, a.y, 0, a.x, a.y - 1, 3);
 							cube->heights[2] = originalValues[cube][2] - getPointHeightDiff(a.x - 1, a.y + 1, 1, a.x - 1, a.y, 3, a.x, a.y + 1, 0);
 							cube->heights[3] = originalValues[cube][3] - getPointHeightDiff(a.x + 1, a.y + 1, 0, a.x + 1, a.y, 2, a.x, a.y + 1, 1);
 						}
-						else if (edgeMode == 2) //snap ground
+						else if (browEdit->windowData.gatEdit.edgeMode == 2) //snap ground
 						{
 							cube->heights[0] = getPointHeight(a.x - 1, a.y - 1, 3, a.x - 1, a.y, 1, a.x, a.y - 1, 2, cube->heights[0]);
 							cube->heights[1] = getPointHeight(a.x + 1, a.y - 1, 2, a.x + 1, a.y, 0, a.x, a.y - 1, 3, cube->heights[1]);
