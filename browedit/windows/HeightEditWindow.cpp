@@ -14,10 +14,15 @@
 
 void BrowEdit::showHeightWindow()
 {
-	auto gnd = activeMapView->map->rootNode->getComponent<Gnd>();
-	auto gndRenderer = activeMapView->map->rootNode->getComponent<GndRenderer>();
 
 	ImGui::Begin("Height Edit");
+	if (!activeMapView)
+	{
+		ImGui::End();
+		return;
+	}
+	auto gnd = activeMapView->map->rootNode->getComponent<Gnd>();
+	auto gndRenderer = activeMapView->map->rootNode->getComponent<GndRenderer>();
 	ImGui::PushItemWidth(-200);
 
 	if (ImGui::TreeNodeEx("Tool", ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed))

@@ -14,11 +14,17 @@ extern ImVec4 disabledColor;// (72 / 255.0f, 96 / 255.0f, 125 / 255.0f, 0.5f);
 
 void BrowEdit::showGatWindow()
 {
+	ImGui::Begin("Gat Edit");
+	if (!activeMapView)
+	{
+		ImGui::End();
+		return;
+	}
+
 	auto& map = activeMapView->map;
 	auto gat = map->rootNode->getComponent<Gat>();
 	auto gatRenderer = map->rootNode->getComponent<GatRenderer>();
 
-	ImGui::Begin("Gat Edit");
 	ImGui::PushItemWidth(-200);
 
 	if (gatDoodle && heightDoodle)
