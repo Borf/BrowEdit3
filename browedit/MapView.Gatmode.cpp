@@ -17,6 +17,7 @@
 #include <browedit/actions/TileSelectAction.h>
 #include <browedit/actions/CubeHeightChangeAction.h>
 #include <browedit/actions/CubeTileChangeAction.h>
+#include <browedit/actions/GatTileChangeAction.h>
 #include <imgui.h>
 #include <imgui_internal.h>
 
@@ -228,6 +229,7 @@ void MapView::postRenderGatMode(BrowEdit* browEdit)
 	}
 	else if (browEdit->gatDoodle && hovered)
 	{
+		static GroupAction* gatGroupAction = nullptr;
 		std::vector<VertexP3T2N3> verts;
 		float dist = 0.002f * cameraDistance;
 
@@ -252,11 +254,20 @@ void MapView::postRenderGatMode(BrowEdit* browEdit)
 
 					if (ImGui::IsMouseDown(ImGuiMouseButton_Left))
 					{
-						gat->cubes[tile.x][tile.y]->gatType = browEdit->windowData.gatEdit.gatIndex;
-						gatRenderer->setChunkDirty(tile.x, tile.y);
+						auto action = new GatTileChangeAction(gat->cubes[tile.x][tile.y], browEdit->windowData.gatEdit.gatIndex);
+						action->perform(map, browEdit);
+						if (gatGroupAction == nullptr)
+							gatGroupAction = new GroupAction();
+						gatGroupAction->addAction(action);
 					}
 				}
 			}
+		}
+
+		if (ImGui::IsMouseReleased(ImGuiMouseButton_Left) && gatGroupAction != nullptr)
+		{
+			map->doAction(gatGroupAction, browEdit);
+			gatGroupAction = nullptr;
 		}
 
 
