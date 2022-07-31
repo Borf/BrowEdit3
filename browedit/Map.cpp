@@ -35,6 +35,15 @@ Map::Map(const std::string& name, BrowEdit* browEdit) : name(name)
 	rsw->load(name, this, browEdit);
 }
 
+Map::Map(const std::string& name, int width, int height, BrowEdit* browEdit) : name(name)
+{
+	rootNode = new Node(name);
+	auto rsw = new Rsw();
+	rootNode->addComponent(rsw);
+	rsw->newMap(name, width, height, this, browEdit);
+}
+
+
 Map::~Map()
 {
 	for (auto u : undoStack)

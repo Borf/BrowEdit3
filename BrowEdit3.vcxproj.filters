@@ -368,6 +368,9 @@
     <ClCompile Include="browedit\windows\GatEditWindow.cpp">
       <Filter>browedit\windows</Filter>
     </ClCompile>
+    <ClCompile Include="browedit\actions\GatTileChangeAction.cpp">
+      <Filter>browedit\actions</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="lib\imgui\imgui.h">
@@ -636,6 +639,9 @@
     </ClInclude>
     <ClInclude Include="browedit\Hotkey.h">
       <Filter>browedit</Filter>
+    </ClInclude>
+    <ClInclude Include="browedit\actions\GatTileChangeAction.h">
+      <Filter>browedit\actions</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

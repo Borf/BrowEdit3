@@ -537,6 +537,29 @@ void Rsw::save(const std::string& fileName, BrowEdit* browEdit)
 	std::cout << "Done saving" << std::endl;
 }
 
+void Rsw::newMap(const std::string& fileName, int width, int height, Map* map, BrowEdit* browEdit)
+{
+	version = 0x0106;
+	light.longitude = 45;//TODO: remove the defaults here and put defaults of the water somewhere too
+	light.latitude = 45;
+	light.diffuse = glm::vec3(1, 1, 1);
+	light.ambient = glm::vec3(0.8f, 0.8f, 0.8f);
+	light.intensity = 0.5f;
+	water.height = 10;
+
+
+	std::string path = fileName;
+	if (path.find("\\") != std::string::npos)
+		path = path.substr(0, path.rfind("\\") + 1);
+	node->addComponent(new Gnd(width/2, height/2));
+	node->addComponent(new GndRenderer());
+	node->addComponent(new WaterRenderer());
+	node->addComponent(new Gat(width, height));
+	node->addComponent(new GatRenderer(browEdit->gatTexture));
+
+	quadtree = new QuadTreeNode(-(width/2)*5,-(height/2)*5, width * 5, height * 5, 0);
+}
+
 
 
 

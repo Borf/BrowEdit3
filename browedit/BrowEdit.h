@@ -51,6 +51,17 @@ public:
 	{
 		bool configVisible = false;
 
+		bool showNewMapPopup = false;
+		int newMapWidth = 100;
+		int newMapHeight = 100;
+		std::string newMapName = "borftopia";
+		enum class NewMapTemplate
+		{
+			Blank,
+			Grid,
+			CenterCross
+		} newMapTemplate;
+
 		//bool openVisible = false;
 		bool openJustVisible = false;
 		std::vector<std::string> openFiles;
@@ -213,6 +224,7 @@ public:
 	void menuBar();
 	void toolbar();
 
+	void ShowNewMapPopup();
 	void showOpenWindow();
 	void showExportWindow();
 	void openWindow();

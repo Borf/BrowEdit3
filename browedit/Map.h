@@ -27,6 +27,8 @@ public:
 	Node* findAndBuildNode(const std::string &path, Node* root = nullptr);
 
 	Map(const std::string& name, BrowEdit* browEdit);
+	Map(const std::string& name, int width, int height, BrowEdit* browEdit);
+
 	~Map();
 	void doAction(Action* action, BrowEdit* browEdit);
 	void undo(BrowEdit* browEdit);

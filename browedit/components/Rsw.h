@@ -42,12 +42,12 @@ public:
 
 	struct
 	{
-		float	height;
-		int		type;
-		float	amplitude;
-		float	waveSpeed;
-		float	wavePitch;
-		int		textureAnimSpeed;
+		float	height = 0;
+		int		type = 0;
+		float	amplitude = 1;
+		float	waveSpeed = 2.0f;
+		float	wavePitch = 50.0f;
+		int		textureAnimSpeed = 3;
 	} water;
 
 	struct
@@ -71,6 +71,7 @@ public:
 
 	void load(const std::string& fileName, Map* map, BrowEdit* browEdit, bool loadModels = true, bool loadGnd = true);
 	void save(const std::string& fileName, BrowEdit* browEdit);
+	void newMap(const std::string& fileName, int width, int height, Map* map, BrowEdit* browEdit);
 	void buildImGui(BrowEdit* browEdit) override;
 	void recalculateQuadtree(QuadTreeNode* node = nullptr);
 };

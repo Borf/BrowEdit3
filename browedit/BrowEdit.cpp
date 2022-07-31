@@ -177,6 +177,13 @@ void BrowEdit::run()
 		if (windowData.configVisible)
 			windowData.configVisible = !config.showWindow(this);
 
+		if (windowData.showNewMapPopup)
+		{
+			windowData.showNewMapPopup = false;
+			ImGui::OpenPopup("NewMapPopup");
+		}
+		ShowNewMapPopup();
+
 		if (windowData.showHotkeyPopup)
 		{
 			windowData.showHotkeyPopup = false;
@@ -727,4 +734,28 @@ bool BrowEdit::hotkeyInputBox(const char* title, Hotkey& hotkey)
 		
 	}
 	return false;
+}
+
+void BrowEdit::ShowNewMapPopup()
+{
+	ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+	ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+	ImGui::SetNextWindowSize(ImVec2(300, 0));
+	if (ImGui::BeginPopupModal("NewMapPopup"))
+	{
+		ImGui::InputInt("Width", &windowData.newMapWidth);
+		ImGui::InputInt("Height", &windowData.newMapHeight);
+		ImGui::InputText("Name", &windowData.newMapName);
+		if (ImGui::Button("Create"))
+		{
+			Map* map = new Map("data\\" + windowData.newMapName + ".rsw", windowData.newMapWidth, windowData.newMapHeight, this);
+			maps.push_back(map);
+			mapViews.push_back(MapView(map, "data\\" + windowData.newMapName + ".rsw#0"));
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("Cancel"))
+			ImGui::CloseCurrentPopup();
+		ImGui::EndPopup();
+	}
 }

@@ -15,6 +15,7 @@ class Gat : public Component
 {
 public:
 	Gat(const std::string& fileName);
+	Gat(int width, int height);
 	~Gat();
 	void save(const std::string &fileName);
 	glm::vec3 rayCast(const math::Ray& ray, int xMin = 0, int yMin = 0, int xMax = -1, int yMax = -1, float offset = 0.0f);

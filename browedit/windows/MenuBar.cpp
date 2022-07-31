@@ -23,7 +23,7 @@ void BrowEdit::menuBar()
 	ImGui::BeginMainMenuBar();
 	if (ImGui::BeginMenu("File"))
 	{
-		//ImGui::MenuItem("New", "Ctrl+n");
+		hotkeyMenuItem("New", HotkeyAction::Global_New);
 		hotkeyMenuItem("Open", HotkeyAction::Global_Load);
 		if(activeMapView)
 			hotkeyMenuItem("Save " + activeMapView->map->name, HotkeyAction::Global_Save);

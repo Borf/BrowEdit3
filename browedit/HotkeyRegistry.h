@@ -10,6 +10,7 @@ class BrowEdit;
 enum class HotkeyAction
 {
 	Global_HotkeyPopup,
+	Global_New,
 	Global_Save,
 	Global_Load,
 	Global_Exit,

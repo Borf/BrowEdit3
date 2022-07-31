@@ -255,6 +255,35 @@ Gnd::Gnd(const std::string& fileName)
 	std::cout << "GND: Done calculating normals" << std::endl;
 }
 
+Gnd::Gnd(int width, int height)
+{
+	this->width = width;
+	this->height = height;
+	this->version = 0x0106;
+
+	Lightmap* l = new Lightmap();
+	lightmaps.push_back(l);
+
+
+	cubes.resize(width, std::vector<Cube*>(height, NULL));
+	for (int y = 0; y < height; y++)
+	{
+		for (int x = 0; x < width; x++)
+		{
+			Cube* cube = new Cube();
+			for(int i = 0; i < 4; i++)
+				cube->heights[i] = 0;
+			for (int i = 0; i < 3; i++)
+				cube->tileIds[i] = -1;
+			cube->normal = glm::vec3(0, 1, 0);
+			for(int i = 0; i < 4; i++)
+				cube->normals[i] = glm::vec3(0, 1, 0);
+			cubes[x][y] = cube;
+		}
+	}
+
+}
+
 
 Gnd::~Gnd()
 {
