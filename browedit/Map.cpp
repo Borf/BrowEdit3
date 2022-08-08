@@ -457,7 +457,10 @@ void Map::pasteSelection(BrowEdit* browEdit)
 						newNode->addComponent(new CubeCollider(5));
 					}
 				}
-				browEdit->newNodes.push_back(std::pair<Node*, glm::vec3>(newNode, newNode->getComponent<RswObject>()->position));
+				glm::vec3 pos(0.0f);
+				if (newNode->getComponent<RswObject>())
+					pos = newNode->getComponent<RswObject>()->position;
+				browEdit->newNodes.push_back(std::pair<Node*, glm::vec3>(newNode, pos));
 			}
 			glm::vec3 center(0, 0, 0);
 			for (auto& n : browEdit->newNodes)
