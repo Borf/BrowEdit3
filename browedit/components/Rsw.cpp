@@ -557,7 +557,7 @@ void Rsw::newMap(const std::string& fileName, int width, int height, Map* map, B
 	node->addComponent(new Gat(width, height));
 	node->addComponent(new GatRenderer(browEdit->gatTexture));
 
-	quadtree = new QuadTreeNode(-(width/2)*5,-(height/2)*5, width * 5, height * 5, 0);
+	quadtree = new QuadTreeNode(-(width/2)*5.0f,-(height/2)*5.0f, width * 5.0f, height * 5.0f, 0);
 }
 
 

@@ -115,6 +115,7 @@ void MapView::postRenderTextureMode(BrowEdit* browEdit)
 	ImGui::Text("uvStart %.3f,%.3f", uvStart.x, uvStart.y);
 	ImGui::End();
 
+
 	glm::ivec2 tileHovered((int)glm::floor(mouse3D.x / 10), (gnd->height - (int)glm::floor(mouse3D.z) / 10));
 	if (browEdit->textureBrushMode == BrowEdit::TextureBrushMode::Stamp)
 	{
@@ -177,21 +178,25 @@ void MapView::postRenderTextureMode(BrowEdit* browEdit)
 #ifdef UVDEBUG
 				ImGui::EndTable();
 #endif
-				glEnableVertexAttribArray(0);
-				glEnableVertexAttribArray(1);
-				glEnableVertexAttribArray(2);
-				glDisableVertexAttribArray(3);
-				glDisableVertexAttribArray(4); //TODO: vao
-				glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexP3T2N3), verts[0].data);
-				glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexP3T2N3), verts[0].data + 3);
-				glVertexAttribPointer(2, 3, GL_FLOAT, false, sizeof(VertexP3T2N3), verts[0].data + 5);
-				gndRenderer->textures[textureSelected]->bind();
-				simpleShader->setUniform(SimpleShader::Uniforms::color, glm::vec4(1, 1, 1, 0.5f));
-				simpleShader->setUniform(SimpleShader::Uniforms::textureFac, 1.0f);
-				simpleShader->setUniform(SimpleShader::Uniforms::lightMin, 1.0f);
-				glDrawArrays(GL_TRIANGLES, 0, (int)verts.size());
-				simpleShader->setUniform(SimpleShader::Uniforms::lightMin, 0.5f);
-				simpleShader->setUniform(SimpleShader::Uniforms::textureFac, 0.0f);
+				if (verts.size() > 0)
+				{
+					glEnableVertexAttribArray(0);
+					glEnableVertexAttribArray(1);
+					glEnableVertexAttribArray(2);
+					glDisableVertexAttribArray(3);
+					glDisableVertexAttribArray(4); //TODO: vao
+					glBindBuffer(GL_ARRAY_BUFFER, 0);
+					glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexP3T2N3), verts[0].data);
+					glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexP3T2N3), verts[0].data + 3);
+					glVertexAttribPointer(2, 3, GL_FLOAT, false, sizeof(VertexP3T2N3), verts[0].data + 5);
+					gndRenderer->textures[textureSelected]->bind();
+					simpleShader->setUniform(SimpleShader::Uniforms::color, glm::vec4(1, 1, 1, 0.5f));
+					simpleShader->setUniform(SimpleShader::Uniforms::textureFac, 1.0f);
+					simpleShader->setUniform(SimpleShader::Uniforms::lightMin, 1.0f);
+					glDrawArrays(GL_TRIANGLES, 0, (int)verts.size());
+					simpleShader->setUniform(SimpleShader::Uniforms::lightMin, 0.5f);
+					simpleShader->setUniform(SimpleShader::Uniforms::textureFac, 0.0f);
+				}
 #ifdef UVDEBUG
 				ImGui::End();
 #endif

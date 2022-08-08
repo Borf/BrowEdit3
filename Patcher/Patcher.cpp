@@ -324,7 +324,6 @@ void updateEffects(HWND hwnd)
                         SendMessage(hwndDialogBar, PBM_SETPOS, (int)(p * 100), 0);
                         });
                     std::ofstream outStream("effects.zip", std::ios_base::out | std::ios_base::binary);
-                    char buf[1024];
                     for (int i = 0; i < data.size(); i += 1024)
                         outStream.write(data.data() + i, std::min(1024, (int)data.size() - i));
                     //std::copy(data.begin(), data.end(), std::ostream_iterator<char>(outStream));
@@ -339,7 +338,6 @@ void updateEffects(HWND hwnd)
                 SendMessage(hwndDialogText, WM_SETTEXT, 0, (LPARAM)"Unzipping....");
                 miniz_cpp::zip_file zip("effects.zip");
                 auto list = zip.infolist();
-                char buf[1024];
                 std::filesystem::create_directories("data\\texture\\effect");
                 for (auto i = 0; i < list.size(); i++)
                 {
