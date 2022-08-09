@@ -424,7 +424,7 @@ void Gnd::save(const std::string& fileName)
 glm::vec3 Gnd::rayCast(const math::Ray& ray, bool emptyTiles, int xMin, int yMin, int xMax, int yMax, float rayOffset)
 {
 	if (cubes.size() == 0)
-		return glm::vec3(0,0,0);
+		return glm::vec3(std::numeric_limits<float>::max());
 
 	if (xMax == -1)
 		xMax = (int)cubes.size();
@@ -445,7 +445,7 @@ glm::vec3 Gnd::rayCast(const math::Ray& ray, bool emptyTiles, int xMin, int yMin
 	{
 		for (auto yy = yMin; yy < yMax; yy+= chunkSize)
 		{
-			math::AABB box(glm::vec3(10*xx, -999999, 10*height - 10*(yy+chunkSize)), glm::vec3(10*(xx + chunkSize), 999999, 10*height - (10 * yy)));
+			math::AABB box(glm::vec3(10*(xx-1), -999999, 10*height - 10*((yy+chunkSize+1))), glm::vec3(10*(xx + chunkSize+1), 999999, 10*height - (10 * (yy-1))));
 			if (!box.hasRayCollision(ray, -999999, 9999999))
 				continue;
 			for (int x = xx; x < glm::min(width, xx + chunkSize); x++)
@@ -521,7 +521,7 @@ glm::vec3 Gnd::rayCast(const math::Ray& ray, bool emptyTiles, int xMin, int yMin
 		}
 	}
 	if(collisions.size() == 0)
-		return glm::vec3(0, 0, 0);
+		return glm::vec3(std::numeric_limits<float>::max());
 
 	std::sort(collisions.begin(), collisions.end(), [&ray](const glm::vec3& a, const glm::vec3& b) {
 		return glm::distance(a, ray.origin) < glm::distance(b, ray.origin);

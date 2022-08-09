@@ -121,7 +121,7 @@ void MapView::postRenderTextureMode(BrowEdit* browEdit)
 	{
 		if (browEdit->textureStamp.size() == 0 && !ImGui::GetIO().KeyShift)
 		{
-			if (mouse3D != glm::vec3(0, 0, 0) && !(ImGui::IsMouseDown(0) && ImGui::GetIO().KeyShift) && textureBrushWidth > 0 && textureBrushHeight > 0)
+			if (mouse3D != glm::vec3(std::numeric_limits<float>::max()) && !(ImGui::IsMouseDown(0) && ImGui::GetIO().KeyShift) && textureBrushWidth > 0 && textureBrushHeight > 0)
 			{
 				//#define UVDEBUG
 #ifdef UVDEBUG
@@ -248,7 +248,7 @@ void MapView::postRenderTextureMode(BrowEdit* browEdit)
 
 
 
-		if (hovered && mouse3D != glm::vec3(0, 0, 0))
+		if (hovered && mouse3D != glm::vec3(std::numeric_limits<float>::max()))
 		{
 			if (ImGui::IsMouseDown(0) && ImGui::GetIO().KeyShift)
 			{//dragging mouse to show preview

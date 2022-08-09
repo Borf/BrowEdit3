@@ -269,11 +269,14 @@ void Map::setSelectedItemsToFloorHeight(BrowEdit* browEdit)
 			glm::vec3 position(5 * gnd->width + rswObject->position.x, -rswObject->position.y, 5 * gnd->height - rswObject->position.z + 10);
 
 			glm::vec3 pos = gnd->rayCast(math::Ray(position + glm::vec3(0, 1000, 0), glm::vec3(0, -1, 0)));
-			float orig = rswObject->position.y;
-			rswObject->position.y = -pos.y;
-			ga->addAction(new ObjectChangeAction(n, &rswObject->position.y, orig, "Moving"));
-			if (n->getComponent<RsmRenderer>())
-				n->getComponent<RsmRenderer>()->setDirty();
+			if (pos != glm::vec3(std::numeric_limits<float>().max()))
+			{
+				float orig = rswObject->position.y;
+				rswObject->position.y = -pos.y;
+				ga->addAction(new ObjectChangeAction(n, &rswObject->position.y, orig, "Moving"));
+				if (n->getComponent<RsmRenderer>())
+					n->getComponent<RsmRenderer>()->setDirty();
+			}
 		}
 	}
 	doAction(ga, browEdit);

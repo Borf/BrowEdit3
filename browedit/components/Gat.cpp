@@ -133,7 +133,7 @@ void Gat::Cube::calcNormal()
 glm::vec3 Gat::rayCast(const math::Ray& ray, int xMin, int yMin, int xMax, int yMax, float rayOffset)
 {
 	if (cubes.size() == 0)
-		return glm::vec3(0,0,0);
+		return glm::vec3(std::numeric_limits<float>().max());
 
 	if (xMax == -1)
 		xMax = (int)cubes.size();
@@ -187,7 +187,7 @@ glm::vec3 Gat::rayCast(const math::Ray& ray, int xMin, int yMin, int xMax, int y
 		}
 	}
 	if(collisions.size() == 0)
-		return glm::vec3(0, 0, 0);
+		return glm::vec3(std::numeric_limits<float>().max());
 
 	std::sort(collisions.begin(), collisions.end(), [&ray](const glm::vec3& a, const glm::vec3& b) {
 		return glm::distance(a, ray.origin) < glm::distance(b, ray.origin);

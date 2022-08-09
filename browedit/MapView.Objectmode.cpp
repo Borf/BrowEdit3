@@ -421,7 +421,7 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 		if (ImGui::IsMouseDown(0))
 		{
 			auto rayCast = gnd->rayCast(mouseRay, viewEmptyTiles);
-			if (justPressed)
+			if (justPressed && rayCast != glm::vec3(std::numeric_limits<float>().max()))
 			{
 				if (map->selectedNodes.size() == 1 && ImGui::IsMouseDragging(0))
 				{
@@ -455,7 +455,7 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 				}
 			}
 			else
-				if (rayCast != glm::vec3(0, 0, 0) && (objectSelectLasso.size() == 0 || rayCast != objectSelectLasso.back()))
+				if (rayCast != glm::vec3(std::numeric_limits<float>().max()) && (objectSelectLasso.size() == 0 || rayCast != objectSelectLasso.back()))
 					objectSelectLasso.push_back(rayCast);
 		}
 		if (ImGui::IsMouseReleased(0))

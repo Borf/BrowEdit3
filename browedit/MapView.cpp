@@ -315,44 +315,47 @@ void MapView::render(BrowEdit* browEdit)
 	NodeRenderer::render(map->rootNode, nodeRenderContext);
 
 	// position and draw the new nodes
-	if (browEdit->newNodes.size() > 0)
+	if (browEdit->newNodes.size() > 0 && hovered)
 	{
 		auto gnd = map->rootNode->getComponent<Gnd>();
 		auto rayCast = gnd->rayCast(mouseRay);
-		for (auto newNode : browEdit->newNodes)
+		if (rayCast != glm::vec3(std::numeric_limits<float>().max()))
 		{
-			auto rswObject = newNode.first->getComponent<RswObject>();
-
-			bool snap = snapToGrid;
-			if (ImGui::GetIO().KeyShift)
-				snap = !snap;
-			if (snap)
+			for (auto newNode : browEdit->newNodes)
 			{
-				rayCast.x = glm::round((rayCast.x - gridOffsetTranslate) / (float)gridSizeTranslate) * (float)gridSizeTranslate + gridOffsetTranslate;
-				rayCast.z = glm::round((rayCast.z - gridOffsetTranslate) / (float)gridSizeTranslate) * (float)gridSizeTranslate + gridOffsetTranslate;
-			}
+				auto rswObject = newNode.first->getComponent<RswObject>();
 
-			rswObject->position = glm::vec3(rayCast.x - 5 * gnd->width, -rayCast.y, -(rayCast.z + (-10 - 5 * gnd->height))) + newNode.second;
-			if (browEdit->newNodeHeight)
-			{
-				rswObject->position.y = newNode.second.y + browEdit->newNodesCenter.y;
-			}
+				bool snap = snapToGrid;
+				if (ImGui::GetIO().KeyShift)
+					snap = !snap;
+				if (snap)
+				{
+					rayCast.x = glm::round((rayCast.x - gridOffsetTranslate) / (float)gridSizeTranslate) * (float)gridSizeTranslate + gridOffsetTranslate;
+					rayCast.z = glm::round((rayCast.z - gridOffsetTranslate) / (float)gridSizeTranslate) * (float)gridSizeTranslate + gridOffsetTranslate;
+				}
 
-			if (newNode.first->getComponent<RsmRenderer>())
-			{
-				glm::mat4 matrix = glm::mat4(1.0f);
-				matrix = glm::translate(matrix, glm::vec3(5 * gnd->width + rswObject->position.x, -rswObject->position.y, -(- 10 - 5 * gnd->height + rswObject->position.z)));
-				matrix = glm::rotate(matrix, -glm::radians(rswObject->rotation.z), glm::vec3(0, 0, 1));
-				matrix = glm::rotate(matrix, -glm::radians(rswObject->rotation.x), glm::vec3(1, 0, 0));
-				matrix = glm::rotate(matrix, glm::radians(rswObject->rotation.y), glm::vec3(0, 1, 0));
-				matrix = glm::scale(matrix, glm::vec3(1, -1, 1));
-				matrix = glm::scale(matrix, rswObject->scale);
-				matrix = glm::scale(matrix, glm::vec3(1, 1, -1));
-				newNode.first->getComponent<RsmRenderer>()->matrixCache = matrix;
+				rswObject->position = glm::vec3(rayCast.x - 5 * gnd->width, -rayCast.y, -(rayCast.z + (-10 - 5 * gnd->height))) + newNode.second;
+				if (browEdit->newNodeHeight)
+				{
+					rswObject->position.y = newNode.second.y + browEdit->newNodesCenter.y;
+				}
+
+				if (newNode.first->getComponent<RsmRenderer>())
+				{
+					glm::mat4 matrix = glm::mat4(1.0f);
+					matrix = glm::translate(matrix, glm::vec3(5 * gnd->width + rswObject->position.x, -rswObject->position.y, -(-10 - 5 * gnd->height + rswObject->position.z)));
+					matrix = glm::rotate(matrix, -glm::radians(rswObject->rotation.z), glm::vec3(0, 0, 1));
+					matrix = glm::rotate(matrix, -glm::radians(rswObject->rotation.x), glm::vec3(1, 0, 0));
+					matrix = glm::rotate(matrix, glm::radians(rswObject->rotation.y), glm::vec3(0, 1, 0));
+					matrix = glm::scale(matrix, glm::vec3(1, -1, 1));
+					matrix = glm::scale(matrix, rswObject->scale);
+					matrix = glm::scale(matrix, glm::vec3(1, 1, -1));
+					newNode.first->getComponent<RsmRenderer>()->matrixCache = matrix;
+				}
+				if (newNode.first->getComponent<BillboardRenderer>())
+					newNode.first->getComponent<BillboardRenderer>()->gnd = gnd;
+				NodeRenderer::render(newNode.first, nodeRenderContext);
 			}
-			if (newNode.first->getComponent<BillboardRenderer>())
-				newNode.first->getComponent<BillboardRenderer>()->gnd = gnd;
-			NodeRenderer::render(newNode.first, nodeRenderContext);
 		}
 	}
 
@@ -461,7 +464,7 @@ void MapView::update(BrowEdit* browEdit, const ImVec2 &size, float deltaTime)
 					* glm::rotate(glm::mat4(1.0f), glm::radians(cameraRotY), glm::vec3(0, 1, 0)));
 
 				auto rayCast = map->rootNode->getComponent<Gnd>()->rayCast(math::Ray(cameraCenter + glm::vec3(0,9999,0), glm::vec3(0,-1,0)), viewEmptyTiles);
-				if (rayCast != glm::vec3(0, 0, 0))
+				if (rayCast != glm::vec3(std::numeric_limits<float>().max()))
 					cameraCenter.y = 0.95f * cameraCenter.y + 0.05f * rayCast.y;
 			}
 		}

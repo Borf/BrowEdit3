@@ -178,7 +178,7 @@ void Lightmapper::run()
 
 bool Lightmapper::collidesMap(const math::Ray& ray)
 {
-	return gnd->rayCast(ray, false, 0,0,-1,-1,0.05f) != glm::vec3(0,0,0);
+	return gnd->rayCast(ray, false, 0,0,-1,-1,0.05f) != glm::vec3(std::numeric_limits<float>().max());
 	/*
 	std::vector<glm::vec3> quad;
 	quad.resize(3);
