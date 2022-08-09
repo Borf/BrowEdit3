@@ -42,10 +42,10 @@ void WaterRenderer::render()
 			{
 				for (int y = 0; y < gnd->height; y++)
 				{
-					verts.push_back(VertexP3T2(glm::vec3(10 * x,		0, 10 * y),		glm::vec2((x % 4) * 0.25f + 0.00f, (y % 4) * 0.25f + 0.00f)));
-					verts.push_back(VertexP3T2(glm::vec3(10 * (x+1),	0, 10 * y), 	glm::vec2((x % 4) * 0.25f + 0.25f, (y % 4) * 0.25f + 0.00f)));
-					verts.push_back(VertexP3T2(glm::vec3(10 * (x+1),	0, 10 * (y+1)), glm::vec2((x % 4) * 0.25f + 0.25f, (y % 4) * 0.25f + 0.25f)));
-					verts.push_back(VertexP3T2(glm::vec3(10 * x,		0, 10 * (y+1)), glm::vec2((x % 4) * 0.25f + 0.00f, (y % 4) * 0.25f + 0.25f)));
+					verts.push_back(VertexP3T2(glm::vec3(10 * x,		0, 10 * (y+1)),	glm::vec2((x % 4) * 0.25f + 0.00f, (y % 4) * 0.25f + 0.00f)));
+					verts.push_back(VertexP3T2(glm::vec3(10 * (x+1),	0, 10 * (y+1)),	glm::vec2((x % 4) * 0.25f + 0.25f, (y % 4) * 0.25f + 0.00f)));
+					verts.push_back(VertexP3T2(glm::vec3(10 * (x+1),	0, 10 * (y+2)), glm::vec2((x % 4) * 0.25f + 0.25f, (y % 4) * 0.25f + 0.25f)));
+					verts.push_back(VertexP3T2(glm::vec3(10 * x,		0, 10 * (y+2)), glm::vec2((x % 4) * 0.25f + 0.00f, (y % 4) * 0.25f + 0.25f)));
 				}
 			}
 			vbo->setData(verts, GL_STATIC_DRAW);
