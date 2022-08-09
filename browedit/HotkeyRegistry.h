@@ -87,6 +87,18 @@ enum class HotkeyAction
 	View_Lights,
 	View_Water,
 
+	Camera_OrthoPerspective,
+	Camera_MoveXPositive,
+	Camera_MoveXNegative,
+	Camera_MoveYPositive,
+	Camera_MoveYNegative,
+	Camera_MoveZPositive,
+	Camera_MoveZNegative,
+	Camera_RotateX45Positive,
+	Camera_RotateX45Negative,
+	Camera_RotateY45Positive,
+	Camera_RotateY45Negative,
+
 	TextureEdit_ToggleTextureWindow,
 	TextureEdit_SwapBrushSize,
 /*	Texture_RotateLeft,

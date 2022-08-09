@@ -15,6 +15,7 @@ namespace util
 	std::string iso_8859_1_to_utf8(const std::string& str);
 	std::string utf8_to_iso_8859_1(const std::string& str);
 
+	float wrap360(float value);
 
 	std::vector<std::string> split(std::string value, const std::string &seperator);
 	std::string combine(const std::vector<std::string> &items, const std::string& seperator);

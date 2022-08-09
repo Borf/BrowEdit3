@@ -263,8 +263,8 @@ void MapView::render(BrowEdit* browEdit)
 		nodeRenderContext.projectionMatrix = glm::perspective(glm::radians(browEdit->config.fov), ratio, 0.1f, 5000.0f);
 	nodeRenderContext.viewMatrix = glm::mat4(1.0f);
 	nodeRenderContext.viewMatrix = glm::translate(nodeRenderContext.viewMatrix, glm::vec3(0, 0, -cameraDistance));
-	nodeRenderContext.viewMatrix = glm::rotate(nodeRenderContext.viewMatrix, glm::radians(cameraRotX), glm::vec3(1, 0, 0));
-	nodeRenderContext.viewMatrix = glm::rotate(nodeRenderContext.viewMatrix, glm::radians(cameraRotY), glm::vec3(0, 1, 0));
+	nodeRenderContext.viewMatrix = glm::rotate(nodeRenderContext.viewMatrix, glm::radians(cameraRot.x), glm::vec3(1, 0, 0));
+	nodeRenderContext.viewMatrix = glm::rotate(nodeRenderContext.viewMatrix, glm::radians(cameraRot.y), glm::vec3(0, 1, 0));
 	nodeRenderContext.viewMatrix = glm::translate(nodeRenderContext.viewMatrix, -cameraCenter);
 
 	//TODO: fix this, don't want to individually set settings
@@ -410,34 +410,24 @@ void MapView::update(BrowEdit* browEdit, const ImVec2 &size, float deltaTime)
 
 	if (cameraAnimating)
 	{
-		float dX = cameraTargetRotX - cameraRotX;
-		float dY = cameraTargetRotY - cameraRotY;
-		if (dX > 180)
-			dX -= 360;
-		if (dX < -180)
-			dX += 360;
-		if (dY > 180)
-			dY -= 360;
-		if (dY < -180)
-			dY += 360;
+		cameraTargetRot.x = glm::clamp(cameraTargetRot.x, 0.0f, 90.0f);
+		auto diff = cameraTargetRot - cameraRot;
+		diff.x = util::wrap360(diff.x);
+		diff.y = util::wrap360(diff.y);
 
-		cameraRotX += 180 * deltaTime * glm::sign(dX);
-		cameraRotY += 180 * deltaTime * glm::sign(dY);
-
-
-		
+		cameraRot += 180 * deltaTime * glm::sign(diff);
+	
 		if(glm::distance(cameraCenter, cameraTargetPos) < 2000.0f * deltaTime)
 			cameraCenter = cameraTargetPos;
 		else
 			cameraCenter -= glm::normalize(cameraCenter - cameraTargetPos) * 2000.0f * deltaTime;
 
-		if (glm::abs(dX) < 180 * deltaTime && glm::abs(dY) < 180 * deltaTime)
+		if (glm::abs(diff.x) < 180 * deltaTime && glm::abs(diff.y) < 180 * deltaTime)
 		{
-			cameraRotX = cameraTargetRotX;
-			cameraRotY = cameraTargetRotY;
+			cameraRot = cameraTargetRot;
 		}
 
-		if (glm::abs(dX) < 180 * deltaTime && glm::abs(dY) < 180 * deltaTime && glm::distance(cameraCenter, cameraTargetPos) < 2000.0f * deltaTime)
+		if (glm::abs(diff.x) < 180 * deltaTime && glm::abs(diff.y) < 180 * deltaTime && glm::distance(cameraCenter, cameraTargetPos) < 2000.0f * deltaTime)
 			cameraAnimating = false;
 	}
 
@@ -447,9 +437,9 @@ void MapView::update(BrowEdit* browEdit, const ImVec2 &size, float deltaTime)
 		{
 			if (ImGui::GetIO().KeyShift)
 			{
-				cameraRotX += (mouseState.position.y - prevMouseState.position.y) * 0.25f * browEdit->config.cameraMouseSpeed;
-				cameraRotY += (mouseState.position.x - prevMouseState.position.x) * 0.25f * browEdit->config.cameraMouseSpeed;
-				cameraRotX = glm::clamp(cameraRotX, 0.0f, 90.0f);
+				cameraRot.x += (mouseState.position.y - prevMouseState.position.y) * 0.25f * browEdit->config.cameraMouseSpeed;
+				cameraRot.y += (mouseState.position.x - prevMouseState.position.x) * 0.25f * browEdit->config.cameraMouseSpeed;
+				cameraRot.x = glm::clamp(cameraRot.x, 0.0f, 90.0f);
 			}
 			else if (ImGui::GetIO().KeyCtrl)
 			{
@@ -461,7 +451,7 @@ void MapView::update(BrowEdit* browEdit, const ImVec2 &size, float deltaTime)
 					(mouseState.position.x - prevMouseState.position.x) * browEdit->config.cameraMouseSpeed,
 					0,
 					(mouseState.position.y - prevMouseState.position.y) * browEdit->config.cameraMouseSpeed, 0)
-					* glm::rotate(glm::mat4(1.0f), glm::radians(cameraRotY), glm::vec3(0, 1, 0)));
+					* glm::rotate(glm::mat4(1.0f), glm::radians(cameraRot.y), glm::vec3(0, 1, 0)));
 
 				auto rayCast = map->rootNode->getComponent<Gnd>()->rayCast(math::Ray(cameraCenter + glm::vec3(0,9999,0), glm::vec3(0,-1,0)), viewEmptyTiles);
 				if (rayCast != glm::vec3(std::numeric_limits<float>().max()))
@@ -494,8 +484,8 @@ bool MapView::drawCameraWidget()
 
 	glm::mat4 projectionMatrix = glm::ortho(-fbo->getWidth() + 50.0f, 50.0f, -fbo->getHeight() + 50.0f, 50.0f, -1000.0f, 1000.0f);
 	glm::mat4 viewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0));
-	viewMatrix = glm::rotate(viewMatrix, glm::radians(cameraRotX), glm::vec3(1, 0, 0));
-	viewMatrix = glm::rotate(viewMatrix, glm::radians(cameraRotY), glm::vec3(0, 1, 0));
+	viewMatrix = glm::rotate(viewMatrix, glm::radians(cameraRot.x), glm::vec3(1, 0, 0));
+	viewMatrix = glm::rotate(viewMatrix, glm::radians(cameraRot.y), glm::vec3(0, 1, 0));
 	viewMatrix = glm::scale(viewMatrix, glm::vec3(40, 40, 40));
 
 	simpleShader->setUniform(SimpleShader::Uniforms::projectionMatrix, projectionMatrix);
@@ -529,18 +519,16 @@ bool MapView::drawCameraWidget()
 				//std::cout << point.x << "\t" << point.y << "\t" << point.z << std::endl;
 				if (glm::abs(point.y - 1) < 0.001)
 				{
-					cameraTargetRotY = 0;
-					cameraTargetRotX = 90;
+					cameraTargetRot = glm::vec2(0, 90);
 					cameraTargetPos = cameraCenter;
 					cameraAnimating = true;
 				}
 				else if (glm::abs(point.z) - 1 < 0.001 || glm::abs(point.x) - 1 < 0.001) //side
 				{
 					float angle = std::atan2(glm::round(point.z), glm::round(point.x));
-					cameraTargetRotY = glm::degrees(angle)-90.0f;
-					cameraTargetRotX = 0;
+					cameraTargetRot = glm::vec2(glm::degrees(angle)-90.0f,0);
 					if (glm::abs(point.y-1) < 0.25f)
-						cameraTargetRotX = 45;
+						cameraTargetRot.x = 45;
 					cameraTargetPos = cameraCenter;
 					cameraAnimating = true;
 				}
@@ -556,8 +544,7 @@ bool MapView::drawCameraWidget()
 void MapView::focusSelection()
 {
 	cameraAnimating = true;
-	cameraTargetRotX = cameraRotX;
-	cameraTargetRotY = cameraRotY;
+	cameraTargetRot = cameraRot;
 	auto center = map->getSelectionCenter();
 	auto gnd = map->rootNode->getComponent<Gnd>();
 	cameraTargetPos = glm::vec3(5*gnd->width + center.x, -center.y, 5*gnd->height - center.z);

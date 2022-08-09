@@ -124,6 +124,21 @@ void BrowEdit::registerActions()
 	HotkeyRegistry::registerAction(HotkeyAction::View_Lights,			[this]() { activeMapView->viewLights= !activeMapView->viewLights; }, hasActiveMapView);
 	HotkeyRegistry::registerAction(HotkeyAction::View_Water,			[this]() { activeMapView->viewWater = !activeMapView->viewWater; }, hasActiveMapView);
 
+
+
+	HotkeyRegistry::registerAction(HotkeyAction::Camera_OrthoPerspective,	[this]() { activeMapView->ortho = !activeMapView->ortho; }, hasActiveMapView);
+	HotkeyRegistry::registerAction(HotkeyAction::Camera_MoveXPositive,		[this]() { activeMapView->cameraTargetRot = glm::vec2(0, 270); activeMapView->cameraTargetPos = activeMapView->cameraCenter; activeMapView->cameraAnimating = true; }, hasActiveMapView);
+	HotkeyRegistry::registerAction(HotkeyAction::Camera_MoveXNegative,		[this]() { activeMapView->cameraTargetRot = glm::vec2(0, 90); activeMapView->cameraTargetPos = activeMapView->cameraCenter; activeMapView->cameraAnimating = true; }, hasActiveMapView);
+	HotkeyRegistry::registerAction(HotkeyAction::Camera_MoveYPositive,		[this]() { activeMapView->cameraTargetRot = glm::vec2(90, 0); activeMapView->cameraTargetPos = activeMapView->cameraCenter; activeMapView->cameraAnimating = true; }, hasActiveMapView);
+	HotkeyRegistry::registerAction(HotkeyAction::Camera_MoveYNegative,		[this]() { activeMapView->cameraTargetRot = glm::vec2(270, 0); activeMapView->cameraTargetPos = activeMapView->cameraCenter; activeMapView->cameraAnimating = true; }, hasActiveMapView);
+	HotkeyRegistry::registerAction(HotkeyAction::Camera_MoveZPositive,		[this]() { activeMapView->cameraTargetRot = glm::vec2(0, 180); activeMapView->cameraTargetPos = activeMapView->cameraCenter; activeMapView->cameraAnimating = true; }, hasActiveMapView);
+	HotkeyRegistry::registerAction(HotkeyAction::Camera_MoveZNegative,		[this]() { activeMapView->cameraTargetRot = glm::vec2(0, 0); activeMapView->cameraTargetPos = activeMapView->cameraCenter; activeMapView->cameraAnimating = true; }, hasActiveMapView);
+	HotkeyRegistry::registerAction(HotkeyAction::Camera_RotateX45Positive,	[this]() { activeMapView->cameraTargetRot += glm::vec2(45, 0); activeMapView->cameraTargetPos = activeMapView->cameraCenter; activeMapView->cameraAnimating = true; }, hasActiveMapView);
+	HotkeyRegistry::registerAction(HotkeyAction::Camera_RotateX45Negative,	[this]() { activeMapView->cameraTargetRot -= glm::vec2(45, 0); activeMapView->cameraTargetPos = activeMapView->cameraCenter; activeMapView->cameraAnimating = true; }, hasActiveMapView);
+	HotkeyRegistry::registerAction(HotkeyAction::Camera_RotateY45Positive,	[this]() { activeMapView->cameraTargetRot += glm::vec2(0, 45); activeMapView->cameraTargetPos = activeMapView->cameraCenter; activeMapView->cameraAnimating = true; }, hasActiveMapView);
+	HotkeyRegistry::registerAction(HotkeyAction::Camera_RotateY45Negative,	[this]() { activeMapView->cameraTargetRot -= glm::vec2(0, 45); activeMapView->cameraTargetPos = activeMapView->cameraCenter; activeMapView->cameraAnimating = true; }, hasActiveMapView);
+
+
 }
 
 bool BrowEdit::hotkeyMenuItem(const std::string& title, HotkeyAction action)

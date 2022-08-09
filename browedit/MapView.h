@@ -64,14 +64,12 @@ public:
 	bool showViewOptions = false;
 	bool ortho = false;
 	glm::vec3 cameraCenter;
-	float cameraRotX = 45.0f;
-	float cameraRotY = 0.0f;
+	glm::vec2 cameraRot = glm::vec2(45.0f, 0.0f);
 	float cameraDistance = 500;
 	bool hovered = false;
 
 	bool cameraAnimating = false;
-	float cameraTargetRotX;
-	float cameraTargetRotY;
+	glm::vec2 cameraTargetRot;
 	glm::vec3 cameraTargetPos;
 
 

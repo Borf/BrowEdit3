@@ -25,6 +25,14 @@ namespace util
 		return ((s&0xff)<<8) | ((s>>8)&0xff);
 	}
 
+	float wrap360(float value)
+	{
+		while (value > 180)
+			value -= 360;
+		while (value < -180)
+			value += 360;
+		return value;
+	}
 
 	std::string iso_8859_1_to_utf8(const std::string& str)
 	{
