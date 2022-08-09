@@ -80,6 +80,12 @@ enum class HotkeyAction
 	View_SmoothColormap,
 	View_EmptyTiles,
 	View_GatTiles,
+	
+	View_Models,
+	View_Effects,
+	View_Sounds,
+	View_Lights,
+	View_Water,
 
 	TextureEdit_ToggleTextureWindow,
 

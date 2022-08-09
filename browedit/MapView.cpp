@@ -105,15 +105,15 @@ void MapView::toolbar(BrowEdit* browEdit)
 
 
 			ImGui::Text("Object render settings");
-			browEdit->toolBarToggleButton("viewModels", viewModels ? ICON_VIEW_MODEL_ON : ICON_VIEW_MODEL_OFF, &viewModels, "View Models", browEdit->config.toolbarButtonsViewOptions);
+			browEdit->toolBarToggleButton("viewModels", viewModels ? ICON_VIEW_MODEL_ON : ICON_VIEW_MODEL_OFF, viewModels, "View Models", HotkeyAction::View_Models, browEdit->config.toolbarButtonsViewOptions);
 			ImGui::SameLine();
-			browEdit->toolBarToggleButton("viewEffects", viewEffects ? ICON_VIEW_EFFECT_ON : ICON_VIEW_EFFECT_OFF, &viewEffects, "View Effects", browEdit->config.toolbarButtonsViewOptions);
+			browEdit->toolBarToggleButton("viewEffects", viewEffects ? ICON_VIEW_EFFECT_ON : ICON_VIEW_EFFECT_OFF, viewEffects, "View Effects", HotkeyAction::View_Effects, browEdit->config.toolbarButtonsViewOptions);
 			ImGui::SameLine();
-			browEdit->toolBarToggleButton("viewSounds", viewSounds ? ICON_VIEW_SOUND_ON : ICON_VIEW_SOUND_OFF, &viewSounds, "View Sounds", browEdit->config.toolbarButtonsViewOptions);
+			browEdit->toolBarToggleButton("viewSounds", viewSounds ? ICON_VIEW_SOUND_ON : ICON_VIEW_SOUND_OFF, viewSounds, "View Sounds", HotkeyAction::View_Sounds, browEdit->config.toolbarButtonsViewOptions);
 			ImGui::SameLine();
-			browEdit->toolBarToggleButton("viewLights", viewLights ? ICON_VIEW_LIGHT_ON : ICON_VIEW_LIGHT_OFF, &viewLights, "View Lights", browEdit->config.toolbarButtonsViewOptions);
+			browEdit->toolBarToggleButton("viewLights", viewLights ? ICON_VIEW_LIGHT_ON : ICON_VIEW_LIGHT_OFF, viewLights, "View Lights", HotkeyAction::View_Lights, browEdit->config.toolbarButtonsViewOptions);
 			ImGui::SameLine();
-			browEdit->toolBarToggleButton("viewWater", viewWater ? ICON_VIEW_WATER_ON : ICON_VIEW_WATER_OFF, &viewWater, "View Water", browEdit->config.toolbarButtonsViewOptions);
+			browEdit->toolBarToggleButton("viewWater", viewWater ? ICON_VIEW_WATER_ON : ICON_VIEW_WATER_OFF, viewWater, "View Water", HotkeyAction::View_Water, browEdit->config.toolbarButtonsViewOptions);
 
 			if (browEdit->editMode == BrowEdit::EditMode::Object)
 			{

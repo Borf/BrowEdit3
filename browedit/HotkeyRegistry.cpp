@@ -45,10 +45,13 @@ bool HotkeyRegistry::checkHotkeys()
 {
 	for (const auto& hotkey : hotkeys)
 	{
-		if (ImGui::IsKeyPressed(hotkey.hotkey.keyCode) && ImGui::GetIO().KeyMods == hotkey.hotkey.modifiers && hotkey.condition() && hotkey.callback != nullptr)
+		if (ImGui::IsKeyPressed(hotkey.hotkey.keyCode))
 		{
-			hotkey.callback();
-			return true;
+			if (ImGui::GetIO().KeyMods == hotkey.hotkey.modifiers && hotkey.condition() && hotkey.callback != nullptr)
+			{
+				hotkey.callback();
+				return true;
+			}
 		}
 	}
 	return false;
