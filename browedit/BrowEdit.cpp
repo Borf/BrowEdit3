@@ -213,6 +213,8 @@ void BrowEdit::run()
 			showHeightWindow();
 		if (editMode == EditMode::Gat)
 			showGatWindow();
+		if (editMode == EditMode::Wall)
+			showWallWindow();
 
 		if(windowData.hotkeyEditWindowVisible)
 			showHotkeyEditorWindow();
@@ -470,6 +472,8 @@ void BrowEdit::showMapWindow(MapView& mapView, float deltaTime)
 					mapView.postRenderTextureMode(this);
 				else if (editMode == EditMode::Gat)
 					mapView.postRenderGatMode(this);
+				else if (editMode == EditMode::Wall)
+					mapView.postRenderWallMode(this);
 			}
 
 

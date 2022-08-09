@@ -239,6 +239,7 @@ public:
 	void showObjectWindow();
 	void showHeightWindow();
 	void showGatWindow();
+	void showWallWindow();
 	void showHelpWindow();
 	void showLightmapSettingsWindow();
 	void showTextureBrushWindow();

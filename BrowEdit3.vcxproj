@@ -62,6 +62,7 @@
     <ClCompile Include="browedit\MapView.Heightmode.cpp" />
     <ClCompile Include="browedit\MapView.Objectmode.cpp" />
     <ClCompile Include="browedit\MapView.Texturemode.cpp" />
+    <ClCompile Include="browedit\MapView.Wallmode.cpp" />
     <ClCompile Include="browedit\math\AABB.cpp" />
     <ClCompile Include="browedit\math\Plane.cpp" />
     <ClCompile Include="browedit\math\Polygon.cpp" />
@@ -87,6 +88,7 @@
     <ClCompile Include="browedit\windows\TextureManageWindow.cpp" />
     <ClCompile Include="browedit\windows\Toolbar.cpp" />
     <ClCompile Include="browedit\windows\UndoWindow.cpp" />
+    <ClCompile Include="browedit\windows\WallEditWindow.cpp" />
     <ClCompile Include="lib\glad\src\glad.c" />
     <ClCompile Include="lib\grflib\grf.c" />
     <ClCompile Include="lib\grflib\grfcrypt.c" />

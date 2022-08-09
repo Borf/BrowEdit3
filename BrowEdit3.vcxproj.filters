@@ -358,7 +358,6 @@
     <ClCompile Include="browedit\HotkeyActions.cpp">
       <Filter>browedit</Filter>
     </ClCompile>
-    <ClCompile Include="browedit\Hotkey.cpp" />
     <ClCompile Include="browedit\windows\ObjectEditTools.cpp">
       <Filter>browedit\windows</Filter>
     </ClCompile>
@@ -370,6 +369,15 @@
     </ClCompile>
     <ClCompile Include="browedit\actions\GatTileChangeAction.cpp">
       <Filter>browedit\actions</Filter>
+    </ClCompile>
+    <ClCompile Include="browedit\MapView.Wallmode.cpp">
+      <Filter>browedit</Filter>
+    </ClCompile>
+    <ClCompile Include="browedit\Hotkey.cpp">
+      <Filter>browedit</Filter>
+    </ClCompile>
+    <ClCompile Include="browedit\windows\WallEditWindow.cpp">
+      <Filter>browedit\windows</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
