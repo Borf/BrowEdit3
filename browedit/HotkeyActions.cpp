@@ -100,7 +100,9 @@ void BrowEdit::registerActions()
 	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_RotZNeg,	[this]() { activeMapView->map->rotateSelection(2, -1, this); }, hasActiveMapViewObjectMode);
 	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_RotZPos,	[this]() { activeMapView->map->rotateSelection(2, 1, this); }, hasActiveMapViewObjectMode);
 	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_ToggleObjectWindow, [this]() { windowData.objectWindowVisible = !windowData.objectWindowVisible; }, hasActiveMapViewObjectMode);
-	HotkeyRegistry::registerAction(HotkeyAction::TextureEdit_ToggleTextureWindow, [this]() { windowData.textureManageWindowVisible = !windowData.textureManageWindowVisible; }, hasActiveMapViewTextureMode);
+	
+	HotkeyRegistry::registerAction(HotkeyAction::TextureEdit_ToggleTextureWindow,	[this]() { windowData.textureManageWindowVisible = !windowData.textureManageWindowVisible; }, hasActiveMapViewTextureMode);
+	HotkeyRegistry::registerAction(HotkeyAction::TextureEdit_SwapBrushSize,			[this]() { std::swap(activeMapView->textureBrushWidth, activeMapView->textureBrushHeight); }, hasActiveMapViewTextureMode);
 
 	HotkeyRegistry::registerAction(HotkeyAction::EditMode_Height,		[this]() { editMode = EditMode::Height; });
 	HotkeyRegistry::registerAction(HotkeyAction::EditMode_Texture,		[this]() { editMode = EditMode::Texture; });

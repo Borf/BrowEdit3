@@ -9,6 +9,7 @@
 #include <browedit/actions/Action.h>
 #include <browedit/gl/Texture.h>
 #include <browedit/Icons.h>
+#include <browedit/HotkeyRegistry.h>
 #include <imgui_internal.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -133,6 +134,8 @@ void BrowEdit::showTextureBrushWindow()
 			glm::vec2 uv2 = glm::translate(glm::rotate(glm::translate(glm::mat4(1.0), glm::vec3(0.5f, 0.5f, 0)), glm::radians(90.0f), glm::vec3(0, 0, 1)), glm::vec3(-0.5f, -0.5f, 0.0f)) * glm::vec4(activeMapView->textureEditUv2, 0, 1);
 			activeMapView->textureEditUv1 = glm::min(uv1, uv2);
 			activeMapView->textureEditUv2 = glm::max(uv1, uv2);
+			if (activeMapView->textureBrushAutoFlipSize)
+				std::swap(activeMapView->textureBrushWidth, activeMapView->textureBrushHeight);
 		}
 		ImGui::SameLine();
 		if (toolBarButton("RotateR", ICON_ROTATE_RIGHT, "Rotate texture right", ImVec4(1, 1, 1, 1)) || (ImGui::IsKeyPressed('R') && !ImGui::GetIO().WantTextInput))
@@ -155,6 +158,8 @@ void BrowEdit::showTextureBrushWindow()
 			glm::vec2 uv2 = glm::translate(glm::rotate(glm::translate(glm::mat4(1.0), glm::vec3(0.5f, 0.5f, 0)), glm::radians(-90.0f), glm::vec3(0, 0, 1)), glm::vec3(-0.5f, -0.5f, 0.0f)) * glm::vec4(activeMapView->textureEditUv2, 0, 1);
 			activeMapView->textureEditUv1 = glm::min(uv1, uv2);
 			activeMapView->textureEditUv2 = glm::max(uv1, uv2);
+			if (activeMapView->textureBrushAutoFlipSize)
+				std::swap(activeMapView->textureBrushWidth, activeMapView->textureBrushHeight);
 		}
 		ImGui::SameLine();
 		if (toolBarButton("MirrorH", ICON_MIRROR_HORIZONTAL, "Mirror Horizontal", ImVec4(1, 1, 1, 1)) || (ImGui::IsKeyPressed('H') && !ImGui::GetIO().WantTextInput))
@@ -464,6 +469,10 @@ void BrowEdit::showTextureBrushWindow()
 		activeMapView->textureEditUv1 = glm::min(uv1, uv2);
 		activeMapView->textureEditUv2 = glm::max(uv1, uv2);
 
+
+		hotkeyButton("Swap brush size", HotkeyAction::TextureEdit_SwapBrushSize);
+
+		ImGui::Checkbox("Automatically flip brush size", &activeMapView->textureBrushAutoFlipSize);
 		ImGui::Checkbox("Keep Shadows", &activeMapView->textureBrushKeepShadow);
 		ImGui::Checkbox("Keep Colors", &activeMapView->textureBrushKeepColor);
 

@@ -88,7 +88,7 @@ enum class HotkeyAction
 	View_Water,
 
 	TextureEdit_ToggleTextureWindow,
-
+	TextureEdit_SwapBrushSize,
 /*	Texture_RotateLeft,
 	Texture_RotateRight,
 	Texture_FlipHorizontal,
