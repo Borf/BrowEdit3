@@ -116,7 +116,7 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 		glDrawArrays(GL_TRIANGLES, 0, (int)verts.size());
 
 
-		if (ImGui::IsMouseReleased(0))
+		if (ImGui::IsMouseReleased(0) && hovered)
 		{
 			std::vector<glm::ivec2> cubeSelected;
 			for (auto c : browEdit->newCubes)
@@ -130,11 +130,62 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 				{
 					for (int i = 0; i < 4; i++)
 						gnd->cubes[tileHovered.x + cube->pos.x][tileHovered.y + cube->pos.y]->heights[i] = cube->heights[i];
-					for (int i = 0; i < 3; i++)
-						gnd->cubes[tileHovered.x + cube->pos.x][tileHovered.y + cube->pos.y]->tileIds[i] = cube->tileIds[i];
 					for (int i = 0; i < 4; i++)
 						gnd->cubes[tileHovered.x + cube->pos.x][tileHovered.y + cube->pos.y]->normals[i] = cube->normals[i];
 					gnd->cubes[tileHovered.x + cube->pos.x][tileHovered.y + cube->pos.y]->normal = cube->normal;
+					for (int i = 0; i < 3; i++)
+					{
+						int tileId = cube->tileIds[i];
+						if (tileId == -1)
+						{
+							gnd->cubes[tileHovered.x + cube->pos.x][tileHovered.y + cube->pos.y]->tileIds[i] = tileId;
+							continue;
+						}
+						bool sameMap = true;
+						if (cube->tileIds[i] >= gnd->tiles.size())
+						{
+							tileId = (int)gnd->tiles.size();
+							gnd->tiles.push_back(new Gnd::Tile(cube->tile[i]));
+						}
+						else
+						{
+							const auto& mapTile = *gnd->tiles[cube->tileIds[i]];
+							if (mapTile != cube->tile[i] ||
+								(mapTile.textureIndex > -1 && !(*gnd->textures[mapTile.textureIndex] == cube->texture[i])) ||
+								(mapTile.lightmapIndex > -1 && *gnd->lightmaps[mapTile.lightmapIndex] != cube->lightmap[i]))
+							{
+								tileId = (int)gnd->tiles.size();
+								gnd->tiles.push_back(new Gnd::Tile(cube->tile[i]));
+							}
+						}						
+						if (gnd->tiles[tileId]->textureIndex > -1 && (gnd->tiles[tileId]->textureIndex >= gnd->textures.size() || !(*gnd->textures[gnd->tiles[tileId]->textureIndex] == cube->texture[i])))
+						{//the texture at textureindex does not match the pasted tile, first do a lookup and if not found, add the texture
+							int texId = -1;
+							for (auto t = 0; t < gnd->textures.size(); t++)
+								if (*gnd->textures[t] == cube->texture[i])
+									texId = t;
+							if (texId == -1)
+							{
+								texId = (int)gnd->textures.size();
+								gnd->textures.push_back(new Gnd::Texture(cube->texture[i]));
+							}
+							gnd->tiles[tileId]->textureIndex = texId;
+						}
+						if (gnd->tiles[tileId]->lightmapIndex > -1 && (gnd->tiles[tileId]->lightmapIndex >= gnd->lightmaps.size() || *gnd->lightmaps[gnd->tiles[tileId]->lightmapIndex] != cube->lightmap[i]))
+						{//the lightmap at lightmapindex does not match the pasted tile, first do a lookup and if not found, add the lightmap
+							int lightmapId = -1;
+							for (auto t = 0; t < gnd->lightmaps.size(); t++)
+								if (*gnd->lightmaps[t] == cube->lightmap[i])
+									lightmapId = t;
+							if (lightmapId == -1)
+							{
+								lightmapId = (int)gnd->lightmaps.size();
+								gnd->lightmaps.push_back(new Gnd::Lightmap(cube->lightmap[i]));
+							}
+							gnd->tiles[tileId]->lightmapIndex = lightmapId;
+						}
+						gnd->cubes[tileHovered.x + cube->pos.x][tileHovered.y + cube->pos.y]->tileIds[i] = tileId;
+					}
 				}
 			}
 			action1->setNewHeights(gnd, cubeSelected);

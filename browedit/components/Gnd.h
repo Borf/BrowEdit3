@@ -58,6 +58,15 @@ public:
 		Texture();
 		Texture(const std::string& name, const std::string& file) : name(name), file(file) {}
 		~Texture();
+		friend void to_json(nlohmann::json& nlohmann_json_j, const Texture& nlohmann_json_t) {
+			nlohmann_json_j["file"] = util::iso_8859_1_to_utf8(nlohmann_json_t.file);
+			nlohmann_json_j["name"] = util::iso_8859_1_to_utf8(nlohmann_json_t.name);
+		}
+		friend void from_json(const nlohmann::json& nlohmann_json_j, Texture& nlohmann_json_t) { 
+			nlohmann_json_t.file = util::utf8_to_iso_8859_1(nlohmann_json_j["file"].get<std::string>());
+			nlohmann_json_t.name = util::utf8_to_iso_8859_1(nlohmann_json_j["name"].get<std::string>());
+		}
+		bool operator == (const Texture& other) { return this->name == other.name && this->file == other.file; }
 	};
 
 	class Lightmap
@@ -74,6 +83,12 @@ public:
 		unsigned char data[256];
 		const unsigned char hash() const;
 		bool operator == (const Lightmap& other) const;
+		friend void to_json(nlohmann::json& nlohmann_json_j, const Lightmap& nlohmann_json_t) {
+			for (int i = 0; i < 256; i++) {
+				nlohmann_json_j["data"].push_back(nlohmann_json_t.data[i]);
+			}
+		}
+		friend void from_json(const nlohmann::json & nlohmann_json_j, Lightmap & nlohmann_json_t) { for (int i = 0; i < 256; i++) { nlohmann_json_t.data[i] = nlohmann_json_j["data"][i].get<int>(); } }
 	};
 
 	class Tile
@@ -102,6 +117,8 @@ public:
 		glm::ivec4 color;
 		const unsigned char hash() const;
 		bool operator == (const Tile& other) const;
+
+		NLOHMANN_DEFINE_TYPE_INTRUSIVE(Tile, textureIndex, lightmapIndex, color, texCoords);
 	};
 
 	class Cube

@@ -190,12 +190,12 @@ public:
 class RswEffect : public Component
 {
 public:
-	int	id;
-	float loop;
-	float param1;
-	float param2;
-	float param3;
-	float param4;
+	int	id = 0;
+	float loop = 0;
+	float param1 = 0;
+	float param2 = 0;
+	float param3 = 0;
+	float param4 = 0;
 
 	RswEffect() {}
 	void load(std::istream* is);

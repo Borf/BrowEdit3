@@ -150,7 +150,7 @@ void BrowEdit::run()
 //		loadMap("data\\icecastle.rsw");
 //		loadMap("data\\bl_ice.rsw");
 //		loadMap("data\\comodo.rsw");
-//		loadMap("data\\guild_vs1.rsw");
+		loadMap("data\\guild_vs1.rsw");
 //		loadMap("data\\effects_ro.rsw");
 //		loadMap("data\\prt_in.rsw");
 		loadMap("data\\wall_colour.rsw");
@@ -672,9 +672,19 @@ void BrowEdit::copyTiles()
 	center /= activeMapView->map->tileSelection.size();
 	for (auto n : activeMapView->map->tileSelection)
 	{
-		json cube = *gnd->cubes[n.x][n.y];
+		auto c = gnd->cubes[n.x][n.y];
+		json cube = *c;
 		cube["pos"] = n - center;
-		clipboard.push_back(cube);
+		clipboard["cubes"].push_back(cube);
+		for(int i = 0; i < 3; i++)
+			if (c->tileIds[i] != -1)
+			{
+				auto tile = gnd->tiles[c->tileIds[i]];
+				clipboard["tiles"][std::to_string(c->tileIds[i])] = json(*tile);
+				clipboard["textures"][std::to_string(tile->textureIndex)] = json(*gnd->textures[tile->textureIndex]);
+				if(tile->lightmapIndex > -1)
+					clipboard["lightmaps"][std::to_string(tile->lightmapIndex)] = json(*gnd->lightmaps[tile->lightmapIndex]);
+			}
 	}
 	ImGui::SetClipboardText(clipboard.dump(1).c_str());
 }
@@ -691,11 +701,22 @@ void BrowEdit::pasteTiles()
 		json clipboard = json::parse(cb);
 		if (clipboard.size() > 0)
 		{
-			for (auto jsonCube : clipboard)
+			for (auto jsonCube : clipboard["cubes"])
 			{
 				CopyCube* cube = new CopyCube();
 				from_json(jsonCube, *cube);
-				newCubes.push_back(cube);
+				for (int i = 0; i < 3; i++)
+				{
+					if (cube->tileIds[i] > -1)
+					{
+						from_json(clipboard["tiles"][std::to_string(cube->tileIds[i])], cube->tile[i]);
+						if (cube->tile[i].lightmapIndex > -1)
+							from_json(clipboard["lightmaps"][std::to_string(cube->tile[i].lightmapIndex)], cube->lightmap[i]);
+						if (cube->tile[i].textureIndex > -1)
+							from_json(clipboard["textures"][std::to_string(cube->tile[i].textureIndex)], cube->texture[i]);
+					}
+				}
+				newCubes.push_back(cube); //only used here, so when pasting it's safe to assume tile[i] has been filled
 			}
 		}
 	}

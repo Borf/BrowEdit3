@@ -50,7 +50,7 @@ public:
 			{
 				float h1, h2, h3, h4;
 			};
-			float heights[4];
+			float heights[4] = {0,0,0,0};
 		};
 		int gatType;
 		bool selected;

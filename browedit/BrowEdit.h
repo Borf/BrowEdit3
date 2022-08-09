@@ -27,7 +27,10 @@ class CopyCube : public Gnd::Cube
 {
 public:
 	glm::ivec2 pos;
-	CopyCube() {}
+	Gnd::Tile tile[3];
+	Gnd::Lightmap lightmap[3];
+	Gnd::Texture texture[3];
+	CopyCube() : pos(0) {}
 	NLOHMANN_DEFINE_TYPE_INTRUSIVE(CopyCube, h1, h2, h3, h4, tileUp, tileFront, tileSide, pos, normal, normals);
 };
 
