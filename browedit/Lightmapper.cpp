@@ -395,7 +395,7 @@ void Lightmapper::calcPos(int direction, int tileId, int x, int y)
 						normal = glm::normalize(normal);
 						groundPos = glm::vec3(p.x, h, p.y);
 					}
-					else if (direction == 1 && y < gnd->width-1) //side
+					else if (direction == 1 && y < gnd->height-1) //side
 					{
 						auto otherCube = gnd->cubes[x][y + 1];
 						float h1 = glm::mix(cube->h3, cube->h4, ((xx + xxx) - 1) / 6.0f);
@@ -409,7 +409,7 @@ void Lightmapper::calcPos(int direction, int tileId, int x, int y)
 							normal = -normal;
 
 					}
-					else if (direction == 2 && x < gnd->height-1) //front
+					else if (direction == 2 && x < gnd->width-1) //front
 					{
 						auto otherCube = gnd->cubes[x + 1][y];
 						float h1 = glm::mix(cube->h4, cube->h2, ((xx + xxx) - 1) / 6.0f);
