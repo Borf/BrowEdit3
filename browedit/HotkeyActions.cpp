@@ -46,6 +46,7 @@ void BrowEdit::registerActions()
 	HotkeyRegistry::registerAction(HotkeyAction::Global_Paste,					[this]() { if (editMode == EditMode::Object) { activeMapView->map->pasteSelection(this); } }, hasActiveMapView);
 	HotkeyRegistry::registerAction(HotkeyAction::Global_PasteChangeHeight,		[this]() { if (editMode == EditMode::Object) { newNodeHeight = !newNodeHeight; } }, hasActiveMapView);
 
+	HotkeyRegistry::registerAction(HotkeyAction::Global_ClearZeroHeightWalls,	[this]() { activeMapView->map->rootNode->getComponent<Gnd>()->removeZeroHeightWalls(); }, hasActiveMapView);
 	HotkeyRegistry::registerAction(HotkeyAction::Global_CalculateQuadtree,		[this]() { activeMapView->map->recalculateQuadTree(this); }, hasActiveMapView);
 	HotkeyRegistry::registerAction(HotkeyAction::Global_CalculateLightmaps,		[this]() {
 		lightmapper = new Lightmapper(activeMapView->map, this);

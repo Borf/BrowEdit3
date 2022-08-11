@@ -942,6 +942,8 @@ void Gnd::cleanTiles()
 	toRemove.reverse();
 	std::cout << "Made list of unused tiles..." << std::endl;
 
+	//TODO: make an array of tiles.size() long, initialize at 0. loop through toRemove, and increase values in array to be the amount to lower. Then use as lookup
+
 	for (std::size_t i : toRemove)
 	{
 		tiles.erase(tiles.begin() + i);
@@ -1141,6 +1143,37 @@ void Gnd::makeTilesUnique()
 	}
 }
 
+
+void Gnd::removeZeroHeightWalls()
+{
+	int count = 0;
+	for (auto x = 0; x < cubes.size(); x++)
+	{
+		for (auto y = 0; y < cubes[x].size(); y++)
+		{
+			Gnd::Cube* cube = cubes[x][y];
+			if (cube->tileSide != -1 && x < width - 1)
+			{
+				if (cube->h2 == cubes[x + 1][y]->h1 &&
+					cube->h4 == cubes[x + 1][y]->h3)
+				{
+					cube->tileSide = -1;
+					count++;
+				}
+			}
+			if (cube->tileFront != -1 && y < height - 1)
+			{
+				if (cube->h3 == cubes[x][y + 1]->h1 &&
+					cube->h4 == cubes[x][y + 1]->h2)
+				{
+					cube->tileFront = -1;
+					count++;
+				}
+			}
+		}
+	}
+	std::cout << "Removed " << count << " walls" << std::endl;
+}
 
 
 

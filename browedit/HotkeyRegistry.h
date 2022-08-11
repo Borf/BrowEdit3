@@ -26,6 +26,7 @@ enum class HotkeyAction
 
 	Global_CalculateQuadtree,
 	Global_CalculateLightmaps,
+	Global_ClearZeroHeightWalls,
 
 	ObjectEdit_InvertScaleX,
 	ObjectEdit_InvertScaleY,

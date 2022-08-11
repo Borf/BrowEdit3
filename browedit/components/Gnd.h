@@ -32,6 +32,7 @@ public:
 	void makeLightmapsSmooth();
 	void makeTilesUnique();
 	void cleanLightmaps();
+	void removeZeroHeightWalls();
 	void cleanTiles();
 	void recalculateNormals();
 

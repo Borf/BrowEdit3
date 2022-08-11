@@ -144,6 +144,7 @@ void BrowEdit::menuBar()
 		hotkeyMenuItem("Calculate lightmaps", HotkeyAction::Global_CalculateLightmaps);
 		if (ImGui::MenuItem("Make tiles unique"))
 			activeMapView->map->rootNode->getComponent<Gnd>()->makeTilesUnique();
+		hotkeyMenuItem("Remove zero height walls", HotkeyAction::Global_ClearZeroHeightWalls);
 		if (ImGui::MenuItem("Clean Tiles"))
 			activeMapView->map->rootNode->getComponent<Gnd>()->cleanTiles();
 		if (ImGui::MenuItem("Fix lightmap borders"))
