@@ -62,7 +62,7 @@ namespace math
 			edgePlane.normal = glm::normalize(glm::cross(EdgeVector, plane.normal));
 			edgePlane.D = -glm::dot(edgePlane.normal, vertices[vertex]);
 
-			if (glm::dot(edgePlane.normal, intersection) + edgePlane.D > 0.00001f)
+			if (glm::dot(edgePlane.normal, intersection) + edgePlane.D > 0.001f)
 				return false;
 		}
 
