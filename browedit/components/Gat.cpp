@@ -154,7 +154,7 @@ glm::vec3 Gat::rayCast(const math::Ray& ray, int xMin, int yMin, int xMax, int y
 	{
 		for (auto yy = yMin; yy < yMax; yy+= chunkSize)
 		{
-			math::AABB box(glm::vec3(5*xx, -999999, 5*height - 10*(yy+chunkSize)), glm::vec3(5*(xx + chunkSize), 999999, 5*height - (5 * yy)));
+			math::AABB box(glm::vec3(5*(xx-1), -999999, 5*height - 10*(yy+chunkSize+1)), glm::vec3(5*(xx + chunkSize+1), 999999, 10*height - (5 * (yy-1))));
 			if (!box.hasRayCollision(ray, -999999, 9999999))
 				continue;
 			for (int x = xx; x < glm::min(width, xx + chunkSize); x++)
@@ -359,14 +359,14 @@ std::vector<glm::vec3> Gat::getMapQuads()
 glm::vec3 Gat::getPos(int x, int y, int index, float fac)
 {
 	auto cube = cubes[x][y];
-	if (index == 0)
-		return glm::vec3((x + (0+fac)) * 5, -cube->heights[0], 5 * height - (y + (0+fac)) * 5 + 10);//2
+	if (index == 0)//5 * x										5 * gat->height - 5 * y + 10
+		return glm::vec3((x * 5) + fac,			-cube->heights[0], 5 * height - 5 * y + 10 - fac);//2
 	if (index == 1)
-		return glm::vec3((x + (1-fac)) * 5, -cube->heights[1], 5 * height - (y + (0+fac)) * 5 + 10);//3
+		return glm::vec3((5 * x + 5) - fac,		-cube->heights[1], 5 * height - 5 * y + 10 - fac);//3
 	if(index == 2)
-		return glm::vec3((x + (0+fac)) * 5, -cube->heights[2], 5 * height - (y + (1-fac)) * 5 + 10);//1
+		return glm::vec3((x * 5) + fac,			-cube->heights[2], 5 * height - 5 * y + 5 + fac);//1
 	if(index == 3)
-		return glm::vec3((x + (1-fac)) * 5, -cube->heights[3], 5 * height - (y + (1-fac)) * 5 + 10);//4
+		return glm::vec3((5 * x + 5) - fac,		-cube->heights[3], 5 * height - 5 * y + 5 + fac);//4
 
 	return glm::vec3(0, 0,0);
 }

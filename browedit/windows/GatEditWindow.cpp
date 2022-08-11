@@ -10,7 +10,7 @@
 extern std::string gatTypes[];
 extern ImVec4 enabledColor;// (144 / 255.0f, 193 / 255.0f, 249 / 255.0f, 0.5f);
 extern ImVec4 disabledColor;// (72 / 255.0f, 96 / 255.0f, 125 / 255.0f, 0.5f);
-
+extern std::vector<std::vector<glm::vec3>> debugPoints;
 
 void BrowEdit::showGatWindow()
 {
@@ -217,6 +217,11 @@ void BrowEdit::showGatWindow()
 
 			std::thread t([this, gnd, gat, map, gatRenderer]()
 				{
+					debugPoints.clear();
+					debugPoints.resize(2);
+
+					std::map<int, std::map<int, std::pair<int, int>>> gatInfo;
+
 					auto rsw = map->rootNode->getComponent<Rsw>();
 					for (int x = 0; x < gat->width; x++)
 					{
@@ -225,17 +230,25 @@ void BrowEdit::showGatWindow()
 							if (selectionOnly && std::find(map->gatSelection.begin(), map->gatSelection.end(), glm::ivec2(x, y)) == map->gatSelection.end())
 								continue;
 
-							windowData.progressWindowProgres = (x / (float)gat->width) + (1.0f / gat->width) * (y / (float)gat->height);
+							windowData.progressWindowProgres = 0.5f * (x / (float)gat->width) + (1.0f / gat->width) * (y / (float)gat->height);
 
 							int raiseType = -1;
 							int gatType = -1;
 
 							for (int i = 0; i < 4; i++)
 							{
-								glm::vec3 pos = gat->getPos(x, y, i, 0.025f);
+								glm::vec3 pos = gat->getPos(x, y, i, 0.01f);
+
+								//debugPoints[0].push_back(pos);
 								pos.y = 1000;
 								math::Ray ray(pos, glm::vec3(0, -1, 0));
 								auto height = gnd->rayCast(ray, true, x / 2 - 2, y / 2 - 2, x / 2 + 2, y / 2 + 2);
+								if (height.y > 100000 || height.y < -100000)
+								{
+									std::cout << "wtf" << std::endl;
+									height = gnd->rayCast(ray, true);// , x / 2 - 2, y / 2 - 2, x / 2 + 2, y / 2 + 2);
+								}
+								//debugPoints[1].push_back(height);
 
 								map->rootNode->traverse([&](Node* n) {
 									auto rswModel = n->getComponent<RswModel>();
@@ -259,6 +272,22 @@ void BrowEdit::showGatWindow()
 
 								gat->cubes[x][y]->heights[i] = -height.y;
 							}
+
+							gatInfo[x][y] = std::pair<int, int>(raiseType, gatType);
+						}
+					}
+
+					for (int x = 0; x < gat->width; x++)
+					{
+						for (int y = 0; y < gat->height; y++)
+						{
+							if (selectionOnly && std::find(map->gatSelection.begin(), map->gatSelection.end(), glm::ivec2(x, y)) == map->gatSelection.end())
+								continue;
+
+							windowData.progressWindowProgres = 0.5f + 0.5f * (x / (float)gat->width) + (1.0f / gat->width) * (y / (float)gat->height);
+
+							int raiseType = gatInfo[x][y].first;
+							int gatType = gatInfo[x][y].second;
 
 							if (setWalkable)
 							{
@@ -313,6 +342,7 @@ void BrowEdit::showGatWindow()
 							}
 						}
 					}
+
 					windowData.progressWindowProgres = 1;
 					windowData.progressWindowVisible = false;
 
