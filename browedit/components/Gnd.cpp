@@ -933,13 +933,14 @@ void Gnd::cleanTiles()
 			used.insert(cubes[x][y]->tileFront);
 			used.insert(cubes[x][y]->tileSide);
 		}
-
+	std::cout << "Made list of used tiles..." << std::endl;
 
 	std::list<std::size_t> toRemove;
 	for (std::size_t i = 0; i < tiles.size(); i++)
 		if (used.find((int)i) == used.end())
 			toRemove.push_back(i);
 	toRemove.reverse();
+	std::cout << "Made list of unused tiles..." << std::endl;
 
 	for (std::size_t i : toRemove)
 	{

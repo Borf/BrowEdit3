@@ -39,6 +39,8 @@ void Lightmapper::begin()
 	gnd = map->rootNode->getComponent<Gnd>();
 	rsw = map->rootNode->getComponent<Rsw>();
 
+	setProgressText("Cleaning tiles");
+	gnd->cleanTiles();
 	setProgressText("Making lightmaps unique");
 	std::cout << "Before:\t" << gnd->tiles.size() << " tiles, " << gnd->lightmaps.size() << " lightmaps" << std::endl;
 	gnd->makeLightmapsUnique();
@@ -124,19 +126,21 @@ void Lightmapper::run()
 	setProgressText("Calculating lightmaps");
 	std::vector<std::thread> threads;
 	std::atomic<int> finishedX(rangeX[0]);
+	std::atomic<int> finishedThreadCount(0);
 	std::mutex progressMutex;
 
 
 	threads.push_back(std::thread([&]()
 		{
-			while (finishedX < rangeX[1] && running)
+			while ((finishedX < rangeX[1] || finishedThreadCount < threadCount) && running)
 			{
 				std::this_thread::sleep_for(std::chrono::seconds(2));
 				progressMutex.lock();
 				map->rootNode->getComponent<GndRenderer>()->gndShadowDirty = true;
 				progressMutex.unlock();
 			}
-			std::cout << "Done!" << std::endl;
+			std::cout << "Finished threads: " << finishedThreadCount << std::endl;
+			std::cout << "Done with threads, unlocking main thread!" << std::endl;
 			progressMutex.lock();
 			browEdit->windowData.progressWindowProgres = 1.0f;
 			browEdit->windowData.progressWindowVisible = false;
@@ -164,6 +168,7 @@ void Lightmapper::run()
 					}
 				}
 				std::cout << "Thread " << t << " finished" << std::endl;
+				finishedThreadCount++;
 			}));
 	}
 
