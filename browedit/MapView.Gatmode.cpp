@@ -291,7 +291,7 @@ void MapView::postRenderGatMode(BrowEdit* browEdit)
 		}
 
 	}
-	else if(hovered)
+	else //if(hovered)
 	{
 		//draw selection
 		if (map->gatSelection.size() > 0 && canSelect)

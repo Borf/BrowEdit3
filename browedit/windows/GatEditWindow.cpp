@@ -6,6 +6,7 @@
 #include <browedit/Map.h>
 #include <browedit/Node.h>
 #include <browedit/gl/Texture.h>
+#include <browedit/actions/CubeHeightChangeAction.h>
 
 extern std::string gatTypes[];
 extern ImVec4 enabledColor;// (144 / 255.0f, 193 / 255.0f, 249 / 255.0f, 0.5f);
@@ -405,6 +406,25 @@ void BrowEdit::showGatWindow()
 		ImGui::TreePop();
 	}
 
+	if (!heightDoodle)
+	{
+		if (ImGui::TreeNodeEx("Set Height", ImGuiTreeNodeFlags_Framed))
+		{
+			static float height = 0;
+			ImGui::InputFloat("Height", &height);
+			if (ImGui::Button("Set selection to height"))
+			{
+				auto action = new CubeHeightChangeAction<Gat, Gat::Cube>(gat, activeMapView->map->tileSelection);
+				for (auto t : activeMapView->map->gatSelection)
+					for (int i = 0; i < 4; i++)
+						gat->cubes[t.x][t.y]->heights[i] = height;
+
+				action->setNewHeights(gat, activeMapView->map->gatSelection);
+				activeMapView->map->doAction(action, this);
+			}
+			ImGui::TreePop();
+		}
+	}
 	/*if (map->gatSelection.size() > 0 && !heightDoodle)
 	{
 		if (map->gatSelection.size() > 1)
