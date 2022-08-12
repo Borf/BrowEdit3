@@ -610,16 +610,19 @@ void BrowEdit::saveAsMap(Map* map)
 
 	std::string rswName = directory + mapName + ".rsw";
 	std::string gndName = directory + mapName + ".gnd";
-//	std::string lubName = config.ropath + "data\\luafiles514\\lua files\\effecttool\\" + mapName + ".lub"; //not sure where to store this
+	std::string gatName = directory + mapName + ".gat";
+	//	std::string lubName = config.ropath + "data\\luafiles514\\lua files\\effecttool\\" + mapName + ".lub"; //not sure where to store this
 
 	std::string backupRswName = "backups\\" + map->name;
 	std::string backupGndName = "backups\\" + map->name.substr(0, map->name.size() - 4) + ".gnd";
+	std::string backupGatName = "backups\\" + map->name.substr(0, map->name.size() - 4) + ".gat";
 	std::string backupLubName = "backups\\data\\luafiles514\\lua files\\effecttool\\" + mapName + ".lub";
 
 	if (config.backup)
 	{
 		fixBackup(rswName, backupRswName);
 		fixBackup(gndName, backupGndName);
+		fixBackup(gatName, backupGatName);
 //		fixBackup(lubName, backupGndName);
 	}
 
@@ -627,6 +630,7 @@ void BrowEdit::saveAsMap(Map* map)
 	map->rootNode->getComponent<Rsw>()->gndFile = mapName + ".gnd";
 	map->rootNode->getComponent<Rsw>()->save(rswName, this);
 	map->rootNode->getComponent<Gnd>()->save(gndName);
+	map->rootNode->getComponent<Gat>()->save(gatName);
 }
 
 void BrowEdit::loadMap(const std::string file)
