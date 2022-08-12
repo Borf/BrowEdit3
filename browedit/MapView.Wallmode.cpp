@@ -34,6 +34,9 @@ void MapView::postRenderWallMode(BrowEdit* browEdit)
 			side = 3;
 	fbo->bind();
 
+	if (!ImGui::IsMouseClicked(ImGuiMouseButton_Left) && ImGui::IsMouseDown(ImGuiMouseButton_Left))
+		side = selectionSide;
+
 	if (side == 0)
 	{
 		tileHovered.x--;
@@ -45,7 +48,7 @@ void MapView::postRenderWallMode(BrowEdit* browEdit)
 		side = 2;
 	}
 
-	if (gnd->inMap(tileHovered) && gnd->inMap(tileHovered + glm::ivec2(1, 0)) && gnd->inMap(tileHovered + glm::ivec2(0, 1)))
+	if (gnd->inMap(tileHovered) && gnd->inMap(tileHovered + glm::ivec2(1, 0)) && gnd->inMap(tileHovered + glm::ivec2(0, 1)) && !ImGui::IsMouseDown(ImGuiMouseButton_Left))
 	{
 		auto cube = gnd->cubes[tileHovered.x][tileHovered.y];
 		glm::vec3 v1(10 * tileHovered.x + 10, -cube->h2, 10 * gnd->height - 10 * tileHovered.y + 10);
@@ -126,7 +129,9 @@ void MapView::postRenderWallMode(BrowEdit* browEdit)
 				glEnable(GL_DEPTH_TEST);
 
 			}
-			if (tile == tileHovered)
+			if (side == 1 && tile.y == tileHovered.y)
+				break;
+			if (side == 2 && tile.x == tileHovered.x)
 				break;
 			if (side == 1)
 				tile += glm::ivec2(0, glm::sign(tileHovered.y - selectionStart.y));
