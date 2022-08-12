@@ -45,7 +45,7 @@ void BrowEdit::showHotkeyEditorWindow()
 		if (hotkeyInputBox(title.c_str(), hotkey))
 			windowData.hotkeys[strHotkey] = hotkey;
 		ImGui::SameLine();
-		if (ImGui::Button("Clear"))
+		if (ImGui::Button(("Clear##" + strHotkey).c_str()))
 		{
 			windowData.hotkeys[strHotkey].keyCode = 0;
 			windowData.hotkeys[strHotkey].modifiers = 0;
