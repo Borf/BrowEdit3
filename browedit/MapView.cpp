@@ -519,14 +519,25 @@ bool MapView::drawCameraWidget()
 				//std::cout << point.x << "\t" << point.y << "\t" << point.z << std::endl;
 				if (glm::abs(point.y - 1) < 0.001)
 				{
-					cameraTargetRot = glm::vec2(0, 90);
+					if (cameraRot.x == 90)
+					{
+						float d = cameraRot.y / 90;
+						while (d >= 1)
+							d--;
+						if (glm::abs(d) < 0.01)
+							cameraTargetRot = cameraRot + glm::vec2(0, 90);
+						else
+							cameraTargetRot = glm::vec2(90, 0);
+					}
+					else
+						cameraTargetRot = glm::vec2(90, 0);
 					cameraTargetPos = cameraCenter;
 					cameraAnimating = true;
 				}
 				else if (glm::abs(point.z) - 1 < 0.001 || glm::abs(point.x) - 1 < 0.001) //side
 				{
 					float angle = std::atan2(glm::round(point.z), glm::round(point.x));
-					cameraTargetRot = glm::vec2(glm::degrees(angle)-90.0f,0);
+					cameraTargetRot = glm::vec2(0, glm::degrees(angle)-90.0f);
 					if (glm::abs(point.y-1) < 0.25f)
 						cameraTargetRot.x = 45;
 					cameraTargetPos = cameraCenter;
