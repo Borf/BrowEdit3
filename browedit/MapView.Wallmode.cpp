@@ -8,6 +8,9 @@
 #include <imgui.h>
 
 
+glm::vec2 selectionStart;
+int selectionSide;
+
 void MapView::postRenderWallMode(BrowEdit* browEdit)
 {
 	auto gnd = map->rootNode->getComponent<Gnd>();
@@ -76,6 +79,24 @@ void MapView::postRenderWallMode(BrowEdit* browEdit)
 		glEnd();
 		glEnable(GL_DEPTH_TEST);
 	}
+
+	if (ImGui::IsMouseReleased(ImGuiMouseButton_Left))
+	{
+		std::cout << "Released" << std::endl;
+
+	}
+
+	if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+	{
+		std::cout << "Clicked" << std::endl;
+	}
+	if (ImGui::IsMouseDown(ImGuiMouseButton_Left))
+	{
+		std::cout << "Down" << std::endl;
+	}
+
+
+
 	ImGui::Begin("Statusbar");
 	ImGui::Text("%d", side);
 	ImGui::SameLine();
