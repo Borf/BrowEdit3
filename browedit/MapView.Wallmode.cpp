@@ -5,11 +5,14 @@
 #include <browedit/Node.h>
 #include <browedit/components/Gnd.h>
 #include <browedit/gl/FBO.h>
+#include <browedit/shaders/SimpleShader.h>
 #include <imgui.h>
 
 
 glm::ivec2 selectionStart;
 int selectionSide;
+std::vector<glm::ivec3> selectedWalls;
+
 
 void MapView::postRenderWallMode(BrowEdit* browEdit)
 {
@@ -92,7 +95,7 @@ void MapView::postRenderWallMode(BrowEdit* browEdit)
 	if (ImGui::IsMouseDown(ImGuiMouseButton_Left))
 	{
 		glm::ivec2 tile = selectionStart;
-		for (int i = 0; i < 10; i++)
+		for (int i = 0; i < 100; i++)
 		{
 			if (gnd->inMap(tile) && gnd->inMap(tile + glm::ivec2(1, 0)) && gnd->inMap(tile + glm::ivec2(0, 1)))
 			{
@@ -109,12 +112,12 @@ void MapView::postRenderWallMode(BrowEdit* browEdit)
 					v3 = glm::vec3(10 * tile.x, -gnd->cubes[tile.x][tile.y + 1]->h1, 10 * gnd->height - 10 * tile.y);
 
 				}
-
+				glEnable(GL_BLEND);
 				glDisable(GL_DEPTH_TEST);
 				glLineWidth(2);
 				glDisable(GL_TEXTURE_2D);
 				glColor4f(1, 1, 1, 1);
-				glBegin(GL_QUADS);
+				glBegin(GL_LINE_LOOP);
 				glVertex3f(v1.x, v1.y, v1.z);
 				glVertex3f(v2.x, v2.y, v2.z);
 				glVertex3f(v4.x, v4.y, v4.z);
@@ -143,8 +146,81 @@ void MapView::postRenderWallMode(BrowEdit* browEdit)
 	}
 	if (ImGui::IsMouseReleased(ImGuiMouseButton_Left))
 	{
+		selectedWalls.clear();
+		glm::ivec2 tile = selectionStart;
+		for (int i = 0; i < 100; i++)
+		{
+			if (gnd->inMap(tile))
+				selectedWalls.push_back(glm::ivec3(tile, selectionSide));
+			if (side == 1 && tile.y == tileHovered.y)
+				break;
+			if (side == 2 && tile.x == tileHovered.x)
+				break;
+			if (side == 1)
+				tile += glm::ivec2(0, glm::sign(tileHovered.y - selectionStart.y));
+			else
+				tile += glm::ivec2(glm::sign(tileHovered.x - selectionStart.x), 0);
+			if (tileHovered == selectionStart)
+				break;
+		}
+	}
+	if (selectedWalls.size() > 0)
+	{
+		std::vector<VertexP3T2N3> verts;
+		for (const auto& wall : selectedWalls)
+		{
+			glm::ivec2 tile = glm::ivec2(wall);
+
+			if (gnd->inMap(tile) && gnd->inMap(tile + glm::ivec2(1, 0)) && gnd->inMap(tile + glm::ivec2(0, 1)))
+			{
+				auto cube = gnd->cubes[tile.x][tile.y];
+				glm::vec3 v1(10 * tile.x + 10, -cube->h2, 10 * gnd->height - 10 * tile.y + 10);
+				glm::vec3 v2(10 * tile.x + 10, -cube->h4, 10 * gnd->height - 10 * tile.y);
+				glm::vec3 v3(10 * tile.x + 10, -gnd->cubes[tile.x + 1][tile.y]->h1, 10 * gnd->height - 10 * tile.y + 10);
+				glm::vec3 v4(10 * tile.x + 10, -gnd->cubes[tile.x + 1][tile.y]->h3, 10 * gnd->height - 10 * tile.y);
+				glm::vec3 normal = glm::vec3(1, 0, 0);
+				if (wall.z == 2)
+				{
+					v1 = glm::vec3(10 * tile.x, -cube->h3, 10 * gnd->height - 10 * tile.y);
+					v2 = glm::vec3(10 * tile.x + 10, -cube->h4, 10 * gnd->height - 10 * tile.y);
+					v4 = glm::vec3(10 * tile.x + 10, -gnd->cubes[tile.x][tile.y + 1]->h2, 10 * gnd->height - 10 * tile.y);
+					v3 = glm::vec3(10 * tile.x, -gnd->cubes[tile.x][tile.y + 1]->h1, 10 * gnd->height - 10 * tile.y);
+					normal = glm::vec3(0, 0, 1);
+				}
+				verts.push_back(VertexP3T2N3(v1, glm::vec2(0, 0), normal));
+				verts.push_back(VertexP3T2N3(v2, glm::vec2(0, 0), normal));
+				verts.push_back(VertexP3T2N3(v2, glm::vec2(0, 0), normal));
+				verts.push_back(VertexP3T2N3(v4, glm::vec2(0, 0), normal));
+				verts.push_back(VertexP3T2N3(v4, glm::vec2(0, 0), normal));
+				verts.push_back(VertexP3T2N3(v3, glm::vec2(0, 0), normal));
+				verts.push_back(VertexP3T2N3(v3, glm::vec2(0, 0), normal));
+				verts.push_back(VertexP3T2N3(v1, glm::vec2(0, 0), normal));
+			}
+		}
+
+		simpleShader->use();
+		simpleShader->setUniform(SimpleShader::Uniforms::projectionMatrix, nodeRenderContext.projectionMatrix);
+		simpleShader->setUniform(SimpleShader::Uniforms::viewMatrix, nodeRenderContext.viewMatrix);
+		simpleShader->setUniform(SimpleShader::Uniforms::modelMatrix, glm::mat4(1.0f));
+		glLineWidth(2);
+
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glEnable(GL_BLEND);
+		glDisable(GL_DEPTH_TEST);
+		simpleShader->setUniform(SimpleShader::Uniforms::textureFac, 0.0f);
+		simpleShader->setUniform(SimpleShader::Uniforms::color, glm::vec4(1, 0, 0, 1));
+		glEnableVertexAttribArray(0);
+		glEnableVertexAttribArray(1);
+		glEnableVertexAttribArray(2);
+		glDisableVertexAttribArray(3);
+		glDisableVertexAttribArray(4); //TODO: vao
+		glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexP3T2N3), verts[0].data + 0);
+		glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexP3T2N3), verts[0].data + 3);
+		glVertexAttribPointer(2, 3, GL_FLOAT, false, sizeof(VertexP3T2N3), verts[0].data + 5);
+		glDrawArrays(GL_LINES, 0, (int)verts.size());
 
 
+		glEnable(GL_DEPTH_TEST);
 
 	}
 

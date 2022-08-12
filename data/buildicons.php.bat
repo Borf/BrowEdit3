@@ -27,7 +27,7 @@ $order = array(
 	"texture_stamp.png",	"texture_bucket.png",		"texture_select.png",		"",						"select_all_height.png",//70-74
 	"select_rectangle.png",	"select_lasso.png",			"select_wand_tex.png",		"select_wand_height.png","select_all_tex.png",	//75-79
 	"height_select_center.png","height_select_corners.png","height_select_sides.png","height_doodle.png",	"",						//80-84
-	"",						"",							"",							"",						"",						//85-89
+	"wall_addremove.png",	"",							"",							"",						"",						//85-89
 	"",						"",							"",							"",						"",						//90-94
 	"",						"",							"",							"",						"missing.png"			//95-99
 );

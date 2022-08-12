@@ -16,6 +16,8 @@ void BrowEdit::registerActions()
 	auto hasActiveMapView = [this]() {return activeMapView != nullptr; };
 	auto hasActiveMapViewObjectMode = [this]() { return activeMapView != nullptr && editMode == EditMode::Object; };
 	auto hasActiveMapViewTextureMode = [this]() { return activeMapView != nullptr && editMode == EditMode::Texture; };
+	auto hasActiveMapViewWallMode = [this]() { return activeMapView != nullptr && editMode == EditMode::Wall; };
+	auto hasActiveMapViewTextureWallMode = [this]() { return activeMapView != nullptr && (editMode == EditMode::Texture|| editMode == EditMode::Wall); };
 
 	HotkeyRegistry::registerAction(HotkeyAction::Global_HotkeyPopup,	[this]() { 
 		windowData.showHotkeyPopup = true;
@@ -104,6 +106,14 @@ void BrowEdit::registerActions()
 	
 	HotkeyRegistry::registerAction(HotkeyAction::TextureEdit_ToggleTextureWindow,	[this]() { windowData.textureManageWindowVisible = !windowData.textureManageWindowVisible; }, hasActiveMapViewTextureMode);
 	HotkeyRegistry::registerAction(HotkeyAction::TextureEdit_SwapBrushSize,			[this]() { std::swap(activeMapView->textureBrushWidth, activeMapView->textureBrushHeight); }, hasActiveMapViewTextureMode);
+
+	HotkeyRegistry::registerAction(HotkeyAction::WallEdit_AddWall,		[this]() { activeMapView->map->wallAddSelected(this); }, hasActiveMapViewWallMode);
+	HotkeyRegistry::registerAction(HotkeyAction::WallEdit_RemoveWall,	[this]() { activeMapView->map->wallRemoveSelected(this); }, hasActiveMapViewWallMode);
+
+
+	HotkeyRegistry::registerAction(HotkeyAction::Texture_PrevTexture,	[this]() { activeMapView->textureSelected = (activeMapView->textureSelected + activeMapView->map->rootNode->getComponent<Gnd>()->textures.size() - 1) % (int)activeMapView->map->rootNode->getComponent<Gnd>()->textures.size(); }, hasActiveMapViewTextureWallMode);
+	HotkeyRegistry::registerAction(HotkeyAction::Texture_NextTexture,	[this]() { activeMapView->textureSelected = (activeMapView->textureSelected + 1) % activeMapView->map->rootNode->getComponent<Gnd>()->textures.size(); }, hasActiveMapViewTextureWallMode);
+	
 
 	HotkeyRegistry::registerAction(HotkeyAction::EditMode_Height,		[this]() { editMode = EditMode::Height; });
 	HotkeyRegistry::registerAction(HotkeyAction::EditMode_Texture,		[this]() { editMode = EditMode::Texture; });

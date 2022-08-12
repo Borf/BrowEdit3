@@ -820,3 +820,38 @@ void Map::createPrefab(const std::string& fileName, BrowEdit* browEdit)
 	outFile << clipboard;
 	util::FileIO::reload("data\\prefabs");
 }
+
+
+
+extern std::vector<glm::ivec3> selectedWalls; //ewwww
+void Map::wallAddSelected(BrowEdit* browEdit)
+{
+	auto gnd = rootNode->getComponent<Gnd>();
+	auto gndRenderer = rootNode->getComponent<GndRenderer>();
+	for (const auto& w : selectedWalls)
+	{
+		auto cube = gnd->cubes[w.x][w.y];
+		if (w.z == 1 && cube->tileSide == -1)
+			cube->tileSide = 0;
+		if (w.z == 2 && cube->tileFront == -1)
+			cube->tileFront = 0;
+
+		gndRenderer->setChunkDirty(w.x, w.y);
+	}
+}
+
+void Map::wallRemoveSelected(BrowEdit* browEdit)
+{
+	auto gnd = rootNode->getComponent<Gnd>();
+	auto gndRenderer = rootNode->getComponent<GndRenderer>();
+	for (const auto& w : selectedWalls)
+	{
+		auto cube = gnd->cubes[w.x][w.y];
+		if (w.z == 1 && cube->tileSide != -1)
+			cube->tileSide = -1;
+		if (w.z == 2 && cube->tileFront != -1)
+			cube->tileFront = -1;
+
+		gndRenderer->setChunkDirty(w.x, w.y);
+	}
+}

@@ -70,4 +70,8 @@ public:
 
 	void growTileSelection(BrowEdit* browEdit);
 	void shrinkTileSelection(BrowEdit* browEdit);
+
+	void wallAddSelected(BrowEdit* browEdit);//TODO: is this really the place?
+	void wallRemoveSelected(BrowEdit* browEdit);
+
 };

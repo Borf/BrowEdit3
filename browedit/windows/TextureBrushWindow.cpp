@@ -3,7 +3,6 @@
 #include <browedit/MapView.h>
 #include <browedit/Map.h>
 #include <browedit/Node.h>
-#include <browedit/MapView.h>
 #include <browedit/components/Gnd.h>
 #include <browedit/components/GndRenderer.h>
 #include <browedit/actions/Action.h>

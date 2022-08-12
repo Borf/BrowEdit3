@@ -66,6 +66,12 @@ enum class HotkeyAction
 	ObjectEdit_ToggleObjectWindow,
 
 
+	WallEdit_AddWall,
+	WallEdit_RemoveWall,
+
+	Texture_NextTexture,
+	Texture_PrevTexture,
+
 
 	EditMode_Height,
 	EditMode_Texture,
