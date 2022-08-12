@@ -154,7 +154,7 @@ glm::vec3 Gat::rayCast(const math::Ray& ray, int xMin, int yMin, int xMax, int y
 	{
 		for (auto yy = yMin; yy < yMax; yy+= chunkSize)
 		{
-			math::AABB box(glm::vec3(5*(xx-1), -999999, 5*height - 10*(yy+chunkSize+1)), glm::vec3(5*(xx + chunkSize+1), 999999, 10*height - (5 * (yy-1))));
+			math::AABB box(glm::vec3(5*(xx-1), -999999, 5*height - 5*(yy+chunkSize+1)), glm::vec3(5*(xx + chunkSize+1), 999999, 5*height - (5 * (yy-1))));
 			if (!box.hasRayCollision(ray, -999999, 9999999))
 				continue;
 			for (int x = xx; x < glm::min(width, xx + chunkSize); x++)

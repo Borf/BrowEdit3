@@ -73,6 +73,20 @@ enum class HotkeyAction
 	Texture_PrevTexture,
 
 
+	GatEdit_NextTileType,
+	GatEdit_PrevTileType,
+	GatEdit_Tile0,
+	GatEdit_Tile1,
+	GatEdit_Tile2,
+	GatEdit_Tile3,
+	GatEdit_Tile4,
+	GatEdit_Tile5,
+	GatEdit_Tile6,
+	GatEdit_Tile7,
+	GatEdit_Tile8,
+	GatEdit_Tile9,
+
+
 	EditMode_Height,
 	EditMode_Texture,
 	EditMode_Object,

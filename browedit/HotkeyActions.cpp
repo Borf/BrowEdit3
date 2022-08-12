@@ -17,6 +17,7 @@ void BrowEdit::registerActions()
 	auto hasActiveMapViewObjectMode = [this]() { return activeMapView != nullptr && editMode == EditMode::Object; };
 	auto hasActiveMapViewTextureMode = [this]() { return activeMapView != nullptr && editMode == EditMode::Texture; };
 	auto hasActiveMapViewWallMode = [this]() { return activeMapView != nullptr && editMode == EditMode::Wall; };
+	auto hasActiveMapViewGatMode = [this]() { return activeMapView != nullptr && editMode == EditMode::Gat; };
 	auto hasActiveMapViewTextureWallMode = [this]() { return activeMapView != nullptr && (editMode == EditMode::Texture|| editMode == EditMode::Wall); };
 
 	HotkeyRegistry::registerAction(HotkeyAction::Global_HotkeyPopup,	[this]() { 
@@ -109,7 +110,19 @@ void BrowEdit::registerActions()
 
 	HotkeyRegistry::registerAction(HotkeyAction::WallEdit_AddWall,		[this]() { activeMapView->map->wallAddSelected(this); }, hasActiveMapViewWallMode);
 	HotkeyRegistry::registerAction(HotkeyAction::WallEdit_RemoveWall,	[this]() { activeMapView->map->wallRemoveSelected(this); }, hasActiveMapViewWallMode);
-
+	
+	HotkeyRegistry::registerAction(HotkeyAction::GatEdit_NextTileType,	[this]() { windowData.gatEdit.gatIndex = (windowData.gatEdit.gatIndex + 1)%10;	heightDoodle = false;	gatDoodle = true; }, hasActiveMapViewGatMode);
+	HotkeyRegistry::registerAction(HotkeyAction::GatEdit_PrevTileType,	[this]() { windowData.gatEdit.gatIndex = (windowData.gatEdit.gatIndex + 11)%10;	heightDoodle = false;	gatDoodle = true; }, hasActiveMapViewGatMode);
+	HotkeyRegistry::registerAction(HotkeyAction::GatEdit_Tile0,			[this]() { windowData.gatEdit.gatIndex = 0;	heightDoodle = false;	gatDoodle = true; }, hasActiveMapViewGatMode);
+	HotkeyRegistry::registerAction(HotkeyAction::GatEdit_Tile1,			[this]() { windowData.gatEdit.gatIndex = 1;	heightDoodle = false;	gatDoodle = true; }, hasActiveMapViewGatMode);
+	HotkeyRegistry::registerAction(HotkeyAction::GatEdit_Tile2,			[this]() { windowData.gatEdit.gatIndex = 2;	heightDoodle = false;	gatDoodle = true; }, hasActiveMapViewGatMode);
+	HotkeyRegistry::registerAction(HotkeyAction::GatEdit_Tile3,			[this]() { windowData.gatEdit.gatIndex = 3;	heightDoodle = false;	gatDoodle = true; }, hasActiveMapViewGatMode);
+	HotkeyRegistry::registerAction(HotkeyAction::GatEdit_Tile4,			[this]() { windowData.gatEdit.gatIndex = 4;	heightDoodle = false;	gatDoodle = true; }, hasActiveMapViewGatMode);
+	HotkeyRegistry::registerAction(HotkeyAction::GatEdit_Tile5,			[this]() { windowData.gatEdit.gatIndex = 5;	heightDoodle = false;	gatDoodle = true; }, hasActiveMapViewGatMode);
+	HotkeyRegistry::registerAction(HotkeyAction::GatEdit_Tile6,			[this]() { windowData.gatEdit.gatIndex = 6;	heightDoodle = false;	gatDoodle = true; }, hasActiveMapViewGatMode);
+	HotkeyRegistry::registerAction(HotkeyAction::GatEdit_Tile7,			[this]() { windowData.gatEdit.gatIndex = 7;	heightDoodle = false;	gatDoodle = true; }, hasActiveMapViewGatMode);
+	HotkeyRegistry::registerAction(HotkeyAction::GatEdit_Tile8,			[this]() { windowData.gatEdit.gatIndex = 8;	heightDoodle = false;	gatDoodle = true; }, hasActiveMapViewGatMode);
+	HotkeyRegistry::registerAction(HotkeyAction::GatEdit_Tile9,			[this]() { windowData.gatEdit.gatIndex = 9;	heightDoodle = false;	gatDoodle = true; }, hasActiveMapViewGatMode);
 
 	HotkeyRegistry::registerAction(HotkeyAction::Texture_PrevTexture,	[this]() { activeMapView->textureSelected = (activeMapView->textureSelected + activeMapView->map->rootNode->getComponent<Gnd>()->textures.size() - 1) % (int)activeMapView->map->rootNode->getComponent<Gnd>()->textures.size(); }, hasActiveMapViewTextureWallMode);
 	HotkeyRegistry::registerAction(HotkeyAction::Texture_NextTexture,	[this]() { activeMapView->textureSelected = (activeMapView->textureSelected + 1) % activeMapView->map->rootNode->getComponent<Gnd>()->textures.size(); }, hasActiveMapViewTextureWallMode);
