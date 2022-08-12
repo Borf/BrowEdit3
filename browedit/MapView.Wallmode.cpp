@@ -8,7 +8,7 @@
 #include <imgui.h>
 
 
-glm::vec2 selectionStart;
+glm::ivec2 selectionStart;
 int selectionSide;
 
 void MapView::postRenderWallMode(BrowEdit* browEdit)
@@ -80,19 +80,67 @@ void MapView::postRenderWallMode(BrowEdit* browEdit)
 		glEnable(GL_DEPTH_TEST);
 	}
 
-	if (ImGui::IsMouseReleased(ImGuiMouseButton_Left))
-	{
-		std::cout << "Released" << std::endl;
-
-	}
 
 	if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
 	{
-		std::cout << "Clicked" << std::endl;
+		selectionStart = tileHovered;
+		selectionSide = side;
 	}
 	if (ImGui::IsMouseDown(ImGuiMouseButton_Left))
 	{
-		std::cout << "Down" << std::endl;
+		glm::ivec2 tile = selectionStart;
+		for (int i = 0; i < 10; i++)
+		{
+			if (gnd->inMap(tile) && gnd->inMap(tile + glm::ivec2(1, 0)) && gnd->inMap(tile + glm::ivec2(0, 1)))
+			{
+				auto cube = gnd->cubes[tile.x][tile.y];
+				glm::vec3 v1(10 * tile.x + 10, -cube->h2, 10 * gnd->height - 10 * tile.y + 10);
+				glm::vec3 v2(10 * tile.x + 10, -cube->h4, 10 * gnd->height - 10 * tile.y);
+				glm::vec3 v3(10 * tile.x + 10, -gnd->cubes[tile.x + 1][tile.y]->h1, 10 * gnd->height - 10 * tile.y + 10);
+				glm::vec3 v4(10 * tile.x + 10, -gnd->cubes[tile.x + 1][tile.y]->h3, 10 * gnd->height - 10 * tile.y);
+				if (side == 2)
+				{
+					v1 = glm::vec3(10 * tile.x, -cube->h3, 10 * gnd->height - 10 * tile.y);
+					v2 = glm::vec3(10 * tile.x + 10, -cube->h4, 10 * gnd->height - 10 * tile.y);
+					v4 = glm::vec3(10 * tile.x + 10, -gnd->cubes[tile.x][tile.y + 1]->h2, 10 * gnd->height - 10 * tile.y);
+					v3 = glm::vec3(10 * tile.x, -gnd->cubes[tile.x][tile.y + 1]->h1, 10 * gnd->height - 10 * tile.y);
+
+				}
+
+				glDisable(GL_DEPTH_TEST);
+				glLineWidth(2);
+				glDisable(GL_TEXTURE_2D);
+				glColor4f(1, 1, 1, 1);
+				glBegin(GL_QUADS);
+				glVertex3f(v1.x, v1.y, v1.z);
+				glVertex3f(v2.x, v2.y, v2.z);
+				glVertex3f(v4.x, v4.y, v4.z);
+				glVertex3f(v3.x, v3.y, v3.z);
+				glEnd();
+				glBegin(GL_LINES);
+				glVertex3f(v1.x, v1.y, v1.z);
+				glVertex3f(v2.x, v2.y, v2.z);
+				glVertex3f(v4.x, v4.y, v4.z);
+				glVertex3f(v3.x, v3.y, v3.z);
+				glEnd();
+				glEnable(GL_DEPTH_TEST);
+
+			}
+			if (tile == tileHovered)
+				break;
+			if (side == 1)
+				tile += glm::ivec2(0, glm::sign(tileHovered.y - selectionStart.y));
+			else
+				tile += glm::ivec2(glm::sign(tileHovered.x - selectionStart.x), 0);
+			if (tileHovered == selectionStart)
+				break;
+		}
+	}
+	if (ImGui::IsMouseReleased(ImGuiMouseButton_Left))
+	{
+
+
+
 	}
 
 
