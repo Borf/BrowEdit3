@@ -120,6 +120,10 @@ public:
 		textureBrushFlipV = (mask & 1) != 0;
 	}
 
+	int wallWidth = 4;
+	float wallHeight = -1;
+	int wallOffset = 0;
+
 
 	//height edit mode
 	bool mouseDown = false;

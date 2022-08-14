@@ -389,10 +389,9 @@ void BrowEdit::showWallWindow()
 		ImGui::SetCursorScreenPos(cursorPos);
 	}
 
-	static int width = 4;
-	static float height = -1.0f;
-	ImGui::SliderInt("Brush Width", &width, 1, 100);
-	ImGui::SliderFloat("Brush Height (-1 auto)", &height, -1, 100);
+	ImGui::InputInt("Brush Offset", &activeMapView->wallOffset, 0, activeMapView->wallWidth);
+	ImGui::InputInt("Brush Width", &activeMapView->wallWidth, 1, 100);
+	ImGui::SliderFloat("Brush Height (-1 auto)", &activeMapView->wallHeight, -1, 100);
 
 
 	ImGui::End();

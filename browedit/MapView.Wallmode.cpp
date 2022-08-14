@@ -86,82 +86,84 @@ void MapView::postRenderWallMode(BrowEdit* browEdit)
 		glEnable(GL_DEPTH_TEST);
 	}
 
-
-	if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+	if (hovered)
 	{
-		selectionStart = tileHovered;
-		selectionSide = side;
-	}
-	if (ImGui::IsMouseDown(ImGuiMouseButton_Left))
-	{
-		glm::ivec2 tile = selectionStart;
-		for (int i = 0; i < 100; i++)
+		if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
 		{
-			if (gnd->inMap(tile) && gnd->inMap(tile + glm::ivec2(1, 0)) && gnd->inMap(tile + glm::ivec2(0, 1)))
+			selectionStart = tileHovered;
+			selectionSide = side;
+		}
+		if (ImGui::IsMouseDown(ImGuiMouseButton_Left))
+		{
+			glm::ivec2 tile = selectionStart;
+			for (int i = 0; i < 100; i++)
 			{
-				auto cube = gnd->cubes[tile.x][tile.y];
-				glm::vec3 v1(10 * tile.x + 10, -cube->h2, 10 * gnd->height - 10 * tile.y + 10);
-				glm::vec3 v2(10 * tile.x + 10, -cube->h4, 10 * gnd->height - 10 * tile.y);
-				glm::vec3 v3(10 * tile.x + 10, -gnd->cubes[tile.x + 1][tile.y]->h1, 10 * gnd->height - 10 * tile.y + 10);
-				glm::vec3 v4(10 * tile.x + 10, -gnd->cubes[tile.x + 1][tile.y]->h3, 10 * gnd->height - 10 * tile.y);
-				if (side == 2)
+				if (gnd->inMap(tile) && gnd->inMap(tile + glm::ivec2(1, 0)) && gnd->inMap(tile + glm::ivec2(0, 1)))
 				{
-					v1 = glm::vec3(10 * tile.x, -cube->h3, 10 * gnd->height - 10 * tile.y);
-					v2 = glm::vec3(10 * tile.x + 10, -cube->h4, 10 * gnd->height - 10 * tile.y);
-					v4 = glm::vec3(10 * tile.x + 10, -gnd->cubes[tile.x][tile.y + 1]->h2, 10 * gnd->height - 10 * tile.y);
-					v3 = glm::vec3(10 * tile.x, -gnd->cubes[tile.x][tile.y + 1]->h1, 10 * gnd->height - 10 * tile.y);
+					auto cube = gnd->cubes[tile.x][tile.y];
+					glm::vec3 v1(10 * tile.x + 10, -cube->h2, 10 * gnd->height - 10 * tile.y + 10);
+					glm::vec3 v2(10 * tile.x + 10, -cube->h4, 10 * gnd->height - 10 * tile.y);
+					glm::vec3 v3(10 * tile.x + 10, -gnd->cubes[tile.x + 1][tile.y]->h1, 10 * gnd->height - 10 * tile.y + 10);
+					glm::vec3 v4(10 * tile.x + 10, -gnd->cubes[tile.x + 1][tile.y]->h3, 10 * gnd->height - 10 * tile.y);
+					if (side == 2)
+					{
+						v1 = glm::vec3(10 * tile.x, -cube->h3, 10 * gnd->height - 10 * tile.y);
+						v2 = glm::vec3(10 * tile.x + 10, -cube->h4, 10 * gnd->height - 10 * tile.y);
+						v4 = glm::vec3(10 * tile.x + 10, -gnd->cubes[tile.x][tile.y + 1]->h2, 10 * gnd->height - 10 * tile.y);
+						v3 = glm::vec3(10 * tile.x, -gnd->cubes[tile.x][tile.y + 1]->h1, 10 * gnd->height - 10 * tile.y);
+
+					}
+					glEnable(GL_BLEND);
+					glDisable(GL_DEPTH_TEST);
+					glLineWidth(2);
+					glDisable(GL_TEXTURE_2D);
+					glColor4f(1, 1, 1, 1);
+					glBegin(GL_LINE_LOOP);
+					glVertex3f(v1.x, v1.y, v1.z);
+					glVertex3f(v2.x, v2.y, v2.z);
+					glVertex3f(v4.x, v4.y, v4.z);
+					glVertex3f(v3.x, v3.y, v3.z);
+					glEnd();
+					glBegin(GL_LINES);
+					glVertex3f(v1.x, v1.y, v1.z);
+					glVertex3f(v2.x, v2.y, v2.z);
+					glVertex3f(v4.x, v4.y, v4.z);
+					glVertex3f(v3.x, v3.y, v3.z);
+					glEnd();
+					glEnable(GL_DEPTH_TEST);
 
 				}
-				glEnable(GL_BLEND);
-				glDisable(GL_DEPTH_TEST);
-				glLineWidth(2);
-				glDisable(GL_TEXTURE_2D);
-				glColor4f(1, 1, 1, 1);
-				glBegin(GL_LINE_LOOP);
-				glVertex3f(v1.x, v1.y, v1.z);
-				glVertex3f(v2.x, v2.y, v2.z);
-				glVertex3f(v4.x, v4.y, v4.z);
-				glVertex3f(v3.x, v3.y, v3.z);
-				glEnd();
-				glBegin(GL_LINES);
-				glVertex3f(v1.x, v1.y, v1.z);
-				glVertex3f(v2.x, v2.y, v2.z);
-				glVertex3f(v4.x, v4.y, v4.z);
-				glVertex3f(v3.x, v3.y, v3.z);
-				glEnd();
-				glEnable(GL_DEPTH_TEST);
-
+				if (side == 1 && tile.y == tileHovered.y)
+					break;
+				if (side == 2 && tile.x == tileHovered.x)
+					break;
+				if (side == 1)
+					tile += glm::ivec2(0, glm::sign(tileHovered.y - selectionStart.y));
+				else
+					tile += glm::ivec2(glm::sign(tileHovered.x - selectionStart.x), 0);
+				if (tileHovered == selectionStart)
+					break;
 			}
-			if (side == 1 && tile.y == tileHovered.y)
-				break;
-			if (side == 2 && tile.x == tileHovered.x)
-				break;
-			if (side == 1)
-				tile += glm::ivec2(0, glm::sign(tileHovered.y - selectionStart.y));
-			else
-				tile += glm::ivec2(glm::sign(tileHovered.x - selectionStart.x), 0);
-			if (tileHovered == selectionStart)
-				break;
 		}
-	}
-	if (ImGui::IsMouseReleased(ImGuiMouseButton_Left))
-	{
-		selectedWalls.clear();
-		glm::ivec2 tile = selectionStart;
-		for (int i = 0; i < 100; i++)
+		if (ImGui::IsMouseReleased(ImGuiMouseButton_Left))
 		{
-			if (gnd->inMap(tile))
-				selectedWalls.push_back(glm::ivec3(tile, selectionSide));
-			if (side == 1 && tile.y == tileHovered.y)
-				break;
-			if (side == 2 && tile.x == tileHovered.x)
-				break;
-			if (side == 1)
-				tile += glm::ivec2(0, glm::sign(tileHovered.y - selectionStart.y));
-			else
-				tile += glm::ivec2(glm::sign(tileHovered.x - selectionStart.x), 0);
-			if (tileHovered == selectionStart)
-				break;
+			selectedWalls.clear();
+			glm::ivec2 tile = selectionStart;
+			for (int i = 0; i < 100; i++)
+			{
+				if (gnd->inMap(tile))
+					selectedWalls.push_back(glm::ivec3(tile, selectionSide));
+				if (side == 1 && tile.y == tileHovered.y)
+					break;
+				if (side == 2 && tile.x == tileHovered.x)
+					break;
+				if (side == 1)
+					tile += glm::ivec2(0, glm::sign(tileHovered.y - selectionStart.y));
+				else
+					tile += glm::ivec2(glm::sign(tileHovered.x - selectionStart.x), 0);
+				if (tileHovered == selectionStart)
+					break;
+			}
 		}
 	}
 	if (selectedWalls.size() > 0)
@@ -225,11 +227,6 @@ void MapView::postRenderWallMode(BrowEdit* browEdit)
 	}
 
 
-
-	ImGui::Begin("Statusbar");
-	ImGui::Text("%d", side);
-	ImGui::SameLine();
-	ImGui::End();
 
 	fbo->unbind();
 }

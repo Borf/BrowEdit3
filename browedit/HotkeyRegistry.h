@@ -71,6 +71,7 @@ enum class HotkeyAction
 
 	Texture_NextTexture,
 	Texture_PrevTexture,
+	Texture_SelectFull,
 
 
 	GatEdit_NextTileType,

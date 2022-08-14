@@ -828,16 +828,123 @@ void Map::wallAddSelected(BrowEdit* browEdit)
 {
 	auto gnd = rootNode->getComponent<Gnd>();
 	auto gndRenderer = rootNode->getComponent<GndRenderer>();
+
+	glm::vec2 uvSize = browEdit->activeMapView->textureEditUv2 - browEdit->activeMapView->textureEditUv1;
+	glm::vec2 uv1(0, 0);
+	glm::vec2 uv4(1, 1);
+
+	glm::vec2 uv2(uv4.x, uv1.y);
+	glm::vec2 uv3(uv1.x, uv4.y);
+
+	if (browEdit->activeMapView->textureBrushFlipD)
+		std::swap(uv1, uv4); // different from texturebrush window due to flipped UV
+
+	if (browEdit->activeMapView->textureBrushFlipH)
+	{
+		uv1.x = 1 - uv1.x;
+		uv2.x = 1 - uv2.x;
+		uv3.x = 1 - uv3.x;
+		uv4.x = 1 - uv4.x;
+	}
+	if (browEdit->activeMapView->textureBrushFlipV)
+	{
+		uv1.y = 1 - uv1.y;
+		uv2.y = 1 - uv2.y;
+		uv3.y = 1 - uv3.y;
+		uv4.y = 1 - uv4.y;
+	}
+	glm::vec2 xInc = (uv2 - uv1) * uvSize / (float)browEdit->activeMapView->wallWidth;
+	glm::vec2 yInc = (uv3 - uv1) * uvSize / (float)1;
+	if (browEdit->activeMapView->textureBrushFlipD)
+	{
+		if (browEdit->activeMapView->textureBrushFlipV ^ browEdit->activeMapView->textureBrushFlipH)
+		{
+			xInc = (uv1 - uv2) * uvSize / (float)1;
+			yInc = (uv1 - uv3) * uvSize / (float)browEdit->activeMapView->wallWidth;
+		}
+		if (browEdit->activeMapView->textureBrushFlipH == browEdit->activeMapView->textureBrushFlipV)
+		{
+			xInc = (uv2 - uv1) * uvSize / (float)1;
+			yInc = (uv3 - uv1) * uvSize / (float)browEdit->activeMapView->wallWidth;
+
+		}
+		std::swap(xInc, yInc);
+		std::swap(xInc.x, xInc.y);
+		std::swap(yInc.x, yInc.y);
+	}
+
+	glm::vec2 uvStart = uv1 + browEdit->activeMapView->textureEditUv1.x * (uv2 - uv1) + browEdit->activeMapView->textureEditUv1.y * (uv3 - uv1);
+
+
 	for (const auto& w : selectedWalls)
 	{
 		auto cube = gnd->cubes[w.x][w.y];
+
+		std::vector<VertexP3T2N3> verts;
+
+		int position = (w.x + w.y) % browEdit->activeMapView->wallWidth;
+		if (w.z == 1 && w.x < gnd->width) //tileside
+		{
+			auto cube2 = gnd->cubes[w.x + 1][w.y];
+			if (cube->h2 > cube2->h1 && cube->h4 > cube2->h3)
+				position = (gnd->height - w.y) % browEdit->activeMapView->wallWidth;
+		}
+		if (w.z == 2 && w.y < gnd->height) //tilefront
+		{
+			auto cube2 = gnd->cubes[w.x][w.y + 1];
+			if (cube2->h2 > cube->h4 && cube2->h1 > cube->h3)
+				position = (gnd->width - w.x) % browEdit->activeMapView->wallWidth;
+		}
+
+		glm::vec2 uv1_ = uvStart + xInc * (float)position + yInc * (float)0.0f;
+		glm::vec2 uv2_ = uv1_ + xInc;
+		glm::vec2 uv3_ = uv1_ + yInc;
+		glm::vec2 uv4_ = uv1_ + xInc + yInc;
+
+		auto t = new Gnd::Tile();
+		auto tIndex = gnd->tiles.size();
+		gnd->tiles.push_back(t);
+
+		t->color = glm::ivec4(255, 255, 255, 255);
+		t->textureIndex = browEdit->activeMapView->textureSelected;
+		t->lightmapIndex = 0;
+
+		t->v1 = uv1_;
+		t->v2 = t->v1 + xInc;
+		t->v3 = t->v1 + yInc;
+		t->v4 = t->v1 + xInc + yInc;
+		for (int i = 0; i < 4; i++)
+			t->texCoords[i].y = 1 - t->texCoords[i].y;
+
+		if (w.z == 2 && w.y < gnd->height) //tilefront
+		{
+			auto cube2 = gnd->cubes[w.x][w.y + 1];
+			if (cube2->h2 > cube->h4 && cube2->h1 > cube->h3)
+			{
+				std::swap(t->v1.x, t->v2.x);
+				std::swap(t->v3.x, t->v4.x);
+				std::swap(t->v1.y, t->v3.y);
+				std::swap(t->v2.y, t->v4.y);
+			}
+		}
+		if (w.z == 1 && w.x < gnd->width) //tileside
+		{
+			auto cube2 = gnd->cubes[w.x + 1][w.y];
+			if (cube->h2 < cube2->h1 && cube->h4 < cube2->h3)
+			{
+				std::swap(t->v1.y, t->v3.y);
+				std::swap(t->v2.y, t->v4.y);
+			}
+		}
+
 		if (w.z == 1 && cube->tileSide == -1)
-			cube->tileSide = 0;
+			cube->tileSide = (int)tIndex;
 		if (w.z == 2 && cube->tileFront == -1)
-			cube->tileFront = 0;
+			cube->tileFront = (int)tIndex;
 
 		gndRenderer->setChunkDirty(w.x, w.y);
 	}
+	gndRenderer->gndShadowDirty = true;
 }
 
 void Map::wallRemoveSelected(BrowEdit* browEdit)

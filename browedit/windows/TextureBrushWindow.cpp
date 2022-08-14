@@ -26,11 +26,6 @@ void BrowEdit::showTextureBrushWindow()
 
 	if (!ImGui::GetIO().WantTextInput && activeMapView)
 	{
-		if (ImGui::IsKeyPressed('F'))
-		{
-			activeMapView->textureEditUv1 = glm::vec2(0, 0);
-			activeMapView->textureEditUv2 = glm::vec2(1, 1);
-		}
 		if (ImGui::IsKeyPressed(GLFW_KEY_KP_ADD))
 		{
 			activeMapView->textureBrushWidth++;
