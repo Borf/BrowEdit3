@@ -295,6 +295,12 @@ bool Config::showWindow(BrowEdit* browEdit)
 				setupFileIO();
 			}
 		}
+		ImGui::SameLine();
+		if (ImGui::Button("Cancel"))
+		{
+			close = true;
+			browEdit->configBegin();
+		}
 
 	}
 	ImGui::End();
