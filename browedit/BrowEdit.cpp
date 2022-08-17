@@ -528,6 +528,9 @@ void fixBackup(const std::string& fileName, const std::string& backupfileName)
 
 void BrowEdit::saveMap(Map* map)
 {
+	if(config.recalculateQuadtreeOnSave)
+		map->recalculateQuadTree(this);
+
 	std::string mapName = map->name;
 	bool fullPath = false;
 	if (mapName.find(":") != std::string::npos)
@@ -600,6 +603,8 @@ void BrowEdit::saveAsMap(Map* map)
 			}
 		}
 	}
+	if (config.recalculateQuadtreeOnSave)
+		map->recalculateQuadTree(this);
 
 	std::string fileName = path.substr(path.rfind("\\") + 1);
 	std::string directory = path.substr(0, path.rfind("\\")+1);

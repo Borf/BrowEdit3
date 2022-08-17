@@ -30,6 +30,7 @@ public:
 	float toolbarButtonSize = 32;
 	ImVec4 toolbarButtonTint = ImVec4(1, 1, 1, 1);
 	bool backup = true;
+	bool recalculateQuadtreeOnSave = true;
 	ImVec4 toolbarButtonsViewOptions = ImVec4(139 / 255.0f, 233 / 255.0f, 253 / 255.0f, 1.0f); //cyan
 	ImVec4 toolbarButtonsHeightEdit = ImVec4(80 / 255.0f, 250 / 255.0f, 123 / 255.0f, 1.0f); //green
 	ImVec4 toolbarButtonsObjectEdit = ImVec4(255 / 255.0f, 184 / 255.0f, 108/ 255.0f, 1.0f); //orange
@@ -76,5 +77,6 @@ public:
 		grfEditorPath,
 		recentFiles,
 		hotkeys,
-		defaultEditMode);
+		defaultEditMode,
+		recalculateQuadtreeOnSave);
 };

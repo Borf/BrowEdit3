@@ -210,6 +210,7 @@ bool Config::showWindow(BrowEdit* browEdit)
 
 
 		ImGui::Checkbox("Save a backup of maps when saving", &backup);
+		ImGui::Checkbox("Recalculate quadtree on save", &recalculateQuadtreeOnSave);
 
 		ImGui::Text("Grid Sizes");
 		if (ImGui::BeginListBox("Translate Grid Sizes"))

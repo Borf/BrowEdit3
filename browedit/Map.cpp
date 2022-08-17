@@ -767,6 +767,7 @@ void Map::importTileColors(BrowEdit* browEdit, bool exportWalls)
 
 void Map::recalculateQuadTree(BrowEdit* browEdit)
 {
+	std::cout << "Recalculating quadtree" << std::endl;
 	auto rsw = rootNode->getComponent<Rsw>();
 	if (!rsw->quadtree)
 	{
@@ -775,6 +776,7 @@ void Map::recalculateQuadTree(BrowEdit* browEdit)
 	}
 
 	rsw->recalculateQuadtree();
+	std::cout << "Done recalculating quadtree" << std::endl;
 }
 
 void Map::growTileSelection(BrowEdit* browEdit)
