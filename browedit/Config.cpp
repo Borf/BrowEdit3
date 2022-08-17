@@ -298,8 +298,12 @@ bool Config::showWindow(BrowEdit* browEdit)
 		ImGui::SameLine();
 		if (ImGui::Button("Cancel"))
 		{
-			close = true;
 			browEdit->configBegin();
+			if (isValid() == "")
+			{
+				close = true;
+				browEdit->windowData.objectWindowSelectedTreeNode = nullptr;
+			}
 		}
 
 	}

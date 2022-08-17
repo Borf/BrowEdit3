@@ -11,6 +11,8 @@
 #include <imgui.h>
 #include <imgui_internal.h>
 
+extern std::vector<glm::ivec3> selectedWalls; //TODO: I want less extern
+
 void BrowEdit::showWallWindow()
 {
 	if (!activeMapView)
@@ -140,7 +142,7 @@ void BrowEdit::showWallWindow()
 		ImRect bb(window->DC.CursorPos, window->DC.CursorPos + Canvas);
 		ImGui::ItemSize(bb);
 		ImGui::ItemAdd(bb, NULL);
-		const ImGuiID id = window->GetID("Texture Edit");
+		const ImGuiID id = window->GetID("Wall Editing");
 		ImGuiContext& g = *GImGui;
 
 		ImGui::RenderFrame(bb.Min, bb.Max, ImGui::GetColorU32(ImGuiCol_FrameBg, 1), true, style.FrameRounding);
@@ -392,6 +394,115 @@ void BrowEdit::showWallWindow()
 	ImGui::InputInt("Brush Offset", &activeMapView->wallOffset, 0, activeMapView->wallWidth);
 	ImGui::InputInt("Brush Width", &activeMapView->wallWidth, 1, 100);
 	ImGui::SliderFloat("Brush Height (-1 auto)", &activeMapView->wallHeight, -1, 100);
+
+	if (selectedWalls.size() > 0)
+	{
+		if(ImGui::CollapsingHeader("Selection Texture Editing", ImGuiTreeNodeFlags_DefaultOpen))
+		for (const auto& w: selectedWalls)
+		{
+			if (gnd->cubes[w.x][w.y]->tileIds[w.z == 1 ? 2 : 1] > -1)
+			{
+				ImGui::PushID(&w);
+				ImGui::LabelText("Wall texture: ", "%d,%d - %d", w.x, w.y, w.z);
+				auto tile = gnd->tiles[gnd->cubes[w.x][w.y]->tileIds[w.z == 1 ? 2 : 1]];
+				bool changed = false;
+				{ //UV editor
+					ImGuiWindow* window = ImGui::GetCurrentWindow();
+					const ImGuiStyle& style = ImGui::GetStyle();
+					const ImGuiIO& IO = ImGui::GetIO();
+					ImDrawList* DrawList = ImGui::GetWindowDrawList();
+					const float avail = ImGui::GetContentRegionAvailWidth();
+					const float dim = ImMin(avail, 300.0f);
+					ImVec2 Canvas(dim, dim);
+
+					ImRect bb(window->DC.CursorPos, window->DC.CursorPos + Canvas);
+					ImGui::ItemSize(bb);
+					ImGui::ItemAdd(bb, NULL);
+					const ImGuiID id = window->GetID(("Texture Edit##" + std::to_string(w.x) + "_" + std::to_string(w.y) + "_" + std::to_string(w.z)).c_str());
+					ImGuiContext& g = *GImGui;
+
+					ImGui::RenderFrame(bb.Min, bb.Max, ImGui::GetColorU32(ImGuiCol_FrameBg, 1), true, style.FrameRounding);
+
+					ImVec2 uv1(0, 0);
+					ImVec2 uv4(1, 1);
+					ImVec2 uv2(uv4.x, uv1.y);
+					ImVec2 uv3(uv1.x, uv4.y);
+
+					window->DrawList->AddImageQuad((ImTextureID)(long long)gndRenderer->textures[tile->textureIndex]->id(),
+						ImVec2(bb.Min.x + 1, bb.Min.y + 1), ImVec2(bb.Max.x - 1, bb.Min.y + 1), ImVec2(bb.Max.x - 1, bb.Max.y - 1), ImVec2(bb.Min.x + 1, bb.Max.y - 1),
+						uv1, uv2, uv4, uv3);
+
+
+					if (snapDivX > 0)
+						for (float x = 0; x < 1; x += (1.0f / snapDivX))
+							window->DrawList->AddLine(
+								ImVec2(bb.Min.x + x * bb.GetWidth(), bb.Max.y - 0 * bb.GetHeight()),
+								ImVec2(bb.Min.x + x * bb.GetWidth(), bb.Max.y - 1 * bb.GetHeight()), ImGui::GetColorU32(ImGuiCol_Text, 0.25), 1.0f);
+					if (snapDivY > 0)
+						for (float y = 0; y < 1; y += (1.0f / snapDivY))
+							window->DrawList->AddLine(
+								ImVec2(bb.Min.x + 0 * bb.GetWidth(), bb.Max.y - y * bb.GetHeight()),
+								ImVec2(bb.Min.x + 1 * bb.GetWidth(), bb.Max.y - y * bb.GetHeight()), ImGui::GetColorU32(ImGuiCol_Text, 0.25), 1.0f);
+
+					ImVec2 points[4];
+					for (int i = 0; i < 4; i++)
+						points[i] = ImVec2(bb.Min.x + tile->texCoords[i].x * bb.GetWidth(), bb.Max.y - tile->texCoords[i].y * bb.GetHeight());
+					window->DrawList->AddConvexPolyFilled(points, 4, ImGui::GetColorU32(ImGuiCol_Text, 0.25f));
+					window->DrawList->AddPolyline(points, 4, ImGui::GetColorU32(ImGuiCol_Text, 0.75f), ImDrawFlags_Closed, 2);
+
+
+					ImVec2 cursorPos = ImGui::GetCursorScreenPos();
+					bool dragged = false;
+//						glm::vec2 offsets[] = { glm::vec2(0,0), glm::vec2(0,1), glm::vec2(1,1), glm::vec2(1,0) };
+					for (int i = 0; i < 4; i++) //4 corners
+					{
+						ImVec2 pos = ImVec2(bb.Min.x + tile->texCoords[i].x * bb.GetWidth(),
+							bb.Max.y - tile->texCoords[i].y * bb.GetHeight());
+						window->DrawList->AddCircle(pos, 5, ImGui::GetColorU32(ImGuiCol_Text, 1), 0, 2.0f);
+						ImGui::PushID(i);
+						ImGui::SetCursorScreenPos(pos - ImVec2(10, 10));
+						ImGui::InvisibleButton("button", ImVec2(2 * 10, 2 * 10));
+						if (ImGui::IsItemActive() || ImGui::IsItemHovered())
+							ImGui::SetTooltip("(%4.3f, %4.3f)", tile->texCoords[i].x, tile->texCoords[i].y);
+						if (ImGui::IsItemActive() && ImGui::IsMouseDragging(0))
+						{
+							float& x = tile->texCoords[i].x;
+							float& y = tile->texCoords[i].y;
+
+							x = (ImGui::GetIO().MousePos.x - bb.Min.x) / Canvas.x;
+							y = 1 - (ImGui::GetIO().MousePos.y - bb.Min.y) / Canvas.y;
+
+							bool snap = snapUv;
+							if (ImGui::GetIO().KeyShift)
+								snap = !snap;
+
+							if (snap && snapDivX > 0 && snapDivY > 0)
+							{
+								glm::vec2 inc(1.0f / snapDivX, 1.0f / snapDivY);
+								x = glm::round(x / inc.x) * inc.x;
+								y = glm::round(y / inc.y) * inc.y;
+							}
+							x = glm::clamp(x, 0.0f, 1.0f);
+							y = glm::clamp(y, 0.0f, 1.0f);
+							dragged = true;
+						}
+						else if (ImGui::IsMouseReleased(0) && dragged)
+						{
+							dragged = false;
+							changed = true;
+						}
+						ImGui::PopID();
+					}
+					if (dragged)
+						gndRenderer->setChunkDirty(w.x, w.y);
+
+
+					ImGui::SetCursorScreenPos(cursorPos);
+				}
+				ImGui::PopID();
+			}
+		}
+	}
 
 
 	ImGui::End();
