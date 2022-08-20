@@ -1282,7 +1282,7 @@ namespace util
 		return before.y + diff * (after.y - before.y);
 	}
 
-	bool EditableGraph(const char* label, std::vector<glm::vec2>* points, std::function<float(const std::vector<glm::vec2>&, float)> interpolationStyle)
+	bool EditableGraph(const char* label, std::vector<glm::vec2>* points, std::function<float(const std::vector<glm::vec2>&, float)> interpolationStyle, bool& activated)
 	{
 		bool changed = false;
 		auto window = ImGui::GetCurrentWindow();
@@ -1338,6 +1338,8 @@ namespace util
 			{
 				ImGui::SetTooltip("(%4.3f, %4.3f)", v.x, v.y);
 			}
+			if (ImGui::IsItemActivated())
+				activated = true;
 			if (ImGui::IsItemClicked(1))
 			{
 				it = points->erase(it); ImGui::PopID();
@@ -1426,11 +1428,12 @@ namespace util
 			ImGui::PopID();
 		}
 
-		ret = ret || EditableGraph(nullptr, f, interpolationStyle);
+		bool activated = false;
+		ret = ret || EditableGraph(nullptr, f, interpolationStyle, activated);
 		if (ret)
 			for (auto o : data)
 				*getProp(o) = *f;
-		if (ImGui::IsItemActivated())
+		if (ImGui::IsItemActivated() || activated)
 		{
 			startValues.clear();
 			for (auto o : data)
@@ -1440,7 +1443,13 @@ namespace util
 		{
 			auto ga = new GroupAction();
 			for (auto i = 0; i < data.size(); i++)
+			{
+				if (data[i]->node == nullptr)
+					throw "Error, data has no node";
+				if (startValues.size() <= i)
+					throw "Error, start values are not set properly...";
 				ga->addAction(new ObjectChangeAction(data[i]->node, getProp(data[i]), startValues[i], label));
+			}
 			map->doAction(ga, browEdit);
 		}
 		return ret;
