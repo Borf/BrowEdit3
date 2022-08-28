@@ -2,6 +2,7 @@
 
 #include <thread>
 #include <vector>
+#include <string>
 #include <glm/glm.hpp>
 
 class Map;
