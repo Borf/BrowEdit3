@@ -219,6 +219,8 @@ std::pair<glm::vec3, int> Lightmapper::calculateLight(const glm::vec3& groundPos
 	{
 		//sunlight calculation
 		float dotProd = glm::dot(normal, lightDirection);
+		if (!diffuseLighting)
+			dotProd = 1;
 		if (rsw->light.lightmapIntensity > 0 && dotProd > 0)
 		{
 			bool collides = false;

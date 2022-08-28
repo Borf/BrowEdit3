@@ -21,6 +21,7 @@ void BrowEdit::showLightmapSettingsWindow()
 		ImGui::DragInt("Quality", &lightmapper->quality, 1, 1, 10);
 		ImGui::Checkbox("Sunlight", &lightmapper->sunLight);
 		ImGui::Checkbox("Shadows", &lightmapper->shadows);
+		ImGui::Checkbox("Diffuse Lighting", &lightmapper->diffuseLighting);
 		ImGui::Checkbox("Debug Points", &lightmapper->buildDebugPoints);
 		ImGui::DragInt2("Generate Range X", glm::value_ptr(lightmapper->rangeX), 1, 0, gnd->width);
 		ImGui::DragInt2("Generate Range Y", glm::value_ptr(lightmapper->rangeY), 1, 0, gnd->height);

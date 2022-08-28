@@ -21,6 +21,7 @@ class Lightmapper
 public:
 	Map* map;
 	int quality = 1;
+	bool diffuseLighting = true;
 	bool sunLight = true;
 	bool shadows = true;
 	int threadCount = 4;
