@@ -1,6 +1,7 @@
 #pragma once
 
 #include <thread>
+#include <vector>
 #include <glm/glm.hpp>
 
 class Map;
