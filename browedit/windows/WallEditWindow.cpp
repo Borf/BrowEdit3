@@ -7,11 +7,13 @@
 #include <browedit/components/Gnd.h>
 #include <browedit/components/GndRenderer.h>
 #include <browedit/gl/Texture.h>
+#include <browedit/HotkeyRegistry.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include <imgui.h>
 #include <imgui_internal.h>
 
 extern std::vector<glm::ivec3> selectedWalls; //TODO: I want less extern
+extern bool previewWall;
 
 void BrowEdit::showWallWindow()
 {
@@ -394,6 +396,10 @@ void BrowEdit::showWallWindow()
 	ImGui::InputInt("Brush Offset", &activeMapView->wallOffset, 0, activeMapView->wallWidth);
 	ImGui::InputInt("Brush Width", &activeMapView->wallWidth, 1, 100);
 	ImGui::SliderFloat("Brush Height (-1 auto)", &activeMapView->wallHeight, -1, 100);
+
+	hotkeyButton("Apply Texture", HotkeyAction::WallEdit_ReApply);
+	previewWall = ImGui::IsItemHovered();
+
 
 	if (selectedWalls.size() > 0)
 	{

@@ -110,6 +110,7 @@ void BrowEdit::registerActions()
 
 	HotkeyRegistry::registerAction(HotkeyAction::WallEdit_AddWall,		[this]() { activeMapView->map->wallAddSelected(this); }, hasActiveMapViewWallMode);
 	HotkeyRegistry::registerAction(HotkeyAction::WallEdit_RemoveWall,	[this]() { activeMapView->map->wallRemoveSelected(this); }, hasActiveMapViewWallMode);
+	HotkeyRegistry::registerAction(HotkeyAction::WallEdit_ReApply,		[this]() { activeMapView->map->wallReApplySelected(this); }, hasActiveMapViewWallMode);
 	
 	HotkeyRegistry::registerAction(HotkeyAction::GatEdit_NextTileType,	[this]() { windowData.gatEdit.gatIndex = (windowData.gatEdit.gatIndex + 1)%10;	heightDoodle = false;	gatDoodle = true; }, hasActiveMapViewGatMode);
 	HotkeyRegistry::registerAction(HotkeyAction::GatEdit_PrevTileType,	[this]() { windowData.gatEdit.gatIndex = (windowData.gatEdit.gatIndex + 11)%10;	heightDoodle = false;	gatDoodle = true; }, hasActiveMapViewGatMode);

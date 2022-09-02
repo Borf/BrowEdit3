@@ -68,6 +68,7 @@ enum class HotkeyAction
 
 	WallEdit_AddWall,
 	WallEdit_RemoveWall,
+	WallEdit_ReApply,
 
 	Texture_NextTexture,
 	Texture_PrevTexture,

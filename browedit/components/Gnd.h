@@ -95,7 +95,7 @@ public:
 	class Tile
 	{
 	public:
-		Tile() : textureIndex(-1), lightmapIndex(-1) {};
+		Tile() : textureIndex(-1), lightmapIndex(-1), v1(0.0f), v2(0.0f), v3(0.0f), v4(0.0f) {};
 		Tile(const Tile& o) {
 			v1 = o.v1;
 			v2 = o.v2;

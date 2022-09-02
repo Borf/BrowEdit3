@@ -6,6 +6,7 @@
 class Node;
 class Action;
 class Rsw;
+class Gnd;
 class BrowEdit;
 class GroupAction;
 namespace gl { class FBO; }
@@ -73,5 +74,30 @@ public:
 
 	void wallAddSelected(BrowEdit* browEdit);//TODO: is this really the place?
 	void wallRemoveSelected(BrowEdit* browEdit);
+	void wallReApplySelected(BrowEdit* browEdit);
 
+};
+
+
+
+class WallCalculation
+{
+	glm::vec2 uv1;
+	glm::vec2 uv2;
+	glm::vec2 uv3;
+	glm::vec2 uv4;
+
+	glm::vec2 uvStart;
+	glm::vec2 xInc;
+	glm::vec2 yInc;
+	int wallWidth;
+
+public:
+	glm::vec2 g_uv1;
+	glm::vec2 g_uv2;
+	glm::vec2 g_uv3;
+	glm::vec2 g_uv4;
+
+	void prepare(BrowEdit* browEdit);
+	void calcUV(const glm::ivec3& position, Gnd* gnd);
 };

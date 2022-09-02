@@ -4,7 +4,9 @@
 #include <browedit/Map.h>
 #include <browedit/Node.h>
 #include <browedit/components/Gnd.h>
+#include <browedit/components/GndRenderer.h>
 #include <browedit/gl/FBO.h>
+#include <browedit/gl/Texture.h>
 #include <browedit/shaders/SimpleShader.h>
 #include <imgui.h>
 
@@ -12,11 +14,12 @@
 glm::ivec2 selectionStart;
 int selectionSide;
 std::vector<glm::ivec3> selectedWalls;
-
+bool previewWall = false; //move this
 
 void MapView::postRenderWallMode(BrowEdit* browEdit)
 {
 	auto gnd = map->rootNode->getComponent<Gnd>();
+	auto gndRenderer = map->rootNode->getComponent<GndRenderer>();
 	auto mouse3D = gnd->rayCast(mouseRay, viewEmptyTiles);
 	glm::ivec2 tileHovered((int)glm::floor(mouse3D.x / 10), (gnd->height - (int)glm::floor(mouse3D.z) / 10));
 
@@ -169,6 +172,10 @@ void MapView::postRenderWallMode(BrowEdit* browEdit)
 	if (selectedWalls.size() > 0)
 	{
 		std::vector<VertexP3T2N3> verts;
+
+		WallCalculation calculation;
+		calculation.prepare(browEdit);
+
 		for (const auto& wall : selectedWalls)
 		{
 			glm::ivec2 tile = glm::ivec2(wall);
@@ -189,41 +196,65 @@ void MapView::postRenderWallMode(BrowEdit* browEdit)
 					v3 = glm::vec3(10 * tile.x, -gnd->cubes[tile.x][tile.y + 1]->h1, 10 * gnd->height - 10 * tile.y);
 					normal = glm::vec3(0, 0, 1);
 				}
-				verts.push_back(VertexP3T2N3(v1, glm::vec2(0, 0), normal));
-				verts.push_back(VertexP3T2N3(v2, glm::vec2(0, 0), normal));
-				verts.push_back(VertexP3T2N3(v2, glm::vec2(0, 0), normal));
-				verts.push_back(VertexP3T2N3(v4, glm::vec2(0, 0), normal));
-				verts.push_back(VertexP3T2N3(v4, glm::vec2(0, 0), normal));
-				verts.push_back(VertexP3T2N3(v3, glm::vec2(0, 0), normal));
-				verts.push_back(VertexP3T2N3(v3, glm::vec2(0, 0), normal));
-				verts.push_back(VertexP3T2N3(v1, glm::vec2(0, 0), normal));
+				if (previewWall)
+				{
+					calculation.calcUV(wall, gnd);
+					verts.push_back(VertexP3T2N3(v1, calculation.g_uv1, normal));
+					verts.push_back(VertexP3T2N3(v2, calculation.g_uv2, normal));
+					verts.push_back(VertexP3T2N3(v4, calculation.g_uv4, normal));
+					verts.push_back(VertexP3T2N3(v3, calculation.g_uv3, normal));
+				}
+				else
+				{
+					verts.push_back(VertexP3T2N3(v1, glm::vec2(0, 0), normal));
+					verts.push_back(VertexP3T2N3(v2, glm::vec2(0, 0), normal));
+					verts.push_back(VertexP3T2N3(v2, glm::vec2(0, 0), normal));
+					verts.push_back(VertexP3T2N3(v4, glm::vec2(0, 0), normal));
+					verts.push_back(VertexP3T2N3(v4, glm::vec2(0, 0), normal));
+					verts.push_back(VertexP3T2N3(v3, glm::vec2(0, 0), normal));
+					verts.push_back(VertexP3T2N3(v3, glm::vec2(0, 0), normal));
+					verts.push_back(VertexP3T2N3(v1, glm::vec2(0, 0), normal));
+				}
 			}
 		}
 
-		simpleShader->use();
-		simpleShader->setUniform(SimpleShader::Uniforms::projectionMatrix, nodeRenderContext.projectionMatrix);
-		simpleShader->setUniform(SimpleShader::Uniforms::viewMatrix, nodeRenderContext.viewMatrix);
-		simpleShader->setUniform(SimpleShader::Uniforms::modelMatrix, glm::mat4(1.0f));
-		glLineWidth(2);
+		if (verts.size() > 0)
+		{
+			simpleShader->use();
+			simpleShader->setUniform(SimpleShader::Uniforms::projectionMatrix, nodeRenderContext.projectionMatrix);
+			simpleShader->setUniform(SimpleShader::Uniforms::viewMatrix, nodeRenderContext.viewMatrix);
+			simpleShader->setUniform(SimpleShader::Uniforms::modelMatrix, glm::mat4(1.0f));
+			glLineWidth(2);
 
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		glEnable(GL_BLEND);
-		glDisable(GL_DEPTH_TEST);
-		simpleShader->setUniform(SimpleShader::Uniforms::textureFac, 0.0f);
-		simpleShader->setUniform(SimpleShader::Uniforms::color, glm::vec4(1, 0, 0, 1));
-		glEnableVertexAttribArray(0);
-		glEnableVertexAttribArray(1);
-		glEnableVertexAttribArray(2);
-		glDisableVertexAttribArray(3);
-		glDisableVertexAttribArray(4); //TODO: vao
-		glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexP3T2N3), verts[0].data + 0);
-		glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexP3T2N3), verts[0].data + 3);
-		glVertexAttribPointer(2, 3, GL_FLOAT, false, sizeof(VertexP3T2N3), verts[0].data + 5);
-		glDrawArrays(GL_LINES, 0, (int)verts.size());
+			glBindBuffer(GL_ARRAY_BUFFER, 0);
+			glEnable(GL_BLEND);
+			glDisable(GL_DEPTH_TEST);
+			glEnableVertexAttribArray(0);
+			glEnableVertexAttribArray(1);
+			glEnableVertexAttribArray(2);
+			glDisableVertexAttribArray(3);
+			glDisableVertexAttribArray(4); //TODO: vao
+			glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexP3T2N3), verts[0].data + 0);
+			glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexP3T2N3), verts[0].data + 3);
+			glVertexAttribPointer(2, 3, GL_FLOAT, false, sizeof(VertexP3T2N3), verts[0].data + 5);
+			if (previewWall)
+			{
+				simpleShader->setUniform(SimpleShader::Uniforms::textureFac, 1.0f);
+				simpleShader->setUniform(SimpleShader::Uniforms::color, glm::vec4(1, 1, 1, 1));
+				
+				gndRenderer->textures[browEdit->activeMapView->textureSelected]->bind();
+				glDrawArrays(GL_QUADS, 0, (int)verts.size());
+			}
+			else
+			{
+				simpleShader->setUniform(SimpleShader::Uniforms::textureFac, 0.0f);
+				simpleShader->setUniform(SimpleShader::Uniforms::color, glm::vec4(1, 0, 0, 1));
+				glDrawArrays(GL_LINES, 0, (int)verts.size());
+			}
 
 
-		glEnable(GL_DEPTH_TEST);
-
+			glEnable(GL_DEPTH_TEST);
+		}
 	}
 
 
