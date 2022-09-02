@@ -446,7 +446,7 @@ void BrowEdit::showWallWindow()
 
 					ImVec2 points[4];
 					for (int i = 0; i < 4; i++)
-						points[i] = ImVec2(bb.Min.x + tile->texCoords[i].x * bb.GetWidth(), bb.Max.y - tile->texCoords[i].y * bb.GetHeight());
+						points[i] = ImVec2(bb.Min.x + tile->texCoords[i].x * bb.GetWidth(), bb.Max.y - bb.GetHeight() + tile->texCoords[i].y * bb.GetHeight());
 					window->DrawList->AddConvexPolyFilled(points, 4, ImGui::GetColorU32(ImGuiCol_Text, 0.25f));
 					window->DrawList->AddPolyline(points, 4, ImGui::GetColorU32(ImGuiCol_Text, 0.75f), ImDrawFlags_Closed, 2);
 
@@ -457,7 +457,7 @@ void BrowEdit::showWallWindow()
 					for (int i = 0; i < 4; i++) //4 corners
 					{
 						ImVec2 pos = ImVec2(bb.Min.x + tile->texCoords[i].x * bb.GetWidth(),
-							bb.Max.y - tile->texCoords[i].y * bb.GetHeight());
+							bb.Max.y - bb.GetHeight() + tile->texCoords[i].y * bb.GetHeight());
 						window->DrawList->AddCircle(pos, 5, ImGui::GetColorU32(ImGuiCol_Text, 1), 0, 2.0f);
 						ImGui::PushID(i);
 						ImGui::SetCursorScreenPos(pos - ImVec2(10, 10));
@@ -470,7 +470,7 @@ void BrowEdit::showWallWindow()
 							float& y = tile->texCoords[i].y;
 
 							x = (ImGui::GetIO().MousePos.x - bb.Min.x) / Canvas.x;
-							y = 1 - (ImGui::GetIO().MousePos.y - bb.Min.y) / Canvas.y;
+							y = (ImGui::GetIO().MousePos.y - bb.Min.y) / Canvas.y;
 
 							bool snap = snapUv;
 							if (ImGui::GetIO().KeyShift)
