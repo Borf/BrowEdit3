@@ -91,7 +91,7 @@ class WallCalculation
 	glm::vec2 xInc;
 	glm::vec2 yInc;
 	int wallWidth;
-
+	int offset;
 public:
 	glm::vec2 g_uv1;
 	glm::vec2 g_uv2;

@@ -826,18 +826,18 @@ void Map::createPrefab(const std::string& fileName, BrowEdit* browEdit)
 void WallCalculation::calcUV(const glm::ivec3& position, Gnd* gnd)
 {
 	auto cube = gnd->cubes[position.x][position.y];
-	int index = (position.x + position.y) % wallWidth;
+	int index = (offset + position.x + position.y) % wallWidth;
 	if (position.z == 1 && position.x < gnd->width) //tileside
 	{
 		auto cube2 = gnd->cubes[position.x + 1][position.y];
 		if (cube->h2 > cube2->h1 && cube->h4 > cube2->h3)
-			index = (gnd->height - position.y) % wallWidth;
+			index = (gnd->height - position.y - offset) % wallWidth;
 	}
 	if (position.z == 2 && position.y < gnd->height) //tilefront
 	{
 		auto cube2 = gnd->cubes[position.x][position.y + 1];
 		if (cube2->h2 > cube->h4 && cube2->h1 > cube->h3)
-			index = (gnd->width - position.x) % wallWidth;
+			index = (gnd->width - position.x - offset) % wallWidth;
 	}
 
 	g_uv1 = uvStart + xInc * (float)index + yInc * (float)0.0f;
@@ -876,6 +876,7 @@ void WallCalculation::calcUV(const glm::ivec3& position, Gnd* gnd)
 void WallCalculation::prepare(BrowEdit* browEdit)
 {
 	wallWidth = browEdit->activeMapView->wallWidth;
+	offset = browEdit->activeMapView->wallOffset;
 	glm::vec2 uvSize = browEdit->activeMapView->textureEditUv2 - browEdit->activeMapView->textureEditUv1;
 	uv1 = glm::vec2(0, 0);
 	uv4 = glm::vec2(1, 1);

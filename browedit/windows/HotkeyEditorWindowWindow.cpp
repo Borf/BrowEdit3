@@ -10,7 +10,7 @@ void BrowEdit::showHotkeyEditorWindow()
 {
 	ImGui::Begin("Hotkey Editor");
 
-	std::string filter = "";
+	static std::string filter = "";
 	ImGui::InputText("Filter", &filter);
 	std::transform(filter.begin(), filter.end(), filter.begin(), ::tolower);
 

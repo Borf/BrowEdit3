@@ -248,7 +248,11 @@ void BrowEdit::showHeightWindow()
 						changed |= util::DragFloat2(this, activeMapView->map, activeMapView->map->rootNode, "UV2", &tile->v2, 0.01f, 0.0f, 1.0f);
 						changed |= util::DragFloat2(this, activeMapView->map, activeMapView->map->rootNode, "UV3", &tile->v3, 0.01f, 0.0f, 1.0f);
 						changed |= util::DragFloat2(this, activeMapView->map, activeMapView->map->rootNode, "UV4", &tile->v4, 0.01f, 0.0f, 1.0f);
+
 						{ //UV editor
+
+							ImGui::DragFloat("Snap size", &activeMapView->gridSizeTranslate, 0.125);
+
 							ImGuiWindow* window = ImGui::GetCurrentWindow();
 							const ImGuiStyle& style = ImGui::GetStyle();
 							const ImGuiIO& IO = ImGui::GetIO();
