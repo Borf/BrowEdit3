@@ -121,8 +121,12 @@ public:
 	}
 
 	int wallWidth = 4;
-	float wallHeight = -1;
+	float wallTop = 0;
+	bool wallTopAuto = true;
+	float wallBottom = 0;
+	bool wallBottomAuto = true;
 	int wallOffset = 0;
+	bool wallAutoStraight = true;
 
 
 	//height edit mode

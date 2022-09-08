@@ -395,7 +395,19 @@ void BrowEdit::showWallWindow()
 
 	ImGui::InputInt("Brush Offset", &activeMapView->wallOffset, 0, activeMapView->wallWidth);
 	ImGui::InputInt("Brush Width", &activeMapView->wallWidth, 1, 100);
-	ImGui::SliderFloat("Brush Height (-1 auto)", &activeMapView->wallHeight, -1, 100);
+	if (activeMapView->wallWidth <= 0)
+		activeMapView->wallWidth = 1;
+	ImGui::SliderFloat("Brush Top", &activeMapView->wallTop, -100, 100);
+	ImGui::SameLine();
+	ImGui::Checkbox("##auto1", &activeMapView->wallTopAuto);
+	if (ImGui::IsItemHovered())
+		ImGui::SetTooltip("Auto");
+	ImGui::SliderFloat("Brush Bottom", &activeMapView->wallBottom, -100, 100);
+	ImGui::SameLine();
+	ImGui::Checkbox("##auto2", &activeMapView->wallBottomAuto);
+	if (ImGui::IsItemHovered())
+		ImGui::SetTooltip("Auto");
+	ImGui::Checkbox("Auto Straight", &activeMapView->wallAutoStraight);
 
 	hotkeyButton("Apply Texture", HotkeyAction::WallEdit_ReApply);
 	previewWall = ImGui::IsItemHovered();

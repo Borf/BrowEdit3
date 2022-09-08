@@ -183,10 +183,10 @@ void MapView::postRenderWallMode(BrowEdit* browEdit)
 			if (gnd->inMap(tile) && gnd->inMap(tile + glm::ivec2(1, 0)) && gnd->inMap(tile + glm::ivec2(0, 1)))
 			{
 				auto cube = gnd->cubes[tile.x][tile.y];
-				glm::vec3 v1(10 * tile.x + 10, -cube->h2, 10 * gnd->height - 10 * tile.y + 10);
-				glm::vec3 v2(10 * tile.x + 10, -cube->h4, 10 * gnd->height - 10 * tile.y);
-				glm::vec3 v3(10 * tile.x + 10, -gnd->cubes[tile.x + 1][tile.y]->h1, 10 * gnd->height - 10 * tile.y + 10);
-				glm::vec3 v4(10 * tile.x + 10, -gnd->cubes[tile.x + 1][tile.y]->h3, 10 * gnd->height - 10 * tile.y);
+				glm::vec3 v1(10 * tile.x + 10, -cube->h4, 10 * gnd->height - 10 * tile.y);
+				glm::vec3 v2(10 * tile.x + 10, -cube->h2, 10 * gnd->height - 10 * tile.y + 10);
+				glm::vec3 v3(10 * tile.x + 10, -gnd->cubes[tile.x + 1][tile.y]->h3, 10 * gnd->height - 10 * tile.y);
+				glm::vec3 v4(10 * tile.x + 10, -gnd->cubes[tile.x + 1][tile.y]->h1, 10 * gnd->height - 10 * tile.y + 10);
 				glm::vec3 normal = glm::vec3(1, 0, 0);
 				if (wall.z == 2)
 				{

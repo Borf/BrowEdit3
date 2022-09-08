@@ -92,6 +92,11 @@ class WallCalculation
 	glm::vec2 yInc;
 	int wallWidth;
 	int offset;
+	float wallTop = 0;
+	bool wallTopAuto = true;
+	float wallBottom = 0;
+	bool wallBottomAuto = true;
+	bool autoStraight = true;
 public:
 	glm::vec2 g_uv1;
 	glm::vec2 g_uv2;
