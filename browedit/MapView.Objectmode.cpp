@@ -347,6 +347,15 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 								if (snap && !gridLocal)
 									n.first->getComponent<RswObject>()->scale[gadget.selectedAxisIndex()] = glm::round(n.first->getComponent<RswObject>()->scale[gadget.selectedAxisIndex()] / (float)gridSize) * (float)gridSize;
 							}
+							if (pivotPoint == PivotPoint::GroupCenter)
+							{
+								float originalAngle = atan2(n.second.pos.z - groupCenter.z, n.second.pos.x - groupCenter.x);
+								float dist = glm::length(glm::vec2(n.second.pos.z - groupCenter.z, n.second.pos.x - groupCenter.x));
+								dist *= (1 + pos * glm::length(0.01f * mouseOffset));
+
+								n.first->getComponent<RswObject>()->position.x = groupCenter.x + dist * glm::cos(originalAngle);
+								n.first->getComponent<RswObject>()->position.z = groupCenter.z + dist * glm::sin(originalAngle);
+							}
 						}
 						if (gadget.mode == Gadget::Mode::Rotate)
 						{
