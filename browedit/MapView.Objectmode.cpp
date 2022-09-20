@@ -469,7 +469,7 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 		}
 		if (ImGui::IsMouseReleased(0))
 		{
-			if (justPressed && map->selectedNodes.size() > 0)
+			if (justPressed && map->selectedNodes.size() > 0 && map->selectedNodes[0]->getComponent<RswObject>())
 			{
 				if(map->selectedNodes[0]->getComponent<RswObject>()->position != originalPosition)
 					map->doAction(new ObjectChangeAction(map->selectedNodes[0], &map->selectedNodes[0]->getComponent<RswObject>()->position, originalPosition, "Moved"), browEdit);
