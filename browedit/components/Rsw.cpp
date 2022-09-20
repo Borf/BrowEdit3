@@ -958,6 +958,8 @@ std::vector<glm::vec3> RswModelCollider::getVerticesWorldSpace(Rsm::Mesh* mesh, 
 		mesh = rsm->rootMesh;
 		mat = rsmRenderer->matrixCache;
 	}
+	if (!mesh)
+		return std::vector<glm::vec3>();
 
 	glm::mat4 newMatrix = mat * rsmRenderer->renderInfo[mesh->index].matrix;
 	std::vector<glm::vec3> verts;
