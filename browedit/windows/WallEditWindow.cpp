@@ -393,16 +393,16 @@ void BrowEdit::showWallWindow()
 		ImGui::SetCursorScreenPos(cursorPos);
 	}
 
-	ImGui::InputInt("Brush Offset", &activeMapView->wallOffset, 0, activeMapView->wallWidth);
-	ImGui::InputInt("Brush Width", &activeMapView->wallWidth, 1, 100);
+	ImGui::InputInt("Brush Offset", &activeMapView->wallOffset, 1);
+	ImGui::InputInt("Brush Width", &activeMapView->wallWidth, 1);
 	if (activeMapView->wallWidth <= 0)
 		activeMapView->wallWidth = 1;
-	ImGui::SliderFloat("Brush Top", &activeMapView->wallTop, -100, 100);
+	ImGui::InputFloat("Brush Top", &activeMapView->wallTop, 1.0f);
 	ImGui::SameLine();
 	ImGui::Checkbox("##auto1", &activeMapView->wallTopAuto);
 	if (ImGui::IsItemHovered())
 		ImGui::SetTooltip("Auto");
-	ImGui::SliderFloat("Brush Bottom", &activeMapView->wallBottom, -100, 100);
+	ImGui::InputFloat("Brush Bottom", &activeMapView->wallBottom, 1.0f);
 	ImGui::SameLine();
 	ImGui::Checkbox("##auto2", &activeMapView->wallBottomAuto);
 	if (ImGui::IsItemHovered())
