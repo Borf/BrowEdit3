@@ -394,6 +394,8 @@ void MapView::postRenderTextureMode(BrowEdit* browEdit)
 							if (x < 0 || x >= gnd->width || y < 0 || y >= gnd->height)
 								continue;
 							auto cube = gnd->cubes[x][y];
+							if (!browEdit->textureStamp[xx][yy])
+								continue;
 							Gnd::Tile* t = new Gnd::Tile(*browEdit->textureStamp[xx][yy]);
 							if (textureBrushKeepShadow && cube->tileUp != -1)
 								t->lightmapIndex = gnd->tiles[cube->tileUp]->lightmapIndex;
