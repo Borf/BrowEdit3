@@ -15,6 +15,8 @@ glm::ivec2 selectionStart;
 int selectionSide;
 std::vector<glm::ivec3> selectedWalls;
 bool previewWall = false; //move this
+bool selecting = false;
+bool panning = false;
 
 void MapView::postRenderWallMode(BrowEdit* browEdit)
 {
@@ -91,82 +93,181 @@ void MapView::postRenderWallMode(BrowEdit* browEdit)
 
 	if (hovered)
 	{
-		if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+		if (!selecting && !panning)
 		{
-			selectionStart = tileHovered;
-			selectionSide = side;
-		}
-		if (ImGui::IsMouseDown(ImGuiMouseButton_Left))
-		{
-			glm::ivec2 tile = selectionStart;
-			for (int i = 0; i < 100; i++)
+			if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
 			{
-				if (gnd->inMap(tile) && gnd->inMap(tile + glm::ivec2(1, 0)) && gnd->inMap(tile + glm::ivec2(0, 1)))
+				bool collision = false;
+				for (const auto& wall : selectedWalls)
 				{
-					auto cube = gnd->cubes[tile.x][tile.y];
-					glm::vec3 v1(10 * tile.x + 10, -cube->h2, 10 * gnd->height - 10 * tile.y + 10);
-					glm::vec3 v2(10 * tile.x + 10, -cube->h4, 10 * gnd->height - 10 * tile.y);
-					glm::vec3 v3(10 * tile.x + 10, -gnd->cubes[tile.x + 1][tile.y]->h1, 10 * gnd->height - 10 * tile.y + 10);
-					glm::vec3 v4(10 * tile.x + 10, -gnd->cubes[tile.x + 1][tile.y]->h3, 10 * gnd->height - 10 * tile.y);
-					if (side == 2)
+					glm::ivec2 tile = glm::ivec2(wall);
+					if (gnd->inMap(tile) && gnd->inMap(tile + glm::ivec2(1, 0)) && gnd->inMap(tile + glm::ivec2(0, 1)))
 					{
-						v1 = glm::vec3(10 * tile.x, -cube->h3, 10 * gnd->height - 10 * tile.y);
-						v2 = glm::vec3(10 * tile.x + 10, -cube->h4, 10 * gnd->height - 10 * tile.y);
-						v4 = glm::vec3(10 * tile.x + 10, -gnd->cubes[tile.x][tile.y + 1]->h2, 10 * gnd->height - 10 * tile.y);
-						v3 = glm::vec3(10 * tile.x, -gnd->cubes[tile.x][tile.y + 1]->h1, 10 * gnd->height - 10 * tile.y);
+						auto cube = gnd->cubes[tile.x][tile.y];
+						glm::vec3 v1(10 * tile.x + 10, -cube->h4, 10 * gnd->height - 10 * tile.y);
+						glm::vec3 v2(10 * tile.x + 10, -cube->h2, 10 * gnd->height - 10 * tile.y + 10);
+						glm::vec3 v3(10 * tile.x + 10, -gnd->cubes[tile.x + 1][tile.y]->h3, 10 * gnd->height - 10 * tile.y);
+						glm::vec3 v4(10 * tile.x + 10, -gnd->cubes[tile.x + 1][tile.y]->h1, 10 * gnd->height - 10 * tile.y + 10);
+						if (wall.z == 2)
+						{
+							v1 = glm::vec3(10 * tile.x, -cube->h3, 10 * gnd->height - 10 * tile.y);
+							v2 = glm::vec3(10 * tile.x + 10, -cube->h4, 10 * gnd->height - 10 * tile.y);
+							v4 = glm::vec3(10 * tile.x + 10, -gnd->cubes[tile.x][tile.y + 1]->h2, 10 * gnd->height - 10 * tile.y);
+							v3 = glm::vec3(10 * tile.x, -gnd->cubes[tile.x][tile.y + 1]->h1, 10 * gnd->height - 10 * tile.y);
+						}
+
+						{
+							float f;
+							std::vector<glm::vec3> v{ v4, v2, v1 };
+							if (mouseRay.LineIntersectPolygon(v, f))
+								collision = true;
+						}
+						{
+							float f;
+							std::vector<glm::vec3> v{ v4, v1, v3 };
+							if (mouseRay.LineIntersectPolygon(v, f))
+								collision = true;
+						}
 
 					}
-					glEnable(GL_BLEND);
-					glDisable(GL_DEPTH_TEST);
-					glLineWidth(2);
-					glDisable(GL_TEXTURE_2D);
-					glColor4f(1, 1, 1, 1);
-					glBegin(GL_LINE_LOOP);
-					glVertex3f(v1.x, v1.y, v1.z);
-					glVertex3f(v2.x, v2.y, v2.z);
-					glVertex3f(v4.x, v4.y, v4.z);
-					glVertex3f(v3.x, v3.y, v3.z);
-					glEnd();
-					glBegin(GL_LINES);
-					glVertex3f(v1.x, v1.y, v1.z);
-					glVertex3f(v2.x, v2.y, v2.z);
-					glVertex3f(v4.x, v4.y, v4.z);
-					glVertex3f(v3.x, v3.y, v3.z);
-					glEnd();
-					glEnable(GL_DEPTH_TEST);
-
 				}
-				if (side == 1 && tile.y == tileHovered.y)
-					break;
-				if (side == 2 && tile.x == tileHovered.x)
-					break;
-				if (side == 1)
-					tile += glm::ivec2(0, glm::sign(tileHovered.y - selectionStart.y));
+
+				if (!collision)
+				{
+					selectionStart = tileHovered;
+					selectionSide = side;
+					selecting = true;
+				}
 				else
-					tile += glm::ivec2(glm::sign(tileHovered.x - selectionStart.x), 0);
-				if (tileHovered == selectionStart)
-					break;
+				{
+					panning = true;
+					std::cout << "Panning!" << std::endl;
+				}
 			}
 		}
-		if (ImGui::IsMouseReleased(ImGuiMouseButton_Left))
+		if (selecting)
 		{
-			selectedWalls.clear();
-			glm::ivec2 tile = selectionStart;
-			for (int i = 0; i < 100; i++)
+			if (ImGui::IsMouseDown(ImGuiMouseButton_Left))
 			{
-				if (gnd->inMap(tile))
-					selectedWalls.push_back(glm::ivec3(tile, selectionSide));
-				if (side == 1 && tile.y == tileHovered.y)
-					break;
-				if (side == 2 && tile.x == tileHovered.x)
-					break;
-				if (side == 1)
-					tile += glm::ivec2(0, glm::sign(tileHovered.y - selectionStart.y));
-				else
-					tile += glm::ivec2(glm::sign(tileHovered.x - selectionStart.x), 0);
-				if (tileHovered == selectionStart)
-					break;
+				glm::ivec2 tile = selectionStart;
+				for (int i = 0; i < 100; i++)
+				{
+					if (gnd->inMap(tile) && gnd->inMap(tile + glm::ivec2(1, 0)) && gnd->inMap(tile + glm::ivec2(0, 1)))
+					{
+						auto cube = gnd->cubes[tile.x][tile.y];
+						glm::vec3 v1(10 * tile.x + 10, -cube->h2, 10 * gnd->height - 10 * tile.y + 10);
+						glm::vec3 v2(10 * tile.x + 10, -cube->h4, 10 * gnd->height - 10 * tile.y);
+						glm::vec3 v3(10 * tile.x + 10, -gnd->cubes[tile.x + 1][tile.y]->h1, 10 * gnd->height - 10 * tile.y + 10);
+						glm::vec3 v4(10 * tile.x + 10, -gnd->cubes[tile.x + 1][tile.y]->h3, 10 * gnd->height - 10 * tile.y);
+						if (side == 2)
+						{
+							v1 = glm::vec3(10 * tile.x, -cube->h3, 10 * gnd->height - 10 * tile.y);
+							v2 = glm::vec3(10 * tile.x + 10, -cube->h4, 10 * gnd->height - 10 * tile.y);
+							v4 = glm::vec3(10 * tile.x + 10, -gnd->cubes[tile.x][tile.y + 1]->h2, 10 * gnd->height - 10 * tile.y);
+							v3 = glm::vec3(10 * tile.x, -gnd->cubes[tile.x][tile.y + 1]->h1, 10 * gnd->height - 10 * tile.y);
+
+						}
+						glEnable(GL_BLEND);
+						glDisable(GL_DEPTH_TEST);
+						glLineWidth(2);
+						glDisable(GL_TEXTURE_2D);
+						glColor4f(1, 1, 1, 1);
+						glBegin(GL_LINE_LOOP);
+						glVertex3f(v1.x, v1.y, v1.z);
+						glVertex3f(v2.x, v2.y, v2.z);
+						glVertex3f(v4.x, v4.y, v4.z);
+						glVertex3f(v3.x, v3.y, v3.z);
+						glEnd();
+						glBegin(GL_LINES);
+						glVertex3f(v1.x, v1.y, v1.z);
+						glVertex3f(v2.x, v2.y, v2.z);
+						glVertex3f(v4.x, v4.y, v4.z);
+						glVertex3f(v3.x, v3.y, v3.z);
+						glEnd();
+						glEnable(GL_DEPTH_TEST);
+
+					}
+					if (side == 1 && tile.y == tileHovered.y)
+						break;
+					if (side == 2 && tile.x == tileHovered.x)
+						break;
+					if (side == 1)
+						tile += glm::ivec2(0, glm::sign(tileHovered.y - selectionStart.y));
+					else
+						tile += glm::ivec2(glm::sign(tileHovered.x - selectionStart.x), 0);
+					if (tileHovered == selectionStart)
+						break;
+				}
 			}
+			if (ImGui::IsMouseReleased(ImGuiMouseButton_Left))
+			{
+				if (!ImGui::GetIO().KeyShift)
+					selectedWalls.clear();
+				glm::ivec2 tile = selectionStart;
+				for (int i = 0; i < 100; i++)
+				{
+					if (gnd->inMap(tile) && std::find(selectedWalls.begin(), selectedWalls.end(), glm::ivec3(tile, selectionSide)) == selectedWalls.end())
+						selectedWalls.push_back(glm::ivec3(tile, selectionSide));
+					if (side == 1 && tile.y == tileHovered.y)
+						break;
+					if (side == 2 && tile.x == tileHovered.x)
+						break;
+					if (side == 1)
+						tile += glm::ivec2(0, glm::sign(tileHovered.y - selectionStart.y));
+					else
+						tile += glm::ivec2(glm::sign(tileHovered.x - selectionStart.x), 0);
+					if (tileHovered == selectionStart)
+						break;
+				}
+				selecting = false;
+			}
+		}
+		if (panning)
+		{
+			for (const auto& w : selectedWalls)
+			{
+				auto cube = gnd->cubes[w.x][w.y];
+				Gnd::Tile* tile = nullptr;
+				if (w.z == 1 && cube->tileSide != -1)
+					tile = gnd->tiles[cube->tileSide];
+				if (w.z == 2 && cube->tileFront != -1)
+					tile = gnd->tiles[cube->tileFront];
+
+
+				glm::vec2 delta = glm::vec2(ImGui::GetIO().MouseDelta.x, ImGui::GetIO().MouseDelta.y) * 0.01f;
+				if (ImGui::GetIO().KeyShift)
+					delta *= 0.01f;
+				if (ImGui::GetIO().KeyCtrl)
+					delta.x = 0;
+
+				glm::vec2 v1 = tile->v1;
+				glm::vec2 v2 = tile->v2;
+				glm::vec2 v3 = tile->v3;
+				glm::vec2 v4 = tile->v4;
+
+				for (int axis = 0; axis < 2; axis++)
+				{
+					tile->v1[axis] += delta[axis];
+					tile->v2[axis] += delta[axis];
+					tile->v3[axis] += delta[axis];
+					tile->v4[axis] += delta[axis];
+
+					if (glm::clamp(tile->v1[axis], 0.0f, 1.0f) != tile->v1[axis] ||
+						glm::clamp(tile->v2[axis], 0.0f, 1.0f) != tile->v2[axis] ||
+						glm::clamp(tile->v3[axis], 0.0f, 1.0f) != tile->v3[axis] ||
+						glm::clamp(tile->v4[axis], 0.0f, 1.0f) != tile->v4[axis])
+					{
+						tile->v1[axis] = v1[axis];
+						tile->v2[axis] = v2[axis];
+						tile->v3[axis] = v3[axis];
+						tile->v4[axis] = v4[axis];
+					}
+				}
+
+				gndRenderer->setChunkDirty(w.x, w.y);
+			}
+			if (ImGui::IsMouseReleased(ImGuiMouseButton_Left))
+				panning = false;
 		}
 	}
 	if (selectedWalls.size() > 0)
