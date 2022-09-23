@@ -848,6 +848,12 @@ void WallCalculation::calcUV(const glm::ivec3& position, Gnd* gnd)
 		maxHeight = glm::max(glm::max(glm::max(-cube->h4, -cube->h3), -cube2->h2), -cube2->h1);
 	}
 
+	if (!wallTopAuto)
+		maxHeight = this->wallTop;
+	if (!wallBottomAuto)
+		minHeight = this->wallBottom;
+
+
 	g_uv1 = uvStart + xInc * (float)index + yInc * (float)0.0f;
 	g_uv2 = g_uv1 + xInc;
 	g_uv3 = g_uv1 + yInc;
