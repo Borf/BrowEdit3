@@ -5,9 +5,11 @@
 #include <browedit/MapView.h>
 #include <browedit/Node.h>
 #include <browedit/components/Gnd.h>
+#include <browedit/components/Rsw.h>
 #include <browedit/components/Gat.h>
 #include <browedit/components/GndRenderer.h>
 #include <browedit/components/GatRenderer.h>
+#include <browedit/components/RsmRenderer.h>
 #include <browedit/components/WaterRenderer.h>
 #include <browedit/actions/CubeHeightChangeAction.h>
 #include <browedit/gl/Texture.h>
@@ -227,6 +229,17 @@ void BrowEdit::showHeightWindow()
 				gat->height = 2 * (max.y - min.y);
 				activeMapView->map->rootNode->getComponent<GatRenderer>()->setChunksDirty();
 
+				activeMapView->map->rootNode->traverse([](Node* n)
+				{
+					auto rsmRenderer = n->getComponent<RsmRenderer>();
+					if (rsmRenderer)
+						rsmRenderer->setDirty();
+				});
+
+				auto rsw = activeMapView->map->rootNode->getComponent<Rsw>();
+				delete rsw->quadtree;
+				rsw->quadtree = new Rsw::QuadTreeNode(-(gnd->width) * 5.0f, -(gnd->height) * 5.0f, gnd->width * 10.0f, gnd->height * 10.0f, 0);
+				rsw->recalculateQuadtree(nullptr);
 			}
 
 
