@@ -30,9 +30,11 @@ public:
 	std::vector<gl::Texture*> textures;
 	Rsw* rsw;
 	gl::VBO<VertexP3T2>* vbo = nullptr;
+	bool dirty = true;
 
 	WaterRenderer();
 	~WaterRenderer();
 	void render() override;
 	void reloadTextures();
+	void setDirty();
 };

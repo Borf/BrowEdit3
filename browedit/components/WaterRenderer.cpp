@@ -23,9 +23,14 @@ WaterRenderer::~WaterRenderer()
 		util::ResourceManager<gl::Texture>::unload(t);
 }
 
+void WaterRenderer::setDirty()
+{
+	dirty = true;
+}
+
 void WaterRenderer::render()
 {
-	if (!this->rsw)
+	if (!this->rsw || dirty)
 	{ //todo: move a tryLoadGnd method
 		this->rsw = node->getComponent<Rsw>();
 		if (rsw)
@@ -33,10 +38,11 @@ void WaterRenderer::render()
 			reloadTextures();
 		}
 
-		if (!vbo)
+		if (!vbo || dirty)
 		{
 			auto gnd = node->getComponent<Gnd>();
-			vbo = new gl::VBO<VertexP3T2>();
+			if(!vbo)
+				vbo = new gl::VBO<VertexP3T2>();
 			std::vector<VertexP3T2> verts;
 			for (int x = 0; x < gnd->width; x++)
 			{
@@ -49,6 +55,7 @@ void WaterRenderer::render()
 				}
 			}
 			vbo->setData(verts, GL_STATIC_DRAW);
+			dirty = false;
 		}
 	}
 	if (!this->rsw)

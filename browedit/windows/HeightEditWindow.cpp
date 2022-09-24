@@ -5,7 +5,10 @@
 #include <browedit/MapView.h>
 #include <browedit/Node.h>
 #include <browedit/components/Gnd.h>
+#include <browedit/components/Gat.h>
 #include <browedit/components/GndRenderer.h>
+#include <browedit/components/GatRenderer.h>
+#include <browedit/components/WaterRenderer.h>
 #include <browedit/actions/CubeHeightChangeAction.h>
 #include <browedit/gl/Texture.h>
 #include <imgui.h>
@@ -179,6 +182,51 @@ void BrowEdit::showHeightWindow()
 				if (ImGui::Button("Add perlin noise", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
 					gnd->perlinNoise(activeMapView->map->tileSelection);
 				ImGui::TreePop();
+			}
+
+			if (ImGui::Button("Crop Map (NO UNDO)", ImVec2(ImGui::GetContentRegionAvailWidth(), 0)))
+			{
+				auto gat = activeMapView->map->rootNode->getComponent<Gat>();
+				std::vector<std::vector<Gnd::Cube*>> cubes;
+				std::vector<std::vector<Gat::Cube*>> gatCubes;
+				glm::ivec2 min(gnd->width, gnd->height);
+				glm::ivec2 max(0);
+				for (const auto& tile : activeMapView->map->tileSelection)
+				{ //TODO: can this be done with 2 min calls?
+					min.x = glm::min(min.x, tile.x);
+					min.y = glm::min(min.y, tile.y);
+					max.x = glm::max(max.x, tile.x);
+					max.y = glm::max(max.y, tile.y);
+				}
+
+				for (int x = min.x; x < max.x; x++)
+				{
+					std::vector<Gnd::Cube*> row;
+					for (int y = min.y; y < max.y; y++)
+						row.push_back(gnd->cubes[x][y]);
+					cubes.push_back(row);
+				}
+				for (int x = min.x*2; x < max.x*2; x++)
+				{
+					std::vector<Gat::Cube*> row;
+					for (int y = min.y*2; y < max.y*2; y++)
+						row.push_back(gat->cubes[x][y]);
+					gatCubes.push_back(row);
+				}
+
+				gnd->cubes = cubes;
+				gnd->width = max.x - min.x;
+				gnd->height = max.y - min.y;
+				gndRenderer->setChunksDirty();
+				
+				activeMapView->map->tileSelection.clear();
+				activeMapView->map->rootNode->getComponent<WaterRenderer>()->setDirty();
+
+				gat->cubes = gatCubes;
+				gat->width = 2 * (max.x - min.x);
+				gat->height = 2 * (max.y - min.y);
+				activeMapView->map->rootNode->getComponent<GatRenderer>()->setChunksDirty();
+
 			}
 
 
