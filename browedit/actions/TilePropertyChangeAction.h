@@ -59,7 +59,7 @@ public:
 	virtual std::string str()
 	{
 		if (action == "")
-			return "";
-		return action + " " + tile->hash();
+			return "tile " + std::to_string(tile->hash());
+		return action + " " + std::to_string(tile->hash());
 	};
 };

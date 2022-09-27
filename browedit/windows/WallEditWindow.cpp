@@ -6,6 +6,7 @@
 #include <browedit/Icons.h>
 #include <browedit/components/Gnd.h>
 #include <browedit/components/GndRenderer.h>
+#include <browedit/actions/TilePropertyChangeAction.h>
 #include <browedit/gl/Texture.h>
 #include <browedit/HotkeyRegistry.h>
 #include <glm/gtc/matrix_transform.hpp>
@@ -470,7 +471,8 @@ void BrowEdit::showWallWindow()
 
 
 					ImVec2 cursorPos = ImGui::GetCursorScreenPos();
-					bool dragged = false;
+					static bool dragged = false;
+					static glm::vec2 startUv;
 //						glm::vec2 offsets[] = { glm::vec2(0,0), glm::vec2(0,1), glm::vec2(1,1), glm::vec2(1,0) };
 					for (int i = 0; i < 4; i++) //4 corners
 					{
@@ -482,6 +484,10 @@ void BrowEdit::showWallWindow()
 						ImGui::InvisibleButton("button", ImVec2(2 * 10, 2 * 10));
 						if (ImGui::IsItemActive() || ImGui::IsItemHovered())
 							ImGui::SetTooltip("(%4.3f, %4.3f)", tile->texCoords[i].x, tile->texCoords[i].y);
+						if (ImGui::IsItemActivated())
+						{
+							startUv = tile->texCoords[i];
+						}
 						if (ImGui::IsItemActive() && ImGui::IsMouseDragging(0))
 						{
 							float& x = tile->texCoords[i].x;
@@ -508,6 +514,9 @@ void BrowEdit::showWallWindow()
 						{
 							dragged = false;
 							changed = true;
+
+							activeMapView->map->doAction(new TileChangeAction<glm::vec2>(tile, &tile->texCoords[i], startUv, "UV change of tile"), this);
+
 						}
 						ImGui::PopID();
 					}
