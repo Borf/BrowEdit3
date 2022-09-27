@@ -51,7 +51,9 @@ enum class HotkeyAction
 	ObjectEdit_RotYPos,
 	ObjectEdit_RotZNeg,
 	ObjectEdit_RotZPos,
+	ObjectEdit_RandomXRotation,
 	ObjectEdit_RandomYRotation,
+	ObjectEdit_RandomZRotation,
 
 	ObjectEdit_InvertSelection,
 	ObjectEdit_SelectAll,

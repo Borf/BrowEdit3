@@ -240,7 +240,7 @@ void Map::rotateSelection(int axis, int sign, BrowEdit* browEdit)
 
 }
 
-void Map::randomRotateSelection(BrowEdit* browEdit)
+void Map::randomRotateSelection(int axis, BrowEdit* browEdit)
 {
 	auto ga = new GroupAction();
 	glm::vec3 groupCenter = getSelectionCenter();
@@ -251,9 +251,9 @@ void Map::randomRotateSelection(BrowEdit* browEdit)
 		auto rsmRenderer = n->getComponent<RsmRenderer>();
 		if (rswObject)
 		{
-			float orig = rswObject->rotation.y;
-			rswObject->rotation.y = 360 * (rand() / (float)RAND_MAX);
-			ga->addAction(new ObjectChangeAction(n, &rswObject->rotation.y, orig, "Rotate"));
+			float orig = rswObject->rotation[axis];
+			rswObject->rotation[axis] = 360 * (rand() / (float)RAND_MAX);
+			ga->addAction(new ObjectChangeAction(n, &rswObject->rotation[axis], orig, "Rotate"));
 		}
 		if (rsmRenderer)
 			rsmRenderer->setDirty();

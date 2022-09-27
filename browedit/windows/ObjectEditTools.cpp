@@ -61,7 +61,9 @@ void BrowEdit::showObjectEditToolsWindow()
 	ImGui::SameLine();
 	hotkeyButton("Rotate Z Positive", HotkeyAction::ObjectEdit_RotZPos);
 
+	hotkeyButton("Randomize X rotation", HotkeyAction::ObjectEdit_RandomXRotation);
 	hotkeyButton("Randomize Y rotation", HotkeyAction::ObjectEdit_RandomYRotation);
+	hotkeyButton("Randomize Z rotation", HotkeyAction::ObjectEdit_RandomZRotation);
 
 
 	ImGui::End();
