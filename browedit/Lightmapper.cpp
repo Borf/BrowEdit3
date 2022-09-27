@@ -224,28 +224,41 @@ std::pair<glm::vec3, int> Lightmapper::calculateLight(const glm::vec3& groundPos
 		if (rsw->light.lightmapIntensity > 0 && dotProd > 0)
 		{
 			bool collides = false;
+			float shadowStrength = 0.0f;
 			if (shadows)
 			{
 				math::Ray ray(groundPos, glm::normalize(lightDirection));
 				//check objects
-				map->rootNode->traverse([&collides, &ray](Node* n) {
-					if (collides)
+				map->rootNode->traverse([&collides, &ray, &shadowStrength](Node* n) {
+					if (collides && shadowStrength > 1.0f)
 						return;
 					auto rswModel = n->getComponent<RswModel>();
-					if (rswModel && rswModel->givesShadow)
+					if (rswModel && rswModel->shadowStrength > 0)
 					{
 						auto collider = n->getComponent<RswModelCollider>();
 						if (collider->collidesTexture(ray))
+						{
 							collides = true;
+							shadowStrength += rswModel->shadowStrength;
+						}
 					}
 					});
 
-				if (!collides && collidesMap(ray))
+				if (!collides && shadowStrength < 1.0f && collidesMap(ray))
+				{
 					collides = true;
+					shadowStrength = 1;
+				}
 			}
+
+			if (shadowStrength > 1)
+				shadowStrength = 1;
 
 			if (!collides)
 				intensity += (int)(dotProd * rsw->light.lightmapIntensity * 255);
+			else
+				intensity += (int)((1- shadowStrength) * dotProd * rsw->light.lightmapIntensity * 255);
+			
 		}
 	}
 
@@ -288,32 +301,41 @@ std::pair<glm::vec3, int> Lightmapper::calculateLight(const glm::vec3& groundPos
 			}
 
 			bool collides = false;
+			float shadowStrength = 0.0f;
 			if (shadows)
 			{
 				math::Ray ray(lightPosition, -lightDirection2);
 				if (rswLight->givesShadow && attenuation > 0)
 				{
 					map->rootNode->traverse([&](Node* n) {
-						if (collides)
+						if (collides && shadowStrength >= 1)
 							return;
 						auto rswModel = n->getComponent<RswModel>();
-						if (rswModel && rswModel->givesShadow)
+						if (rswModel && rswModel->shadowStrength > 0)
 						{
 							auto collider = n->getComponent<RswModelCollider>();
 							if (collider->collidesTexture(ray, distance))
+							{
 								collides = true;
+								shadowStrength = rswModel->shadowStrength;
+							}
 						}
 						});
 				}
-				if (!collides && collidesMap(math::Ray(groundPos, lightDirection2)))
+				if (!collides && shadowStrength < 1 && collidesMap(math::Ray(groundPos, lightDirection2)))
+				{
 					collides = true;
+					shadowStrength = 1;
+				}
 			}
-			if (!collides)
+			if (shadowStrength > 1)
+				shadowStrength = 1;
+			if (shadowStrength < 1)
 			{
 				if (rswLight->affectShadowMap)
-					intensity += (int)(attenuation * rswLight->intensity);
+					intensity += (int)(shadowStrength * attenuation * rswLight->intensity);
 				if (rswLight->affectLightmap)
-					colorInc += (attenuation / 255.0f) * rswLight->color * rswLight->intensity;
+					colorInc += shadowStrength * (attenuation / 255.0f) * rswLight->color * rswLight->intensity;
 			}
 		}
 	}

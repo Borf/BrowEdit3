@@ -51,7 +51,10 @@ void RswModel::load(std::istream* is, int version, unsigned char buildNumber, bo
 void RswModel::loadExtra(nlohmann::json data)
 {
 	try {
-		givesShadow = data["shadow"];
+		if (data.find("shadow") != data.end())
+			shadowStrength = data["shadow"].get<bool>() ? 1.0f : 0.0f;
+		if(data.find("shadowStrength") != data.end())
+			shadowStrength = data["shadowStrength"];
 		gatCollision = data["gatCollision"];
 		gatStraightType = data["gatStraightType"];
 		gatType = data["gatType"];
@@ -82,7 +85,7 @@ void RswModel::save(std::ofstream& file, int version)
 nlohmann::json RswModel::saveExtra()
 {
 	nlohmann::json ret;
-	ret["shadow"] = givesShadow;
+	ret["shadowStrength"] = shadowStrength;
 	ret["gatCollision"] = gatCollision;
 	ret["gatStraightType"] = gatStraightType;
 	ret["gatType"] = gatType;
@@ -143,7 +146,7 @@ void RswModel::buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>& nod
 			if (util::utf8_to_iso_8859_1(m->objectName).size() > 80)
 				m->objectName = util::iso_8859_1_to_utf8(util::utf8_to_iso_8859_1(m->objectName).substr(0, 80));
 
-	util::CheckboxMulti<RswModel>(browEdit, browEdit->activeMapView->map, rswModels, "Cast Shadow", [](RswModel* m) { return &m->givesShadow; });
+	util::DragFloatMulti<RswModel>(browEdit, browEdit->activeMapView->map, rswModels, "Shadow Strength", [](RswModel* m) { return &m->shadowStrength; }, 0.01f, 0.0f, 1.0f);
 	if (ImGui::CollapsingHeader("AutoGat properties", ImGuiTreeNodeFlags_DefaultOpen))
 	{
 		util::CheckboxMulti<RswModel>(browEdit, browEdit->activeMapView->map, rswModels, "Use for height", [](RswModel* m) { return &m->gatCollision; });

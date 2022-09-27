@@ -104,7 +104,7 @@ public:
 	std::string objectName; //not sure what this is, UTF8
 
 	//custom properties
-	bool givesShadow = true;
+	float shadowStrength = 1.0f;
 	bool gatCollision = true;
 	int gatStraightType = 0;
 	int gatType = -1;
@@ -118,7 +118,7 @@ public:
 	nlohmann::json saveExtra();
 	static void buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>&);
 
-	NLOHMANN_DEFINE_TYPE_INTRUSIVE(RswModel, animType, animSpeed, blockType, fileName, givesShadow, gatCollision, gatStraightType, gatType);
+	NLOHMANN_DEFINE_TYPE_INTRUSIVE(RswModel, animType, animSpeed, blockType, fileName, shadowStrength, gatCollision, gatStraightType, gatType);
 };
 
 class RswLight : public Component
