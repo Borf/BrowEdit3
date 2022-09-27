@@ -232,7 +232,8 @@ void MapView::postRenderWallMode(BrowEdit* browEdit)
 					tile = gnd->tiles[cube->tileSide];
 				if (w.z == 2 && cube->tileFront != -1)
 					tile = gnd->tiles[cube->tileFront];
-
+				if (!tile)
+					continue;
 
 				glm::vec2 delta = glm::vec2(ImGui::GetIO().MouseDelta.x, ImGui::GetIO().MouseDelta.y) * 0.01f;
 				if (ImGui::GetIO().KeyShift)
