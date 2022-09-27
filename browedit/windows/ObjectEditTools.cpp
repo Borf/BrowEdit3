@@ -25,7 +25,9 @@ void BrowEdit::showObjectEditToolsWindow()
 	hotkeyButton("Create Prefab", HotkeyAction::ObjectEdit_CreatePrefab);
 	hotkeyButton("Focus on selection", HotkeyAction::ObjectEdit_FocusOnSelection);
 
-	ImGui::InputFloat("Nudge distance", &nudgeDistance);
+	ImGui::Checkbox("Use gridsize for nudge distance", &useGridForNudge);
+	if(!useGridForNudge)
+		ImGui::InputFloat("Nudge distance", &nudgeDistance);
 	hotkeyButton("Nudge X Negative", HotkeyAction::ObjectEdit_NudgeXNeg);
 	ImGui::SameLine();
 	hotkeyButton("Nudge X Positive", HotkeyAction::ObjectEdit_NudgeXPos);
@@ -46,7 +48,9 @@ void BrowEdit::showObjectEditToolsWindow()
 				activeMapView->pivotPoint = MapView::PivotPoint::Local;
 		}
 	}
-	ImGui::InputFloat("Rotate distance", &rotateDistance);
+	ImGui::Checkbox("Use gridsize for nudge distance", &useGridForNudge);
+	if (!useGridForNudge)
+		ImGui::InputFloat("Rotate distance", &rotateDistance);
 	hotkeyButton("Rotate X Negative", HotkeyAction::ObjectEdit_RotXNeg);
 	ImGui::SameLine();
 	hotkeyButton("Rotate X Positive", HotkeyAction::ObjectEdit_RotXPos);

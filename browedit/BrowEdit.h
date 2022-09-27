@@ -196,6 +196,7 @@ public:
 	glm::ivec2 textureFillOffset;
 	float nudgeDistance = 1.0f;
 	float rotateDistance = 45.0f;
+	bool useGridForNudge = true;
 
 
 	void configBegin();

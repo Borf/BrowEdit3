@@ -185,6 +185,7 @@ void Map::invertScale(int axis, BrowEdit* browEdit)
 }
 void Map::nudgeSelection(int axis, int sign, BrowEdit* browEdit)
 {
+	float distance = browEdit->useGridForNudge ? browEdit->activeMapView->gridSizeTranslate : browEdit->nudgeDistance;
 	auto ga = new GroupAction();
 	for (auto n : selectedNodes)
 	{
@@ -193,7 +194,7 @@ void Map::nudgeSelection(int axis, int sign, BrowEdit* browEdit)
 		if (rswObject)
 		{
 			float orig = rswObject->position[axis];
-			rswObject->position[axis] += sign * browEdit->nudgeDistance;
+			rswObject->position[axis] += sign * distance;
 			ga->addAction(new ObjectChangeAction(n, &rswObject->position[axis], orig, "Nudge"));
 		}
 		if (rsmRenderer)
@@ -204,6 +205,7 @@ void Map::nudgeSelection(int axis, int sign, BrowEdit* browEdit)
 
 void Map::rotateSelection(int axis, int sign, BrowEdit* browEdit)
 {
+	float distance = browEdit->useGridForNudge ? browEdit->activeMapView->gridSizeRotate : browEdit->rotateDistance;
 	auto ga = new GroupAction();
 	glm::vec3 groupCenter = getSelectionCenter();
 
@@ -214,7 +216,7 @@ void Map::rotateSelection(int axis, int sign, BrowEdit* browEdit)
 		if (rswObject)
 		{
 			float orig = rswObject->rotation[axis];
-			rswObject->rotation[axis] += sign * browEdit->rotateDistance;
+			rswObject->rotation[axis] += sign * distance;
 			ga->addAction(new ObjectChangeAction(n, &rswObject->rotation[axis], orig, "Rotate"));
 			if (browEdit->activeMapView->pivotPoint == MapView::PivotPoint::GroupCenter)
 			{
