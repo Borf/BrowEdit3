@@ -203,6 +203,7 @@ void BrowEdit::showGatWindow()
 
 		static bool selectionOnly = false;
 		static bool setWalkable = true;
+		static bool setHeight = true;
 		static bool setObjectWalkable = true;
 		static bool blockUnderWater = true;
 		static std::vector<int> textureMap; //TODO: this won't work well with multiple maps
@@ -353,6 +354,7 @@ void BrowEdit::showGatWindow()
 		}
 		ImGui::Checkbox("Gat selection only", &selectionOnly);
 		ImGui::Checkbox("Set walkability", &setWalkable);
+		ImGui::Checkbox("Set height", &setHeight);
 		ImGui::Checkbox("Set object walkability", &setObjectWalkable);
 		ImGui::Checkbox("Make tiles under water unwalkable", &blockUnderWater);
 
