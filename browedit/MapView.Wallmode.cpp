@@ -8,6 +8,8 @@
 #include <browedit/gl/FBO.h>
 #include <browedit/gl/Texture.h>
 #include <browedit/shaders/SimpleShader.h>
+#include <browedit/actions/GroupAction.h>
+#include <browedit/actions/TilePropertyChangeAction.h>
 #include <imgui.h>
 
 
@@ -90,7 +92,7 @@ void MapView::postRenderWallMode(BrowEdit* browEdit)
 		glEnd();
 		glEnable(GL_DEPTH_TEST);
 	}
-
+	static std::vector<Gnd::Tile> originalTiles;
 	if (hovered)
 	{
 		if (!selecting && !panning)
@@ -140,6 +142,19 @@ void MapView::postRenderWallMode(BrowEdit* browEdit)
 				}
 				else
 				{
+					originalTiles.clear();
+					for (const auto& w : selectedWalls)
+					{					
+						auto cube = gnd->cubes[w.x][w.y];
+						Gnd::Tile* tile = nullptr;
+						if (w.z == 1 && cube->tileSide != -1)
+							tile = gnd->tiles[cube->tileSide];
+						if (w.z == 2 && cube->tileFront != -1)
+							tile = gnd->tiles[cube->tileFront];
+						if (!tile)
+							continue;
+						originalTiles.push_back(Gnd::Tile(*tile));
+					}
 					panning = true;
 					std::cout << "Panning!" << std::endl;
 				}
@@ -268,7 +283,26 @@ void MapView::postRenderWallMode(BrowEdit* browEdit)
 				gndRenderer->setChunkDirty(w.x, w.y);
 			}
 			if (ImGui::IsMouseReleased(ImGuiMouseButton_Left))
+			{
 				panning = false;
+				auto ga = new GroupAction();
+				int i = 0;
+				for (const auto& w : selectedWalls)
+				{
+					auto cube = gnd->cubes[w.x][w.y];
+					Gnd::Tile* tile = nullptr;
+					if (w.z == 1 && cube->tileSide != -1)
+						tile = gnd->tiles[cube->tileSide];
+					if (w.z == 2 && cube->tileFront != -1)
+						tile = gnd->tiles[cube->tileFront];
+					if (!tile)
+						continue;
+					for (int ii = 0; ii < 4; ii++)
+						ga->addAction(new TileChangeAction<glm::vec2>(tile, &tile->texCoords[ii], originalTiles[i].texCoords[ii], "Change UV"));
+					i++;
+				}
+				map->doAction(ga, browEdit);
+			}
 		}
 	}
 	if (selectedWalls.size() > 0)
