@@ -78,100 +78,102 @@ void BrowEdit::registerActions()
 
 
 	}, hasActiveMapViewObjectMode);
-	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_InvertSelection,	[this]() { activeMapView->map->selectInvert(this); }, hasActiveMapViewObjectMode);
-	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_SelectAll,			[this]() { activeMapView->map->selectAll(this); }, hasActiveMapViewObjectMode);
-	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_SelectAllModels,	[this]() { activeMapView->map->selectAll<RswModel>(this); }, hasActiveMapViewObjectMode);
-	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_SelectAllEffects,	[this]() { activeMapView->map->selectAll<RswEffect>(this); }, hasActiveMapViewObjectMode);
-	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_SelectAllSounds,	[this]() { activeMapView->map->selectAll<RswSound>(this); }, hasActiveMapViewObjectMode);
-	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_SelectAllLights,	[this]() { activeMapView->map->selectAll<RswLight>(this); }, hasActiveMapViewObjectMode);
-	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_Move,				[this]() { activeMapView->gadget.mode = Gadget::Mode::Translate; }, hasActiveMapViewObjectMode);
-	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_Rotate,				[this]() { activeMapView->gadget.mode = Gadget::Mode::Rotate; }, hasActiveMapViewObjectMode);
-	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_Scale,				[this]() { activeMapView->gadget.mode = Gadget::Mode::Scale; }, hasActiveMapViewObjectMode);
+	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_InvertSelection,		[this]() { activeMapView->map->selectInvert(this); }, hasActiveMapViewObjectMode);
+	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_SelectAll,				[this]() { activeMapView->map->selectAll(this); }, hasActiveMapViewObjectMode);
+	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_SelectAllModels,		[this]() { activeMapView->map->selectAll<RswModel>(this); }, hasActiveMapViewObjectMode);
+	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_SelectAllEffects,		[this]() { activeMapView->map->selectAll<RswEffect>(this); }, hasActiveMapViewObjectMode);
+	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_SelectAllSounds,		[this]() { activeMapView->map->selectAll<RswSound>(this); }, hasActiveMapViewObjectMode);
+	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_SelectAllLights,		[this]() { activeMapView->map->selectAll<RswLight>(this); }, hasActiveMapViewObjectMode);
+	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_Move,					[this]() { activeMapView->gadget.mode = Gadget::Mode::Translate; }, hasActiveMapViewObjectMode);
+	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_Rotate,					[this]() { activeMapView->gadget.mode = Gadget::Mode::Rotate; }, hasActiveMapViewObjectMode);
+	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_Scale,					[this]() { activeMapView->gadget.mode = Gadget::Mode::Scale; }, hasActiveMapViewObjectMode);
 
-	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_InvertScaleX,		[this]() { activeMapView->map->invertScale(0, this); }, hasActiveMapViewObjectMode);
-	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_InvertScaleY,		[this]() { activeMapView->map->invertScale(1, this); }, hasActiveMapViewObjectMode);
-	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_InvertScaleZ,		[this]() { activeMapView->map->invertScale(2, this); }, hasActiveMapViewObjectMode);
-	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_CreatePrefab,		[this]() { windowData.openPrefabPopup = true; }, hasActiveMapViewObjectMode);
+	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_InvertScaleX,			[this]() { activeMapView->map->invertScale(0, this); }, hasActiveMapViewObjectMode);
+	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_InvertScaleY,			[this]() { activeMapView->map->invertScale(1, this); }, hasActiveMapViewObjectMode);
+	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_InvertScaleZ,			[this]() { activeMapView->map->invertScale(2, this); }, hasActiveMapViewObjectMode);
+	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_CreatePrefab,			[this]() { windowData.openPrefabPopup = true; }, hasActiveMapViewObjectMode);
 
-	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_NudgeXNeg,	[this]() { activeMapView->map->nudgeSelection(0, -1, this); }, hasActiveMapViewObjectMode);
-	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_NudgeXPos,	[this]() { activeMapView->map->nudgeSelection(0, 1, this); }, hasActiveMapViewObjectMode);
-	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_NudgeYNeg,	[this]() { activeMapView->map->nudgeSelection(1, -1, this); }, hasActiveMapViewObjectMode);
-	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_NudgeYPos,	[this]() { activeMapView->map->nudgeSelection(1, 1, this); }, hasActiveMapViewObjectMode);
-	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_NudgeZNeg,	[this]() { activeMapView->map->nudgeSelection(2, -1, this); }, hasActiveMapViewObjectMode);
-	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_NudgeZPos,	[this]() { activeMapView->map->nudgeSelection(2, 1, this); }, hasActiveMapViewObjectMode);
+	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_NudgeXNeg,				[this]() { activeMapView->map->nudgeSelection(0, -1, this); }, hasActiveMapViewObjectMode);
+	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_NudgeXPos,				[this]() { activeMapView->map->nudgeSelection(0, 1, this); }, hasActiveMapViewObjectMode);
+	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_NudgeYNeg,				[this]() { activeMapView->map->nudgeSelection(1, -1, this); }, hasActiveMapViewObjectMode);
+	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_NudgeYPos,				[this]() { activeMapView->map->nudgeSelection(1, 1, this); }, hasActiveMapViewObjectMode);
+	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_NudgeZNeg,				[this]() { activeMapView->map->nudgeSelection(2, -1, this); }, hasActiveMapViewObjectMode);
+	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_NudgeZPos,				[this]() { activeMapView->map->nudgeSelection(2, 1, this); }, hasActiveMapViewObjectMode);
 
-	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_RotXNeg,	[this]() { activeMapView->map->rotateSelection(0, -1, this); }, hasActiveMapViewObjectMode);
-	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_RotXPos,	[this]() { activeMapView->map->rotateSelection(0, 1, this); }, hasActiveMapViewObjectMode);
-	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_RotYNeg,	[this]() { activeMapView->map->rotateSelection(1, -1, this); }, hasActiveMapViewObjectMode);
-	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_RotYPos,	[this]() { activeMapView->map->rotateSelection(1, 1, this); }, hasActiveMapViewObjectMode);
-	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_RotZNeg,	[this]() { activeMapView->map->rotateSelection(2, -1, this); }, hasActiveMapViewObjectMode);
-	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_RotZPos,	[this]() { activeMapView->map->rotateSelection(2, 1, this); }, hasActiveMapViewObjectMode);
-	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_ToggleObjectWindow, [this]() { windowData.objectWindowVisible = !windowData.objectWindowVisible; }, hasActiveMapViewObjectMode);
+	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_RotXNeg,				[this]() { activeMapView->map->rotateSelection(0, -1, this); }, hasActiveMapViewObjectMode);
+	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_RotXPos,				[this]() { activeMapView->map->rotateSelection(0, 1, this); }, hasActiveMapViewObjectMode);
+	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_RotYNeg,				[this]() { activeMapView->map->rotateSelection(1, -1, this); }, hasActiveMapViewObjectMode);
+	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_RotYPos,				[this]() { activeMapView->map->rotateSelection(1, 1, this); }, hasActiveMapViewObjectMode);
+	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_RotZNeg,				[this]() { activeMapView->map->rotateSelection(2, -1, this); }, hasActiveMapViewObjectMode);
+	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_RotZPos,				[this]() { activeMapView->map->rotateSelection(2, 1, this); }, hasActiveMapViewObjectMode);
+	HotkeyRegistry::registerAction(HotkeyAction::ObjectEdit_ToggleObjectWindow,		[this]() { windowData.objectWindowVisible = !windowData.objectWindowVisible; }, hasActiveMapViewObjectMode);
 	
 	HotkeyRegistry::registerAction(HotkeyAction::TextureEdit_ToggleTextureWindow,	[this]() { windowData.textureManageWindowVisible = !windowData.textureManageWindowVisible; }, hasActiveMapViewTextureMode);
 	HotkeyRegistry::registerAction(HotkeyAction::TextureEdit_SwapBrushSize,			[this]() { std::swap(activeMapView->textureBrushWidth, activeMapView->textureBrushHeight); }, hasActiveMapViewTextureMode);
 
-	HotkeyRegistry::registerAction(HotkeyAction::WallEdit_AddWall,		[this]() { activeMapView->map->wallAddSelected(this); }, hasActiveMapViewWallMode);
-	HotkeyRegistry::registerAction(HotkeyAction::WallEdit_RemoveWall,	[this]() { activeMapView->map->wallRemoveSelected(this); }, hasActiveMapViewWallMode);
-	HotkeyRegistry::registerAction(HotkeyAction::WallEdit_ReApply,		[this]() { activeMapView->map->wallReApplySelected(this); }, hasActiveMapViewWallMode);
-	HotkeyRegistry::registerAction(HotkeyAction::WallEdit_Preview,		[this]() { previewWall = !previewWall; }, hasActiveMapViewWallMode);
-	HotkeyRegistry::registerAction(HotkeyAction::WallEdit_OffsetLower,	[this]() { activeMapView->wallOffset = glm::max(1, activeMapView->wallOffset - 1); }, hasActiveMapViewWallMode);
-	HotkeyRegistry::registerAction(HotkeyAction::WallEdit_OffsetRaise,	[this]() { activeMapView->wallOffset++; }, hasActiveMapViewWallMode);
-	HotkeyRegistry::registerAction(HotkeyAction::WallEdit_SizeLower,	[this]() { activeMapView->wallWidth = glm::max(1, activeMapView->wallWidth - 1); }, hasActiveMapViewWallMode);
-	HotkeyRegistry::registerAction(HotkeyAction::WallEdit_SizeRaise,	[this]() { activeMapView->wallWidth++; }, hasActiveMapViewWallMode);
+	HotkeyRegistry::registerAction(HotkeyAction::WallEdit_AddWall,					[this]() { activeMapView->map->wallAddSelected(this); }, hasActiveMapViewWallMode);
+	HotkeyRegistry::registerAction(HotkeyAction::WallEdit_RemoveWall,				[this]() { activeMapView->map->wallRemoveSelected(this); }, hasActiveMapViewWallMode);
+	HotkeyRegistry::registerAction(HotkeyAction::WallEdit_ReApply,					[this]() { activeMapView->map->wallReApplySelected(this); }, hasActiveMapViewWallMode);
+	HotkeyRegistry::registerAction(HotkeyAction::WallEdit_Preview,					[this]() { previewWall = !previewWall; }, hasActiveMapViewWallMode);
+	HotkeyRegistry::registerAction(HotkeyAction::WallEdit_OffsetLower,				[this]() { activeMapView->wallOffset = glm::max(1, activeMapView->wallOffset - 1); }, hasActiveMapViewWallMode);
+	HotkeyRegistry::registerAction(HotkeyAction::WallEdit_OffsetRaise,				[this]() { activeMapView->wallOffset++; }, hasActiveMapViewWallMode);
+	HotkeyRegistry::registerAction(HotkeyAction::WallEdit_SizeLower,				[this]() { activeMapView->wallWidth = glm::max(1, activeMapView->wallWidth - 1); }, hasActiveMapViewWallMode);
+	HotkeyRegistry::registerAction(HotkeyAction::WallEdit_SizeRaise,				[this]() { activeMapView->wallWidth++; }, hasActiveMapViewWallMode);
+	HotkeyRegistry::registerAction(HotkeyAction::WallEdit_FlipSelectedHorizontal,	[this]() { activeMapView->map->wallFlipSelectedTextureHorizontal(this); }, hasActiveMapViewWallMode);
+	HotkeyRegistry::registerAction(HotkeyAction::WallEdit_FlipSelectedVertical,		[this]() { activeMapView->map->wallFlipSelectedTextureVertical(this); }, hasActiveMapViewWallMode);
 
 	
-	HotkeyRegistry::registerAction(HotkeyAction::GatEdit_NextTileType,	[this]() { windowData.gatEdit.gatIndex = (windowData.gatEdit.gatIndex + 1)%10;	heightDoodle = false;	gatDoodle = true; }, hasActiveMapViewGatMode);
-	HotkeyRegistry::registerAction(HotkeyAction::GatEdit_PrevTileType,	[this]() { windowData.gatEdit.gatIndex = (windowData.gatEdit.gatIndex + 11)%10;	heightDoodle = false;	gatDoodle = true; }, hasActiveMapViewGatMode);
-	HotkeyRegistry::registerAction(HotkeyAction::GatEdit_Tile0,			[this]() { windowData.gatEdit.gatIndex = 0;	heightDoodle = false;	gatDoodle = true; }, hasActiveMapViewGatMode);
-	HotkeyRegistry::registerAction(HotkeyAction::GatEdit_Tile1,			[this]() { windowData.gatEdit.gatIndex = 1;	heightDoodle = false;	gatDoodle = true; }, hasActiveMapViewGatMode);
-	HotkeyRegistry::registerAction(HotkeyAction::GatEdit_Tile2,			[this]() { windowData.gatEdit.gatIndex = 2;	heightDoodle = false;	gatDoodle = true; }, hasActiveMapViewGatMode);
-	HotkeyRegistry::registerAction(HotkeyAction::GatEdit_Tile3,			[this]() { windowData.gatEdit.gatIndex = 3;	heightDoodle = false;	gatDoodle = true; }, hasActiveMapViewGatMode);
-	HotkeyRegistry::registerAction(HotkeyAction::GatEdit_Tile4,			[this]() { windowData.gatEdit.gatIndex = 4;	heightDoodle = false;	gatDoodle = true; }, hasActiveMapViewGatMode);
-	HotkeyRegistry::registerAction(HotkeyAction::GatEdit_Tile5,			[this]() { windowData.gatEdit.gatIndex = 5;	heightDoodle = false;	gatDoodle = true; }, hasActiveMapViewGatMode);
-	HotkeyRegistry::registerAction(HotkeyAction::GatEdit_Tile6,			[this]() { windowData.gatEdit.gatIndex = 6;	heightDoodle = false;	gatDoodle = true; }, hasActiveMapViewGatMode);
-	HotkeyRegistry::registerAction(HotkeyAction::GatEdit_Tile7,			[this]() { windowData.gatEdit.gatIndex = 7;	heightDoodle = false;	gatDoodle = true; }, hasActiveMapViewGatMode);
-	HotkeyRegistry::registerAction(HotkeyAction::GatEdit_Tile8,			[this]() { windowData.gatEdit.gatIndex = 8;	heightDoodle = false;	gatDoodle = true; }, hasActiveMapViewGatMode);
-	HotkeyRegistry::registerAction(HotkeyAction::GatEdit_Tile9,			[this]() { windowData.gatEdit.gatIndex = 9;	heightDoodle = false;	gatDoodle = true; }, hasActiveMapViewGatMode);
+	HotkeyRegistry::registerAction(HotkeyAction::GatEdit_NextTileType,				[this]() { windowData.gatEdit.gatIndex = (windowData.gatEdit.gatIndex + 1)%10;	heightDoodle = false;	gatDoodle = true; }, hasActiveMapViewGatMode);
+	HotkeyRegistry::registerAction(HotkeyAction::GatEdit_PrevTileType,				[this]() { windowData.gatEdit.gatIndex = (windowData.gatEdit.gatIndex + 11)%10;	heightDoodle = false;	gatDoodle = true; }, hasActiveMapViewGatMode);
+	HotkeyRegistry::registerAction(HotkeyAction::GatEdit_Tile0,						[this]() { windowData.gatEdit.gatIndex = 0;	heightDoodle = false;	gatDoodle = true; }, hasActiveMapViewGatMode);
+	HotkeyRegistry::registerAction(HotkeyAction::GatEdit_Tile1,						[this]() { windowData.gatEdit.gatIndex = 1;	heightDoodle = false;	gatDoodle = true; }, hasActiveMapViewGatMode);
+	HotkeyRegistry::registerAction(HotkeyAction::GatEdit_Tile2,						[this]() { windowData.gatEdit.gatIndex = 2;	heightDoodle = false;	gatDoodle = true; }, hasActiveMapViewGatMode);
+	HotkeyRegistry::registerAction(HotkeyAction::GatEdit_Tile3,						[this]() { windowData.gatEdit.gatIndex = 3;	heightDoodle = false;	gatDoodle = true; }, hasActiveMapViewGatMode);
+	HotkeyRegistry::registerAction(HotkeyAction::GatEdit_Tile4,						[this]() { windowData.gatEdit.gatIndex = 4;	heightDoodle = false;	gatDoodle = true; }, hasActiveMapViewGatMode);
+	HotkeyRegistry::registerAction(HotkeyAction::GatEdit_Tile5,						[this]() { windowData.gatEdit.gatIndex = 5;	heightDoodle = false;	gatDoodle = true; }, hasActiveMapViewGatMode);
+	HotkeyRegistry::registerAction(HotkeyAction::GatEdit_Tile6,						[this]() { windowData.gatEdit.gatIndex = 6;	heightDoodle = false;	gatDoodle = true; }, hasActiveMapViewGatMode);
+	HotkeyRegistry::registerAction(HotkeyAction::GatEdit_Tile7,						[this]() { windowData.gatEdit.gatIndex = 7;	heightDoodle = false;	gatDoodle = true; }, hasActiveMapViewGatMode);
+	HotkeyRegistry::registerAction(HotkeyAction::GatEdit_Tile8,						[this]() { windowData.gatEdit.gatIndex = 8;	heightDoodle = false;	gatDoodle = true; }, hasActiveMapViewGatMode);
+	HotkeyRegistry::registerAction(HotkeyAction::GatEdit_Tile9,						[this]() { windowData.gatEdit.gatIndex = 9;	heightDoodle = false;	gatDoodle = true; }, hasActiveMapViewGatMode);
 
-	HotkeyRegistry::registerAction(HotkeyAction::Texture_PrevTexture,	[this]() { activeMapView->textureSelected = (activeMapView->textureSelected + activeMapView->map->rootNode->getComponent<Gnd>()->textures.size() - 1) % (int)activeMapView->map->rootNode->getComponent<Gnd>()->textures.size(); }, hasActiveMapViewTextureWallMode);
-	HotkeyRegistry::registerAction(HotkeyAction::Texture_NextTexture,	[this]() { activeMapView->textureSelected = (activeMapView->textureSelected + 1) % activeMapView->map->rootNode->getComponent<Gnd>()->textures.size(); }, hasActiveMapViewTextureWallMode);
-	HotkeyRegistry::registerAction(HotkeyAction::Texture_SelectFull,	[this]() { activeMapView->textureEditUv1 = glm::vec2(0, 0);	activeMapView->textureEditUv2 = glm::vec2(1, 1); }, hasActiveMapViewTextureWallMode);
+	HotkeyRegistry::registerAction(HotkeyAction::Texture_PrevTexture,				[this]() { activeMapView->textureSelected = (activeMapView->textureSelected + activeMapView->map->rootNode->getComponent<Gnd>()->textures.size() - 1) % (int)activeMapView->map->rootNode->getComponent<Gnd>()->textures.size(); }, hasActiveMapViewTextureWallMode);
+	HotkeyRegistry::registerAction(HotkeyAction::Texture_NextTexture,				[this]() { activeMapView->textureSelected = (activeMapView->textureSelected + 1) % activeMapView->map->rootNode->getComponent<Gnd>()->textures.size(); }, hasActiveMapViewTextureWallMode);
+	HotkeyRegistry::registerAction(HotkeyAction::Texture_SelectFull,				[this]() { activeMapView->textureEditUv1 = glm::vec2(0, 0);	activeMapView->textureEditUv2 = glm::vec2(1, 1); }, hasActiveMapViewTextureWallMode);
 	
 
-	HotkeyRegistry::registerAction(HotkeyAction::EditMode_Height,		[this]() { editMode = EditMode::Height; });
-	HotkeyRegistry::registerAction(HotkeyAction::EditMode_Texture,		[this]() { editMode = EditMode::Texture; });
-	HotkeyRegistry::registerAction(HotkeyAction::EditMode_Object,		[this]() { editMode = EditMode::Object; });
-	HotkeyRegistry::registerAction(HotkeyAction::EditMode_Wall,			[this]() { editMode = EditMode::Wall; });
-	HotkeyRegistry::registerAction(HotkeyAction::EditMode_Gat,			[this]() { editMode = EditMode::Gat; });
+	HotkeyRegistry::registerAction(HotkeyAction::EditMode_Height,					[this]() { editMode = EditMode::Height; });
+	HotkeyRegistry::registerAction(HotkeyAction::EditMode_Texture,					[this]() { editMode = EditMode::Texture; });
+	HotkeyRegistry::registerAction(HotkeyAction::EditMode_Object,					[this]() { editMode = EditMode::Object; });
+	HotkeyRegistry::registerAction(HotkeyAction::EditMode_Wall,						[this]() { editMode = EditMode::Wall; });
+	HotkeyRegistry::registerAction(HotkeyAction::EditMode_Gat,						[this]() { editMode = EditMode::Gat; });
 	
-	HotkeyRegistry::registerAction(HotkeyAction::View_ShadowMap,		[this]() { activeMapView->viewLightmapShadow = !activeMapView->viewLightmapShadow; }, hasActiveMapView);
-	HotkeyRegistry::registerAction(HotkeyAction::View_ColorMap,			[this]() { activeMapView->viewLightmapColor = !activeMapView->viewLightmapColor; }, hasActiveMapView);
-	HotkeyRegistry::registerAction(HotkeyAction::View_TileColors,		[this]() { activeMapView->viewColors = !activeMapView->viewColors; }, hasActiveMapView);
-	HotkeyRegistry::registerAction(HotkeyAction::View_Lighting,			[this]() { activeMapView->viewLighting = !activeMapView->viewLighting; }, hasActiveMapView);
-	HotkeyRegistry::registerAction(HotkeyAction::View_Textures,			[this]() { activeMapView->viewTextures = !activeMapView->viewTextures; }, hasActiveMapView);
-	HotkeyRegistry::registerAction(HotkeyAction::View_SmoothColormap,	[this]() { activeMapView->smoothColors = !activeMapView->smoothColors; }, hasActiveMapView);
-	HotkeyRegistry::registerAction(HotkeyAction::View_EmptyTiles,		[this]() { activeMapView->viewEmptyTiles = !activeMapView->viewEmptyTiles; }, hasActiveMapView);
-	HotkeyRegistry::registerAction(HotkeyAction::View_GatTiles,			[this]() { if (editMode == BrowEdit::EditMode::Gat) { activeMapView->viewGatGat = !activeMapView->viewGatGat; } else { activeMapView->viewGat = !activeMapView->viewGat; } }, hasActiveMapView);
-	HotkeyRegistry::registerAction(HotkeyAction::View_Models,			[this]() { activeMapView->viewModels = !activeMapView->viewModels; }, hasActiveMapView);
-	HotkeyRegistry::registerAction(HotkeyAction::View_Effects,			[this]() { activeMapView->viewEffects = !activeMapView->viewEffects; }, hasActiveMapView);
-	HotkeyRegistry::registerAction(HotkeyAction::View_Sounds,			[this]() { activeMapView->viewSounds = !activeMapView->viewSounds; }, hasActiveMapView);
-	HotkeyRegistry::registerAction(HotkeyAction::View_Lights,			[this]() { activeMapView->viewLights= !activeMapView->viewLights; }, hasActiveMapView);
-	HotkeyRegistry::registerAction(HotkeyAction::View_Water,			[this]() { activeMapView->viewWater = !activeMapView->viewWater; }, hasActiveMapView);
+	HotkeyRegistry::registerAction(HotkeyAction::View_ShadowMap,					[this]() { activeMapView->viewLightmapShadow = !activeMapView->viewLightmapShadow; }, hasActiveMapView);
+	HotkeyRegistry::registerAction(HotkeyAction::View_ColorMap,						[this]() { activeMapView->viewLightmapColor = !activeMapView->viewLightmapColor; }, hasActiveMapView);
+	HotkeyRegistry::registerAction(HotkeyAction::View_TileColors,					[this]() { activeMapView->viewColors = !activeMapView->viewColors; }, hasActiveMapView);
+	HotkeyRegistry::registerAction(HotkeyAction::View_Lighting,						[this]() { activeMapView->viewLighting = !activeMapView->viewLighting; }, hasActiveMapView);
+	HotkeyRegistry::registerAction(HotkeyAction::View_Textures,						[this]() { activeMapView->viewTextures = !activeMapView->viewTextures; }, hasActiveMapView);
+	HotkeyRegistry::registerAction(HotkeyAction::View_SmoothColormap,				[this]() { activeMapView->smoothColors = !activeMapView->smoothColors; }, hasActiveMapView);
+	HotkeyRegistry::registerAction(HotkeyAction::View_EmptyTiles,					[this]() { activeMapView->viewEmptyTiles = !activeMapView->viewEmptyTiles; }, hasActiveMapView);
+	HotkeyRegistry::registerAction(HotkeyAction::View_GatTiles,						[this]() { if (editMode == BrowEdit::EditMode::Gat) { activeMapView->viewGatGat = !activeMapView->viewGatGat; } else { activeMapView->viewGat = !activeMapView->viewGat; } }, hasActiveMapView);
+	HotkeyRegistry::registerAction(HotkeyAction::View_Models,						[this]() { activeMapView->viewModels = !activeMapView->viewModels; }, hasActiveMapView);
+	HotkeyRegistry::registerAction(HotkeyAction::View_Effects,						[this]() { activeMapView->viewEffects = !activeMapView->viewEffects; }, hasActiveMapView);
+	HotkeyRegistry::registerAction(HotkeyAction::View_Sounds,						[this]() { activeMapView->viewSounds = !activeMapView->viewSounds; }, hasActiveMapView);
+	HotkeyRegistry::registerAction(HotkeyAction::View_Lights,						[this]() { activeMapView->viewLights= !activeMapView->viewLights; }, hasActiveMapView);
+	HotkeyRegistry::registerAction(HotkeyAction::View_Water,						[this]() { activeMapView->viewWater = !activeMapView->viewWater; }, hasActiveMapView);
 
 
 
-	HotkeyRegistry::registerAction(HotkeyAction::Camera_OrthoPerspective,	[this]() { activeMapView->ortho = !activeMapView->ortho; }, hasActiveMapView);
-	HotkeyRegistry::registerAction(HotkeyAction::Camera_MoveXPositive,		[this]() { activeMapView->cameraTargetRot = glm::vec2(0, 270); activeMapView->cameraTargetPos = activeMapView->cameraCenter; activeMapView->cameraAnimating = true; }, hasActiveMapView);
-	HotkeyRegistry::registerAction(HotkeyAction::Camera_MoveXNegative,		[this]() { activeMapView->cameraTargetRot = glm::vec2(0, 90); activeMapView->cameraTargetPos = activeMapView->cameraCenter; activeMapView->cameraAnimating = true; }, hasActiveMapView);
-	HotkeyRegistry::registerAction(HotkeyAction::Camera_MoveYPositive,		[this]() { activeMapView->cameraTargetRot = glm::vec2(90, 0); activeMapView->cameraTargetPos = activeMapView->cameraCenter; activeMapView->cameraAnimating = true; }, hasActiveMapView);
-	HotkeyRegistry::registerAction(HotkeyAction::Camera_MoveYNegative,		[this]() { activeMapView->cameraTargetRot = glm::vec2(270, 0); activeMapView->cameraTargetPos = activeMapView->cameraCenter; activeMapView->cameraAnimating = true; }, hasActiveMapView);
-	HotkeyRegistry::registerAction(HotkeyAction::Camera_MoveZPositive,		[this]() { activeMapView->cameraTargetRot = glm::vec2(0, 180); activeMapView->cameraTargetPos = activeMapView->cameraCenter; activeMapView->cameraAnimating = true; }, hasActiveMapView);
-	HotkeyRegistry::registerAction(HotkeyAction::Camera_MoveZNegative,		[this]() { activeMapView->cameraTargetRot = glm::vec2(0, 0); activeMapView->cameraTargetPos = activeMapView->cameraCenter; activeMapView->cameraAnimating = true; }, hasActiveMapView);
-	HotkeyRegistry::registerAction(HotkeyAction::Camera_RotateX45Positive,	[this]() { activeMapView->cameraTargetRot += glm::vec2(45, 0); activeMapView->cameraTargetPos = activeMapView->cameraCenter; activeMapView->cameraAnimating = true; }, hasActiveMapView);
-	HotkeyRegistry::registerAction(HotkeyAction::Camera_RotateX45Negative,	[this]() { activeMapView->cameraTargetRot -= glm::vec2(45, 0); activeMapView->cameraTargetPos = activeMapView->cameraCenter; activeMapView->cameraAnimating = true; }, hasActiveMapView);
-	HotkeyRegistry::registerAction(HotkeyAction::Camera_RotateY45Positive,	[this]() { activeMapView->cameraTargetRot += glm::vec2(0, 45); activeMapView->cameraTargetPos = activeMapView->cameraCenter; activeMapView->cameraAnimating = true; }, hasActiveMapView);
-	HotkeyRegistry::registerAction(HotkeyAction::Camera_RotateY45Negative,	[this]() { activeMapView->cameraTargetRot -= glm::vec2(0, 45); activeMapView->cameraTargetPos = activeMapView->cameraCenter; activeMapView->cameraAnimating = true; }, hasActiveMapView);
+	HotkeyRegistry::registerAction(HotkeyAction::Camera_OrthoPerspective,			[this]() { activeMapView->ortho = !activeMapView->ortho; }, hasActiveMapView);
+	HotkeyRegistry::registerAction(HotkeyAction::Camera_MoveXPositive,				[this]() { activeMapView->cameraTargetRot = glm::vec2(0, 270); activeMapView->cameraTargetPos = activeMapView->cameraCenter; activeMapView->cameraAnimating = true; }, hasActiveMapView);
+	HotkeyRegistry::registerAction(HotkeyAction::Camera_MoveXNegative,				[this]() { activeMapView->cameraTargetRot = glm::vec2(0, 90); activeMapView->cameraTargetPos = activeMapView->cameraCenter; activeMapView->cameraAnimating = true; }, hasActiveMapView);
+	HotkeyRegistry::registerAction(HotkeyAction::Camera_MoveYPositive,				[this]() { activeMapView->cameraTargetRot = glm::vec2(90, 0); activeMapView->cameraTargetPos = activeMapView->cameraCenter; activeMapView->cameraAnimating = true; }, hasActiveMapView);
+	HotkeyRegistry::registerAction(HotkeyAction::Camera_MoveYNegative,				[this]() { activeMapView->cameraTargetRot = glm::vec2(270, 0); activeMapView->cameraTargetPos = activeMapView->cameraCenter; activeMapView->cameraAnimating = true; }, hasActiveMapView);
+	HotkeyRegistry::registerAction(HotkeyAction::Camera_MoveZPositive,				[this]() { activeMapView->cameraTargetRot = glm::vec2(0, 180); activeMapView->cameraTargetPos = activeMapView->cameraCenter; activeMapView->cameraAnimating = true; }, hasActiveMapView);
+	HotkeyRegistry::registerAction(HotkeyAction::Camera_MoveZNegative,				[this]() { activeMapView->cameraTargetRot = glm::vec2(0, 0); activeMapView->cameraTargetPos = activeMapView->cameraCenter; activeMapView->cameraAnimating = true; }, hasActiveMapView);
+	HotkeyRegistry::registerAction(HotkeyAction::Camera_RotateX45Positive,			[this]() { activeMapView->cameraTargetRot += glm::vec2(45, 0); activeMapView->cameraTargetPos = activeMapView->cameraCenter; activeMapView->cameraAnimating = true; }, hasActiveMapView);
+	HotkeyRegistry::registerAction(HotkeyAction::Camera_RotateX45Negative,			[this]() { activeMapView->cameraTargetRot -= glm::vec2(45, 0); activeMapView->cameraTargetPos = activeMapView->cameraCenter; activeMapView->cameraAnimating = true; }, hasActiveMapView);
+	HotkeyRegistry::registerAction(HotkeyAction::Camera_RotateY45Positive,			[this]() { activeMapView->cameraTargetRot += glm::vec2(0, 45); activeMapView->cameraTargetPos = activeMapView->cameraCenter; activeMapView->cameraAnimating = true; }, hasActiveMapView);
+	HotkeyRegistry::registerAction(HotkeyAction::Camera_RotateY45Negative,			[this]() { activeMapView->cameraTargetRot -= glm::vec2(0, 45); activeMapView->cameraTargetPos = activeMapView->cameraCenter; activeMapView->cameraAnimating = true; }, hasActiveMapView);
 
 
 }

@@ -529,6 +529,8 @@ void BrowEdit::showWallWindow()
 		}
 	}
 
+	hotkeyButton("Flip Selected wall textures horizontally", HotkeyAction::WallEdit_FlipSelectedHorizontal);
+	hotkeyButton("Flip Selected wall textures vertically", HotkeyAction::WallEdit_FlipSelectedVertical);
 
 	ImGui::End();
 }

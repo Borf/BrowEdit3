@@ -75,6 +75,10 @@ enum class HotkeyAction
 	WallEdit_SizeLower,
 	WallEdit_SizeRaise,
 
+	WallEdit_FlipSelectedHorizontal,
+	WallEdit_FlipSelectedVertical,
+
+
 	Texture_NextTexture,
 	Texture_PrevTexture,
 	Texture_SelectFull,

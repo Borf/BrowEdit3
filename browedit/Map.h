@@ -76,6 +76,9 @@ public:
 	void wallRemoveSelected(BrowEdit* browEdit);
 	void wallReApplySelected(BrowEdit* browEdit);
 
+	void wallFlipSelectedTextureHorizontal(BrowEdit* browEdit);
+	void wallFlipSelectedTextureVertical(BrowEdit* browEdit);
+
 };
 
 

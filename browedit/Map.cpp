@@ -9,6 +9,7 @@
 #include <browedit/actions/TileSelectAction.h>
 #include <browedit/actions/TileNewAction.h>
 #include <browedit/actions/CubeTileChangeAction.h>
+#include <browedit/actions/TilePropertyChangeAction.h>
 #include <browedit/components/Rsw.h>
 #include <browedit/components/Gnd.h>
 #include <browedit/components/GndRenderer.h>
@@ -1078,6 +1079,57 @@ void Map::wallRemoveSelected(BrowEdit* browEdit)
 		if (w.z == 2 && cube->tileFront != -1)
 			ga->addAction(new CubeTileChangeAction(cube, cube->tileUp, -1, cube->tileSide));
 
+	}
+	doAction(ga, browEdit);
+}
+
+
+void Map::wallFlipSelectedTextureHorizontal(BrowEdit* browEdit)
+{
+	auto gnd = rootNode->getComponent<Gnd>();
+	auto gndRenderer = rootNode->getComponent<GndRenderer>();
+	auto ga = new GroupAction();
+
+	for (const auto& w : selectedWalls)
+	{
+		auto cube = gnd->cubes[w.x][w.y];
+		Gnd::Tile* tile = nullptr;
+		if (w.z == 1 && cube->tileSide != -1)
+			tile = gnd->tiles[cube->tileSide];
+		if (w.z == 2 && cube->tileFront != -1)
+			tile = gnd->tiles[cube->tileFront];
+		if (!tile)
+			continue;
+		Gnd::Tile original(*tile);
+		std::swap(tile->v1.x, tile->v2.x);
+		std::swap(tile->v3.x, tile->v4.x);
+		for(int i = 0; i < 4; i++)
+			ga->addAction(new TileChangeAction<glm::vec2>(tile, &tile->texCoords[i], original.texCoords[i], "Change UV"));
+	}
+	doAction(ga, browEdit);
+}
+
+void Map::wallFlipSelectedTextureVertical(BrowEdit* browEdit)
+{
+	auto gnd = rootNode->getComponent<Gnd>();
+	auto gndRenderer = rootNode->getComponent<GndRenderer>();
+	auto ga = new GroupAction();
+
+	for (const auto& w : selectedWalls)
+	{
+		auto cube = gnd->cubes[w.x][w.y];
+		Gnd::Tile* tile = nullptr;
+		if (w.z == 1 && cube->tileSide != -1)
+			tile = gnd->tiles[cube->tileSide];
+		if (w.z == 2 && cube->tileFront != -1)
+			tile = gnd->tiles[cube->tileFront];
+		if (!tile)
+			continue;
+		Gnd::Tile original(*tile);
+		std::swap(tile->v1.y, tile->v3.y);
+		std::swap(tile->v2.y, tile->v4.y);
+		for (int i = 0; i < 4; i++)
+			ga->addAction(new TileChangeAction<glm::vec2>(tile, &tile->texCoords[i], original.texCoords[i], "Change UV"));
 	}
 	doAction(ga, browEdit);
 }
