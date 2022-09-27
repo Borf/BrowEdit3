@@ -514,9 +514,7 @@ void BrowEdit::showWallWindow()
 						{
 							dragged = false;
 							changed = true;
-
 							activeMapView->map->doAction(new TileChangeAction<glm::vec2>(tile, &tile->texCoords[i], startUv, "UV change of tile"), this);
-
 						}
 						ImGui::PopID();
 					}

@@ -1027,7 +1027,40 @@ void Map::wallAddSelected(BrowEdit* browEdit)
 
 void Map::wallReApplySelected(BrowEdit* browEdit)
 {
+	auto gnd = rootNode->getComponent<Gnd>();
+	auto gndRenderer = rootNode->getComponent<GndRenderer>();
 
+	WallCalculation calculation;
+	calculation.prepare(browEdit);
+
+	auto ga = new GroupAction();
+	int id = (int)gnd->tiles.size();
+
+	for (const auto& w : selectedWalls)
+	{
+		auto cube = gnd->cubes[w.x][w.y];
+
+		calculation.calcUV(w, gnd);
+
+		auto t = new Gnd::Tile();
+		t->color = glm::ivec4(255, 255, 255, 255);
+		t->textureIndex = browEdit->activeMapView->textureSelected;
+		t->lightmapIndex = 0;
+
+		t->v1 = calculation.g_uv1;
+		t->v2 = calculation.g_uv2;
+		t->v3 = calculation.g_uv3;
+		t->v4 = calculation.g_uv4;
+
+		if (w.z == 1)
+			ga->addAction(new CubeTileChangeAction(cube, cube->tileUp, cube->tileFront, id));
+		if (w.z == 2)
+			ga->addAction(new CubeTileChangeAction(cube, cube->tileUp, id, cube->tileSide));
+		ga->addAction(new TileNewAction(t));
+		id++;
+	}
+	doAction(ga, browEdit);
+	gndRenderer->gndShadowDirty = true;
 }
 
 
