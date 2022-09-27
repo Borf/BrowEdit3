@@ -271,8 +271,8 @@ void BrowEdit::showGatWindow()
 										}
 									}
 									});
-
-								gat->cubes[x][y]->heights[i] = -height.y;
+								if(setHeight)
+									gat->cubes[x][y]->heights[i] = -height.y;
 							}
 
 							gatInfo[x][y] = std::pair<int, int>(raiseType, gatType);
