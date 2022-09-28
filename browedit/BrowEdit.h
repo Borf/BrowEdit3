@@ -159,6 +159,10 @@ public:
 		Object,
 		Wall,
 		Gat,
+		Color,
+		Shadow,
+		Sprite,
+		Cinematic,
 	} editMode = EditMode::Gat;
 	
 	enum class SelectTool
@@ -197,6 +201,10 @@ public:
 	float nudgeDistance = 1.0f;
 	float rotateDistance = 45.0f;
 	bool useGridForNudge = true;
+
+	glm::vec3	colorEditBrushColor = glm::vec3(1);
+	int			colorEditBrushSize = 1;
+	float		colorEditBrushHardness = 1.0f;
 
 
 	void configBegin();
@@ -246,6 +254,7 @@ public:
 	void showTextureBrushWindow();
 	void showTextureManageWindow();
 	void showHotkeyEditorWindow();
+	void showColorEditWindow();
 
 	void copyTiles();
 	void pasteTiles();

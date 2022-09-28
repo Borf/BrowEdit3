@@ -38,9 +38,17 @@ void BrowEdit::toolbar()
 	else if (editMode == EditMode::Object)
 		ImGui::Text("Object");
 	else if (editMode == EditMode::Gat)
-			ImGui::Text("GAT");
+		ImGui::Text("GAT");
 	else if (editMode == EditMode::Wall)
 		ImGui::Text("Wall");
+	else if (editMode == EditMode::Color)
+		ImGui::Text("Color");
+	else if (editMode == EditMode::Shadow)
+		ImGui::Text("Shadow");
+	else if (editMode == EditMode::Sprite)
+		ImGui::Text("Sprite");
+	else if (editMode == EditMode::Cinematic)
+		ImGui::Text("Cinematic");
 	else
 		ImGui::Text("???");
 	ImGui::SameLine();
@@ -55,6 +63,14 @@ void BrowEdit::toolbar()
 	toolBarToggleButton("gatmode", ICON_EDIT_GAT, editMode == EditMode::Gat, "Gat edit mode", HotkeyAction::EditMode_Gat, config.toolbarButtonsGatEdit);
 	ImGui::SameLine();
 	toolBarToggleButton("wallmode", ICON_EDIT_WALL, editMode == EditMode::Wall, "Wall edit mode", HotkeyAction::EditMode_Wall, config.toolbarButtonsWallEdit);
+	ImGui::SameLine();
+	toolBarToggleButton("color", ICON_EDIT_WALL, editMode == EditMode::Color, "Color edit mode", HotkeyAction::EditMode_Color, config.toolbarButtonsWallEdit);
+	ImGui::SameLine();
+	toolBarToggleButton("shadow", ICON_EDIT_WALL, editMode == EditMode::Shadow, "Shadow edit mode", HotkeyAction::EditMode_Shadow, config.toolbarButtonsWallEdit);
+	ImGui::SameLine();
+	toolBarToggleButton("sprite", ICON_EDIT_WALL, editMode == EditMode::Sprite, "Sprite edit mode", HotkeyAction::EditMode_Sprite, config.toolbarButtonsWallEdit);
+	ImGui::SameLine();
+	toolBarToggleButton("cinematic", ICON_EDIT_WALL, editMode == EditMode::Cinematic, "Cinematic Mode", HotkeyAction::EditMode_Cinematic, config.toolbarButtonsWallEdit);
 	ImGui::SameLine(130 + 5 * (config.toolbarButtonSize + 5) + 20 );
 
 	if (editMode == EditMode::Object)

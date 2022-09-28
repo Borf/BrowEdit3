@@ -57,6 +57,7 @@
     <ClCompile Include="browedit\Image.cpp" />
     <ClCompile Include="browedit\Lightmapper.cpp" />
     <ClCompile Include="browedit\Map.cpp" />
+    <ClCompile Include="browedit\MapView.Colormode.cpp" />
     <ClCompile Include="browedit\MapView.cpp" />
     <ClCompile Include="browedit\MapView.Gatmode.cpp" />
     <ClCompile Include="browedit\MapView.Heightmode.cpp" />
@@ -72,6 +73,7 @@
     <ClCompile Include="browedit\NodeRenderer.cpp" />
     <ClCompile Include="browedit\util\FileIO.cpp" />
     <ClCompile Include="browedit\util\Util.cpp" />
+    <ClCompile Include="browedit\windows\ColorEditWindow.cpp" />
     <ClCompile Include="browedit\windows\ExportMapWindow.cpp" />
     <ClCompile Include="browedit\windows\GatEditWindow.cpp" />
     <ClCompile Include="browedit\windows\HeightEditWindow.cpp" />

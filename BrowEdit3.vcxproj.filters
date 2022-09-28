@@ -379,6 +379,12 @@
     <ClCompile Include="browedit\windows\WallEditWindow.cpp">
       <Filter>browedit\windows</Filter>
     </ClCompile>
+    <ClCompile Include="browedit\windows\ColorEditWindow.cpp">
+      <Filter>browedit\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="browedit\MapView.Colormode.cpp">
+      <Filter>browedit</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="lib\imgui\imgui.h">

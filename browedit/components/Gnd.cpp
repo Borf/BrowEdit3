@@ -591,6 +591,7 @@ void Gnd::makeLightmapBorders()
 					lightmap->data[0 + 8 * i] = getLightmapBrightness(x - 1, y, 6, i);
 					lightmap->data[7 + 8 * i] = getLightmapBrightness(x + 1, y, 1, i);
 
+					//todo: cache getLIghtmapColor result for [c]
 					for (int c = 0; c < 3; c++)
 					{
 						lightmap->data[64 + 3 * (i + 8 * 0) + c] = getLightmapColor(x, y - 1, i, 6)[c];

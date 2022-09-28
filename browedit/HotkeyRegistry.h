@@ -106,6 +106,10 @@ enum class HotkeyAction
 	EditMode_Object,
 	EditMode_Wall,
 	EditMode_Gat,
+	EditMode_Color,
+	EditMode_Shadow,
+	EditMode_Sprite,
+	EditMode_Cinematic,
 
 	View_ShadowMap,
 	View_ColorMap,
