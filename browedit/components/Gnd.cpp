@@ -569,6 +569,8 @@ void Gnd::makeLightmapsClear()
 
 }
 
+bool sharp = true;
+
 Gnd::Lightmap* Gnd::getLightmapLeft(const glm::ivec3 &pos, int& side)
 { // z 0 => tileUp, z 1 tileFront, z 2 tileSide
 	if(!inMap(glm::ivec2(pos)))
@@ -580,6 +582,8 @@ Gnd::Lightmap* Gnd::getLightmapLeft(const glm::ivec3 &pos, int& side)
 		tileId = cubes[pos.x - 1][pos.y]->tileUp;
 		if (cubes[pos.x - 1][pos.y]->tileSide != -1)
 		{
+			if (sharp)
+				return nullptr;
 			tileId = cubes[pos.x - 1][pos.y]->tileSide;
 			side = 5;//bottom2
 		}
@@ -608,6 +612,8 @@ Gnd::Lightmap* Gnd::getLightmapRight(const glm::ivec3& pos, int& side)
 			tileId = cubes[pos.x + 1][pos.y]->tileUp;
 		if (cubes[pos.x][pos.y]->tileSide != -1)
 		{
+			if (sharp)
+				return nullptr;
 			tileId = cubes[pos.x][pos.y]->tileSide;
 			side = 2; // or 2
 		}
@@ -635,17 +641,23 @@ Gnd::Lightmap* Gnd::getLightmapTop(const glm::ivec3& pos, int& side)
 		tileId = cubes[pos.x][pos.y + 1]->tileUp;
 		if (cubes[pos.x][pos.y]->tileFront != -1)
 		{
+			if (sharp)
+				return nullptr;
 			tileId = cubes[pos.x][pos.y]->tileFront;
 			side = 2;
 		}
 	}
 	else if (pos.z == 1 && pos.y < height - 1)
 	{
+		if (sharp)
+			return nullptr;
 		tileId = cubes[pos.x][pos.y + 1]->tileUp;
 		side = 3;
 	}
 	else if (pos.z == 2)
 	{
+		if (sharp)
+			return nullptr;
 		tileId = cubes[pos.x + 1][pos.y]->tileUp;
 		side = 0;
 	}
@@ -668,17 +680,23 @@ Gnd::Lightmap* Gnd::getLightmapBottom(const glm::ivec3& pos, int& side)
 		tileId = cubes[pos.x][pos.y - 1]->tileUp;
 		if (pos.y < height - 1 && cubes[pos.x][pos.y-1]->tileFront != -1)
 		{
+			if (sharp)
+				return nullptr;
 			tileId = cubes[pos.x][pos.y-1]->tileFront;
 			side = 3;
 		}
 	}
 	else if (pos.z == 1)
 	{
+		if (sharp)
+			return nullptr;
 		tileId = cubes[pos.x][pos.y]->tileUp;
 		side = 2;
 	}
 	else if (pos.z == 2)
 	{
+		if (sharp)
+			return nullptr;
 		tileId = cubes[pos.x][pos.y]->tileUp;
 		side = 1;
 	}
