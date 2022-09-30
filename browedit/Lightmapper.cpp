@@ -45,6 +45,7 @@ void Lightmapper::begin()
 	std::cout << "Before:\t" << gnd->tiles.size() << " tiles, " << gnd->lightmaps.size() << " lightmaps" << std::endl;
 	gnd->makeLightmapsUnique();
 	std::cout << "After:\t" << gnd->tiles.size() << " tiles, " << gnd->lightmaps.size() << " lightmaps" << std::endl;
+	map->rootNode->getComponent<GndRenderer>()->setChunksDirty();
 
 	map->rootNode->getComponent<GndRenderer>()->gndShadowDirty = true;
 	for (auto& cc : map->rootNode->getComponent<GndRenderer>()->chunks)
@@ -485,8 +486,9 @@ void Lightmapper::calcPos(int direction, int tileId, int x, int y)
 void Lightmapper::onDone()
 {
 	std::cout << "Done!" << std::endl;
-	gnd->makeLightmapBorders();
-	gnd->cleanLightmaps();
+	gnd->makeLightmapBorders(browEdit);
+	//gnd->cleanLightmaps();
 	map->rootNode->getComponent<GndRenderer>()->gndShadowDirty = true;
+	map->rootNode->getComponent<GndRenderer>()->setChunksDirty();
 	util::ResourceManager<Image>::clear();
 }

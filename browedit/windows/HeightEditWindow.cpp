@@ -17,6 +17,8 @@
 #include <imgui_internal.h>
 #include <GLFW/glfw3.h>
 
+GLint oldTextureId;
+
 void BrowEdit::showHeightWindow()
 {
 
@@ -382,8 +384,8 @@ void BrowEdit::showHeightWindow()
 						}
 						if (lightmapId != -1)
 						{
-							glm::vec2 lm1((tile->lightmapIndex % GndRenderer::shadowmapRowCount) * (8.0f / GndRenderer::shadowmapSize) + 1.0f / GndRenderer::shadowmapSize, (tile->lightmapIndex / GndRenderer::shadowmapRowCount) * (8.0f / GndRenderer::shadowmapSize) + 1.0f / GndRenderer::shadowmapSize);
-							glm::vec2 lm2(lm1 + glm::vec2(6.0f / GndRenderer::shadowmapSize, 6.0f / GndRenderer::shadowmapSize));
+							glm::vec2 lm1((tile->lightmapIndex % GndRenderer::shadowmapRowCount) * (8.0f / GndRenderer::shadowmapSize), (tile->lightmapIndex / GndRenderer::shadowmapRowCount) * (8.0f / GndRenderer::shadowmapSize));
+							glm::vec2 lm2(lm1 + glm::vec2(8.0f / GndRenderer::shadowmapSize, 8.0f / GndRenderer::shadowmapSize));
 							ImGuiWindow* window = ImGui::GetCurrentWindow();
 							ImGui::Text("Shadow");
 							const ImGuiStyle& style = ImGui::GetStyle();
@@ -393,8 +395,27 @@ void BrowEdit::showHeightWindow()
 							ImRect bb(window->DC.CursorPos, window->DC.CursorPos + Canvas);
 							ImGui::ItemSize(bb);
 							ImGui::ItemAdd(bb, NULL);
-							ImGui::RenderFrame(bb.Min, bb.Max, ImGui::GetColorU32(ImGuiCol_FrameBg, 1), true, style.FrameRounding);
+							ImGui::RenderFrame(ImVec2(bb.Min.x - 2, bb.Min.y - 2), ImVec2(bb.Max.x + 2, bb.Max.y + 2), ImGui::GetColorU32(ImGuiCol_FrameBg, 1), true, style.FrameRounding);
+							window->DrawList->AddCallback([](const ImDrawList* parent_list, const ImDrawCmd* cmd)
+							{
+								glGetIntegerv(GL_TEXTURE_BINDING_2D, &oldTextureId);
+								GndRenderer* gndRenderer = (GndRenderer*)cmd->UserCallbackData;
+								glDisable(GL_BLEND);
+								gndRenderer->gndShadow->bind();
+								glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+								glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+							}, gndRenderer);
 							window->DrawList->AddImage((ImTextureID)(long long)gndRenderer->gndShadow->id(), bb.Min + ImVec2(1, 1), bb.Max - ImVec2(1, 1), ImVec2(lm1.x, lm2.y), ImVec2(lm2.x, lm1.y));
+							window->DrawList->AddCallback([](const ImDrawList* parent_list, const ImDrawCmd* cmd)
+							{
+								GndRenderer* gndRenderer = (GndRenderer*)cmd->UserCallbackData;
+								glEnable(GL_BLEND);
+								gndRenderer->gndShadow->bind();
+								glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+								glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+								glBindTexture(GL_TEXTURE_2D, oldTextureId);
+							}, gndRenderer);
 						}
 
 						ImGui::TreePop();

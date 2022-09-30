@@ -1,4 +1,5 @@
 #include "Gnd.h"
+#include <browedit/BrowEdit.h>
 #include <browedit/util/Util.h>
 #include <browedit/util/FileIO.h>
 #include <browedit/math/AABB.h>
@@ -567,10 +568,198 @@ void Gnd::makeLightmapsClear()
 	node->getComponent<GndRenderer>()->gndShadowDirty = true;
 
 }
-void Gnd::makeLightmapBorders()
+
+Gnd::Lightmap* Gnd::getLightmapLeft(const glm::ivec3 &pos, int& side)
+{ // z 0 => tileUp, z 1 tileFront, z 2 tileSide
+	if(!inMap(glm::ivec2(pos)))
+		return nullptr;
+	int tileId = -1;
+	side = 1; //right
+	if (pos.z == 0 && pos.x > 0)
+	{
+		tileId = cubes[pos.x - 1][pos.y]->tileUp;
+		if (cubes[pos.x - 1][pos.y]->tileSide != -1)
+		{
+			tileId = cubes[pos.x - 1][pos.y]->tileSide;
+			side = 5;//bottom2
+		}
+	}
+	else if (pos.z == 1 && pos.x > 0)
+		tileId = cubes[pos.x - 1][pos.y]->tileFront;
+	else if (pos.z == 2 && pos.y < height - 1)
+		tileId = cubes[pos.x][pos.y + 1]->tileSide;
+	if (tileId == -1)
+		return nullptr;
+	auto tile = tiles[tileId];
+	if (tile->lightmapIndex == -1)
+		return nullptr;
+	return lightmaps[tile->lightmapIndex];
+}
+
+Gnd::Lightmap* Gnd::getLightmapRight(const glm::ivec3& pos, int& side)
+{ // z 0 => tileUp, z 1 tileFront, z 2 tileSide
+	if (!inMap(glm::ivec2(pos)))
+		return nullptr;
+	side = 0; //left
+	int tileId = -1;
+	if (pos.z == 0)
+	{
+		if(pos.x < width - 1)
+			tileId = cubes[pos.x + 1][pos.y]->tileUp;
+		if (cubes[pos.x][pos.y]->tileSide != -1)
+		{
+			tileId = cubes[pos.x][pos.y]->tileSide;
+			side = 2; // or 2
+		}
+	}
+	else if (pos.z == 1 && pos.x < width - 1)
+		tileId = cubes[pos.x + 1][pos.y]->tileFront;
+	else if (pos.z == 2 && pos.y > 0)
+		tileId = cubes[pos.x][pos.y - 1]->tileSide;
+	if (tileId == -1)
+		return nullptr;
+	auto tile = tiles[tileId];
+	if (tile->lightmapIndex == -1)
+		return nullptr;
+	return lightmaps[tile->lightmapIndex];
+}
+
+Gnd::Lightmap* Gnd::getLightmapTop(const glm::ivec3& pos, int& side)
+{ // z 0 => tileUp, z 1 tileFront, z 2 tileSide
+	int tileId = -1;
+	if (!inMap(glm::ivec2(pos)))
+		return nullptr;
+	side = 2;
+	if (pos.z == 0 && pos.y < height - 1)
+	{
+		tileId = cubes[pos.x][pos.y + 1]->tileUp;
+		if (cubes[pos.x][pos.y]->tileFront != -1)
+		{
+			tileId = cubes[pos.x][pos.y]->tileFront;
+			side = 2;
+		}
+	}
+	else if (pos.z == 1 && pos.y < height - 1)
+	{
+		tileId = cubes[pos.x][pos.y + 1]->tileUp;
+		side = 3;
+	}
+	else if (pos.z == 2)
+	{
+		tileId = cubes[pos.x + 1][pos.y]->tileUp;
+		side = 0;
+	}
+	if (tileId == -1)
+		return nullptr;
+	auto tile = tiles[tileId];
+	if (tile->lightmapIndex == -1)
+		return nullptr;
+	return lightmaps[tile->lightmapIndex];
+}
+
+Gnd::Lightmap* Gnd::getLightmapBottom(const glm::ivec3& pos, int& side)
+{ // z 0 => tileUp, z 1 tileFront, z 2 tileSide
+	if (!inMap(glm::ivec2(pos)))
+		return nullptr;
+	int tileId = -1;
+	side = 3;
+	if (pos.z == 0 && pos.y > 0)
+	{
+		tileId = cubes[pos.x][pos.y - 1]->tileUp;
+		if (pos.y < height - 1 && cubes[pos.x][pos.y-1]->tileFront != -1)
+		{
+			tileId = cubes[pos.x][pos.y-1]->tileFront;
+			side = 3;
+		}
+	}
+	else if (pos.z == 1)
+	{
+		tileId = cubes[pos.x][pos.y]->tileUp;
+		side = 2;
+	}
+	else if (pos.z == 2)
+	{
+		tileId = cubes[pos.x][pos.y]->tileUp;
+		side = 1;
+	}
+	if (tileId == -1)
+		return nullptr;
+	auto tile = tiles[tileId];
+	if (tile->lightmapIndex == -1)
+		return nullptr;
+	return lightmaps[tile->lightmapIndex];
+}
+
+
+void Gnd::makeLightmapBorders(BrowEdit* browEdit)
 {
 	makeLightmapsUnique();
 	std::cout<< "Fixing borders" << std::endl;
+
+	for (int x = 0; x < width; x++)
+	{
+		for (int y = 0; y < height; y++)
+		{
+			if (!browEdit->activeMapView->map->tileSelection.empty() && std::find(browEdit->activeMapView->map->tileSelection.begin(), browEdit->activeMapView->map->tileSelection.end(), glm::ivec2(x, y)) == browEdit->activeMapView->map->tileSelection.end())
+				continue;
+
+			Gnd::Cube* cube = cubes[x][y];
+			for (int i = 0; i < 3; i++)
+			{
+				if (cube->tileIds[i] == -1)
+					continue;
+				auto tile = tiles[cube->tileIds[i]];
+				if (tile->lightmapIndex == -1)
+					continue;
+				auto &lightmap = *lightmaps[tile->lightmapIndex];
+				//first just expand the texture in case there's no neighbour
+				lightmap.expandBorders();
+
+				auto getX = [](int side, int offset, int index)
+				{
+					if (side == 0)	return offset;//left
+					if (side == 1)	return 7-offset;//right
+					if (side == 2)	return index;//top
+					if (side == 3)	return index;//bot
+					if (side == 5)	return 7-index;//bot
+					throw "oops";
+				};		
+				auto getY = [](int side, int offset, int index)
+				{
+					if (side == 0)	return index;//left
+					if (side == 1)	return index;//right 7-index???
+					if (side == 2)	return offset;//top
+					if (side == 3)	return 7-offset;//bot
+					if (side == 5)	return 7-offset;//bot
+					throw "oops";
+				};
+
+				int side; // left,right,top,down
+				auto lightmapLeft = getLightmapLeft(glm::ivec3(x, y, i), side);
+				if (lightmapLeft)
+					for (int ii = 1; ii < 7; ii++)
+						lightmap[0][ii] = (*lightmapLeft)[getX(side, 1, ii)][getY(side, 1, ii)];
+				auto lightmapRight = getLightmapRight(glm::ivec3(x, y, i), side);
+				if (lightmapRight)
+					for (int ii = 1; ii < 7; ii++)
+						lightmap[7][ii] = (*lightmapRight)[getX(side, 1, ii)][getY(side, 1, ii)];
+				auto lightmapTop = getLightmapTop(glm::ivec3(x, y, i), side);
+				if (lightmapTop)
+					for (int ii = 1; ii < 7; ii++)
+						lightmap[ii][7] = (*lightmapTop)[getX(side, 1, ii)][getY(side, 1, ii)];
+				auto lightmapBottom = getLightmapBottom(glm::ivec3(x, y, i), side);
+				if (lightmapBottom)
+					for (int ii = 1; ii < 7; ii++)
+						lightmap[ii][0] = (*lightmapBottom)[getX(side, 1, ii)][getY(side, 1, ii)];
+				//TODO: get corner pixels too....
+			}
+		}
+	}
+	node->getComponent<GndRenderer>()->setChunksDirty();
+	node->getComponent<GndRenderer>()->gndShadowDirty = true;
+
+	return;
+
 	for (int x = 0; x < width; x++)
 	{
 		for (int y = 0; y < height; y++)
@@ -884,11 +1073,11 @@ void Gnd::cleanLightmaps()
 }
 
 
-void Gnd::makeLightmapsSmooth()
+void Gnd::makeLightmapsSmooth(BrowEdit* browEdit)
 {
 	makeTilesUnique();
 	makeLightmapsUnique();
-	makeLightmapBorders();
+	makeLightmapBorders(browEdit);
 	std::cout << "Smoothing..." << std::endl;
 	for (int x = 0; x < width; x++)
 	{
@@ -918,7 +1107,7 @@ void Gnd::makeLightmapsSmooth()
 			memcpy(lightmap->data, newData, 64 * sizeof(char));
 		}
 	}
-	makeLightmapBorders();
+	makeLightmapBorders(browEdit);
 	node->getComponent<GndRenderer>()->setChunksDirty();
 	node->getComponent<GndRenderer>()->gndShadowDirty = true;
 }
@@ -929,11 +1118,9 @@ void Gnd::cleanTiles()
 	std::set<int> used;
 	for (int y = 0; y < height; y++)
 		for (int x = 0; x < width; x++)
-		{
-			used.insert(cubes[x][y]->tileUp);
-			used.insert(cubes[x][y]->tileFront);
-			used.insert(cubes[x][y]->tileSide);
-		}
+			for(int i = 0; i < 3; i++)
+				if(cubes[x][y]->tileIds[i] != -1)
+					used.insert(cubes[x][y]->tileIds[i]);
 	std::cout << "Made list of used tiles..." << std::endl;
 
 	std::list<std::size_t> toRemove;
@@ -1308,6 +1495,36 @@ bool Gnd::Lightmap::operator==(const Lightmap& other) const
 	return memcmp(data, other.data, 256) == 0;
 }
 
+void Gnd::Lightmap::expandBorders()
+{
+	for (int i = 0; i < 8; i++)
+	{
+		data[8 * i + 0] = data[8 * i + 1]; //left
+		data[8 * i + 7] = data[8 * i + 6]; //right
+		data[8 * 0 + i] = data[8 * 1 + i]; //top
+		data[8 * 7 + i] = data[8 * 6 + i]; //bottom
+		for (int c = 0; c < 3; c++)
+		{
+			data[64 + 3 * (8 * i + 0) + c] = data[64 + 3 * (8 * i + 1) + c]; //left
+			data[64 + 3 * (8 * i + 7) + c] = data[64 + 3 * (8 * i + 6) + c]; //right
+			data[64 + 3 * (8 * 0 + i) + c] = data[64 + 3 * (8 * 1 + i) + c]; //top
+			data[64 + 3 * (8 * 7 + i) + c] = data[64 + 3 * (8 * 6 + i) + c]; //bottom
+		}
+	}
+	//corners
+	data[8 * 0 + 0] = data[8 * 1 + 1]; //topleft
+	data[8 * 0 + 7] = data[8 * 1 + 6]; //topright
+	data[8 * 7 + 0] = data[8 * 6 + 1]; //bottomleft
+	data[8 * 7 + 7] = data[8 * 6 + 6]; //bottomright
+	for (int c = 0; c < 3; c++)
+	{
+		data[64 + 3 * (8 * 0 + 0) + c] = data[64 + 3 * (8 * 1 + 1) + c]; //topleft
+		data[64 + 3 * (8 * 0 + 7) + c] = data[64 + 3 * (8 * 1 + 6) + c]; //topright
+		data[64 + 3 * (8 * 7 + 0) + c] = data[64 + 3 * (8 * 6 + 1) + c]; //bottomleft
+		data[64 + 3 * (8 * 7 + 7) + c] = data[64 + 3 * (8 * 6 + 6) + c]; //bottomright
+	}
+}
+
 
 bool Gnd::Tile::operator==(const Gnd::Tile& o) const
 {
@@ -1319,6 +1536,10 @@ bool Gnd::Tile::operator==(const Gnd::Tile& o) const
 		lightmapIndex == o.lightmapIndex &&
 		color == o.color;
 }
+
+
+
+
 
 
 glm::vec3 Gnd::getPos(int x, int y, int index)

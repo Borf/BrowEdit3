@@ -148,11 +148,11 @@ void BrowEdit::menuBar()
 		if (ImGui::MenuItem("Clean Tiles"))
 			activeMapView->map->rootNode->getComponent<Gnd>()->cleanTiles();
 		if (ImGui::MenuItem("Fix lightmap borders"))
-			activeMapView->map->rootNode->getComponent<Gnd>()->makeLightmapBorders();
+			activeMapView->map->rootNode->getComponent<Gnd>()->makeLightmapBorders(this);
 		if (ImGui::MenuItem("Clear lightmaps"))
 			activeMapView->map->rootNode->getComponent<Gnd>()->makeLightmapsClear();
 		if (ImGui::MenuItem("Smoothen lightmaps"))
-			activeMapView->map->rootNode->getComponent<Gnd>()->makeLightmapsSmooth();
+			activeMapView->map->rootNode->getComponent<Gnd>()->makeLightmapsSmooth(this);
 		if (ImGui::MenuItem("Make lightmaps unique"))
 			activeMapView->map->rootNode->getComponent<Gnd>()->makeLightmapsUnique();
 		if (ImGui::MenuItem("Clean up lightmaps"))

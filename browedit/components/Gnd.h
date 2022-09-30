@@ -25,11 +25,11 @@ public:
 	glm::vec3 rayCast(const math::Ray& ray, bool emptyTiles = false, int xMin = 0, int yMin = 0, int xMax = -1, int yMax = -1, float offset = 0.0f);
 	void makeLightmapsUnique();
 	void makeLightmapsClear();
-	void makeLightmapBorders();
+	void makeLightmapBorders(BrowEdit* browEdit);
 	void makeLightmapBorders(int x, int y);
 	int getLightmapBrightness(int x, int y, int lightmapX, int lightmapY);
 	glm::ivec3 getLightmapColor(int x, int y, int lightmapX, int lightmapY);
-	void makeLightmapsSmooth();
+	void makeLightmapsSmooth(BrowEdit* browEdit);
 	void makeTilesUnique();
 	void cleanLightmaps();
 	void removeZeroHeightWalls();
@@ -73,6 +73,32 @@ public:
 	class Lightmap
 	{
 	public:
+		class LightmapRow
+		{
+		public:
+			class LightmapCell
+			{
+			public:
+				Lightmap* lightmap;
+				int x, y;
+
+				LightmapCell& operator = (const LightmapCell& other)
+				{
+					lightmap->data[8 * y + x] = other.lightmap->data[8 * other.y + other.x];
+					lightmap->data[64 + 3 * (8 * y + x) + 0] = other.lightmap->data[64 + 3 * (8 * other.y + other.x) + 0];
+					lightmap->data[64 + 3 * (8 * y + x) + 1] = other.lightmap->data[64 + 3 * (8 * other.y + other.x) + 1];
+					lightmap->data[64 + 3 * (8 * y + x) + 2] = other.lightmap->data[64 + 3 * (8 * other.y + other.x) + 2];
+					return *this;
+				}
+			};
+			Lightmap* lightmap;
+			int x;
+			LightmapCell operator [](int y)
+			{
+				return LightmapCell{ lightmap, x, y };
+			}
+		};
+
 		Lightmap() { 
 			memset(data, 255, 64);
 			memset(data + 64, 0, 256 - 64);
@@ -82,8 +108,10 @@ public:
 			memcpy(data, other.data, 256 * sizeof(unsigned char));
 		}
 		unsigned char data[256];
+		void expandBorders();
 		const unsigned char hash() const;
 		bool operator == (const Lightmap& other) const;
+		LightmapRow operator [] (int x) { return LightmapRow{ this, x }; }
 		friend void to_json(nlohmann::json& nlohmann_json_j, const Lightmap& nlohmann_json_t) {
 			for (int i = 0; i < 256; i++) {
 				nlohmann_json_j["data"].push_back(nlohmann_json_t.data[i]);
@@ -184,6 +212,11 @@ public:
 	std::vector<Tile*> tiles;
 	std::vector<std::vector<Cube*> > cubes;
 
+
+	Lightmap* getLightmapLeft(const glm::ivec3& pos, int& side);
+	Lightmap* getLightmapRight(const glm::ivec3& pos, int& side);
+	Lightmap* getLightmapTop(const glm::ivec3& pos, int& side);
+	Lightmap* getLightmapBottom(const glm::ivec3& pos, int& side);
 
 	static inline 	glm::ivec3 connectInfo[4][4] = {
 		{	glm::ivec3(0,0, 0),			glm::ivec3(-1,0, 1),		glm::ivec3(0,-1, 2),		glm::ivec3(-1,-1, 3),	},
