@@ -333,9 +333,9 @@ std::pair<glm::vec3, int> Lightmapper::calculateLight(const glm::vec3& groundPos
 			if (shadowStrength < 1)
 			{
 				if (rswLight->affectShadowMap)
-					intensity += (int)(shadowStrength * attenuation * rswLight->intensity);
+					intensity += (int)((1-shadowStrength) * attenuation * rswLight->intensity);
 				if (rswLight->affectLightmap)
-					colorInc += shadowStrength * (attenuation / 255.0f) * rswLight->color * rswLight->intensity;
+					colorInc += (1-shadowStrength) * (attenuation / 255.0f) * rswLight->color * rswLight->intensity;
 			}
 		}
 	}

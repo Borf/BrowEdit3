@@ -71,7 +71,7 @@ void BrowEdit::toolbar()
 	toolBarToggleButton("sprite", ICON_EDIT_WALL, editMode == EditMode::Sprite, "Sprite edit mode", HotkeyAction::EditMode_Sprite, config.toolbarButtonsWallEdit);
 	ImGui::SameLine();
 	toolBarToggleButton("cinematic", ICON_EDIT_WALL, editMode == EditMode::Cinematic, "Cinematic Mode", HotkeyAction::EditMode_Cinematic, config.toolbarButtonsWallEdit);
-	ImGui::SameLine(130 + 5 * (config.toolbarButtonSize + 5) + 20 );
+	ImGui::SameLine(130 + 9 * (config.toolbarButtonSize + 5) + 20 );
 
 	if (editMode == EditMode::Object)
 	{
