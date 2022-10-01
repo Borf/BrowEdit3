@@ -202,9 +202,10 @@ public:
 	float rotateDistance = 45.0f;
 	bool useGridForNudge = true;
 
-	glm::vec3	colorEditBrushColor = glm::vec3(1);
+	glm::vec4	colorEditBrushColor = glm::vec4(1);
 	int			colorEditBrushSize = 1;
 	float		colorEditBrushHardness = 1.0f;
+	float		colorEditDelay = 0.25f;
 
 
 	void configBegin();
