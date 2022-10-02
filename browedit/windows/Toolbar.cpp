@@ -64,13 +64,13 @@ void BrowEdit::toolbar()
 	ImGui::SameLine();
 	toolBarToggleButton("wallmode", ICON_EDIT_WALL, editMode == EditMode::Wall, "Wall edit mode", HotkeyAction::EditMode_Wall, config.toolbarButtonsWallEdit);
 	ImGui::SameLine();
-	toolBarToggleButton("color", ICON_EDIT_WALL, editMode == EditMode::Color, "Color edit mode", HotkeyAction::EditMode_Color, config.toolbarButtonsWallEdit);
+	toolBarToggleButton("color", ICON_EDIT_COLOR, editMode == EditMode::Color, "Color edit mode", HotkeyAction::EditMode_Color, config.toolbarButtonsWallEdit);
 	ImGui::SameLine();
-	toolBarToggleButton("shadow", ICON_EDIT_WALL, editMode == EditMode::Shadow, "Shadow edit mode", HotkeyAction::EditMode_Shadow, config.toolbarButtonsWallEdit);
+	toolBarToggleButton("shadow", ICON_EDIT_SHADOW, editMode == EditMode::Shadow, "Shadow edit mode", HotkeyAction::EditMode_Shadow, config.toolbarButtonsWallEdit);
 	ImGui::SameLine();
-	toolBarToggleButton("sprite", ICON_EDIT_WALL, editMode == EditMode::Sprite, "Sprite edit mode", HotkeyAction::EditMode_Sprite, config.toolbarButtonsWallEdit);
+	toolBarToggleButton("sprite", ICON_EDIT_SPRITE, editMode == EditMode::Sprite, "Sprite edit mode", HotkeyAction::EditMode_Sprite, config.toolbarButtonsWallEdit);
 	ImGui::SameLine();
-	toolBarToggleButton("cinematic", ICON_EDIT_WALL, editMode == EditMode::Cinematic, "Cinematic Mode", HotkeyAction::EditMode_Cinematic, config.toolbarButtonsWallEdit);
+	toolBarToggleButton("cinematic", ICON_EDIT_CINEMATIC, editMode == EditMode::Cinematic, "Cinematic Mode", HotkeyAction::EditMode_Cinematic, config.toolbarButtonsWallEdit);
 	ImGui::SameLine(130 + 9 * (config.toolbarButtonSize + 5) + 20 );
 
 	if (editMode == EditMode::Object)

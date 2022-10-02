@@ -96,9 +96,9 @@ void MapView::toolbar(BrowEdit* browEdit)
 			browEdit->toolBarToggleButton("viewEmptyTiles", viewEmptyTiles ? ICON_EMPTYTILE_ON : ICON_EMPTYTILE_OFF, viewEmptyTiles, "View empty tiles", HotkeyAction::View_EmptyTiles, browEdit->config.toolbarButtonsViewOptions);
 			ImGui::SameLine();
 			if(browEdit->editMode == BrowEdit::EditMode::Gat)
-				browEdit->toolBarToggleButton("viewGat", viewGatGat ? ICON_EDIT_GAT : ICON_EDIT_GAT, viewGatGat, "View GAT tiles", HotkeyAction::View_GatTiles, browEdit->config.toolbarButtonsGatEdit);
+				browEdit->toolBarToggleButton("viewGat", viewGatGat ? ICON_GAT_ON : ICON_GAT_OFF, viewGatGat, "View GAT tiles", HotkeyAction::View_GatTiles, browEdit->config.toolbarButtonsViewOptions);
 			else
-				browEdit->toolBarToggleButton("viewGat", viewGat ? ICON_EDIT_GAT : ICON_EDIT_GAT, viewGat, "View GAT tiles", HotkeyAction::View_GatTiles, browEdit->config.toolbarButtonsGatEdit);
+				browEdit->toolBarToggleButton("viewGat", viewGat ? ICON_GAT_ON : ICON_GAT_OFF, viewGat, "View GAT tiles", HotkeyAction::View_GatTiles, browEdit->config.toolbarButtonsViewOptions);
 
 			if (browEdit->editMode == BrowEdit::EditMode::Gat ? viewGatGat : viewGat)
 				ImGui::DragFloat("Gat Opacity", &gatOpacity, 0.025f, 0.0f, 1.0f);

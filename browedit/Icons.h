@@ -4,6 +4,10 @@
 #define ICON_EDIT_OBJECT		2
 #define ICON_EDIT_WALL			3
 #define ICON_EDIT_GAT			4
+#define ICON_EDIT_COLOR			5
+#define ICON_EDIT_SHADOW		6
+#define ICON_EDIT_SPRITE		7
+#define ICON_EDIT_CINEMATIC		8
 
 
 #define ICON_SHADOWMAP_ON		10
@@ -24,6 +28,8 @@
 #define ICON_ALL_LIGHTS_OFF		25
 #define ICON_LIGHTSPHERE_ON		26
 #define ICON_LIGHTSPHERE_OFF	27
+#define ICON_GAT_ON				28
+#define ICON_GAT_OFF			29
 
 #define ICON_VIEW_MODEL_ON		30
 #define ICON_VIEW_MODEL_OFF		31
@@ -45,11 +51,13 @@
 #define ICON_REDO				46
 #define ICON_COPY				47
 #define ICON_PASTE				48
+#define ICON_SAVE				49
 
 #define ICON_MOVE				50
 #define ICON_ROTATE				51
 #define ICON_SCALE				52
 #define ICON_ROTATE_RIGHT		53
+#define ICON_DROPPER			54
 
 #define ICON_ORTHO				55
 #define ICON_PERSPECTIVE		56

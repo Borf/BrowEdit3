@@ -1,4 +1,5 @@
 #include <browedit/BrowEdit.h>
+#include <browedit/Icons.h>
 #include <imgui.h>
 #include <glm/gtc/type_ptr.hpp>
 
@@ -16,10 +17,15 @@ void BrowEdit::showColorEditWindow()
 
 	ImGui::Button("Picker");
 
-	ImGui::Button("Save");
 
 	if (ImGui::CollapsingHeader("Map Colors", ImGuiTreeNodeFlags_DefaultOpen))
 	{
+		static char buf[100];
+		ImGui::InputText("##", buf, 100);
+		ImGui::SameLine();
+		toolBarButton("Save color", ICON_SAVE, "Saves this color as a preset", ImVec4(1, 1, 1, 1));
+
+
 		float window_visible_x2 = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
 		ImGuiStyle& style = ImGui::GetStyle();
 		for (int i = 0; i < 10; i++)
