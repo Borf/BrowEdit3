@@ -11,6 +11,8 @@
 #include <browedit/actions/TilePropertyChangeAction.h>
 #include <glm/gtc/type_ptr.hpp>
 
+extern glm::vec4 refColor;
+
 
 void MapView::postRenderColorMode(BrowEdit* browEdit)
 {
@@ -44,6 +46,10 @@ void MapView::postRenderColorMode(BrowEdit* browEdit)
 	ImGui::Text("Cursor: %d,%d", tileHovered.x, tileHovered.y);
 	ImGui::SameLine();
 	ImGui::End();
+
+	if(hovered && ImGui::IsMouseDown(ImGuiMouseButton_Left))
+		refColor = browEdit->colorEditBrushColor;
+
 
 	if (hovered && gnd->inMap(tileHovered))
 	{

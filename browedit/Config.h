@@ -41,6 +41,7 @@ public:
 	std::vector<float> translateGridSizes = { 0.25f, 0.5f, 1.0f, 2.0f, 2.5f, 5.0f, 10.0f, 20.0f };
 	std::vector<float> rotateGridSizes = { 1,22.5, 45,90,180 };
 	std::map<std::string, Hotkey> hotkeys;
+	std::map<std::string, std::map<std::string, glm::vec4>> colorPresets;
 
 	std::string grfEditorPath = "";
 	std::vector<std::string> recentFiles;
@@ -78,5 +79,6 @@ public:
 		recentFiles,
 		hotkeys,
 		defaultEditMode,
-		recalculateQuadtreeOnSave);
+		recalculateQuadtreeOnSave,
+		colorPresets);
 };

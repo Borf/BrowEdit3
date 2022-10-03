@@ -64,6 +64,7 @@ public:
 	int			unknown[4];
 	std::vector<glm::vec3> quadtreeFloats;
 	QuadTreeNode* quadtree = nullptr;
+	std::map<std::string, std::map<std::string, glm::vec4>> colorPresets;
 
 
 	Rsw();
