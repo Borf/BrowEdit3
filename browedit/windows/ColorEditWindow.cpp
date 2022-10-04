@@ -30,7 +30,9 @@ void BrowEdit::showColorEditWindow()
 		ImGui::PushID(title);
 		if (ImGui::CollapsingHeader(title, ImGuiTreeNodeFlags_DefaultOpen))
 		{
-			if (ImGui::CollapsingHeader("Saving", ImGuiTreeNodeFlags_DefaultOpen))
+			if (toolBarButton("Save", ICON_SAVE, "Saves this color as a palette color", ImVec4(1,1,1,1)))
+				ImGui::OpenPopup("SavePalette");
+			if(ImGui::BeginPopup("SavePalette"))
 			{
 				static char category[100];
 				static char name[100];
@@ -42,7 +44,7 @@ void BrowEdit::showColorEditWindow()
 					if(&data == &config.colorPresets)
 						config.save();
 				}
-				ImGui::Spacing();
+				ImGui::EndPopup();
 			}
 
 			float window_visible_x2 = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
@@ -52,7 +54,11 @@ void BrowEdit::showColorEditWindow()
 				bool erasedCat = false;
 				ImGui::PushID(&cat);
 				if (!ImGui::CollapsingHeader((cat->first + "##").c_str(), ImGuiTreeNodeFlags_DefaultOpen))
+				{
+					cat++;
+					ImGui::PopID();
 					continue;
+				}
 				for (auto it = cat->second.begin(); !erasedCat && it != cat->second.end(); )
 				{
 					bool erased = false;
@@ -70,6 +76,8 @@ void BrowEdit::showColorEditWindow()
 							{
 								cat = data.erase(cat);
 								erasedCat = true;
+								if (&data == &config.colorPresets)
+									config.save();
 							}
 						}
 						ImGui::EndPopup();
