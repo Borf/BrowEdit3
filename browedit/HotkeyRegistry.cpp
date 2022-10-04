@@ -81,9 +81,11 @@ const HotkeyCombi& HotkeyRegistry::getHotkey(HotkeyAction action)
 
 void HotkeyRegistry::showHotkeyPopup(BrowEdit* browEdit)
 {
-	ImGui::SetNextWindowSize(ImVec2(400, 250));
-	if (ImGui::BeginPopupModal("HotkeyPopup", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoDecoration))
+	bool opened = true;
+	ImGui::SetNextWindowSize(ImVec2(400, 260));
+	if (ImGui::BeginPopupModal("HotkeyPopup", &opened))
 	{
+		bool appear = ImGui::IsWindowAppearing();
 		static std::string lastFilter = "";
 		ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
 		ImGui::SetWindowFocus("HotkeyPopup");
@@ -93,7 +95,8 @@ void HotkeyRegistry::showHotkeyPopup(BrowEdit* browEdit)
 		if (lastFilter != browEdit->windowData.hotkeyPopupFilter)
 			browEdit->windowData.hotkeyPopupSelectedIndex = 0;
 		lastFilter = browEdit->windowData.hotkeyPopupFilter;
-		ImGui::SetKeyboardFocusHere(-1);
+		if (appear)
+			ImGui::SetKeyboardFocusHere(-1);
 		ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
 		if (ImGui::BeginListBox("##Items"))
 		{
