@@ -23,85 +23,76 @@ void BrowEdit::showColorEditWindow()
 
 	auto rsw = activeMapView->map->rootNode->getComponent<Rsw>();
 
-	ImGui::PushID("MapColor");
-	if (ImGui::CollapsingHeader("Map Colors", ImGuiTreeNodeFlags_DefaultOpen))
-	{
-		if (ImGui::CollapsingHeader("Saving", ImGuiTreeNodeFlags_DefaultOpen))
-		{
-			static char category[100];
-			static char name[100];
-			ImGui::InputText("Category", category, 100);
-			ImGui::InputText("Name", name, 100);
-			if (ImGui::Button("Save"))
-				rsw->colorPresets[category][name] = colorEditBrushColor;
-			ImGui::Spacing();
-		}
-
-
-		float window_visible_x2 = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
-		ImGuiStyle& style = ImGui::GetStyle();
-		for(const auto cat : rsw->colorPresets)
-		{
-			if (!ImGui::CollapsingHeader((cat.first + "##").c_str(), ImGuiTreeNodeFlags_DefaultOpen))
-				continue;
-			for (const auto color : cat.second)
-			{
-				if (ImGui::ColorButton((color.first + "##").c_str(), ImVec4(color.second.r, color.second.g, color.second.b, color.second.a), 0, ImVec2(30, 30)))
-				{
-					colorEditBrushColor = color.second;
-				}
-				float last_button_x2 = ImGui::GetItemRectMax().x;
-				float next_button_x2 = last_button_x2 + style.ItemSpacing.x + 30;
-				if (next_button_x2 < window_visible_x2)
-					ImGui::SameLine();
-			}
-			ImGui::Spacing();
-
-		}
-	}
-	ImGui::PopID();
 	ImGui::Spacing();
 
-	ImGui::PushID("Global Colors");
-	if (ImGui::CollapsingHeader("Global Colors", ImGuiTreeNodeFlags_DefaultOpen))
+	auto buildTemplate = [&](const char* title, std::map<std::string, std::map<std::string, glm::vec4>>& data)
 	{
-		if (ImGui::CollapsingHeader("Saving", ImGuiTreeNodeFlags_DefaultOpen))
+		ImGui::PushID(title);
+		if (ImGui::CollapsingHeader(title, ImGuiTreeNodeFlags_DefaultOpen))
 		{
-			static char category[100];
-			static char name[100];
-			ImGui::InputText("Category", category, 100);
-			ImGui::InputText("Name", name, 100);
-			if (ImGui::Button("Save"))
+			if (ImGui::CollapsingHeader("Saving", ImGuiTreeNodeFlags_DefaultOpen))
 			{
-				config.colorPresets[category][name] = colorEditBrushColor;
-				config.save();
-			}
-			ImGui::Spacing();
-		}
-
-		float window_visible_x2 = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
-		ImGuiStyle& style = ImGui::GetStyle();
-		for (const auto cat : config.colorPresets)
-		{
-			if (!ImGui::CollapsingHeader((cat.first + "##").c_str(), ImGuiTreeNodeFlags_DefaultOpen))
-				continue;
-			for (const auto color : cat.second)
-			{
-				if (ImGui::ColorButton((color.first + "##").c_str(), ImVec4(color.second.r, color.second.g, color.second.b, color.second.a), 0, ImVec2(30, 30)))
+				static char category[100];
+				static char name[100];
+				ImGui::InputText("Category", category, 100);
+				ImGui::InputText("Name", name, 100);
+				if (ImGui::Button("Save"))
 				{
-					colorEditBrushColor = color.second;
+					data[category][name] = colorEditBrushColor;
+					if(&data == &config.colorPresets)
+						config.save();
 				}
-				float last_button_x2 = ImGui::GetItemRectMax().x;
-				float next_button_x2 = last_button_x2 + style.ItemSpacing.x + 30;
-				if (next_button_x2 < window_visible_x2)
-					ImGui::SameLine();
+				ImGui::Spacing();
 			}
-			ImGui::Spacing();
 
+			float window_visible_x2 = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
+			ImGuiStyle& style = ImGui::GetStyle();
+			for (auto cat = data.begin(); cat != data.end(); )
+			{
+				bool erasedCat = false;
+				ImGui::PushID(&cat);
+				if (!ImGui::CollapsingHeader((cat->first + "##").c_str(), ImGuiTreeNodeFlags_DefaultOpen))
+					continue;
+				for (auto it = cat->second.begin(); !erasedCat && it != cat->second.end(); )
+				{
+					bool erased = false;
+					if (ImGui::ColorButton((it->first + "##").c_str(), ImVec4(it->second.r, it->second.g, it->second.b, it->second.a), 0, ImVec2(30, 30)))
+					{
+						colorEditBrushColor = it->second;
+					}
+					if (ImGui::BeginPopupContextItem("Popup"))
+					{
+						if (ImGui::MenuItem("Delete"))
+						{
+							it = cat->second.erase(it);
+							erased = true;
+							if (cat->second.size() == 0)
+							{
+								cat = data.erase(cat);
+								erasedCat = true;
+							}
+						}
+						ImGui::EndPopup();
+					}
+					float last_button_x2 = ImGui::GetItemRectMax().x;
+					float next_button_x2 = last_button_x2 + style.ItemSpacing.x + 30;
+					if (next_button_x2 < window_visible_x2)
+						ImGui::SameLine();
+					if (!erased)
+						it++;
+				}
+				ImGui::Spacing();
+				ImGui::PopID();
+				if(!erasedCat)
+					cat++;
+			}
 		}
-	}
-	ImGui::PopID();
+		ImGui::PopID();
+	};
 
+
+	buildTemplate("Global Colors", config.colorPresets);
+	buildTemplate("Map Colors", rsw->colorPresets);
 
 	ImGui::End();
 }
