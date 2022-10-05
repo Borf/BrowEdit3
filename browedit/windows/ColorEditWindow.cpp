@@ -8,6 +8,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 glm::vec4 refColor;
+bool dropperEnabled = false;
 void BrowEdit::showColorEditWindow()
 {
 	if (!activeMapView)
@@ -19,7 +20,10 @@ void BrowEdit::showColorEditWindow()
 	ImGui::InputInt("Brush Size", &colorEditBrushSize);
 	ImGui::InputFloat("Brush Delay", &colorEditDelay, 0.05f);
 
-	ImGui::Button("Picker");
+	if (toolBarButton("Color Picker", ICON_DROPPER, "Picks a color from the colormap", ImVec4(1,1,1,1)))
+	{
+		dropperEnabled = !dropperEnabled;
+	}
 
 	auto rsw = activeMapView->map->rootNode->getComponent<Rsw>();
 
