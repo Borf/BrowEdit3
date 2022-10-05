@@ -124,6 +124,11 @@ void RsmRenderer::render()
 		shader->setUniform(RsmShader::Uniforms::lightAmbient, rsw->light.ambient);
 		shader->setUniform(RsmShader::Uniforms::lightDiffuse, rsw->light.diffuse);
 		shader->setUniform(RsmShader::Uniforms::lightIntensity, rsw->light.intensity);
+		
+		shader->setUniform(RsmShader::Uniforms::fogNear, rsw->fog.nearPlane * 240*2.5f);
+		shader->setUniform(RsmShader::Uniforms::fogFar, rsw->fog.farPlane * 240*2.5f);
+		shader->setUniform(RsmShader::Uniforms::fogExp, rsw->fog.factor);
+		shader->setUniform(RsmShader::Uniforms::fogColor, rsw->fog.color);
 	}
 	shader->setUniform(RsmShader::Uniforms::lightDirection, lightDirection);
 
@@ -229,6 +234,7 @@ void RsmRenderer::RsmRenderContext::preFrame(const glm::mat4& projectionMatrix, 
 	shader->setUniform(RsmShader::Uniforms::cameraMatrix, viewMatrix);
 	shader->setUniform(RsmShader::Uniforms::lightToggle, viewLighting);
 	shader->setUniform(RsmShader::Uniforms::viewTextures, viewTextures);
+	shader->setUniform(RsmShader::Uniforms::fogEnabled, viewFog);
 
 
 	glEnableVertexAttribArray(0);

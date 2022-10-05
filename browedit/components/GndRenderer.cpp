@@ -129,6 +129,14 @@ void GndRenderer::render()
 	shader->setUniform(GndShader::Uniforms::colorToggle, viewColors ? 0.0f : 1.0f);
 	shader->setUniform(GndShader::Uniforms::viewTextures, viewTextures ? 1.0f : 0.0f);
 
+	shader->setUniform(GndShader::Uniforms::fogEnabled, viewFog);
+	shader->setUniform(GndShader::Uniforms::fogNear, rsw->fog.nearPlane * 240*2.5f);
+	shader->setUniform(GndShader::Uniforms::fogFar, rsw->fog.farPlane * 240*2.5f);
+	shader->setUniform(GndShader::Uniforms::fogExp, rsw->fog.factor);
+	shader->setUniform(GndShader::Uniforms::fogColor, rsw->fog.color);
+
+
+
 	for (auto r : chunks)
 	{
 		for (auto c : r)

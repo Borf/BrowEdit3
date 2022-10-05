@@ -13,6 +13,12 @@ uniform float lightColorToggle = 1.0f;
 uniform float shadowMapToggle = 1.0f;
 uniform float viewTextures = 1.0f;
 
+uniform bool fogEnabled;
+uniform float fogNear = 0;
+uniform float fogFar = 1;
+uniform float fogExp = 0.5;
+uniform vec4 fogColor = vec4(1,1,1,1);
+
 in vec2 texCoord;
 in vec2 texCoord2;
 in vec3 normal;
@@ -37,6 +43,12 @@ void main()
 	texture.rgb *= max((max(0.0, dot(normal, vec3(-1,-1,1)*lightDirection)) * lightDiffuse + lightIntensity * lightAmbient), lightToggle);
 	texture += clamp(vec4(texture2D(s_lighting, texCoord2).rgb,1.0), 0.0, 1.0) * lightColorToggle;
 
+	if(fogEnabled)
+	{
+		float depth = gl_FragCoord.z / gl_FragCoord.w;
+		float fogAmount = smoothstep(fogNear, fogFar, depth);
+		texture = mix(texture, fogColor, fogAmount);
+	}	
 
 	//gl_FragData[0] = texture;
 	//gl_FragData[1] = vec4(0,0,0,0);

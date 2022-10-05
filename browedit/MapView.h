@@ -176,6 +176,7 @@ public:
 	bool viewGat = false;
 	bool viewGatGat = true;
 	float gatOpacity = 0.5f;
+	bool viewFog = false;
 
 	bool viewModels = true;
 	bool viewEffects = true;

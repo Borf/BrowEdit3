@@ -99,6 +99,8 @@ void MapView::toolbar(BrowEdit* browEdit)
 				browEdit->toolBarToggleButton("viewGat", viewGatGat ? ICON_GAT_ON : ICON_GAT_OFF, viewGatGat, "View GAT tiles", HotkeyAction::View_GatTiles, browEdit->config.toolbarButtonsViewOptions);
 			else
 				browEdit->toolBarToggleButton("viewGat", viewGat ? ICON_GAT_ON : ICON_GAT_OFF, viewGat, "View GAT tiles", HotkeyAction::View_GatTiles, browEdit->config.toolbarButtonsViewOptions);
+			ImGui::SameLine();
+			browEdit->toolBarToggleButton("viewFog", viewFog ? ICON_EMPTYTILE_ON : ICON_EMPTYTILE_OFF, viewFog, "View Fog", HotkeyAction::View_Fog, browEdit->config.toolbarButtonsViewOptions);
 
 			if (browEdit->editMode == BrowEdit::EditMode::Gat ? viewGatGat : viewGat)
 				ImGui::DragFloat("Gat Opacity", &gatOpacity, 0.025f, 0.0f, 1.0f);
@@ -248,6 +250,9 @@ void MapView::render(BrowEdit* browEdit)
 	fbo->bind();
 	glViewport(0, 0, fbo->getWidth(), fbo->getHeight());
 	glClearColor(browEdit->config.backgroundColor.r, browEdit->config.backgroundColor.g, browEdit->config.backgroundColor.b, 1.0f);
+	auto rsw = map->rootNode->getComponent<Rsw>();
+	if(rsw && viewFog)
+		glClearColor(rsw->fog.color.r, rsw->fog.color.g, rsw->fog.color.b, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glDisable(GL_CULL_FACE);
@@ -273,6 +278,7 @@ void MapView::render(BrowEdit* browEdit)
 	map->rootNode->getComponent<GndRenderer>()->viewColors = viewColors;
 	map->rootNode->getComponent<GndRenderer>()->viewLighting = viewLighting;
 	map->rootNode->getComponent<GndRenderer>()->viewTextures = viewTextures;
+	map->rootNode->getComponent<GndRenderer>()->viewFog = viewFog;
 	if (map->rootNode->getComponent<GndRenderer>()->viewEmptyTiles != viewEmptyTiles)
 	{
 		map->rootNode->getComponent<GndRenderer>()->viewEmptyTiles = viewEmptyTiles;
@@ -289,6 +295,7 @@ void MapView::render(BrowEdit* browEdit)
 
 	RsmRenderer::RsmRenderContext::getInstance()->viewLighting = viewLighting;
 	RsmRenderer::RsmRenderContext::getInstance()->viewTextures = viewTextures;
+	RsmRenderer::RsmRenderContext::getInstance()->viewFog = viewFog;
 
 	map->rootNode->getComponent<GatRenderer>()->cameraDistance = cameraDistance;
 	map->rootNode->getComponent<GatRenderer>()->enabled = browEdit->editMode == BrowEdit::EditMode::Gat ? viewGatGat : viewGat;

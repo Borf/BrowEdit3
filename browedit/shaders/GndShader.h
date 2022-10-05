@@ -22,6 +22,11 @@ public:
 			colorToggle,
 			lightColorToggle,
 			viewTextures,
+			fogEnabled,
+			fogColor,
+			fogNear,
+			fogFar,
+			fogExp,
 			End
 		};
 	};
@@ -40,5 +45,10 @@ public:
 		bindUniform(Uniforms::colorToggle, "colorToggle");
 		bindUniform(Uniforms::lightColorToggle, "lightColorToggle");
 		bindUniform(Uniforms::viewTextures, "viewTextures");
+		bindUniform(Uniforms::fogEnabled, "fogEnabled");
+		bindUniform(Uniforms::fogColor, "fogColor");
+		bindUniform(Uniforms::fogNear, "fogNear");
+		bindUniform(Uniforms::fogFar, "fogFar");
+		bindUniform(Uniforms::fogExp, "fogExp");
 	}
 };

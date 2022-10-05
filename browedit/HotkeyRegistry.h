@@ -119,6 +119,7 @@ enum class HotkeyAction
 	View_SmoothColormap,
 	View_EmptyTiles,
 	View_GatTiles,
+	View_Fog,
 	
 	View_Models,
 	View_Effects,

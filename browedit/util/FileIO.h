@@ -75,6 +75,7 @@ namespace util
 		static std::string readStringDyn(std::istream* is);
 		static void writeString(std::ostream& os, const std::string &data, int length);
 		static nlohmann::json getJson(const std::string& fileName);
+		static std::string getString(const std::string& fileName);
 
 		class Node
 		{

@@ -369,6 +369,23 @@ namespace util
 		}
 		return ret;
 	}
+	std::string FileIO::getString(const std::string& fileName)
+	{
+		std::string ret = "";
+		auto file = open(fileName);
+		if (file)
+		{
+			file->seekg(0, std::ios_base::end);
+			auto length = file->tellg();
+			file->seekg(0, std::ios_base::beg);
+			char* buf = new char[length];
+			file->read(buf, length);
+			ret = std::string(buf, length);
+			delete[] buf;
+			delete file;
+		}
+		return ret;
+	}
 
 
 }

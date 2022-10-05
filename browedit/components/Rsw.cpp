@@ -376,6 +376,30 @@ void Rsw::load(const std::string& fileName, Map* map, BrowEdit* browEdit, bool l
 		quadtree = nullptr;//TODO:
 
 	delete file;
+
+	auto cleanLine = [](const std::string& line)
+	{
+		std::string ret = util::trim(line);
+		if (ret.find("#") != std::string::npos)
+			ret = ret.substr(0, ret.find("#"));
+		return ret;
+	};
+
+	std::string fogTable = util::FileIO::getString("data\\fogParameterTable.txt");
+	auto lines = util::split(fogTable, "\n");
+	for (auto i = 0; i < lines.size(); i++)
+	{
+		auto line = cleanLine(lines[i]);
+		if (line == mapName + ".rsw")
+		{
+			fog.nearPlane = std::stof(cleanLine(lines[i + 1]));
+			fog.farPlane = std::stof(cleanLine(lines[i + 2]));
+			int color = std::stoul(cleanLine(lines[i + 3]).substr(2), nullptr, 16);
+			fog.color = glm::vec4(((color>>16)&0xff) / 255.0f, ((color >> 8) & 0xff) / 255.0f, ((color >> 0) & 0xff) / 255.0f, ((color >> 24) & 0xff) / 255.0f);
+			fog.factor = std::stof(cleanLine(lines[i + 4]));
+			break;
+		}
+	}
 }
 
 
@@ -682,6 +706,14 @@ void Rsw::buildImGui(BrowEdit* browEdit)
 		util::DragInt(browEdit, browEdit->activeMapView->map, node, "Texture Animation Speed", &water.textureAnimSpeed, 1, 0, 1000);
 		util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Wave Speed", &water.waveSpeed, 0.1f, -100, 100);
 		util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Wave Pitch", &water.wavePitch, 0.1f, -100, 100);
+	}
+
+	if (ImGui::CollapsingHeader("Fog", ImGuiTreeNodeFlags_DefaultOpen))
+	{
+		util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Near plane", &fog.nearPlane, 0.01f, 0.0f, 1.0f);
+		util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Far plane", &fog.farPlane, 0.01f, 0.0f, 1.0f);
+		util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Exponent Factor", &fog.factor, 0.01f, 0.0f, 1.0f);
+		util::ColorEdit4(browEdit, browEdit->activeMapView->map, node, "Color", &fog.color);
 	}
 }
 

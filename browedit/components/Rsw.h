@@ -61,6 +61,15 @@ public:
 		float		lightmapIntensity = 0.5f; // EXTRA
 	} light;
 
+
+	struct
+	{
+		float nearPlane = 0.0f;
+		float farPlane = 1.0f;
+		float factor = 0.5f;
+		glm::vec4 color;
+	} fog;
+
 	int			unknown[4];
 	std::vector<glm::vec3> quadtreeFloats;
 	QuadTreeNode* quadtree = nullptr;

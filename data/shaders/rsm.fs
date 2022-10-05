@@ -11,6 +11,11 @@ uniform float selection;
 uniform bool lightToggle;
 uniform bool viewTextures;
 
+uniform bool fogEnabled;
+uniform float fogNear = 0;
+uniform float fogFar = 1;
+uniform float fogExp = 0.5;
+uniform vec4 fogColor = vec4(1,1,1,1);
 
 varying vec2 texCoord;
 varying vec3 normal;
@@ -31,6 +36,13 @@ void main()
 
 	if(shadeType == 4 && lightToggle) // only for editor
 		color.rgb *= lightDiffuse;
+
+	if(fogEnabled)
+	{
+		float depth = gl_FragCoord.z / gl_FragCoord.w;
+		float fogAmount = smoothstep(fogNear, fogFar, depth);
+		color = mix(color, fogColor, fogAmount);
+	}	
 
 	gl_FragData[0] = mix(color, vec4(1,0,0,1), min(1.0,selection));
 	//gl_FragData[1] = highlightColor;

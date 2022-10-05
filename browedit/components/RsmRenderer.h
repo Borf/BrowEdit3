@@ -25,6 +25,7 @@ public:
 		glm::mat4 viewMatrix = glm::mat4(1.0f);
 		bool viewLighting = true;
 		bool viewTextures = true;
+		bool viewFog = true;
 
 		RsmRenderContext();
 		virtual void preFrame(const glm::mat4& projectionMatrix, const glm::mat4& viewMatrix) override;

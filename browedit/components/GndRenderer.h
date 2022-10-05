@@ -89,6 +89,7 @@ public:
 	bool viewLighting = true;
 	bool smoothColors = false;
 	bool viewTextures = true;
+	bool viewFog = true;
 
 	bool viewEmptyTiles = true;
 };
