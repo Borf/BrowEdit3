@@ -718,8 +718,8 @@ void Gnd::makeLightmapBorders(BrowEdit* browEdit)
 	{
 		for (int y = 0; y < height; y++)
 		{
-			if (!browEdit->activeMapView->map->tileSelection.empty() && std::find(browEdit->activeMapView->map->tileSelection.begin(), browEdit->activeMapView->map->tileSelection.end(), glm::ivec2(x, y)) == browEdit->activeMapView->map->tileSelection.end())
-				continue;
+//			if (!browEdit->activeMapView->map->tileSelection.empty() && std::find(browEdit->activeMapView->map->tileSelection.begin(), browEdit->activeMapView->map->tileSelection.end(), glm::ivec2(x, y)) == browEdit->activeMapView->map->tileSelection.end())
+//				continue;
 
 			Gnd::Cube* cube = cubes[x][y];
 			for (int i = 0; i < 3; i++)

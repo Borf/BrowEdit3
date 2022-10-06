@@ -23,6 +23,7 @@ void BrowEdit::showLightmapSettingsWindow()
 		ImGui::Checkbox("Shadows", &lightmapper->shadows);
 		ImGui::Checkbox("Diffuse Lighting", &lightmapper->diffuseLighting);
 		ImGui::Checkbox("Debug Points", &lightmapper->buildDebugPoints);
+		ImGui::Checkbox("Height Edit Mode Selection Only", &lightmapper->heightSelectionOnly);
 		ImGui::DragInt2("Generate Range X", glm::value_ptr(lightmapper->rangeX), 1, 0, gnd->width);
 		ImGui::DragInt2("Generate Range Y", glm::value_ptr(lightmapper->rangeY), 1, 0, gnd->height);
 		ImGui::DragInt("Thread Count", &lightmapper->threadCount, 1, 1, 32);

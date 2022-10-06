@@ -26,6 +26,7 @@ public:
 	bool diffuseLighting = true;
 	bool sunLight = true;
 	bool shadows = true;
+	bool heightSelectionOnly = false;
 	int threadCount = 4;
 	bool buildDebugPoints = false;
 	glm::ivec2 rangeX;

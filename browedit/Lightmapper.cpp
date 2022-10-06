@@ -161,6 +161,8 @@ void Lightmapper::run()
 
 					for (int y = rangeY[0]; y < rangeY[1]; y++)
 					{
+						if (heightSelectionOnly && std::find(map->tileSelection.begin(), map->tileSelection.end(), glm::ivec2(x, y)) == map->tileSelection.end())
+							continue;
 						Gnd::Cube* cube = gnd->cubes[x][y];
 
 						for (int i = 0; i < 3; i++)
