@@ -4,6 +4,7 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <Version.h>
+#include <browedit/Image.h>
 
 static void glfw_error_callback(int error, const char* description)
 {
@@ -36,32 +37,46 @@ bool BrowEdit::glfwBegin()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
 
     window = glfwCreateWindow(1920, 1080, "NOT BrowEdit V3." QUOTE(VERSION), NULL, NULL);
-    
+
     if (window == nullptr)
         return false;
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1); // Enable vsync
 
-   
+
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
         std::cout << "Failed to initialize GLAD" << std::endl;
         return false;
     }
 
-    std::cout<<"Using renderer "<<glGetString(GL_RENDERER)<<std::endl;
+    std::cout << "Using renderer " << glGetString(GL_RENDERER) << std::endl;
 
-//#ifdef _DEBUG
+    //#ifdef _DEBUG
     if (glDebugMessageCallback)
     {
         glDebugMessageCallback(&onDebug, NULL);
         glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
         glEnable(GL_DEBUG_OUTPUT);
     }
-//#endif
+    //#endif
 #ifdef _DEBUG
     glfwSwapInterval(0); //disable swap
 #endif
+    {
+        GLFWimage image;
+
+        std::istream* is = util::FileIO::open("data\\dropper.png");
+        is->seekg(0, std::ios_base::end);
+        std::size_t len = is->tellg();
+        char* fileData = new char[len];
+        is->seekg(0, std::ios_base::beg);
+        is->read(fileData, len);
+        delete is;
+        int depth;
+        image.pixels = stbi_load_from_memory((stbi_uc*)fileData, (int)len, &image.width, &image.height, &depth, 4);
+        dropperCursor = glfwCreateCursor(&image, 1, 29);
+    }
 
     return true;
 }

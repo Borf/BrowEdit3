@@ -103,6 +103,7 @@ std::map<Map*, MapView*> firstRender; //DIRTY HACK
 
 void BrowEdit::run()
 {
+	configBegin();
 	if (!glfwBegin())
 	{
 		std::cerr << "Error initializing glfw" << std::endl;
@@ -113,7 +114,8 @@ void BrowEdit::run()
 		std::cerr << "Error initializing imgui" << std::endl;
 		return;
 	}
-	configBegin();
+	config.setStyle(config.style);
+
 	editMode = (EditMode)config.defaultEditMode;
 	if (config.closeObjectWindowOnAdd)
 		windowData.objectWindowVisible = false;
@@ -167,6 +169,15 @@ void BrowEdit::run()
 		if (!glfwLoopBegin())
 			break;
 		imguiLoopBegin();
+
+		if (cursor != nullptr)
+		{
+			ImGui::SetMouseCursor(ImGuiMouseCursor_None);
+			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+			glfwSetCursor(window, cursor);
+		}
+		else
+			ImGui::SetMouseCursor(0);
 
 		double newTime = ImGui::GetTime();
 		double deltaTime = newTime - time;

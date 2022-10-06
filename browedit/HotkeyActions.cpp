@@ -12,6 +12,7 @@
 #include <GLFW/glfw3.h>
 
 extern bool previewWall; //move this
+extern bool dropperEnabled; //move this
 
 
 void BrowEdit::registerActions()
@@ -138,6 +139,8 @@ void BrowEdit::registerActions()
 	HotkeyRegistry::registerAction(HotkeyAction::GatEdit_Tile7,						[this]() { windowData.gatEdit.gatIndex = 7;	heightDoodle = false;	gatDoodle = true; }, hasActiveMapViewGatMode);
 	HotkeyRegistry::registerAction(HotkeyAction::GatEdit_Tile8,						[this]() { windowData.gatEdit.gatIndex = 8;	heightDoodle = false;	gatDoodle = true; }, hasActiveMapViewGatMode);
 	HotkeyRegistry::registerAction(HotkeyAction::GatEdit_Tile9,						[this]() { windowData.gatEdit.gatIndex = 9;	heightDoodle = false;	gatDoodle = true; }, hasActiveMapViewGatMode);
+	
+	HotkeyRegistry::registerAction(HotkeyAction::ColorEdit_Dropper,					[this]() { dropperEnabled = !dropperEnabled; cursor = dropperEnabled ? dropperCursor : nullptr; }, hasActiveMapViewGatMode);
 
 	HotkeyRegistry::registerAction(HotkeyAction::Texture_PrevTexture,				[this]() { activeMapView->textureSelected = (activeMapView->textureSelected + activeMapView->map->rootNode->getComponent<Gnd>()->textures.size() - 1) % (int)activeMapView->map->rootNode->getComponent<Gnd>()->textures.size(); }, hasActiveMapViewTextureWallMode);
 	HotkeyRegistry::registerAction(HotkeyAction::Texture_NextTexture,				[this]() { activeMapView->textureSelected = (activeMapView->textureSelected + 1) % activeMapView->map->rootNode->getComponent<Gnd>()->textures.size(); }, hasActiveMapViewTextureWallMode);

@@ -331,8 +331,6 @@ void Config::setupFileIO()
 	for (const auto& grf : grfs)
 		util::FileIO::addGrf(util::utf8_to_iso_8859_1(grf));
 	util::FileIO::end();
-
-	setStyle(style);
 }
 
 

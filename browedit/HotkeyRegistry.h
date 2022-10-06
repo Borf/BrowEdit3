@@ -100,6 +100,8 @@ enum class HotkeyAction
 	GatEdit_Tile8,
 	GatEdit_Tile9,
 
+	ColorEdit_Dropper,
+
 
 	EditMode_Height,
 	EditMode_Texture,

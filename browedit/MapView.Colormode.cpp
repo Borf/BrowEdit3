@@ -10,6 +10,7 @@
 #include <browedit/actions/GroupAction.h>
 #include <browedit/actions/TilePropertyChangeAction.h>
 #include <glm/gtc/type_ptr.hpp>
+#include <GLFW/glfw3.h>
 
 extern glm::vec4 refColor;
 extern bool dropperEnabled;
@@ -59,6 +60,7 @@ void MapView::postRenderColorMode(BrowEdit* browEdit)
 			{
 				browEdit->colorEditBrushColor = glm::vec4(gnd->tiles[gnd->cubes[tileHovered.x][tileHovered.y]->tileUp]->color) / 256.0f;
 				dropperEnabled = false;
+				browEdit->cursor = nullptr;
 			}
 		}
 		else

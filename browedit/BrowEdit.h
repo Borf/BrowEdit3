@@ -15,6 +15,7 @@ using json = nlohmann::json;
 class Map;
 class Hotkey;
 struct GLFWwindow;
+struct GLFWcursor;
 enum class HotkeyAction;
 namespace gl
 {
@@ -187,6 +188,8 @@ public:
 	std::map<std::string, std::vector<std::string>> tagList; // tag -> [ file ], utf8
 	std::map<std::string, std::vector<std::string>> tagListReverse; // file -> [ tag ], kr
 	GLFWwindow* window;
+	GLFWcursor* dropperCursor;
+	GLFWcursor* cursor;
 	double scrollDelta = 0;
 	Config config;
 	std::vector<std::pair<Node*, glm::vec3>> newNodes;

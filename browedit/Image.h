@@ -8,11 +8,13 @@
 
 class Image
 {
+public:
 	unsigned char* data;
 	int width;
 	int height;
-public:
+
 	bool hasAlpha = false;
 	Image(const std::string& fileName);
+	//TODO: destructor
 	float get(const glm::vec2& uv);
 };

@@ -6,6 +6,7 @@
 #include <browedit/components/Rsw.h>
 #include <imgui.h>
 #include <glm/gtc/type_ptr.hpp>
+#include <GLFW/glfw3.h>
 
 glm::vec4 refColor;
 bool dropperEnabled = false;
@@ -20,9 +21,10 @@ void BrowEdit::showColorEditWindow()
 	ImGui::InputInt("Brush Size", &colorEditBrushSize);
 	ImGui::InputFloat("Brush Delay", &colorEditDelay, 0.05f);
 
-	if (toolBarButton("Color Picker", ICON_DROPPER, "Picks a color from the colormap", ImVec4(1,1,1,1)))
+	if (toolBarButton("Color Picker", ICON_DROPPER, "Picks a color from the colormap", ImVec4(1, 1, 1, 1)))
 	{
 		dropperEnabled = !dropperEnabled;
+		cursor = dropperEnabled ? dropperCursor : nullptr;
 	}
 
 	auto rsw = activeMapView->map->rootNode->getComponent<Rsw>();
