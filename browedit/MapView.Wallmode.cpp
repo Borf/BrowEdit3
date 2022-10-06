@@ -9,6 +9,7 @@
 #include <browedit/gl/Texture.h>
 #include <browedit/shaders/SimpleShader.h>
 #include <browedit/actions/GroupAction.h>
+#include <browedit/actions/SelectWallAction.h>
 #include <browedit/actions/TilePropertyChangeAction.h>
 #include <imgui.h>
 
@@ -216,13 +217,12 @@ void MapView::postRenderWallMode(BrowEdit* browEdit)
 			}
 			if (ImGui::IsMouseReleased(ImGuiMouseButton_Left))
 			{
-				if (!ImGui::GetIO().KeyShift)
-					selectedWalls.clear();
+				auto ga = new GroupAction();
 				glm::ivec2 tile = selectionStart;
 				for (int i = 0; i < 100; i++)
 				{
 					if (gnd->inMap(tile) && std::find(selectedWalls.begin(), selectedWalls.end(), glm::ivec3(tile, selectionSide)) == selectedWalls.end())
-						selectedWalls.push_back(glm::ivec3(tile, selectionSide));
+						ga->addAction(new SelectWallAction(map, glm::ivec3(tile, selectionSide), ga->isEmpty() ? ImGui::GetIO().KeyShift : true, false));
 					if (side == 1 && tile.y == tileHovered.y)
 						break;
 					if (side == 2 && tile.x == tileHovered.x)
@@ -234,6 +234,10 @@ void MapView::postRenderWallMode(BrowEdit* browEdit)
 					if (tileHovered == selectionStart)
 						break;
 				}
+				if (!ga->isEmpty())
+					map->doAction(ga, browEdit);
+				else
+					delete ga;
 				selecting = false;
 			}
 		}

@@ -385,6 +385,9 @@
     <ClCompile Include="browedit\MapView.Colormode.cpp">
       <Filter>browedit</Filter>
     </ClCompile>
+    <ClCompile Include="browedit\actions\SelectWallAction.cpp">
+      <Filter>browedit\actions</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="lib\imgui\imgui.h">
@@ -655,6 +658,9 @@
       <Filter>browedit</Filter>
     </ClInclude>
     <ClInclude Include="browedit\actions\GatTileChangeAction.h">
+      <Filter>browedit\actions</Filter>
+    </ClInclude>
+    <ClInclude Include="browedit\actions\SelectWallAction.h">
       <Filter>browedit\actions</Filter>
     </ClInclude>
   </ItemGroup>

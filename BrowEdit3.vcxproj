@@ -23,6 +23,7 @@
     <ClCompile Include="browedit\actions\RemoveComponentAction.cpp" />
     <ClCompile Include="browedit\actions\SelectAction.cpp" />
     <ClCompile Include="browedit\actions\CubeHeightChangeAction.cpp" />
+    <ClCompile Include="browedit\actions\SelectWallAction.cpp" />
     <ClCompile Include="browedit\actions\TileDeleteAction.cpp" />
     <ClCompile Include="browedit\actions\TileNewAction.cpp" />
     <ClCompile Include="browedit\actions\TilePropertyChangeAction.cpp" />
@@ -136,6 +137,7 @@
     <ClInclude Include="browedit\actions\RemoveComponentAction.h" />
     <ClInclude Include="browedit\actions\SelectAction.h" />
     <ClInclude Include="browedit\actions\CubeHeightChangeAction.h" />
+    <ClInclude Include="browedit\actions\SelectWallAction.h" />
     <ClInclude Include="browedit\actions\TileDeleteAction.h" />
     <ClInclude Include="browedit\actions\TileNewAction.h" />
     <ClInclude Include="browedit\actions\TilePropertyChangeAction.h" />
