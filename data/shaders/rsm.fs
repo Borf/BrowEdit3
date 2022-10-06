@@ -12,10 +12,10 @@ uniform bool lightToggle;
 uniform bool viewTextures;
 
 uniform bool fogEnabled;
-uniform float fogNear = 0;
-uniform float fogFar = 1;
-uniform float fogExp = 0.5;
-uniform vec4 fogColor = vec4(1,1,1,1);
+uniform float fogNear;
+uniform float fogFar;
+uniform float fogExp;
+uniform vec4 fogColor;
 
 varying vec2 texCoord;
 varying vec3 normal;
