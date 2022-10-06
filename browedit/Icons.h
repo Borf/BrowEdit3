@@ -45,6 +45,8 @@
 #define ICON_GRID_SNAP_ON		40
 #define ICON_GRID_SNAP_OFF		41
 #define ICON_VIEWOPTIONS		42
+#define ICON_VIEW_FOG_ON		43
+#define ICON_VIEW_FOG_OFF		44
 
 
 #define ICON_UNDO				45

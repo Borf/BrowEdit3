@@ -100,7 +100,7 @@ void MapView::toolbar(BrowEdit* browEdit)
 			else
 				browEdit->toolBarToggleButton("viewGat", viewGat ? ICON_GAT_ON : ICON_GAT_OFF, viewGat, "View GAT tiles", HotkeyAction::View_GatTiles, browEdit->config.toolbarButtonsViewOptions);
 			ImGui::SameLine();
-			browEdit->toolBarToggleButton("viewFog", viewFog ? ICON_EMPTYTILE_ON : ICON_EMPTYTILE_OFF, viewFog, "View Fog", HotkeyAction::View_Fog, browEdit->config.toolbarButtonsViewOptions);
+			browEdit->toolBarToggleButton("viewFog", viewFog ? ICON_VIEW_FOG_ON: ICON_VIEW_FOG_OFF, viewFog, "View Fog", HotkeyAction::View_Fog, browEdit->config.toolbarButtonsViewOptions);
 
 			if (browEdit->editMode == BrowEdit::EditMode::Gat ? viewGatGat : viewGat)
 				ImGui::DragFloat("Gat Opacity", &gatOpacity, 0.025f, 0.0f, 1.0f);
