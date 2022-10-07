@@ -1138,3 +1138,20 @@ void Rsw::KeyFrameData<std::pair<glm::vec3, glm::vec3>>::buildEditor()
 	ImGui::DragFloat3("Data", glm::value_ptr(data.first), 0.1f, 0.0, 1000.0f);
 	ImGui::DragFloat3("Data 2", glm::value_ptr(data.second), 0.1f, 0.0, 1000.0f);
 }
+
+void Rsw::KeyFrameData<Rsw::CameraTarget>::buildEditor()
+{
+	KeyFrame::buildEditor();
+	ImGui::Combo("Focus Type", (int*)&data.lookAt, "Look at Point\0Look in movement direction");
+	if (data.lookAt == Rsw::CameraTarget::LookAt::Point)
+	{
+		ImGui::DragFloat3("Position", glm::value_ptr(data.point), 0.1f, 0.0, 1000.0f);
+	}
+	if (data.lookAt == Rsw::CameraTarget::LookAt::Direction)
+	{
+		ImGui::DragFloat4("Quaternion", glm::value_ptr(data.angle), 0.1f, -1.0, 1.0f);
+
+	}
+	ImGui::DragFloat("Rotation Speed", &data.turnSpeed, 0.01f, 0.0, 1.0f);
+
+}

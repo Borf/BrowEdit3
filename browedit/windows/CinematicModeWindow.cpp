@@ -29,12 +29,15 @@ void BrowEdit::showCinematicModeWindow()
 	{
 		Rsw::Track t1{ "Camera Position" };
 		Rsw::Track t2{ "Camera Rotation" };
-		t1.frames.push_back(new Rsw::KeyFrameData<std::pair<glm::vec3, glm::vec3>>(0, std::pair<glm::vec3, glm::vec3>(glm::vec3(50, 10, 50), glm::vec3(0,0,100))));
-		t1.frames.push_back(new Rsw::KeyFrameData<std::pair<glm::vec3, glm::vec3>>(2.5f, std::pair<glm::vec3, glm::vec3>(glm::vec3(50, 10, 150), glm::vec3(100, 0, 0))));
-		t1.frames.push_back(new Rsw::KeyFrameData<std::pair<glm::vec3, glm::vec3>>(5, std::pair<glm::vec3, glm::vec3>(glm::vec3(150, 10, 150), glm::vec3(0, 0, -100))));
-		t1.frames.push_back(new Rsw::KeyFrameData<std::pair<glm::vec3, glm::vec3>>(7.5, std::pair<glm::vec3, glm::vec3>(glm::vec3(150, 10, 50), glm::vec3(-100, 0, 0))));
-		t1.frames.push_back(new Rsw::KeyFrameData<std::pair<glm::vec3, glm::vec3>>(7.5, std::pair<glm::vec3, glm::vec3>(glm::vec3(50, 10, 50), glm::vec3(-100, 0, 0))));
-		t1.frames.push_back(new Rsw::KeyFrameData<std::pair<glm::vec3, glm::vec3>>(20, std::pair<glm::vec3, glm::vec3>(glm::vec3(50, 10, 150), glm::vec3(100, 0, 0))));
+		t1.frames.push_back(new Rsw::KeyFrameData<std::pair<glm::vec3, glm::vec3>>(0, std::pair<glm::vec3, glm::vec3>(glm::vec3(50, 50, 50), glm::vec3(0,0,100))));
+		t1.frames.push_back(new Rsw::KeyFrameData<std::pair<glm::vec3, glm::vec3>>(2.5f, std::pair<glm::vec3, glm::vec3>(glm::vec3(50, 50, 150), glm::vec3(100, 0, 0))));
+		t1.frames.push_back(new Rsw::KeyFrameData<std::pair<glm::vec3, glm::vec3>>(5, std::pair<glm::vec3, glm::vec3>(glm::vec3(150, 75, 150), glm::vec3(0, 0, -100))));
+		t1.frames.push_back(new Rsw::KeyFrameData<std::pair<glm::vec3, glm::vec3>>(7.5, std::pair<glm::vec3, glm::vec3>(glm::vec3(150, 75, 50), glm::vec3(-100, 0, 0))));
+		t1.frames.push_back(new Rsw::KeyFrameData<std::pair<glm::vec3, glm::vec3>>(7.5, std::pair<glm::vec3, glm::vec3>(glm::vec3(50, 50, 50), glm::vec3(-100, 0, 0))));
+		t1.frames.push_back(new Rsw::KeyFrameData<std::pair<glm::vec3, glm::vec3>>(20, std::pair<glm::vec3, glm::vec3>(glm::vec3(50, 50, 150), glm::vec3(100, 0, 0))));
+		
+		t2.frames.push_back(new Rsw::KeyFrameData<Rsw::CameraTarget>(0, Rsw::CameraTarget(glm::vec3(100,10,100), 0.01f)));
+
 		rsw->tracks.push_back(t1);
 		rsw->tracks.push_back(t2);
 	}
@@ -60,6 +63,11 @@ void BrowEdit::showCinematicModeWindow()
 		if (selectedTrack >= 0 && selectedTrack < rsw->tracks.size() && selectedKeyFrame < rsw->tracks[selectedTrack].frames.size()-1)
 			selectedKeyFrame++;
 	}
+	ImGui::SameLine();
+
+	toolBarButton("PlayPause", ICON_PAUSE, "Play / Pause", ImVec4(1, 1, 1, 1));
+	ImGui::SameLine();
+	ImGui::Checkbox("##preview", &activeMapView->cinematicPlay);
 
 
 	if (ImGui::BeginChild("KeyframeEditor", ImVec2(-1, 200), true, ImGuiWindowFlags_AlwaysHorizontalScrollbar))

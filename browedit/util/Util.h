@@ -87,6 +87,11 @@ namespace util
 	float interpolateLinear(const std::vector<glm::vec2>& f, float x);
 	bool EditableGraph(const char* label, std::vector<glm::vec2>* points, std::function<float(const std::vector<glm::vec2>&, float)> interpolationStyle, bool& activated);
 	void Graph(const char* label, std::function<float(float)> func);
+
+
+	//todo: move to math
+	glm::quat RotationBetweenVectors(glm::vec3 start, glm::vec3 dest);
+	glm::quat RotateTowards(glm::quat q1, const glm::quat &q2, float maxAngle);
 }
 
 namespace glm

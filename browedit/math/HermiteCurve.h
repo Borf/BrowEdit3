@@ -40,7 +40,7 @@ namespace math
 		{
 			float length = 0;
 			T lastPoint = getPoint(p0, m0, p1, m1, begin);
-			for (float f = begin; f < end; f += 0.01f)
+			for (float f = begin; f < end; f += 0.05f)
 			{
 				T point = getPoint(p0, m0, p1, m1, f);
 				length += glm::distance(point, lastPoint);

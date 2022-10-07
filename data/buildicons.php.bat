@@ -29,7 +29,7 @@ $order = array(
 	"height_select_center.png","height_select_corners.png","height_select_sides.png","height_doodle.png",	"",						//80-84
 	"wall_addremove.png",	"",							"",							"",						"",						//85-89
 	"",						"",							"",							"",						"",						//90-94
-	"",						"",							"",							"",						"missing.png"			//95-99
+	"play.png",				"pause.png",				"",							"",						"missing.png"			//95-99
 );
 
 foreach($files as $file)

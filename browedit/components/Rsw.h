@@ -96,6 +96,21 @@ public:
 		KeyFrame* getAfterFrame(float time);
 	};
 
+	class CameraTarget
+	{
+	public:
+		enum class LookAt
+		{
+			Point, Direction
+		} lookAt;
+		float turnSpeed;
+		glm::quat angle;
+		glm::vec3 point;
+
+		CameraTarget(const glm::vec3& point, float speed) : lookAt(LookAt::Point), point(point), turnSpeed(speed) {}
+		CameraTarget(const glm::quat& angle, float speed) : lookAt(LookAt::Direction), angle(angle), turnSpeed(speed) {}
+	};
+
 	std::vector<Track> tracks;
 	int			unknown[4];
 	std::vector<glm::vec3> quadtreeFloats;

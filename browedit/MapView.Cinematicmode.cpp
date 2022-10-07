@@ -18,6 +18,8 @@ extern float timeSelected;
 
 void MapView::postRenderCinematicMode(BrowEdit* browEdit)
 {
+	if (cinematicPlay)
+		return;
 	auto rsw = map->rootNode->getComponent<Rsw>();
 	if (rsw->tracks.size() == 0)
 		return;
@@ -52,7 +54,7 @@ void MapView::postRenderCinematicMode(BrowEdit* browEdit)
 	ImGui::End();
 
 	std::vector<VertexP3T2N3> verts;
-	for (float t = 0; t < 20; t += 0.01f)
+	for (float t = 0; t < 20; t += 0.05f)
 	{
 		auto beforePos = (Rsw::KeyFrameData<std::pair<glm::vec3, glm::vec3>>*)rsw->tracks[0].getBeforeFrame(t);
 		auto afterPos = (Rsw::KeyFrameData<std::pair<glm::vec3, glm::vec3>>*)rsw->tracks[0].getAfterFrame(t);
@@ -66,9 +68,6 @@ void MapView::postRenderCinematicMode(BrowEdit* browEdit)
 		glm::vec3 pos = math::HermiteCurve::getPointAtDistance(beforePos->data.first, beforePos->data.second, afterPos->data.first, afterPos->data.second, mixFactor * segmentLength);
 		verts.push_back(VertexP3T2N3(pos, glm::vec2(0), glm::vec3(1,1,1)));
 	}
-	std::cout << std::endl;
-	std::cout << std::endl;
-	std::cout << std::endl;
 
 	{
 		auto beforePos = (Rsw::KeyFrameData<std::pair<glm::vec3, glm::vec3>>*)rsw->tracks[0].getBeforeFrame(timeSelected);

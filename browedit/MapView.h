@@ -7,6 +7,7 @@
 #include <browedit/components/BillboardRenderer.h>
 #include <browedit/components/Gnd.h>
 #include <browedit/Gadget.h>
+#include <glm/gtx/quaternion.hpp>
 class BrowEdit;
 class Map;
 struct ImVec2;
@@ -131,7 +132,9 @@ public:
 
 	//height edit mode
 	bool mouseDown = false;
-
+	
+	bool cinematicPlay = false;
+	glm::quat cinematicCameraDirection = glm::quat(glm::vec3(0,0,0));
 
 
 	math::Ray mouseRay;
