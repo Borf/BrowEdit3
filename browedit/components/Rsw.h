@@ -107,8 +107,8 @@ public:
 		glm::quat angle;
 		glm::vec3 point;
 
-		CameraTarget(const glm::vec3& point, float speed) : lookAt(LookAt::Point), point(point), turnSpeed(speed) {}
-		CameraTarget(const glm::quat& angle, float speed) : lookAt(LookAt::Direction), angle(angle), turnSpeed(speed) {}
+		CameraTarget(const glm::vec3& point, float speed) : lookAt(LookAt::Point), point(point), turnSpeed(speed), angle(-1,0,0,0) {}
+		CameraTarget(const glm::quat& angle, float speed) : lookAt(LookAt::Direction), angle(angle), turnSpeed(speed), point(0) {}
 	};
 
 	std::vector<Track> tracks;

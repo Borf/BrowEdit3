@@ -100,6 +100,7 @@
     <ClCompile Include="lib\grflib\grfcrypt.c" />
     <ClCompile Include="lib\grflib\grfsupport.c" />
     <ClCompile Include="lib\grflib\rgz.c" />
+    <ClCompile Include="lib\imGuIZMO.quat\imGuIZMO.quat\imGuIZMOquat.cpp" />
     <ClCompile Include="lib\imgui\backends\imgui_impl_glfw.cpp" />
     <ClCompile Include="lib\imgui\backends\imgui_impl_opengl3.cpp" />
     <ClCompile Include="lib\imgui\imgui.cpp" />
@@ -198,6 +199,11 @@
     <ClInclude Include="lib\grflib\grfsupport.h" />
     <ClInclude Include="lib\grflib\grftypes.h" />
     <ClInclude Include="lib\grflib\rgz.h" />
+    <ClInclude Include="lib\imGuIZMO.quat\imGuIZMO.quat\imGuIZMOquat.h" />
+    <ClInclude Include="lib\imGuIZMO.quat\imGuIZMO.quat\vgConfig.h" />
+    <ClInclude Include="lib\imGuIZMO.quat\imGuIZMO.quat\vGizmo.h" />
+    <ClInclude Include="lib\imGuIZMO.quat\imGuIZMO.quat\vGizmoMath.h" />
+    <ClInclude Include="lib\imGuIZMO.quat\imGuIZMO.quat\vgMath.h" />
     <ClInclude Include="lib\imgui\imconfig.h" />
     <ClInclude Include="lib\imgui\imgui.h" />
     <ClInclude Include="lib\imgui\imgui_internal.h" />
@@ -294,7 +300,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NOMINMAX;GRF_STATIC;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>lib/imgui/;lib/glfw-3.3.6/include;lib/grflib;lib/zlib;lib/sfl;lib/glm;lib/glad/include;$(SolutionDir);lib/bugtrap;lib/magic_enum/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>lib/imgui/;lib/glfw-3.3.6/include;lib/grflib;lib/zlib;lib/sfl;lib/glm;lib/glad/include;$(SolutionDir);lib/bugtrap;lib/magic_enum/include;lib/imGuIZMO.quat/imGuIZMO.quat</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -320,7 +326,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NOMINMAX;GRF_STATIC;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>lib/imgui/;lib/glfw-3.3.6/include;lib/grflib;lib/zlib;lib/sfl;lib/glm;lib/glad/include;$(SolutionDir);lib/bugtrap;lib/magic_enum/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>lib/imgui/;lib/glfw-3.3.6/include;lib/grflib;lib/zlib;lib/sfl;lib/glm;lib/glad/include;$(SolutionDir);lib/bugtrap;lib/magic_enum/include;lib/imGuIZMO.quat/imGuIZMO.quat</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <BrowseInformation>true</BrowseInformation>

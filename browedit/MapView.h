@@ -134,6 +134,7 @@ public:
 	bool mouseDown = false;
 	
 	bool cinematicPlay = false;
+	glm::vec3 cinematicLastCameraPosition;
 	glm::quat cinematicCameraDirection = glm::quat(glm::vec3(0,0,0));
 
 

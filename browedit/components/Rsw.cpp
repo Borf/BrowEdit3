@@ -24,6 +24,7 @@
 #include <filesystem>
 #include <glm/gtc/type_ptr.hpp>
 #include <browedit/Node.h>
+#include <imGuIZMOquat.h>
 
 
 Rsw::Rsw()
@@ -1149,6 +1150,8 @@ void Rsw::KeyFrameData<Rsw::CameraTarget>::buildEditor()
 	}
 	if (data.lookAt == Rsw::CameraTarget::LookAt::Direction)
 	{
+		ImGui::gizmo3D("Rotation", data.angle);
+
 		ImGui::DragFloat4("Quaternion", glm::value_ptr(data.angle), 0.1f, -1.0, 1.0f);
 
 	}

@@ -53,6 +53,9 @@
     <Filter Include="doc\formats">
       <UniqueIdentifier>{ada228bb-85f8-4714-b5e0-fc414f2ce1a9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="lib\imGuIZMO.quat">
+      <UniqueIdentifier>{32e382ac-bc7d-4025-92b3-d5e39761b9c3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="lib\imgui\imgui.cpp">
@@ -397,6 +400,9 @@
     <ClCompile Include="browedit\math\HermiteCurve.cpp">
       <Filter>browedit\math</Filter>
     </ClCompile>
+    <ClCompile Include="lib\imGuIZMO.quat\imGuIZMO.quat\imGuIZMOquat.cpp">
+      <Filter>lib\imGuIZMO.quat</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="lib\imgui\imgui.h">
@@ -674,6 +680,21 @@
     </ClInclude>
     <ClInclude Include="browedit\math\HermiteCurve.h">
       <Filter>browedit\math</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\imGuIZMO.quat\imGuIZMO.quat\imGuIZMOquat.h">
+      <Filter>lib\imGuIZMO.quat</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\imGuIZMO.quat\imGuIZMO.quat\vgConfig.h">
+      <Filter>lib\imGuIZMO.quat</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\imGuIZMO.quat\imGuIZMO.quat\vGizmo.h">
+      <Filter>lib\imGuIZMO.quat</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\imGuIZMO.quat\imGuIZMO.quat\vGizmoMath.h">
+      <Filter>lib\imGuIZMO.quat</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\imGuIZMO.quat\imGuIZMO.quat\vgMath.h">
+      <Filter>lib\imGuIZMO.quat</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

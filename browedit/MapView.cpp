@@ -293,9 +293,11 @@ void MapView::render(BrowEdit* browEdit)
 			if (glm::distance(forward, pos) > 0)
 			{
 				forward = glm::normalize(forward - pos);
-				targetRot = util::RotationBetweenVectors(glm::vec3(0, 0, 1), forward);
+				targetRot = afterRot->data.angle * glm::conjugate(glm::quatLookAt(glm::normalize(forward), glm::vec3(0, 1, 0)));
 			}
 		}
+		if (glm::distance(cinematicLastCameraPosition, pos) > 1)
+			cinematicCameraDirection = targetRot;
 		cinematicCameraDirection = util::RotateTowards(cinematicCameraDirection, targetRot, 0.01f);
 		nodeRenderContext.viewMatrix = nodeRenderContext.viewMatrix * glm::toMat4(cinematicCameraDirection);
 		nodeRenderContext.viewMatrix = glm::translate(nodeRenderContext.viewMatrix, -pos);
