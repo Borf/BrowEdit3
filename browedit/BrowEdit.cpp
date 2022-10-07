@@ -176,8 +176,6 @@ void BrowEdit::run()
 			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 			glfwSetCursor(window, cursor);
 		}
-		else
-			ImGui::SetMouseCursor(0);
 
 		double newTime = ImGui::GetTime();
 		double deltaTime = newTime - time;
@@ -229,6 +227,8 @@ void BrowEdit::run()
 			showWallWindow();
 		if (editMode == EditMode::Color)
 			showColorEditWindow();
+		if (editMode == EditMode::Cinematic)
+			showCinematicModeWindow();
 
 		if(windowData.hotkeyEditWindowVisible)
 			showHotkeyEditorWindow();
@@ -482,6 +482,8 @@ void BrowEdit::showMapWindow(MapView& mapView, float deltaTime)
 					mapView.postRenderWallMode(this);
 				else if (editMode == EditMode::Color)
 					mapView.postRenderColorMode(this);
+				else if (editMode == EditMode::Cinematic)
+					mapView.postRenderCinematicMode(this);
 			}
 
 

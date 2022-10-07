@@ -388,6 +388,15 @@
     <ClCompile Include="browedit\actions\SelectWallAction.cpp">
       <Filter>browedit\actions</Filter>
     </ClCompile>
+    <ClCompile Include="browedit\windows\CinematicModeWindow.cpp">
+      <Filter>browedit\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="browedit\MapView.Cinematicmode.cpp">
+      <Filter>browedit</Filter>
+    </ClCompile>
+    <ClCompile Include="browedit\math\HermiteCurve.cpp">
+      <Filter>browedit\math</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="lib\imgui\imgui.h">
@@ -662,6 +671,9 @@
     </ClInclude>
     <ClInclude Include="browedit\actions\SelectWallAction.h">
       <Filter>browedit\actions</Filter>
+    </ClInclude>
+    <ClInclude Include="browedit\math\HermiteCurve.h">
+      <Filter>browedit\math</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

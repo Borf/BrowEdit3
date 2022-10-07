@@ -259,6 +259,7 @@ public:
 	void showTextureManageWindow();
 	void showHotkeyEditorWindow();
 	void showColorEditWindow();
+	void showCinematicModeWindow();
 
 	void copyTiles();
 	void pasteTiles();

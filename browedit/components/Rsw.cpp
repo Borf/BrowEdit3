@@ -1087,3 +1087,54 @@ void Rsw::QuadTreeNode::draw(int levelLeft)
 		if (children[i])
 			children[i]->draw(levelLeft-1);
 }
+
+
+Rsw::KeyFrame* Rsw::Track::getBeforeFrame(float time)
+{
+	if (frames.size() == 0)
+		return nullptr;
+	if (frames.size() == 1)
+		return frames[0];
+
+	for (auto i = 0; i < frames.size(); i++)
+	{
+		if (frames[i]->time <= time && frames[(i + 1) % frames.size()]->time > time)
+			return frames[i];
+	}
+	return frames[frames.size() - 1];
+}
+
+Rsw::KeyFrame* Rsw::Track::getAfterFrame(float time)
+{
+	if (frames.size() == 0)
+		return nullptr;
+	if (frames.size() == 1)
+		return frames[0];
+
+	for (auto i = 0; i < frames.size(); i++)
+	{
+		if (frames[i]->time <= time && frames[(i + 1) % frames.size()]->time > time)
+			return frames[(i+1)%frames.size()];
+	}
+	return frames[0];
+}
+
+void Rsw::KeyFrame::buildEditor()
+{
+	ImGui::DragFloat("Time", &time, 0.1f, 0.0, 1000.0f);
+}
+
+
+void Rsw::KeyFrameData<glm::vec3>::buildEditor()
+{
+	KeyFrame::buildEditor();
+	ImGui::DragFloat3("Data", glm::value_ptr(data), 0.1f, 0.0, 1000.0f);
+}
+
+
+void Rsw::KeyFrameData<std::pair<glm::vec3, glm::vec3>>::buildEditor()
+{
+	KeyFrame::buildEditor();
+	ImGui::DragFloat3("Data", glm::value_ptr(data.first), 0.1f, 0.0, 1000.0f);
+	ImGui::DragFloat3("Data 2", glm::value_ptr(data.second), 0.1f, 0.0, 1000.0f);
+}

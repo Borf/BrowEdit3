@@ -159,6 +159,7 @@ public:
 	void postRenderGatMode(BrowEdit* browEdit);
 	void postRenderWallMode(BrowEdit* browEdit);
 	void postRenderColorMode(BrowEdit* browEdit);
+	void postRenderCinematicMode(BrowEdit* browEdit);
 	
 	bool drawCameraWidget();
 

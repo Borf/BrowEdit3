@@ -70,6 +70,33 @@ public:
 		glm::vec4 color;
 	} fog;
 
+
+	class KeyFrame
+	{
+	public:
+		float time;
+		KeyFrame(float time) : time(time) {}
+		virtual void buildEditor();
+	};
+	template<class T>
+	class KeyFrameData : public KeyFrame
+	{
+	public:
+		T data;
+		KeyFrameData(float time, const T& data) : KeyFrame(time), data(data) {}
+		virtual void buildEditor();
+	};
+
+	class Track
+	{
+	public:
+		std::string name;
+		std::vector<KeyFrame*> frames;
+		KeyFrame* getBeforeFrame(float time);
+		KeyFrame* getAfterFrame(float time);
+	};
+
+	std::vector<Track> tracks;
 	int			unknown[4];
 	std::vector<glm::vec3> quadtreeFloats;
 	QuadTreeNode* quadtree = nullptr;
