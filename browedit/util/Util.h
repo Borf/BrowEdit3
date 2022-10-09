@@ -110,6 +110,10 @@ namespace glm
 	void from_json(const nlohmann::json& j, glm::ivec4& v);
 	void to_json(nlohmann::json& j, const glm::ivec2& v);
 	void from_json(const nlohmann::json& j, glm::ivec2& v);
+
+	void to_json(nlohmann::json& j, const glm::quat& v);
+	void from_json(const nlohmann::json& j, glm::quat& v);
+
 }
 
 void to_json(nlohmann::json& j, const ImVec4& v);

@@ -1768,6 +1768,15 @@ namespace glm
 		j[2].get_to(v.z);
 		j[3].get_to(v.w);
 	}
+	void to_json(nlohmann::json& j, const glm::quat& v) {
+		j = nlohmann::json{ v.x, v.y, v.z, v.w };
+	}
+	void from_json(const nlohmann::json& j, glm::quat& v) {
+		j[0].get_to(v.x);
+		j[1].get_to(v.y);
+		j[2].get_to(v.z);
+		j[3].get_to(v.w);
+	}
 }
 
 

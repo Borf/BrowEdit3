@@ -53,7 +53,7 @@ void Gadget::draw(const math::Ray& mouseRay, glm::mat4 modelMatrix)
 				shader->setUniform(SimpleShader::Uniforms::color, glm::vec4(1, 1, 0.25f, 1));
 			else
 				shader->setUniform(SimpleShader::Uniforms::color, glm::vec4(1.5, 1.5, 0.65f, 1));
-			if (ImGui::IsMouseDown(0) && selectedAxis == 0 && isMouseJustPressed)
+			if (ImGui::IsMouseDown(0) && selectedAxis == 0 && ImGui::IsMouseClicked(0))
 			{
 				axisDragged = true;
 				axisClicked = true;

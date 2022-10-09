@@ -300,6 +300,33 @@ void Rsw::load(const std::string& fileName, Map* map, BrowEdit* browEdit, bool l
 			light.lightmapIntensity = extraProperties["mapproperties"]["lightmapIntensity"];
 	}
 
+	if (extraProperties.find("cinematic") != extraProperties.end())
+	{
+		//length = extraProperties["cinematic"]["length"]
+		extraProperties["cinematic"]["length"] = 20;
+		for (const auto& t : extraProperties["cinematic"]["tracks"])
+		{
+			Track track;
+			track.name = t["name"];
+			for (const auto f : t["frames"])
+			{
+				KeyFrame* keyFrame = nullptr;
+				if (f.find("pos") != f.end())
+				{
+					keyFrame = new KeyFrameData<std::pair<glm::vec3, glm::vec3>>(f["time"], std::pair<glm::vec3, glm::vec3>(f["pos"], f["dir"]));
+				}
+				else if (f.find("lookat") != f.end())
+				{
+					if (f["lookat"] == (int)CameraTarget::LookAt::Direction)
+						keyFrame = new KeyFrameData<CameraTarget>(f["time"], CameraTarget(f["angle"].get<glm::quat>(), f["turnSpeed"]));
+					else if(f["lookat"] == (int)CameraTarget::LookAt::Point)
+						keyFrame = new KeyFrameData<CameraTarget>(f["time"], CameraTarget(f["point"].get<glm::vec3>(), f["turnSpeed"]));
+				}
+				track.frames.push_back(keyFrame);
+			}
+			cinematicTracks.push_back(track);
+		}
+	}
 	if (version >= 0x106)
 	{
 		file->read(reinterpret_cast<char*>(&unknown[0]), sizeof(int)); //m_groundTop
@@ -458,6 +485,36 @@ void Rsw::save(const std::string& fileName, BrowEdit* browEdit)
 	extraProperties["mapproperties"]["lightmapAmbient"] = light.lightmapAmbient;
 	extraProperties["mapproperties"]["lightmapIntensity"] = light.lightmapIntensity;
 	extraProperties["colorPresets"] = colorPresets;
+
+	extraProperties["cinematic"] = json::object();
+	extraProperties["cinematic"]["length"] = 20;
+	extraProperties["cinematic"]["tracks"] = json::array();
+	for (const auto& t : cinematicTracks)
+	{
+		json track = json::object();
+		track["name"] = t.name;
+		for (const auto f : t.frames)
+		{
+			json frame = json::object();
+			frame["time"] = f->time;
+			{	auto ff = dynamic_cast<KeyFrameData<std::pair<glm::vec3, glm::vec3>>*>(f);
+				if (ff)
+				{
+					frame["pos"] = ff->data.first;
+					frame["dir"] = ff->data.second;
+			}	}
+			{	auto ff = dynamic_cast<KeyFrameData<CameraTarget>*>(f);
+				if (ff)
+				{
+					frame["lookat"] = (int)ff->data.lookAt;
+					frame["point"] = ff->data.point;
+					frame["angle"] = ff->data.angle;
+					frame["turnSpeed"] = ff->data.turnSpeed;
+			}	}
+			track["frames"].push_back(frame);
+		}
+		extraProperties["cinematic"]["tracks"].push_back(track);
+	}
 
 
 	if (version >= 0x106)

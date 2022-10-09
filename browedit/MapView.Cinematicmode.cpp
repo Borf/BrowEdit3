@@ -21,7 +21,7 @@ void MapView::postRenderCinematicMode(BrowEdit* browEdit)
 	if (cinematicPlay)
 		return;
 	auto rsw = map->rootNode->getComponent<Rsw>();
-	if (rsw->tracks.size() == 0)
+	if (rsw->cinematicTracks.size() == 0)
 		return;
 	auto gnd = map->rootNode->getComponent<Gnd>();
 	auto gndRenderer = map->rootNode->getComponent<GndRenderer>();
@@ -56,8 +56,8 @@ void MapView::postRenderCinematicMode(BrowEdit* browEdit)
 	std::vector<VertexP3T2N3> verts;
 	for (float t = 0; t < 20; t += 0.05f)
 	{
-		auto beforePos = (Rsw::KeyFrameData<std::pair<glm::vec3, glm::vec3>>*)rsw->tracks[0].getBeforeFrame(t);
-		auto afterPos = (Rsw::KeyFrameData<std::pair<glm::vec3, glm::vec3>>*)rsw->tracks[0].getAfterFrame(t);
+		auto beforePos = (Rsw::KeyFrameData<std::pair<glm::vec3, glm::vec3>>*)rsw->cinematicTracks[0].getBeforeFrame(t);
+		auto afterPos = (Rsw::KeyFrameData<std::pair<glm::vec3, glm::vec3>>*)rsw->cinematicTracks[0].getAfterFrame(t);
 		//assert(beforePos->time <= time);
 
 		float frameTime = afterPos->time - beforePos->time;
@@ -70,8 +70,8 @@ void MapView::postRenderCinematicMode(BrowEdit* browEdit)
 	}
 
 	{
-		auto beforePos = (Rsw::KeyFrameData<std::pair<glm::vec3, glm::vec3>>*)rsw->tracks[0].getBeforeFrame(timeSelected);
-		auto afterPos = (Rsw::KeyFrameData<std::pair<glm::vec3, glm::vec3>>*)rsw->tracks[0].getAfterFrame(timeSelected);
+		auto beforePos = (Rsw::KeyFrameData<std::pair<glm::vec3, glm::vec3>>*)rsw->cinematicTracks[0].getBeforeFrame(timeSelected);
+		auto afterPos = (Rsw::KeyFrameData<std::pair<glm::vec3, glm::vec3>>*)rsw->cinematicTracks[0].getAfterFrame(timeSelected);
 		float frameTime = afterPos->time - beforePos->time;
 		float mixFactor = (timeSelected - beforePos->time) / frameTime;
 		float segmentLength = math::HermiteCurve::getLength(beforePos->data.first, beforePos->data.second, afterPos->data.first, afterPos->data.second);
@@ -100,6 +100,96 @@ void MapView::postRenderCinematicMode(BrowEdit* browEdit)
 		simpleShader->setUniform(SimpleShader::Uniforms::lightMin, 1.0f);
 		glDrawArrays(GL_POINTS, 0, (int)verts.size());
 	}
+
+	Gadget::setMatrices(nodeRenderContext.projectionMatrix, nodeRenderContext.viewMatrix);
+	bool canSelectObject = true;
+	float gridSize = gridSizeTranslate;
+	float gridOffset = gridOffsetTranslate;
+	static glm::vec3 originalPos;
+	static std::map<Rsw::KeyFrame*, Gadget> gadgetMap;
+	for (auto f : rsw->cinematicTracks[0].frames)
+	{
+		if (gadgetMap.find(f) == gadgetMap.end())
+			gadgetMap[f] = Gadget();
+		auto& g = gadgetMap[f];
+		auto frame = dynamic_cast<Rsw::KeyFrameData<std::pair<glm::vec3, glm::vec3>>*>(f);
+		glm::vec3 &pos = frame->data.first;
+		glm::vec3& direction = frame->data.second;
+
+		//glm::mat4 mat = glm::scale(glm::mat4(1.0f), glm::vec3(1, 1, -1));
+		glm::mat4 mat = glm::translate(glm::mat4(1.0f), pos);
+		g.mode = Gadget::Mode::Translate;
+		g.draw(mouseRay, mat);
+		if (hovered)
+		{
+			if (g.axisClicked && canSelectObject)
+			{
+				mouseDragPlane.normal = glm::normalize(glm::vec3(nodeRenderContext.viewMatrix * glm::vec4(0, 0, 1, 1)) - glm::vec3(nodeRenderContext.viewMatrix * glm::vec4(0, 0, 0, 1))) * glm::vec3(1, 1, -1);
+				if (g.selectedAxis == Gadget::Axis::X)
+					mouseDragPlane.normal.x = 0;
+				if (g.selectedAxis == Gadget::Axis::Y)
+					mouseDragPlane.normal.y = 0;
+				if (g.selectedAxis == Gadget::Axis::Z)
+					mouseDragPlane.normal.z = 0;
+				mouseDragPlane.normal = glm::normalize(mouseDragPlane.normal);
+				mouseDragPlane.D = -glm::dot(pos, mouseDragPlane.normal);
+
+				float f;
+				mouseRay.planeIntersection(mouseDragPlane, f);
+				mouseDragStart = mouseRay.origin + f * mouseRay.dir;
+				mouseDragStart2D = mouseState.position;
+				canSelectObject = false;
+				originalPos = pos;
+			}
+			if (g.axisReleased && canSelectObject)
+			{
+			}
+			if (g.axisDragged && canSelectObject)
+			{
+				float f;
+				mouseRay.planeIntersection(mouseDragPlane, f);
+				glm::vec3 mouseOffset = (mouseRay.origin + f * mouseRay.dir) - mouseDragStart;
+
+				if ((g.selectedAxis & Gadget::X) == 0)
+					mouseOffset.x = 0;
+				if ((g.selectedAxis & Gadget::Y) == 0)
+					mouseOffset.y = 0;
+				if ((g.selectedAxis & Gadget::Z) == 0)
+					mouseOffset.z = 0;
+
+				bool snap = snapToGrid;
+				if (ImGui::GetIO().KeyShift)
+					snap = !snap;
+				if (snap && gridLocal)
+					mouseOffset = glm::round(mouseOffset / (float)gridSize) * (float)gridSize;
+
+				float mouseOffset2D = glm::length(mouseDragStart2D - mouseState.position);
+				if (snap && gridLocal)
+					mouseOffset2D = glm::round(mouseOffset2D / (float)gridSize) * (float)gridSize;
+				float poss = glm::sign(mouseState.position.x - mouseDragStart2D.x);
+				if (poss == 0)
+					poss = 1;
+
+				ImGui::Begin("Statusbar");
+				ImGui::SetNextItemWidth(200.0f);
+				if (g.mode == Gadget::Mode::Translate || g.mode == Gadget::Mode::Scale)
+					ImGui::InputFloat3("Drag Offset", glm::value_ptr(mouseOffset));
+				else
+					ImGui::Text(std::to_string(poss * mouseOffset2D).c_str());
+				ImGui::SameLine();
+				ImGui::End();
+
+				if (g.mode == Gadget::Mode::Translate)
+				{
+					pos = originalPos + mouseOffset;
+					if (snap && !gridLocal)
+						pos[g.selectedAxisIndex()] = glm::round((pos[g.selectedAxisIndex()] - gridOffset) / (float)gridSize) * (float)gridSize + gridOffset;
+				}
+				canSelectObject = false;
+			}
+		}
+	}
+
 
 	fbo->unbind();
 }

@@ -84,6 +84,7 @@ public:
 	public:
 		T data;
 		KeyFrameData(float time, const T& data) : KeyFrame(time), data(data) {}
+		KeyFrameData(float time) : KeyFrame(time) {}
 		virtual void buildEditor();
 	};
 
@@ -109,9 +110,12 @@ public:
 
 		CameraTarget(const glm::vec3& point, float speed) : lookAt(LookAt::Point), point(point), turnSpeed(speed), angle(-1,0,0,0) {}
 		CameraTarget(const glm::quat& angle, float speed) : lookAt(LookAt::Direction), angle(angle), turnSpeed(speed), point(0) {}
+		CameraTarget() : lookAt(LookAt::Point), point(glm::vec3(0)), turnSpeed(0.1f), angle(-1, 0, 0, 0) {}
 	};
 
-	std::vector<Track> tracks;
+	std::vector<Track> cinematicTracks;
+	float cinematicLength;
+
 	int			unknown[4];
 	std::vector<glm::vec3> quadtreeFloats;
 	QuadTreeNode* quadtree = nullptr;

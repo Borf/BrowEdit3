@@ -269,15 +269,15 @@ void MapView::render(BrowEdit* browEdit)
 		nodeRenderContext.projectionMatrix = glm::ortho(-cameraDistance/2*ratio, cameraDistance/2 * ratio, -cameraDistance/2, cameraDistance/2, -5000.0f, 5000.0f);
 	else
 		nodeRenderContext.projectionMatrix = glm::perspective(glm::radians(browEdit->config.fov), ratio, 0.1f, 5000.0f);
-	if (cinematicPlay && rsw->tracks.size() > 0)
+	if (cinematicPlay && rsw->cinematicTracks.size() > 0)
 	{
-		auto beforePos = (Rsw::KeyFrameData<std::pair<glm::vec3, glm::vec3>>*)rsw->tracks[0].getBeforeFrame(timeSelected);
-		auto afterPos = (Rsw::KeyFrameData<std::pair<glm::vec3, glm::vec3>>*)rsw->tracks[0].getAfterFrame(timeSelected);
+		auto beforePos = (Rsw::KeyFrameData<std::pair<glm::vec3, glm::vec3>>*)rsw->cinematicTracks[0].getBeforeFrame(timeSelected);
+		auto afterPos = (Rsw::KeyFrameData<std::pair<glm::vec3, glm::vec3>>*)rsw->cinematicTracks[0].getAfterFrame(timeSelected);
 		float frameTime = afterPos->time - beforePos->time;
 		float mixFactor = (timeSelected - beforePos->time) / frameTime;
 		float segmentLength = math::HermiteCurve::getLength(beforePos->data.first, beforePos->data.second, afterPos->data.first, afterPos->data.second);
 		glm::vec3 pos = math::HermiteCurve::getPointAtDistance(beforePos->data.first, beforePos->data.second, afterPos->data.first, afterPos->data.second, mixFactor * segmentLength);
-		auto afterRot = (Rsw::KeyFrameData<Rsw::CameraTarget>*)rsw->tracks[1].getAfterFrame(timeSelected);
+		auto afterRot = (Rsw::KeyFrameData<Rsw::CameraTarget>*)rsw->cinematicTracks[1].getAfterFrame(timeSelected);
 
 		nodeRenderContext.viewMatrix = glm::mat4(1.0f);
 		glm::quat targetRot = cinematicCameraDirection;

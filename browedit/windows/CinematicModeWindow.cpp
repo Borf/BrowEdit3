@@ -9,7 +9,6 @@
 #include <imgui.h>
 #include <imgui_internal.h>
 
-float length = 20;
 float scale = 100;
 float rowHeight = 25;
 float leftAreaSize = 200;
@@ -26,8 +25,8 @@ void BrowEdit::showCinematicModeWindow()
 	auto rsw = activeMapView->map->rootNode->getComponent<Rsw>();
 
 	if(playing)
-		timeSelected = (float)std::fmod(timeSelected + ImGui::GetIO().DeltaTime, length);
-	if (rsw->tracks.size() == 0) // stub data
+		timeSelected = (float)std::fmod(timeSelected + ImGui::GetIO().DeltaTime, rsw->cinematicLength);
+	if (rsw->cinematicTracks.size() == 0) // stub data
 	{
 		Rsw::Track t1{ "Camera Position" };
 		Rsw::Track t2{ "Camera Rotation" };
@@ -40,8 +39,8 @@ void BrowEdit::showCinematicModeWindow()
 		
 		t2.frames.push_back(new Rsw::KeyFrameData<Rsw::CameraTarget>(0, Rsw::CameraTarget(glm::vec3(100,10,100), 0.01f)));
 
-		rsw->tracks.push_back(t1);
-		rsw->tracks.push_back(t2);
+		rsw->cinematicTracks.push_back(t1);
+		rsw->cinematicTracks.push_back(t2);
 	}
 
 	ImGui::Begin("Cinematic Mode");
@@ -52,17 +51,17 @@ void BrowEdit::showCinematicModeWindow()
 	}
 
 	ImGui::SetNextItemWidth(200);
-	ImGui::DragFloat("##Length", &length, 0.1f, 0, 10000.0f);
+	ImGui::DragFloat("##Length", &rsw->cinematicLength, 0.1f, 0, 10000.0f);
 	ImGui::SameLine();
 	if (ImGui::Button("<"))
 	{
-		if (selectedTrack >= 0 && selectedTrack < rsw->tracks.size() && selectedKeyFrame > 0)
+		if (selectedTrack >= 0 && selectedTrack < rsw->cinematicTracks.size() && selectedKeyFrame > 0)
 			selectedKeyFrame--;
 	}
 	ImGui::SameLine();
 	if (ImGui::Button(">"))
 	{
-		if (selectedTrack >= 0 && selectedTrack < rsw->tracks.size() && selectedKeyFrame < rsw->tracks[selectedTrack].frames.size()-1)
+		if (selectedTrack >= 0 && selectedTrack < rsw->cinematicTracks.size() && selectedKeyFrame < rsw->cinematicTracks[selectedTrack].frames.size()-1)
 			selectedKeyFrame++;
 	}
 	ImGui::SameLine();
@@ -80,7 +79,7 @@ void BrowEdit::showCinematicModeWindow()
 		ImDrawList* DrawList = ImGui::GetWindowDrawList();
 		auto window = ImGui::GetCurrentWindow();
 
-		ImRect bb(window->DC.CursorPos, window->DC.CursorPos + ImVec2(leftAreaSize + scale * length, 100));
+		ImRect bb(window->DC.CursorPos, window->DC.CursorPos + ImVec2(leftAreaSize + scale * rsw->cinematicLength, 100));
 		ImGui::ItemSize(bb);
 		if (!ImGui::ItemAdd(bb, NULL))
 		{
@@ -92,34 +91,34 @@ void BrowEdit::showCinematicModeWindow()
 		ImGui::RenderFrame(bb.Min, bb.Max, ImGui::GetColorU32(ImGuiCol_PopupBg, 1), true, style.FrameRounding);
 
 		int trackIndex = 0;
-		for (auto& track : rsw->tracks)
+		for (auto& track : rsw->cinematicTracks)
 		{
 			ImGui::RenderText(bb.Min + ImVec2(10, rowHeight + rowHeight * trackIndex + 2), track.name.c_str()); //todo: center
-			ImGui::RenderFrame(bb.Min + ImVec2(leftAreaSize, rowHeight + rowHeight * trackIndex  +1), bb.Min + ImVec2(leftAreaSize + scale * length, rowHeight + rowHeight * trackIndex + rowHeight-2), ImGui::GetColorU32(ImGuiCol_FrameBg, 1), true, style.FrameRounding);
+			ImGui::RenderFrame(bb.Min + ImVec2(leftAreaSize, rowHeight + rowHeight * trackIndex  +1), bb.Min + ImVec2(leftAreaSize + scale * rsw->cinematicLength, rowHeight + rowHeight * trackIndex + rowHeight-2), ImGui::GetColorU32(ImGuiCol_FrameBg, 1), true, style.FrameRounding);
 			trackIndex++;
 		}
 
-		for (int i = 0; i < length; i++)
+		for (int i = 0; i < rsw->cinematicLength; i++)
 		{
 			ImGui::RenderText(bb.Min + ImVec2(leftAreaSize + scale * i + 4, 0), std::to_string(i).c_str());
 			for (int ii = 0; ii < 10; ii++)
 			{
 				window->DrawList->AddLine(bb.Min + ImVec2(leftAreaSize + scale * i + scale / 10.0f * ii, rowHeight - 5), bb.Min + ImVec2(leftAreaSize + scale * i + scale / 10.0f * ii, rowHeight), ImGui::GetColorU32(ImGuiCol_TextDisabled, 1.0f));
-				window->DrawList->AddLine(bb.Min + ImVec2(leftAreaSize + scale * i + scale / 10.0f * ii, rowHeight), bb.Min + ImVec2(leftAreaSize + scale * i + scale / 10.0f * ii, rowHeight * (rsw->tracks.size() + 1)), ImGui::GetColorU32(ImGuiCol_TextDisabled, 0.5f));
+				window->DrawList->AddLine(bb.Min + ImVec2(leftAreaSize + scale * i + scale / 10.0f * ii, rowHeight), bb.Min + ImVec2(leftAreaSize + scale * i + scale / 10.0f * ii, rowHeight * (rsw->cinematicTracks.size() + 1)), ImGui::GetColorU32(ImGuiCol_TextDisabled, 0.5f));
 			}
-			window->DrawList->AddLine(bb.Min + ImVec2(leftAreaSize + scale * i, 0), bb.Min + ImVec2(leftAreaSize + scale * i, rowHeight * (rsw->tracks.size() + 1)), ImGui::GetColorU32(ImGuiCol_Text, 1));
+			window->DrawList->AddLine(bb.Min + ImVec2(leftAreaSize + scale * i, 0), bb.Min + ImVec2(leftAreaSize + scale * i, rowHeight * (rsw->cinematicTracks.size() + 1)), ImGui::GetColorU32(ImGuiCol_Text, 1));
 
 		}
 
 		trackIndex = 0;
-		for (auto& track : rsw->tracks)
+		for (auto& track : rsw->cinematicTracks)
 		{
 			ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetColorU32(ImGuiCol_Button, 10));
 			int keyframeIndex = 0;
 			for (auto keyframe : track.frames)
 			{
 				ImGui::PushID(keyframe);
-				bool selected = selectedTrack >= 0 && selectedTrack < rsw->tracks.size() && selectedKeyFrame >= 0 && selectedKeyFrame < rsw->tracks[selectedTrack].frames.size() && keyframe == rsw->tracks[selectedTrack].frames[selectedKeyFrame];
+				bool selected = selectedTrack >= 0 && selectedTrack < rsw->cinematicTracks.size() && selectedKeyFrame >= 0 && selectedKeyFrame < rsw->cinematicTracks[selectedTrack].frames.size() && keyframe == rsw->cinematicTracks[selectedTrack].frames[selectedKeyFrame];
 				if (selected)
 				{
 					ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetColorU32(ImGuiCol_PlotHistogram, 10));
@@ -134,10 +133,10 @@ void BrowEdit::showCinematicModeWindow()
 				}
 				if (ImGui::IsMouseDragging(ImGuiMouseButton_Left) && ImGui::IsItemActive() && selected)
 				{
-					keyframe->time += ImGui::GetIO().MouseDelta.x / (bb.GetWidth()-leftAreaSize) * length;
-					std::sort(rsw->tracks[selectedTrack].frames.begin(), rsw->tracks[selectedTrack].frames.end(), [](Rsw::KeyFrame* a, Rsw::KeyFrame* b) { return a->time < b->time; });
-					for (auto i = 0; i < rsw->tracks[selectedTrack].frames.size(); i++)
-						if (rsw->tracks[selectedTrack].frames[i] == keyframe)
+					keyframe->time += ImGui::GetIO().MouseDelta.x / (bb.GetWidth()-leftAreaSize) * rsw->cinematicLength;
+					std::sort(rsw->cinematicTracks[selectedTrack].frames.begin(), rsw->cinematicTracks[selectedTrack].frames.end(), [](Rsw::KeyFrame* a, Rsw::KeyFrame* b) { return a->time < b->time; });
+					for (auto i = 0; i < rsw->cinematicTracks[selectedTrack].frames.size(); i++)
+						if (rsw->cinematicTracks[selectedTrack].frames[i] == keyframe)
 							selectedKeyFrame = i;
 				}
 				if (selected)
@@ -149,14 +148,14 @@ void BrowEdit::showCinematicModeWindow()
 			trackIndex++;
 		}
 
-		window->DrawList->AddLine(bb.Min + ImVec2(leftAreaSize + scale * timeSelected, 0), bb.Min + ImVec2(leftAreaSize + scale * timeSelected, rowHeight * (rsw->tracks.size() + 1)), ImGui::GetColorU32(ImGuiCol_Text, 1));
+		window->DrawList->AddLine(bb.Min + ImVec2(leftAreaSize + scale * timeSelected, 0), bb.Min + ImVec2(leftAreaSize + scale * timeSelected, rowHeight * (rsw->cinematicTracks.size() + 1)), ImGui::GetColorU32(ImGuiCol_Text, 1));
 		ImGui::SetCursorScreenPos(bb.Min + ImVec2(leftAreaSize, 0));
-		ImGui::InvisibleButton("##", ImVec2(scale * length, rowHeight));
+		ImGui::InvisibleButton("##", ImVec2(scale * rsw->cinematicLength, rowHeight));
 		if (ImGui::IsItemActive() && ImGui::IsMouseDown(ImGuiMouseButton_Left))
 		{
-			timeSelected = (ImGui::GetMousePos().x - (bb.Min.x+leftAreaSize)) / (bb.GetWidth() - leftAreaSize) * length;
-			if (timeSelected > length)
-				timeSelected = length;
+			timeSelected = (ImGui::GetMousePos().x - (bb.Min.x+leftAreaSize)) / (bb.GetWidth() - leftAreaSize) * rsw->cinematicLength;
+			if (timeSelected > rsw->cinematicLength)
+				timeSelected = rsw->cinematicLength;
 		}
 
 
@@ -171,10 +170,10 @@ void BrowEdit::showCinematicModeWindow()
 
 	if (ImGui::Begin("Cinematic Mode Properties"))
 	{
-		bool selected = selectedTrack >= 0 && selectedTrack < rsw->tracks.size() && selectedKeyFrame >= 0 && selectedKeyFrame < rsw->tracks[selectedTrack].frames.size();
+		bool selected = selectedTrack >= 0 && selectedTrack < rsw->cinematicTracks.size() && selectedKeyFrame >= 0 && selectedKeyFrame < rsw->cinematicTracks[selectedTrack].frames.size();
 		if (selected)
 		{
-			auto keyFrame = rsw->tracks[selectedTrack].frames[selectedKeyFrame];
+			auto keyFrame = rsw->cinematicTracks[selectedTrack].frames[selectedKeyFrame];
 
 			keyFrame->buildEditor();
 		}
