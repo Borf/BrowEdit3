@@ -31,11 +31,6 @@ void BrowEdit::showCinematicModeWindow()
 		Rsw::Track t1{ "Camera Position" };
 		Rsw::Track t2{ "Camera Rotation" };
 		t1.frames.push_back(new Rsw::KeyFrameData<std::pair<glm::vec3, glm::vec3>>(0, std::pair<glm::vec3, glm::vec3>(glm::vec3(50, 50, 50), glm::vec3(0,0,100))));
-		t1.frames.push_back(new Rsw::KeyFrameData<std::pair<glm::vec3, glm::vec3>>(2.5f, std::pair<glm::vec3, glm::vec3>(glm::vec3(50, 50, 150), glm::vec3(100, 0, 0))));
-		t1.frames.push_back(new Rsw::KeyFrameData<std::pair<glm::vec3, glm::vec3>>(5, std::pair<glm::vec3, glm::vec3>(glm::vec3(150, 75, 150), glm::vec3(0, 0, -100))));
-		t1.frames.push_back(new Rsw::KeyFrameData<std::pair<glm::vec3, glm::vec3>>(7.5, std::pair<glm::vec3, glm::vec3>(glm::vec3(150, 75, 50), glm::vec3(-100, 0, 0))));
-		t1.frames.push_back(new Rsw::KeyFrameData<std::pair<glm::vec3, glm::vec3>>(7.5, std::pair<glm::vec3, glm::vec3>(glm::vec3(50, 50, 50), glm::vec3(-100, 0, 0))));
-		t1.frames.push_back(new Rsw::KeyFrameData<std::pair<glm::vec3, glm::vec3>>(20, std::pair<glm::vec3, glm::vec3>(glm::vec3(50, 50, 150), glm::vec3(100, 0, 0))));
 		
 		t2.frames.push_back(new Rsw::KeyFrameData<Rsw::CameraTarget>(0, Rsw::CameraTarget(glm::vec3(100,10,100), 0.01f)));
 
@@ -95,6 +90,21 @@ void BrowEdit::showCinematicModeWindow()
 		{
 			ImGui::RenderText(bb.Min + ImVec2(10, rowHeight + rowHeight * trackIndex + 2), track.name.c_str()); //todo: center
 			ImGui::RenderFrame(bb.Min + ImVec2(leftAreaSize, rowHeight + rowHeight * trackIndex  +1), bb.Min + ImVec2(leftAreaSize + scale * rsw->cinematicLength, rowHeight + rowHeight * trackIndex + rowHeight-2), ImGui::GetColorU32(ImGuiCol_FrameBg, 1), true, style.FrameRounding);
+			if (ImGui::IsMouseHoveringRect(bb.Min + ImVec2(leftAreaSize, rowHeight + rowHeight * trackIndex + 1), bb.Min + ImVec2(leftAreaSize + scale * rsw->cinematicLength, rowHeight + rowHeight * trackIndex + rowHeight - 2)) && ImGui::IsMouseDoubleClicked(0))
+			{
+				float t = (ImGui::GetMousePos().x - (bb.Min.x + leftAreaSize)) / (bb.GetWidth() - leftAreaSize) * rsw->cinematicLength;
+				Rsw::KeyFrame* keyframe = nullptr;
+				if (trackIndex == 0)
+					keyframe = new Rsw::KeyFrameData<std::pair<glm::vec3, glm::vec3>>(t, std::pair<glm::vec3, glm::vec3>(glm::vec3(0, 0, 0), glm::vec3(0, 0, 0)));
+				else if (trackIndex == 1)
+					keyframe = new Rsw::KeyFrameData<Rsw::CameraTarget>(t, Rsw::CameraTarget());
+				rsw->cinematicTracks[trackIndex].frames.push_back(keyframe);
+				selectedTrack = trackIndex;
+				std::sort(rsw->cinematicTracks[selectedTrack].frames.begin(), rsw->cinematicTracks[selectedTrack].frames.end(), [](Rsw::KeyFrame* a, Rsw::KeyFrame* b) { return a->time < b->time; });
+				for (auto i = 0; i < rsw->cinematicTracks[selectedTrack].frames.size(); i++)
+					if (rsw->cinematicTracks[selectedTrack].frames[i] == keyframe)
+						selectedKeyFrame = i;
+			}
 			trackIndex++;
 		}
 

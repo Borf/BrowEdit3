@@ -278,13 +278,14 @@ void MapView::render(BrowEdit* browEdit)
 		float segmentLength = math::HermiteCurve::getLength(beforePos->data.first, beforePos->data.second, afterPos->data.first, afterPos->data.second);
 		glm::vec3 pos = math::HermiteCurve::getPointAtDistance(beforePos->data.first, beforePos->data.second, afterPos->data.first, afterPos->data.second, mixFactor * segmentLength);
 		auto afterRot = (Rsw::KeyFrameData<Rsw::CameraTarget>*)rsw->cinematicTracks[1].getAfterFrame(timeSelected);
+		auto beforeRot = (Rsw::KeyFrameData<Rsw::CameraTarget>*)rsw->cinematicTracks[1].getBeforeFrame(timeSelected);
 
 		nodeRenderContext.viewMatrix = glm::mat4(1.0f);
 		glm::quat targetRot = cinematicCameraDirection;
+		glm::quat lastRot = cinematicCameraDirection;
 		if (afterRot->data.lookAt == Rsw::CameraTarget::LookAt::Point)
 		{
 			glm::vec3 direction(afterRot->data.point - pos);
-			//direction.z *= -1;
 			targetRot = glm::conjugate(glm::quatLookAt(glm::normalize(direction), glm::vec3(0, 1, 0)));
 		}
 		else if (afterRot->data.lookAt == Rsw::CameraTarget::LookAt::Direction)
@@ -296,11 +297,22 @@ void MapView::render(BrowEdit* browEdit)
 				targetRot = afterRot->data.angle * glm::conjugate(glm::quatLookAt(glm::normalize(forward), glm::vec3(0, 1, 0)));
 			}
 		}
-		if (glm::distance(cinematicLastCameraPosition, pos) > 1)
+		if (beforeRot->data.lookAt == Rsw::CameraTarget::LookAt::Point)
+		{
+			glm::vec3 direction(beforeRot->data.point - pos);
+			lastRot = glm::conjugate(glm::quatLookAt(glm::normalize(direction), glm::vec3(0, 1, 0)));
+		}
+		else if (beforeRot->data.lookAt == Rsw::CameraTarget::LookAt::Direction)
+		{
+			//TODO
+		}
+		if (glm::distance(cinematicLastCameraPosition, pos) > 5)
 			cinematicCameraDirection = targetRot;
-		cinematicCameraDirection = util::RotateTowards(cinematicCameraDirection, targetRot, 0.01f);
+		else
+			cinematicCameraDirection = util::RotateTowards(lastRot, targetRot, afterRot->data.turnSpeed * (timeSelected - beforeRot->time));
 		nodeRenderContext.viewMatrix = nodeRenderContext.viewMatrix * glm::toMat4(cinematicCameraDirection);
 		nodeRenderContext.viewMatrix = glm::translate(nodeRenderContext.viewMatrix, -pos);
+		cinematicLastCameraPosition = pos;
 	}
 	else
 	{

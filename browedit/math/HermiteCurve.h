@@ -28,6 +28,8 @@ namespace math
 					stepUpToNow += step;
 					step = 1 - step;
 				}
+				if (step < 0.00001)
+					break;
 
 				step *= 0.5f;
 			}

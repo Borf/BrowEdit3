@@ -302,8 +302,7 @@ void Rsw::load(const std::string& fileName, Map* map, BrowEdit* browEdit, bool l
 
 	if (extraProperties.find("cinematic") != extraProperties.end())
 	{
-		//length = extraProperties["cinematic"]["length"]
-		extraProperties["cinematic"]["length"] = 20;
+		cinematicLength = extraProperties["cinematic"]["length"];
 		for (const auto& t : extraProperties["cinematic"]["tracks"])
 		{
 			Track track;
@@ -487,7 +486,7 @@ void Rsw::save(const std::string& fileName, BrowEdit* browEdit)
 	extraProperties["colorPresets"] = colorPresets;
 
 	extraProperties["cinematic"] = json::object();
-	extraProperties["cinematic"]["length"] = 20;
+	extraProperties["cinematic"]["length"] = cinematicLength;
 	extraProperties["cinematic"]["tracks"] = json::array();
 	for (const auto& t : cinematicTracks)
 	{
