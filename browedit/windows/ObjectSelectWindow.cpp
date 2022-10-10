@@ -94,7 +94,7 @@ void BrowEdit::showObjectWindow()
 				tagList[t.first] = t.second;
 			for (auto tag : tagList)
 				for (const auto& t : tag.second)
-					tagListReverse[util::utf8_to_iso_8859_1(t)].push_back(util::utf8_to_iso_8859_1(tag.first));
+					tagListReverse[util::tolower(util::utf8_to_iso_8859_1(t))].push_back(util::utf8_to_iso_8859_1(tag.first));
 			saveTagList();
 			std::cout << "TagList merged and saved to file" << std::endl;
 		};
@@ -543,6 +543,7 @@ void BrowEdit::showObjectWindow()
 		{
 			static std::string currentFilterText = "";
 			static std::vector<std::string> filteredFiles;
+			util::tolowerInPlace(filter);
 			if (currentFilterText != filter)
 			{
 				currentFilterText = filter;

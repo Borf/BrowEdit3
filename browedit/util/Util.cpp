@@ -74,6 +74,17 @@ namespace util
 		return strOut;
 	}
 
+	std::string& tolowerInPlace(std::string& str)
+	{
+		std::transform(str.begin(), str.end(), str.begin(), ::tolower);
+		return str;
+	}
+
+	std::string tolower(std::string str)
+	{
+		std::transform(str.begin(), str.end(), str.begin(), ::tolower);
+		return str;
+	}
 
 
 	std::vector<std::string> split(std::string value, const std::string &seperator)

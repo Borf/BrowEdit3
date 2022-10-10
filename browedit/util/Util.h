@@ -17,6 +17,9 @@ namespace util
 
 	float wrap360(float value);
 
+	std::string& tolowerInPlace(std::string& str);
+	std::string tolower(std::string str);
+
 	std::vector<std::string> split(std::string value, const std::string &seperator);
 	std::string combine(const std::vector<std::string> &items, const std::string& seperator);
 	std::string replace(std::string orig, const std::string& find, const std::string& replace);
