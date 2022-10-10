@@ -75,6 +75,12 @@ void RswSound::buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>& nod
 
 
 	ImGui::Text("Sound");
+	if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0))
+	{
+		json clipboard;
+		to_json(clipboard, *rswSounds[0]);
+		ImGui::SetClipboardText(clipboard.dump(1).c_str());
+	}
 	ImGui::PushID("Sound");
 	if (ImGui::BeginPopupContextItem("CopyPaste"))
 	{

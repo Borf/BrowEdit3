@@ -103,6 +103,12 @@ void RswModel::buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>& nod
 
 	ImGui::Text("Model");
 	ImGui::PushID("Model");
+	if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0))
+	{
+		json clipboard;
+		to_json(clipboard, *rswModels[0]);
+		ImGui::SetClipboardText(clipboard.dump(1).c_str());
+	}
 	if (ImGui::BeginPopupContextItem("CopyPaste"))
 	{
 		try {

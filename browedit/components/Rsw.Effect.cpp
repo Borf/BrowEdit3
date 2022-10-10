@@ -130,6 +130,12 @@ void LubEffect::buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>& no
 
 
 	ImGui::Text("Lub Effect");
+	if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0))
+	{
+		json clipboard;
+		to_json(clipboard, *lubEffects[0]);
+		ImGui::SetClipboardText(clipboard.dump(1).c_str());
+	}
 	ImGui::PushID("LubEffect");
 	if (ImGui::BeginPopupContextItem("CopyPaste"))
 	{

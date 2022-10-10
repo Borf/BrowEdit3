@@ -103,6 +103,12 @@ void RswLight::buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>& nod
 		return;
 
 	ImGui::Text("Light");
+	if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0))
+	{
+		json clipboard;
+		to_json(clipboard, *rswLights[0]);
+		ImGui::SetClipboardText(clipboard.dump(1).c_str());
+	}
 	ImGui::PushID("Light");
 	if (ImGui::BeginPopupContextItem("CopyPaste"))
 	{
