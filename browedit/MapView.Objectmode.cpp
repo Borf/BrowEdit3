@@ -277,14 +277,17 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 					GroupAction* ga = new GroupAction();
 					for (auto n : map->selectedNodes)
 					{ //TODO: 
+						auto rswObject = n->getComponent<RswObject>();
+						if (!rswObject)
+							continue;
 						if (gadget.mode == Gadget::Mode::Translate)
-							ga->addAction(new ObjectChangeAction(n, &n->getComponent<RswObject>()->position, originalValues[n].pos, "Moving"));
+							ga->addAction(new ObjectChangeAction(n, &rswObject->position, originalValues[n].pos, "Moving"));
 						else if (gadget.mode == Gadget::Mode::Scale)
-							ga->addAction(new ObjectChangeAction(n, &n->getComponent<RswObject>()->scale, originalValues[n].scale, "Scaling"));
+							ga->addAction(new ObjectChangeAction(n, &rswObject->scale, originalValues[n].scale, "Scaling"));
 						else if (gadget.mode == Gadget::Mode::Rotate)
 						{
-							ga->addAction(new ObjectChangeAction(n, &n->getComponent<RswObject>()->rotation, originalValues[n].rot, "Rotating"));
-							ga->addAction(new ObjectChangeAction(n, &n->getComponent<RswObject>()->position, originalValues[n].pos, ""));
+							ga->addAction(new ObjectChangeAction(n, &rswObject->rotation, originalValues[n].rot, "Rotating"));
+							ga->addAction(new ObjectChangeAction(n, &rswObject->position, originalValues[n].pos, ""));
 						}
 					}
 					map->doAction(ga, browEdit);
