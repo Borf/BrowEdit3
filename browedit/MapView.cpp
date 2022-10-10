@@ -297,6 +297,11 @@ void MapView::render(BrowEdit* browEdit)
 				targetRot = afterRot->data.angle * glm::conjugate(glm::quatLookAt(glm::normalize(forward), glm::vec3(0, 1, 0)));
 			}
 		}
+		else if (afterRot->data.lookAt == Rsw::CameraTarget::LookAt::FixedDirection)
+		{
+			targetRot = afterRot->data.angle;
+		}
+
 		if (beforeRot->data.lookAt == Rsw::CameraTarget::LookAt::Point)
 		{
 			glm::vec3 direction(beforeRot->data.point - pos);
@@ -305,6 +310,10 @@ void MapView::render(BrowEdit* browEdit)
 		else if (beforeRot->data.lookAt == Rsw::CameraTarget::LookAt::Direction)
 		{
 			//TODO
+		}
+		else if (beforeRot->data.lookAt == Rsw::CameraTarget::LookAt::FixedDirection)
+		{
+			lastRot = beforeRot->data.angle;
 		}
 		if (glm::distance(cinematicLastCameraPosition, pos) > 5)
 			cinematicCameraDirection = targetRot;

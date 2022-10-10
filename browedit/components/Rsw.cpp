@@ -318,6 +318,11 @@ void Rsw::load(const std::string& fileName, Map* map, BrowEdit* browEdit, bool l
 				{
 					if (f["lookat"] == (int)CameraTarget::LookAt::Direction)
 						keyFrame = new KeyFrameData<CameraTarget>(f["time"], CameraTarget(f["angle"].get<glm::quat>(), f["turnSpeed"]));
+					else if (f["lookat"] == (int)CameraTarget::LookAt::FixedDirection)
+					{
+						keyFrame = new KeyFrameData<CameraTarget>(f["time"], CameraTarget(f["angle"].get<glm::quat>(), f["turnSpeed"]));
+						dynamic_cast<KeyFrameData<CameraTarget>*>(keyFrame)->data.lookAt = CameraTarget::LookAt::FixedDirection;
+					}
 					else if(f["lookat"] == (int)CameraTarget::LookAt::Point)
 						keyFrame = new KeyFrameData<CameraTarget>(f["time"], CameraTarget(f["point"].get<glm::vec3>(), f["turnSpeed"]));
 				}
@@ -1199,12 +1204,12 @@ void Rsw::KeyFrameData<std::pair<glm::vec3, glm::vec3>>::buildEditor()
 void Rsw::KeyFrameData<Rsw::CameraTarget>::buildEditor()
 {
 	KeyFrame::buildEditor();
-	ImGui::Combo("Focus Type", (int*)&data.lookAt, "Look at Point\0Look in movement direction");
+	ImGui::Combo("Focus Type", (int*)&data.lookAt, "Look at Point\0Look in movement direction\0Fixed Direction");
 	if (data.lookAt == Rsw::CameraTarget::LookAt::Point)
 	{
 		ImGui::DragFloat3("Position", glm::value_ptr(data.point), 0.1f, 0.0, 1000.0f);
 	}
-	if (data.lookAt == Rsw::CameraTarget::LookAt::Direction)
+	if (data.lookAt == Rsw::CameraTarget::LookAt::Direction || data.lookAt == Rsw::CameraTarget::LookAt::FixedDirection)
 	{
 		ImGui::gizmo3D("Rotation", data.angle);
 

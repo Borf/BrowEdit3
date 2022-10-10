@@ -225,7 +225,10 @@ void BrowEdit::run()
 		if (editMode == EditMode::Gat)
 			showGatWindow();
 		if (editMode == EditMode::Wall)
+		{
 			showWallWindow();
+			showTextureManageWindow();
+		}
 		if (editMode == EditMode::Color)
 			showColorEditWindow();
 		if (editMode == EditMode::Cinematic)

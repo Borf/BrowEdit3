@@ -102,7 +102,9 @@ public:
 	public:
 		enum class LookAt
 		{
-			Point, Direction
+			Point, 
+			Direction,
+			FixedDirection,
 		} lookAt;
 		float turnSpeed;
 		glm::quat angle;

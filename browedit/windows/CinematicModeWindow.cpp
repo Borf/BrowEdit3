@@ -141,6 +141,20 @@ void BrowEdit::showCinematicModeWindow()
 					selectedTrack = trackIndex;
 					selectedKeyFrame = keyframeIndex;
 				}
+				if (ImGui::BeginPopupContextItem("KeyFramePopup"))
+				{
+					if (ImGui::MenuItem("Delete"))
+					{
+						ImGui::EndPopup();
+						track.frames.erase(track.frames.begin() + keyframeIndex);
+						keyframeIndex--;
+						if (selected)
+							ImGui::PopStyleColor(3);
+						ImGui::PopID();
+						continue;
+					}
+					ImGui::EndPopup();
+				}
 				if (ImGui::IsMouseDragging(ImGuiMouseButton_Left) && ImGui::IsItemActive() && selected)
 				{
 					keyframe->time += ImGui::GetIO().MouseDelta.x / (bb.GetWidth()-leftAreaSize) * rsw->cinematicLength;

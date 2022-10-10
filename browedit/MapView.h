@@ -101,8 +101,8 @@ public:
 	bool textureGridDirty = true;
 
 	int textureSelected = 0;
-	glm::vec2 textureEditUv1 = glm::vec2(0.25f, 0.25f);
-	glm::vec2 textureEditUv2 = glm::vec2(0.75f, 0.75f);
+	glm::vec2 textureEditUv1 = glm::vec2(0.0f, 0.0f);
+	glm::vec2 textureEditUv2 = glm::vec2(1.0f, 1.0f);
 
 	int textureBrushWidth = 4;
 	int textureBrushHeight = 4;
