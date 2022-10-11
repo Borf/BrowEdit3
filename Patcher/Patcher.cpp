@@ -343,7 +343,7 @@ void updateEffects(HWND hwnd)
                 {
                     SendMessage(hwndDialogBar, PBM_SETPOS, (int)((i / (float)list.size()) * 100), 0);
                     std::string file = list[i].filename;
-                    if (file.ends_with(".gif"))
+                    if (file.ends_with(".gif") || file.ends_with(".gif.png"))
                     {
                         if (file.find("/") != std::string::npos)
                             file = file.substr(file.rfind("/") + 1);
