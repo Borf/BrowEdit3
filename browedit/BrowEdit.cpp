@@ -43,6 +43,8 @@ extern "C" __declspec(dllexport) DWORD AmdPowerXpressRequestHighPerformance = 0x
 #pragma comment(lib, "BugTrap-x64.lib") // Link to ANSI DLL
 #endif
 
+void fixEffectPreviews();
+
 static void SetupExceptionHandler()
 {
 	BT_InstallSehFilter();
@@ -138,6 +140,10 @@ void BrowEdit::run()
 	soundTexture = util::ResourceManager<gl::Texture>::load("data\\sound.png");
 	gatTexture = util::ResourceManager<gl::Texture>::load("data\\gat.png");
 	prefabTexture = util::ResourceManager<gl::Texture>::load("data\\prefab.png");
+
+
+	//fixEffectPreviews();
+
 
 	NodeRenderer::begin();
 	Gadget::init();
@@ -808,3 +814,72 @@ void BrowEdit::ShowNewMapPopup()
 	}
 }
 
+
+#include <stb/stb_image.h>
+#include <stb/stb_image_write.h>
+#include <filesystem>
+
+void fixEffectPreviews()
+{
+	for (auto entry : std::filesystem::directory_iterator("data\\texture\\effect"))
+	{
+		if (entry.path().string().find(".png") != std::string::npos)
+			continue;
+		if (entry.path().string().find(".gif") == std::string::npos)
+			continue;
+		std::istream* is = util::FileIO::open(entry.path().string());
+		std::cout << entry.path().string() << std::endl;
+		if (!is)
+		{
+			std::cerr << "Texture: Could not open " <<entry.path().string() << std::endl;
+			return;
+		}
+		is->seekg(0, std::ios_base::end);
+		std::size_t len = is->tellg();
+		if (len <= 0 || len > 100 * 1024 * 1024)
+		{
+			std::cerr << "Texture: Error opening texture " << entry.path().string() << ", file is either empty or too large" << std::endl;
+			delete is;
+			return;
+		}
+		char* buffer = new char[len];
+		is->seekg(0, std::ios_base::beg);
+		is->read(buffer, len);
+		delete is;
+
+		int width, height, frameCount, comp;
+		int* delays;
+		auto data = stbi_load_gif_from_memory((stbi_uc*)buffer, (int)len, &delays, &width, &height, &frameCount, &comp, 4);
+		if (!data)
+			continue;
+		int bestFrame = 0;
+		int bestFrameCount = 0;
+		for (int f = 0; f < frameCount; f++)
+		{
+			auto d = data + (width * height * 4) * f;
+			int frameIntensity = 0;
+			for (int x = 0; x < width; x++)
+			{
+				for (int y = 0; y < height; y++)
+				{
+					frameIntensity += d[(x + width * y) * 4 + 0];
+					frameIntensity += d[(x + width * y) * 4 + 1];
+					frameIntensity += d[(x + width * y) * 4 + 2];
+				}
+			}
+			if (frameIntensity > bestFrameCount)
+			{
+				bestFrameCount = frameIntensity;
+				bestFrame = f;
+			}
+		}
+		stbi_write_png((entry.path().string() + ".png").c_str(), width, height, 4, data + bestFrame * width * height*4, 0);
+
+		std::cout << "Best frame is " << bestFrame << std::endl;
+
+
+		stbi_image_free(data);
+	}
+	std::cout << "Done" << std::endl;
+
+}

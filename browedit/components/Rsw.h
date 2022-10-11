@@ -260,6 +260,7 @@ public:
 	void save(std::ofstream& file);
 	static void buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>&);
 	static inline std::map<int, gl::Texture*> previews;
+	static inline std::map<int, gl::Texture*> previewAnim;
 	NLOHMANN_DEFINE_TYPE_INTRUSIVE(RswEffect, id, loop, param1, param2, param3, param4);
 };
 

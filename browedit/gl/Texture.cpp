@@ -3,6 +3,7 @@
 #include "Texture.h"
 
 #include <browedit/util/FileIO.h>
+#include <browedit/util/Util.h>
 #include <iostream>
 #include <stb/stb_image.h>
 
@@ -11,7 +12,8 @@ namespace gl
 	Texture::Texture(const std::string& fileName, bool flipSelection) : fileName(fileName), flipSelection(flipSelection)
 	{
 		ids = nullptr;
-		reload();
+		if(fileName.find(".gif") != fileName.length()-4)
+			reload();
 	}
 
 
@@ -43,6 +45,7 @@ namespace gl
 	{
 		if (fileName == "")
 			return;
+		tryLoaded = true;
 		int comp;
 		stbi_set_flip_vertically_on_load(flipSelection);
 
@@ -173,6 +176,8 @@ namespace gl
 
 	GLuint Texture::getAnimatedTextureId()
 	{
+		if (!tryLoaded)
+			reload();
 		if (loaded)
 			return ids[(int)(glfwGetTime() * 10) % frameCount];
 		else
@@ -181,6 +186,8 @@ namespace gl
 
 	void Texture::bind()
 	{
+		if (!tryLoaded)
+			reload();
 		if (loaded)
 		{
 			if (frameCount > 1)

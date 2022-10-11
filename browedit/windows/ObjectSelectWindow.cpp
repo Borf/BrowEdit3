@@ -234,6 +234,7 @@ void BrowEdit::showObjectWindow()
 		if (ImGui::BeginChild(file.c_str(), ImVec2(config.thumbnailSize.x, config.thumbnailSize.y + 50), true, ImGuiWindowFlags_NoScrollbar))
 		{			
 			ImTextureID texture = 0;
+			gl::Texture* textureOrigin = nullptr;
 			if (path.substr(path.size() - 4) == ".rsm" ||
 				path.substr(path.size() - 5) == ".rsm2")
 			{
@@ -264,11 +265,25 @@ void BrowEdit::showObjectWindow()
 					}
 					int effectId = effectIds[path];
 					if (RswEffect::previews.find(effectId) == RswEffect::previews.end())
-						RswEffect::previews[effectId] = util::ResourceManager<gl::Texture>::load("data\\texture\\effect\\" + std::to_string(effectId) + ".gif");
-					if (RswEffect::previews[effectId]->loaded)
-						texture = (ImTextureID)(long long)RswEffect::previews[effectId]->getAnimatedTextureId();
+						RswEffect::previews[effectId] = util::ResourceManager<gl::Texture>::load("data\\texture\\effect\\" + std::to_string(effectId) + ".gif.png");
+					if (RswEffect::previewAnim.find(effectId) == RswEffect::previewAnim.end())
+						RswEffect::previewAnim[effectId] = util::ResourceManager<gl::Texture>::load("data\\texture\\effect\\" + std::to_string(effectId) + ".gif");
+
+					if (RswEffect::previewAnim[effectId]->loaded)
+						texture = (ImTextureID)(long long)RswEffect::previewAnim[effectId]->getAnimatedTextureId();
+					else if (RswEffect::previews[effectId]->loaded)
+					{
+						texture = (ImTextureID)(long long)RswEffect::previews[effectId]->id();
+						textureOrigin = RswEffect::previewAnim[effectId];
+					}
 					else
+					{
+						if (!RswEffect::previewAnim[effectId]->tryLoaded)
+							RswEffect::previewAnim[effectId]->reload();
+						if (RswEffect::previewAnim[effectId]->loaded)
+							texture = (ImTextureID)(long long)RswEffect::previewAnim[effectId]->getAnimatedTextureId();
 						texture = (ImTextureID)(long long)effectTexture->id();
+					}
 				}
 			}
 			if (ImGui::ImageButtonEx(ImGui::GetID(path.c_str()), texture, config.thumbnailSize, ImVec2(0, 0), ImVec2(1, 1), ImVec2(0,0), ImVec4(0, 0, 0, 0), ImVec4(1, 1, 1, 1)))
@@ -492,6 +507,8 @@ void BrowEdit::showObjectWindow()
 			}
 			else if (ImGui::IsItemHovered())
 			{
+				if (textureOrigin && !textureOrigin->tryLoaded)
+					textureOrigin->reload();
 				static std::string lastPopup;
 				static std::string desc;
 				if (lastPopup != path)
