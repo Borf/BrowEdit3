@@ -180,6 +180,8 @@ void BrowEdit::showCinematicModeWindow()
 			timeSelected = (ImGui::GetMousePos().x - (bb.Min.x+leftAreaSize)) / (bb.GetWidth() - leftAreaSize) * rsw->cinematicLength;
 			if (timeSelected > rsw->cinematicLength)
 				timeSelected = rsw->cinematicLength;
+			if (timeSelected < 0)
+				timeSelected = 0;
 		}
 
 

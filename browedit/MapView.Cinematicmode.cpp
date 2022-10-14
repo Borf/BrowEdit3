@@ -14,6 +14,8 @@
 #include <GLFW/glfw3.h>
 
 extern float timeSelected;
+extern int selectedKeyFrame;
+extern int selectedTrack;
 
 
 void MapView::postRenderCinematicMode(BrowEdit* browEdit)
@@ -98,6 +100,7 @@ void MapView::postRenderCinematicMode(BrowEdit* browEdit)
 		simpleShader->setUniform(SimpleShader::Uniforms::color, glm::vec4(0, 1, 0, 1));
 		simpleShader->setUniform(SimpleShader::Uniforms::textureFac, 0.0f);
 		simpleShader->setUniform(SimpleShader::Uniforms::lightMin, 1.0f);
+		glPointSize(4);
 		glDrawArrays(GL_POINTS, 0, (int)verts.size());
 	}
 
@@ -107,6 +110,7 @@ void MapView::postRenderCinematicMode(BrowEdit* browEdit)
 	float gridOffset = gridOffsetTranslate;
 	static glm::vec3 originalPos;
 	static std::map<Rsw::KeyFrame*, Gadget> gadgetMap;
+	int frameIndex = 0;
 	for (auto f : rsw->cinematicTracks[0].frames)
 	{
 		if (gadgetMap.find(f) == gadgetMap.end())
@@ -116,6 +120,19 @@ void MapView::postRenderCinematicMode(BrowEdit* browEdit)
 		glm::vec3 &pos = frame->data.first;
 		glm::vec3& direction = frame->data.second;
 
+		//if (frameIndex == selectedKeyFrame && selectedTrack == 0)
+		{
+			glm::mat4 mat = glm::translate(glm::mat4(1.0f), pos);
+			mat = glm::scale(mat, glm::vec3(0.25f, 0.25f, -0.25f));
+			mat = glm::scale(mat, glm::vec3(1, 1, glm::length(direction) / 100.0f));
+			mat = mat * glm::toMat4(util::RotationBetweenVectors(direction, glm::vec3(0,0,1)));
+			mat = glm::rotate(mat, glm::radians(90.0f), glm::vec3(-1, 0, 0));
+			simpleShader->use();
+			simpleShader->setUniform(SimpleShader::Uniforms::modelMatrix, mat);
+			Gadget::arrowMesh.draw();
+		}
+
+
 		//glm::mat4 mat = glm::scale(glm::mat4(1.0f), glm::vec3(1, 1, -1));
 		glm::mat4 mat = glm::translate(glm::mat4(1.0f), pos);
 		g.mode = Gadget::Mode::Translate;
@@ -124,6 +141,8 @@ void MapView::postRenderCinematicMode(BrowEdit* browEdit)
 		{
 			if (g.axisClicked && canSelectObject)
 			{
+				selectedKeyFrame = frameIndex;
+				selectedTrack = 0;
 				mouseDragPlane.normal = glm::normalize(glm::vec3(nodeRenderContext.viewMatrix * glm::vec4(0, 0, 1, 1)) - glm::vec3(nodeRenderContext.viewMatrix * glm::vec4(0, 0, 0, 1))) * glm::vec3(1, 1, -1);
 				if (g.selectedAxis == Gadget::Axis::X)
 					mouseDragPlane.normal.x = 0;
@@ -188,6 +207,7 @@ void MapView::postRenderCinematicMode(BrowEdit* browEdit)
 				canSelectObject = false;
 			}
 		}
+		frameIndex++;
 	}
 
 

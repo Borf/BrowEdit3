@@ -1197,8 +1197,17 @@ void Rsw::KeyFrameData<glm::vec3>::buildEditor()
 void Rsw::KeyFrameData<std::pair<glm::vec3, glm::vec3>>::buildEditor()
 {
 	KeyFrame::buildEditor();
-	ImGui::DragFloat3("Data", glm::value_ptr(data.first), 0.1f, 0.0, 1000.0f);
-	ImGui::DragFloat3("Data 2", glm::value_ptr(data.second), 0.1f, 0.0, 1000.0f);
+	ImGui::DragFloat3("Data", glm::value_ptr(data.first), 1.f, -1000.0f, 1000.0f);
+	ImGui::DragFloat3("Data 2", glm::value_ptr(data.second), 1.f, -1000.0f, 1000.0f);
+	ImGui::gizmo3D("Rotation", data.second);
+
+	float scale = glm::length(data.second);
+	if (ImGui::DragFloat("Speed", &scale, 1, 1, 1000) && scale > 0)
+	{
+		data.second = glm::normalize(data.second) * scale;
+	}
+
+
 }
 
 void Rsw::KeyFrameData<Rsw::CameraTarget>::buildEditor()

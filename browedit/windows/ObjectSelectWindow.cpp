@@ -195,7 +195,7 @@ void BrowEdit::showObjectWindow()
 	};
 
 	
-	ImGui::BeginChild("left pane", ImVec2(verticalLayout ? 0 : 250, verticalLayout ? 200 : 0), true);
+	ImGui::BeginChild("left pane", ImVec2(verticalLayout ? 0.0f : 250.0f, verticalLayout ? 200.0f : 0.0f), true);
 
 	auto startTree = [&](const char* nodeName, const std::string& path)
 	{

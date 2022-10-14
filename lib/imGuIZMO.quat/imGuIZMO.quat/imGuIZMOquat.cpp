@@ -422,7 +422,7 @@ bool imguiGizmo::drawFunc(const char* label, float size)
 
     const float arrowStartingPoint = (axesOriginType & imguiGizmo::sphereAtOrigin) ? sphereRadius * solidResizeFactor:
                                     ((axesOriginType & imguiGizmo::cubeAtOrigin  ) ? cubeSize     * solidResizeFactor: 
-                                                                                   cylRadius * .5);
+                                                                                   cylRadius * .5f);
     // if modeDual... leave space for draw light arrow
     vec3 resizeAxes( ((drawMode&modeDual) && (axesResizeFactor.x>.75f)) ? vec3(.75f,axesResizeFactor.y, axesResizeFactor.z) : axesResizeFactor);
 
@@ -447,7 +447,7 @@ bool imguiGizmo::drawFunc(const char* label, float size)
     ImVec2 controlPos(ImGui::GetCursorScreenPos());
 
     const float squareSize = size; //std::min(ImGui::CalcItemWidth(), size);
-    const float halfSquareSize = squareSize*.5;
+    const float halfSquareSize = squareSize*.5f;
     const ImVec2 innerSize(squareSize,squareSize);
 
     bool highlighted = false;
@@ -666,7 +666,7 @@ bool imguiGizmo::drawFunc(const char* label, float size)
 
                 uv[h] = normalizeToControlSize(coord.x,coord.y);
                 //col[h] = addLightEffect(color, float(0xa0)*norm.z+.5f);
-                col[h] = addLightEffect(vec4(directionColor.x, directionColor.y, directionColor.z, 1.0), norm.z, coord.z>0 ? coord.z : coord.z*.5);
+                col[h] = addLightEffect(vec4(directionColor.x, directionColor.y, directionColor.z, 1.0f), norm.z, coord.z>0 ? coord.z : coord.z*.5f);
             }
             addTriangle();
         }
@@ -724,7 +724,7 @@ bool imguiGizmo::drawFunc(const char* label, float size)
             draw_list->PathStroke(color, false, thickness);
             if(squareSize>150) { // if big enough draw also arrowhead
                 const float lenLine = radius*.33f;
-                const float thickRadius = radius - thickness*.5;
+                const float thickRadius = radius - thickness*.5f;
                 draw_list->AddTriangleFilled(ImVec2(center.x-lenLine, center.y-(thickRadius+lenLine)),
                                                 ImVec2(center.x+lenLine, center.y- thickRadius),
                                                 ImVec2(center.x-lenLine, center.y-(thickRadius-lenLine)),

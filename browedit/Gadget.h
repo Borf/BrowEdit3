@@ -34,7 +34,6 @@ private:
 	};
 
 	static inline SimpleShader* shader;
-	static inline ArrowMesh arrowMesh;
 	static inline RotateMesh rotateMesh;
 	static inline ScaleMesh scaleMesh;
 	static inline ScaleCubeMesh scaleCubeMesh;
@@ -42,6 +41,8 @@ private:
 	static inline glm::mat4 viewMatrix;
 	static inline glm::mat4 projectionMatrix;
 public:
+	static inline ArrowMesh arrowMesh;
+
 	static void init();
 	static void setMatrices(const glm::mat4& projectionMatrix, const glm::mat4& viewMatrix);
 	enum class Mode
