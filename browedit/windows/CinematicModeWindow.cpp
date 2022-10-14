@@ -67,7 +67,7 @@ void BrowEdit::showCinematicModeWindow()
 	ImGui::Checkbox("##preview", &activeMapView->cinematicPlay);
 
 
-	if (ImGui::BeginChild("KeyframeEditor", ImVec2(-1, 200), true, ImGuiWindowFlags_AlwaysHorizontalScrollbar))
+	if (rsw->cinematicLength > 0 && ImGui::BeginChild("KeyframeEditor", ImVec2(-1, 200), true, ImGuiWindowFlags_AlwaysHorizontalScrollbar))
 	{
 		const ImGuiStyle& style = ImGui::GetStyle();
 		const ImGuiIO& IO = ImGui::GetIO();

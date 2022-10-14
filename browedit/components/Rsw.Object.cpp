@@ -13,6 +13,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <ranges>
 #include <algorithm>
+#include <imGuIZMOquat.h>
 
 
 RswObject::RswObject(RswObject* other) : position(other->position), rotation(other->rotation), scale(other->scale)
@@ -141,5 +142,16 @@ void RswObject::buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>& no
 	if (util::DragFloat3Multi<RswObject>(browEdit, browEdit->activeMapView->map, rswObjects, "Rotation", [](RswObject* o) { return &o->rotation; }, 1.0f, 0, 360.0f))
 		for (auto renderer : nodes | std::ranges::views::transform([](Node* n) { return n->getComponent<RsmRenderer>(); }) | std::ranges::views::filter([](RsmRenderer* r) { return r != nullptr; }))
 			renderer->setDirty();
+
+
+	if (rswObjects.size() > 0)
+	{
+		glm::quat q(glm::radians(rswObjects[0]->rotation));
+		if (ImGui::gizmo3D("Rotation", q))
+		{
+			rswObjects[0]->rotation = glm::degrees(glm::eulerAngles(q));
+			rswObjects[0]->node->getComponent<RsmRenderer>()->setDirty();
+		}
+	}
 
 }
