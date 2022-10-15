@@ -11,6 +11,7 @@
 #include <fstream>
 #include <json.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 #include <ranges>
 #include <algorithm>
 #include <imGuIZMOquat.h>
@@ -146,11 +147,14 @@ void RswObject::buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>& no
 
 	if (rswObjects.size() > 0)
 	{
-		glm::quat q(glm::radians(rswObjects[0]->rotation));
+		auto rswObject = rswObjects[0];
+		glm::quat q(glm::radians(rswObject->rotation * glm::vec3(1,1,-1)));
 		if (ImGui::gizmo3D("Rotation", q))
 		{
-			rswObjects[0]->rotation = glm::degrees(glm::eulerAngles(q));
-			rswObjects[0]->node->getComponent<RsmRenderer>()->setDirty();
+			auto angles = glm::degrees(glm::eulerAngles(q));
+			rswObjects[0]->rotation = angles * glm::vec3(1, 1, -1);
+			if(rswObjects[0]->node->getComponent<RsmRenderer>())
+				rswObjects[0]->node->getComponent<RsmRenderer>()->setDirty();
 		}
 	}
 
