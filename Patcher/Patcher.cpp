@@ -23,6 +23,7 @@ HINSTANCE hInstance;
 json releaseInfo;
 
 void updateEffects(HWND hwnd);
+void updateFfmpeg(HWND hwnd);
 
 
 void setDesc(HWND hDlg, int i)
@@ -145,6 +146,10 @@ INT_PTR CALLBACK Wndproc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
         if (LOWORD(wParam) == IDC_UPDATE)
         {
             updateEffects(hDlg);
+        }
+        if (LOWORD(wParam) == IDC_UPDATEFFMPEG)
+        {
+            updateFfmpeg(hDlg);
         }
 
         return 0;
@@ -364,6 +369,72 @@ void updateEffects(HWND hwnd)
             std::ofstream effectVersionFile("data\\texture\\effect\\version.txt");
             effectVersionFile << effectLatestVersion;
             effectVersionFile.close();
+        });
+    DialogBox(hInstance, MAKEINTRESOURCE(IDD_DOWNLOADING), hwnd, DownloadWndProc);
+    t.join();
+
+    HWND hwndCurrentEffect = GetDlgItem(hwnd, ID_EFFECTCURRENTVERSION);
+    SendMessage(hwndCurrentEffect, WM_SETTEXT, 0, (LPARAM)effectLatestVersion.c_str());
+    HWND hwndButton = GetDlgItem(hwnd, IDC_UPDATE);
+    EnableWindow(hwndButton, FALSE);
+}
+
+
+
+
+void updateFfmpeg(HWND hwnd)
+{
+    std::thread t([&]()
+        {
+            while (hProgressDlg == 0)
+                Sleep(500);
+            HWND hwndDialogBar = GetDlgItem(hProgressDlg, IDC_PROGRESS1);
+            HWND hwndDialogText = GetDlgItem(hProgressDlg, IDC_STATIC);
+            SendMessage(hwndDialogBar, PBM_SETRANGE, 0, MAKELPARAM(0, 100));
+            SendMessage(hwndDialogBar, PBM_SETSTEP, (WPARAM)1, 0);
+
+            std::string url = "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-win64-gpl.zip";
+            for (int i = 0; i < 4; i++)
+            {
+                try {
+                    auto data = net::fetch_request(net::url(std::wstring(url.begin(), url.end())), L"", L"", L"Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko)", [&](float p) {
+                        SendMessage(hwndDialogBar, PBM_SETPOS, (int)(p * 100), 0);
+                        });
+                    std::ofstream outStream("ffmpeg.zip", std::ios_base::out | std::ios_base::binary);
+                    for (int i = 0; i < data.size(); i += 1024)
+                        outStream.write(data.data() + i, std::min(1024, (int)data.size() - i));
+                    //std::copy(data.begin(), data.end(), std::ostream_iterator<char>(outStream));
+                    outStream.close();
+                    break;
+                }
+                catch (...) {}
+            }
+
+            std::thread t([&]() {
+                SendMessage(hwndDialogBar, PBM_SETPOS, 0, 0);
+                SendMessage(hwndDialogText, WM_SETTEXT, 0, (LPARAM)"Hold on....");
+                miniz_cpp::zip_file zip("ffmpeg.zip");
+                auto list = zip.infolist();
+                for (auto i = 0; i < list.size(); i++)
+                {
+                    std::string file = list[i].filename;
+                    if (file.ends_with("ffmpeg.exe"))
+                    {
+                        SendMessage(hwndDialogText, WM_SETTEXT, 0, (LPARAM)"Unzipping....");
+                        auto data = zip.read(list[i]);
+                        std::ofstream out("ffmpeg.exe", std::ios_base::binary | std::ios_base::out);
+                        for (auto ii = 0; ii < data.size(); ii += 1024)
+                        {
+                            SendMessage(hwndDialogBar, PBM_SETPOS, (int)((ii / (float)data.size()) * 100), 0);
+                            out.write(data.data() + ii, std::min(1024, (int)data.size() - ii));
+                        }
+                    }
+                }
+                });
+
+            t.join();
+            EndDialog(hProgressDlg, 0);
+            hProgressDlg = 0;
         });
     DialogBox(hInstance, MAKEINTRESOURCE(IDD_DOWNLOADING), hwnd, DownloadWndProc);
     t.join();

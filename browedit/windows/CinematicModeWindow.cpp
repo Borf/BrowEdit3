@@ -5,9 +5,12 @@
 #include <browedit/MapView.h>
 #include <browedit/Node.h>
 #include <browedit/gl/Texture.h>
+#include <browedit/gl/FBO.h>
 #include <browedit/components/Rsw.h>
 #include <imgui.h>
 #include <imgui_internal.h>
+#include <misc/cpp/imgui_stdlib.h>
+#include <stb/stb_image_write.h>
 
 float scale = 100;
 float rowHeight = 25;
@@ -65,6 +68,129 @@ void BrowEdit::showCinematicModeWindow()
 		playing = !playing;
 	ImGui::SameLine();
 	ImGui::Checkbox("##preview", &activeMapView->cinematicPlay);
+	ImGui::SameLine();
+	if (ImGui::Button("•"))
+	{
+		ImGui::OpenPopup("RecordVideo");
+	}
+	if (ImGui::BeginPopupModal("RecordVideo"))
+	{
+		static float fps = 30;
+		static int quality = 25;
+		static std::string videoFile = "video.mkv";
+		static int resolution[2] = { 1920,1080 };
+		ImGui::DragFloat("Fps", &fps, 1, 1, 120);
+		ImGui::InputText("Filename", &videoFile);
+		ImGui::InputInt2("Resolution", resolution);
+		ImGui::InputInt("Quality\n(lower = better)", &quality);
+		
+		if (ImGui::Button("Record"))
+		{
+			while(true) {
+				std::string path = config.ffmpegPath + " ";
+				path += "-y ";
+				//path += "-f image2pipe ";
+				//path += "-vcodec png ";
+				path += "-f rawvideo ";
+				path += "-s "+std::to_string(resolution[0]) + "x"+std::to_string(resolution[1]) + " -pix_fmt rgb24 ";
+				path += "-r " + std::to_string(fps) + " "; // FPS
+				path += "-i - ";
+				path += "-pix_fmt yuv420p ";
+				path += "-c:v libx265 -crf "+std::to_string(quality) + " ";
+				path += "-pix_fmt yuv420p ";
+				path += "-nostats ";
+				path += videoFile;
+
+
+				HANDLE hPipeReadStdIn, hPipeWriteStdIn;
+				HANDLE hPipeReadStdOut, hPipeWriteStdOut;
+
+				SECURITY_ATTRIBUTES saAttr = { sizeof(SECURITY_ATTRIBUTES) };
+				saAttr.bInheritHandle = TRUE; // Pipe handles are inherited by child process.
+				saAttr.lpSecurityDescriptor = NULL;
+
+				if (!CreatePipe(&hPipeReadStdOut, &hPipeWriteStdOut, &saAttr, 0))
+				{
+					std::cout << "Error creating pipe" << std::endl;
+					break;
+				}
+
+				if (!CreatePipe(&hPipeReadStdIn, &hPipeWriteStdIn, &saAttr, 0))
+				{
+					std::cout << "Error creating pipe" << std::endl;
+					break;
+				}
+				SetHandleInformation(hPipeWriteStdIn, HANDLE_FLAG_INHERIT, 0);
+
+				STARTUPINFO si = { sizeof(STARTUPINFO) };
+				si.dwFlags = STARTF_USESHOWWINDOW | STARTF_USESTDHANDLES;
+				si.hStdOutput = hPipeWriteStdOut;
+				si.hStdError = hPipeWriteStdOut;
+				si.hStdInput = hPipeReadStdIn;
+
+				PROCESS_INFORMATION pi = { 0 };
+
+				BOOL fSuccess = CreateProcess(NULL, (LPSTR)path.c_str(), NULL, NULL, TRUE, CREATE_NEW_CONSOLE, NULL, NULL, &si, &pi);
+				if (!fSuccess)
+				{
+					std::cout << "Could not start ffmpeg" << std::endl;
+					CloseHandle(hPipeWriteStdIn);
+					CloseHandle(hPipeReadStdIn);
+					break;
+				}
+
+				std::thread t([&]()
+				{
+						while (true)
+						{
+							char buf[1024];
+							DWORD read;
+							auto success = ::ReadFile(hPipeReadStdOut, buf, 1024, &read, nullptr);
+							if (!success)
+								break;
+							std::cout << std::string(buf, read);
+						}
+				});
+				Sleep(100);
+
+				int totalFrames = (int)(fps * rsw->cinematicLength);
+
+				auto& mv = *activeMapView;
+				mv.fbo->resize(resolution[0], resolution[1]);
+
+
+
+
+				for (int i = 0; i < totalFrames; i++)
+				{
+					float time = i * 1.0f / fps;
+					std::cout << "Frame\t" << i <<", "<< time << "s\t";
+
+					mv.cinematicPlay = true;
+					timeSelected = time;
+					int len = resolution[0] * resolution[1] * 3;
+					mv.render(this);
+					//char* frameData = mv.fbo->saveToMemoryPng(len);
+					char* frameData = mv.fbo->saveToMemoryRaw();
+					std::cout << len << " bytes" << std::endl;
+					DWORD dwWritten;
+					::WriteFile(hPipeWriteStdIn, frameData, len, &dwWritten, NULL);
+					delete[] frameData;
+				}
+				CloseHandle(hPipeWriteStdOut);
+				CloseHandle(hPipeReadStdOut);
+				CloseHandle(hPipeWriteStdIn);
+				CloseHandle(hPipeReadStdIn);
+				CloseHandle(pi.hProcess);
+				CloseHandle(pi.hThread);
+				t.join();
+				break;
+			}
+			ImGui::CloseCurrentPopup();
+		}
+
+		ImGui::EndPopup();
+	}
 
 
 	if (rsw->cinematicLength > 0 && ImGui::BeginChild("KeyframeEditor", ImVec2(-1, 200), true, ImGuiWindowFlags_AlwaysHorizontalScrollbar))

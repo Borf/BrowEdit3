@@ -17,10 +17,11 @@
 #define IDC_PREV                        1003
 #define IDC_DETAILS                     1004
 #define IDC_PROGRESS1                   1005
-#define IDC_BUTTON1                     1006
 #define IDC_UPDATE                      1006
 #define ID_EFFECTCURRENTVERSION         1007
 #define ID_EFFECTLATESTVERSION          1008
+#define IDC_UPDATE2                     1009
+#define IDC_UPDATEFFMPEG                1009
 #define IDC_STATIC                      -1
 
 // Next default values for new objects

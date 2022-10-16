@@ -44,6 +44,8 @@ public:
 	std::map<std::string, std::map<std::string, glm::vec4>> colorPresets;
 
 	std::string grfEditorPath = "";
+	std::string ffmpegPath = "";
+
 	std::vector<std::string> recentFiles;
 	int defaultEditMode = 0;
 	float toolbarHeight() { return toolbarButtonSize + 8; }
@@ -80,5 +82,6 @@ public:
 		hotkeys,
 		defaultEditMode,
 		recalculateQuadtreeOnSave,
-		colorPresets);
+		colorPresets,
+		ffmpegPath);
 };

@@ -47,6 +47,10 @@ namespace gl
 		void resize(int w, int h);
 
 		void saveAsFile(const std::string& fileName);
+		char* saveToMemoryPng(int& len);
+		char* saveToMemoryJpeg(int quality, int& len);
+		char* saveToMemoryRaw();
+
 		void saveAsFileBackground(const std::string& fileName, std::function<void()> callback);
 
 	};

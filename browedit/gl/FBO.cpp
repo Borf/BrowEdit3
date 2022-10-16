@@ -2,6 +2,7 @@
 #include <glm/glm.hpp>
 #include <stb/stb_image_write.h>
 #include <thread>
+#include <sstream>
 
 namespace gl
 {
@@ -277,6 +278,7 @@ namespace gl
 			memcpy(data + rowSize * y, data + rowSize * (getHeight() - 1 - y), rowSize);
 			memcpy(data + rowSize * (getHeight() - 1 - y), row, rowSize);
 		}
+		delete[] row;
 
 		if (fileName.substr(fileName.size() - 4) == ".bmp")
 			stbi_write_bmp(fileName.c_str(), getWidth(), getHeight(), 4, data);
@@ -301,6 +303,7 @@ namespace gl
 			memcpy(data + rowSize * y, data + rowSize * (getHeight() - 1 - y), rowSize);
 			memcpy(data + rowSize * (getHeight() - 1 - y), row, rowSize);
 		}
+		delete[] row;
 		std::thread thread([data, fileName, this, callback]()
 			{
 				if (fileName.substr(fileName.size() - 4) == ".bmp")
@@ -315,6 +318,84 @@ namespace gl
 				callback();
 			});
 		thread.detach();
+	}
+
+	char* FBO::saveToMemoryPng(int& len)
+	{
+		int w = getWidth();
+		int h = getHeight();
+
+		char* data = new char[w * h * 4];
+		use();
+		glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+		const int rowSize = w * 4;
+		char* row = new char[rowSize];
+		for (int y = 0; y < h / 2; y++)
+		{
+			memcpy(row, data + rowSize * y, rowSize);
+			memcpy(data + rowSize * y, data + rowSize * (h - 1 - y), rowSize);
+			memcpy(data + rowSize * (h - 1 - y), row, rowSize);
+		}
+		delete[] row;
+		char* out;
+		std::pair<int*, char**> p(&len, &out);
+		stbi_write_png_to_func([](void* context, void* data, int size)
+		{
+			auto& p = *(std::pair<int*, char**>*)context;
+			char*& out = *((char**)p.second);
+			out = new char[size];
+			memcpy(out, data, size);
+			*p.first = size;
+		}, &p, w, h, 4, data, 0);
+		delete[] data;
+		return out;
+	}
+	char* FBO::saveToMemoryJpeg(int quality, int& len)
+	{
+		int w = getWidth();
+		int h = getHeight();
+
+		char* data = new char[w * h * 4];
+		use();
+		glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+		const int rowSize = w * 4;
+		char* row = new char[rowSize];
+		for (int y = 0; y < h / 2; y++)
+		{
+			memcpy(row, data + rowSize * y, rowSize);
+			memcpy(data + rowSize * y, data + rowSize * (h - 1 - y), rowSize);
+			memcpy(data + rowSize * (h - 1 - y), row, rowSize);
+		}
+		delete[] row;
+		std::stringstream buf;
+		stbi_write_jpg_to_func([](void* context, void* data, int size)
+			{
+				auto& buf = *((std::stringstream*)context);
+				buf.write((char*)data, size);
+			}, &buf, w, h, 4, data, quality);
+		delete[] data;
+		len = buf.str().size();
+		return (char*)buf.str().c_str();
+	}
+
+	char* FBO::saveToMemoryRaw()
+	{
+		int w = getWidth();
+		int h = getHeight();
+
+		char* data = new char[w * h * 3];
+		use();
+		glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+		const int rowSize = w * 3;
+		char* row = new char[rowSize];
+		for (int y = 0; y < h / 2; y++)
+		{
+			memcpy(row, data + rowSize * y, rowSize);
+			memcpy(data + rowSize * y, data + rowSize * (h - 1 - y), rowSize);
+			memcpy(data + rowSize * (h - 1 - y), row, rowSize);
+		}
+		delete[] row;
+		return data;
 	}
 
 }

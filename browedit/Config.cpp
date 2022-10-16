@@ -285,6 +285,46 @@ bool Config::showWindow(BrowEdit* browEdit)
 			}
 		}
 
+		ImGui::InputText("ffmpeg path", &ffmpegPath);
+		ImGui::SameLine();
+		if (ImGui::Button("Browse##ffmpegPath"))
+		{
+			CoInitializeEx(0, 0);
+
+			std::string curdir = std::filesystem::current_path().string();
+
+			HWND hWnd = glfwGetWin32Window(browEdit->window);
+			OPENFILENAME ofn;
+			ZeroMemory(&ofn, sizeof(ofn));
+			ofn.lStructSize = sizeof(ofn);
+			ofn.hwndOwner = hWnd;
+
+			std::string initial = util::utf8_to_iso_8859_1(ffmpegPath);
+			if (initial.find(":") == std::string::npos)
+				initial = curdir + "\\" + initial;
+
+			if (!std::filesystem::is_regular_file(initial))
+				initial = "";
+
+			char buf[MAX_PATH];
+			ZeroMemory(buf, MAX_PATH);
+			strcpy_s(buf, MAX_PATH, initial.c_str());
+			ofn.lpstrFile = buf;
+			ofn.nMaxFile = MAX_PATH;
+			ofn.lpstrFilter = "ffmpeg\0ffmpeg.exe\0All Files\0*.*\0";
+			ofn.nFilterIndex = 0;
+			ofn.lpstrFileTitle = NULL;
+			ofn.nMaxFileTitle = 0;
+			ofn.lpstrInitialDir = NULL;
+			ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_ENABLESIZING;
+			if (GetOpenFileName(&ofn))
+			{
+				std::filesystem::current_path(curdir);
+				ffmpegPath = buf;
+			}
+			std::filesystem::current_path(curdir);
+		}
+
 		if (ImGui::Button("Save"))
 		{
 			if (isValid() == "")
