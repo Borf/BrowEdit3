@@ -206,6 +206,7 @@ public:
 
 	float cutOff = 0.5f;
 	float intensity = 1;
+	float minShadowDistance = 0;
 	std::vector<glm::vec2> falloff = { glm::vec2(0,1), glm::vec2(1,0) };
 	// end custom properties
 	float realRange();
@@ -297,8 +298,8 @@ class RswModelCollider : public Collider
 	RsmRenderer* rsmRenderer = nullptr;
 public:
 	void begin();
-	bool collidesTexture(const math::Ray& ray, float maxDistance = 9999999.0f);
-	bool collidesTexture(Rsm::Mesh* mesh, const math::Ray& ray, const glm::mat4& matrix, float maxDistance);
+	bool collidesTexture(const math::Ray& ray, float minDistance = 0.0f, float maxDistance = 9999999.0f);
+	bool collidesTexture(Rsm::Mesh* mesh, const math::Ray& ray, const glm::mat4& matrix, float minDistance, float maxDistance);
 
 	std::vector<glm::vec3> getVerticesWorldSpace(Rsm::Mesh* mesh = nullptr, const glm::mat4& matrix = glm::mat4(1.0f));
 

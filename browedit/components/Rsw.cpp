@@ -952,7 +952,7 @@ std::vector<glm::vec3> RswModelCollider::getCollisions(Rsm::Mesh* mesh, const ma
 	return ret;
 }
 
-bool RswModelCollider::collidesTexture(const math::Ray& ray, float maxDistance)
+bool RswModelCollider::collidesTexture(const math::Ray& ray, float minDistance, float maxDistance)
 {
 	std::vector<glm::vec3> ret;
 
@@ -967,11 +967,11 @@ bool RswModelCollider::collidesTexture(const math::Ray& ray, float maxDistance)
 
 	if (!rswModel->aabb.hasRayCollision(ray, 0, 10000000))
 		return false;
-	return collidesTexture(rsm->rootMesh, ray, rsmRenderer->matrixCache, maxDistance);
+	return collidesTexture(rsm->rootMesh, ray, rsmRenderer->matrixCache, minDistance, maxDistance);
 }
 
 
-bool RswModelCollider::collidesTexture(Rsm::Mesh* mesh, const math::Ray& ray, const glm::mat4& matrix, float maxDistance)
+bool RswModelCollider::collidesTexture(Rsm::Mesh* mesh, const math::Ray& ray, const glm::mat4& matrix, float minDistance, float maxDistance)
 {
 	if (mesh->index >= rsmRenderer->renderInfo.size())
 		return false;
@@ -998,10 +998,10 @@ bool RswModelCollider::collidesTexture(Rsm::Mesh* mesh, const math::Ray& ray, co
 				if (rsm && rsm->textures.size() > mesh->faces[i].texId)
 					img = util::ResourceManager<Image>::load("data/texture/" + rsm->textures[mesh->faces[i].texId]);
 			}
+			glm::vec3 hitPoint = ray.origin + ray.dir * t;
 			if (img && img->hasAlpha)
 			{
-				glm::vec3 hitPoint = ray.origin + ray.dir * t;
-				if (maxDistance - t > 0)
+				if (glm::distance(hitPoint, ray.origin) > minDistance && maxDistance - t > 0)
 				{
 					auto f1 = verts[0] - hitPoint;
 					auto f2 = verts[1] - hitPoint;
@@ -1033,14 +1033,14 @@ bool RswModelCollider::collidesTexture(Rsm::Mesh* mesh, const math::Ray& ray, co
 						return true;
 				}
 			}
-			else
+			else if(glm::distance(hitPoint, ray.origin) > minDistance && maxDistance - t > 0)
 				return true;
 
 		}
 	}
 
 	for (size_t i = 0; i < mesh->children.size(); i++)
-		if(collidesTexture(mesh->children[i], ray, matrix, maxDistance))
+		if(collidesTexture(mesh->children[i], ray, matrix, minDistance, maxDistance))
 			return true;
 	return false;
 }
