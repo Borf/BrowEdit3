@@ -94,6 +94,11 @@
 
 #define ICON_WALL_ADD_REMOVE		85
 
+#define ICON_REC					94
+
+
 #define ICON_PLAY					95
 #define ICON_PAUSE					96
+#define ICON_PREV					97
+#define ICON_NEXT					98
 #define ICON_NOICON					99

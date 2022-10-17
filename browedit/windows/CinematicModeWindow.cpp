@@ -51,25 +51,25 @@ void BrowEdit::showCinematicModeWindow()
 	ImGui::SetNextItemWidth(200);
 	ImGui::DragFloat("##Length", &rsw->cinematicLength, 0.1f, 0, 10000.0f);
 	ImGui::SameLine();
-	if (ImGui::Button("<"))
+	if (toolBarButton("Prev", ICON_PREV, "Previous Keyframe", ImVec4(1,1,1,1)))
 	{
 		if (selectedTrack >= 0 && selectedTrack < rsw->cinematicTracks.size() && selectedKeyFrame > 0)
 			selectedKeyFrame--;
 	}
 	ImGui::SameLine();
-	if (ImGui::Button(">"))
+	if (toolBarButton("PlayPause", playing ? ICON_PAUSE : ICON_PLAY, "Play / Pause", ImVec4(1, 1, 1, 1)))
+		playing = !playing;
+	ImGui::SameLine();
+	if (toolBarButton("Next", ICON_NEXT, "Nexts Keyframe", ImVec4(1, 1, 1, 1)))
 	{
 		if (selectedTrack >= 0 && selectedTrack < rsw->cinematicTracks.size() && selectedKeyFrame < rsw->cinematicTracks[selectedTrack].frames.size()-1)
 			selectedKeyFrame++;
 	}
 	ImGui::SameLine();
 
-	if (toolBarButton("PlayPause", playing ? ICON_PAUSE : ICON_PLAY, "Play / Pause", ImVec4(1, 1, 1, 1)))
-		playing = !playing;
-	ImGui::SameLine();
 	ImGui::Checkbox("##preview", &activeMapView->cinematicPlay);
 	ImGui::SameLine();
-	if (ImGui::Button("•"))
+	if (toolBarButton("Record", ICON_REC, "Record a video", ImVec4(1, 1, 1, 1)))
 	{
 		ImGui::OpenPopup("RecordVideo");
 	}
