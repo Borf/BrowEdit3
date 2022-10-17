@@ -30,7 +30,7 @@ void BrowEdit::showWallWindow()
 		return;
 	}
 
-	if (ImGui::BeginCombo("Texture", util::iso_8859_1_to_utf8(gnd->textures[activeMapView->textureSelected]->file).c_str(), ImGuiComboFlags_HeightLargest))
+	if (gnd->textures.size() > 0 && ImGui::BeginCombo("Texture", util::iso_8859_1_to_utf8(gnd->textures[activeMapView->textureSelected]->file).c_str(), ImGuiComboFlags_HeightLargest))
 	{
 		for (auto i = 0; i < gnd->textures.size(); i++)
 		{
@@ -131,8 +131,8 @@ void BrowEdit::showWallWindow()
 	}
 	ImGui::Text("%d %d %d", activeMapView->textureBrushFlipD ? 1 : 0, activeMapView->textureBrushFlipH ? 1 : 0, activeMapView->textureBrushFlipV ? 1 : 0);
 
-
 	bool changed = false;
+	if (gndRenderer->textures.size() > 0)
 	{ //UV editor
 		ImGuiWindow* window = ImGui::GetCurrentWindow();
 		const ImGuiStyle& style = ImGui::GetStyle();

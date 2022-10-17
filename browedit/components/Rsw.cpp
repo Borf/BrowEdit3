@@ -628,13 +628,20 @@ void Rsw::save(const std::string& fileName, BrowEdit* browEdit)
 
 void Rsw::newMap(const std::string& fileName, int width, int height, Map* map, BrowEdit* browEdit)
 {
-	version = 0x109;
+	version = 0x201;
 	light.longitude = 45;//TODO: remove the defaults here and put defaults of the water somewhere too
 	light.latitude = 45;
 	light.diffuse = glm::vec3(1, 1, 1);
 	light.ambient = glm::vec3(0.8f, 0.8f, 0.8f);
 	light.intensity = 0.5f;
 	water.height = 10;
+	gndFile = fileName;
+	if (gndFile.find("\\"))
+		gndFile = gndFile.substr(gndFile.rfind("\\") + 1);
+	if (gndFile.find("."))
+		gndFile = gndFile.substr(0, gndFile.rfind("."));
+	gndFile += ".gnd";
+
 
 
 	std::string path = fileName;

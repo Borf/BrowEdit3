@@ -36,6 +36,7 @@ Gnd::Gnd(const std::string& fileName)
 		version = 0;
 		std::cerr<< "GND: Invalid GND file, attempting to load" << std::endl;
 	}
+	std::cout << std::hex << "Gnd: Version 0x" << version << std::endl << std::dec;
 
 	int textureCount = 0;
 

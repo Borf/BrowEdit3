@@ -20,7 +20,7 @@ namespace gl { class Texture; }
 class Rsw : public Component, public ImguiProps
 {
 public:
-	short version = 0x109;
+	short version = 0x201;
 	unsigned char buildNumber = 0;
 	std::string iniFile;
 	std::string gndFile;
