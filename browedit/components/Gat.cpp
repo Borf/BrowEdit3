@@ -68,6 +68,7 @@ Gat::Gat(int width, int height)
 			for (int i = 0; i < 4; i++)
 				cube->heights[i] = 0;
 			cube->gatType = 0;
+			cube->calcNormal();
 			cubes[x][y] = cube;
 		}
 	}
