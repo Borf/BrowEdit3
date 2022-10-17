@@ -1206,6 +1206,9 @@ void Rsw::KeyFrameData<std::pair<glm::vec3, glm::vec3>>::buildEditor()
 	KeyFrame::buildEditor();
 	ImGui::DragFloat3("Data", glm::value_ptr(data.first), 1.f, -1000.0f, 1000.0f);
 	ImGui::DragFloat3("Data 2", glm::value_ptr(data.second), 1.f, -1000.0f, 1000.0f);
+	ImGui::Spacing();
+	ImGui::Spacing();
+	ImGui::Spacing();
 	ImGui::gizmo3D("Rotation", data.second);
 
 	float scale = glm::length(data.second);

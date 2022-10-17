@@ -48,8 +48,15 @@ void BrowEdit::showCinematicModeWindow()
 		return;
 	}
 
-	ImGui::SetNextItemWidth(200);
+	ImGui::SetNextItemWidth(150);
+	ImGui::DragFloat("##CurrentTime", &timeSelected, 0.1f, 0, 10000.0f);
+	if (ImGui::IsItemHovered())
+		ImGui::SetTooltip("Animation time");
+	ImGui::SameLine();
+	ImGui::SetNextItemWidth(150);
 	ImGui::DragFloat("##Length", &rsw->cinematicLength, 0.1f, 0, 10000.0f);
+	if (ImGui::IsItemHovered())
+		ImGui::SetTooltip("Animation length");
 	ImGui::SameLine();
 	if (toolBarButton("Prev", ICON_PREV, "Previous Keyframe", ImVec4(1,1,1,1)))
 	{
@@ -66,8 +73,9 @@ void BrowEdit::showCinematicModeWindow()
 			selectedKeyFrame++;
 	}
 	ImGui::SameLine();
-
 	ImGui::Checkbox("##preview", &activeMapView->cinematicPlay);
+	if (ImGui::IsItemHovered())
+		ImGui::SetTooltip("Preview animation in main viewport");
 	ImGui::SameLine();
 	if (toolBarButton("Record", ICON_REC, "Record a video", ImVec4(1, 1, 1, 1)))
 	{
@@ -271,13 +279,16 @@ void BrowEdit::showCinematicModeWindow()
 				{
 					if (ImGui::MenuItem("Delete"))
 					{
-						ImGui::EndPopup();
-						track.frames.erase(track.frames.begin() + keyframeIndex);
-						keyframeIndex--;
-						if (selected)
-							ImGui::PopStyleColor(3);
-						ImGui::PopID();
-						continue;
+						if (track.frames.size() > 1)
+						{
+							ImGui::EndPopup();
+							track.frames.erase(track.frames.begin() + keyframeIndex);
+							keyframeIndex--;
+							if (selected)
+								ImGui::PopStyleColor(3);
+							ImGui::PopID();
+							continue;
+						}
 					}
 					ImGui::EndPopup();
 				}
