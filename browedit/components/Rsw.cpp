@@ -640,8 +640,8 @@ void Rsw::newMap(const std::string& fileName, int width, int height, Map* map, B
 		gndFile = gndFile.substr(gndFile.rfind("\\") + 1);
 	if (gndFile.find("."))
 		gndFile = gndFile.substr(0, gndFile.rfind("."));
+	gatFile = gndFile + ".gat";
 	gndFile += ".gnd";
-
 
 
 	std::string path = fileName;
