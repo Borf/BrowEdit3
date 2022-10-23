@@ -173,18 +173,23 @@ void BrowEdit::toolbar()
 
 	if (activeMapView)
 	{
-		int objectCount = 0;
-		activeMapView->map->rootNode->traverse([&objectCount](Node* n) { if (n->getComponent<RswObject>()) objectCount++; });
-		
-		sprintf_s(txt, 1024, "Map: %s, Tiles(%zu), Lightmaps(%zu), Objects(%d)", activeMapView->map->name.c_str(), activeMapView->map->rootNode->getComponent<Gnd>()->tiles.size(), activeMapView->map->rootNode->getComponent<Gnd>()->lightmaps.size(), objectCount);
-		auto len2 = ImGui::CalcTextSize(txt);
+		if (!activeMapView->map->rootNode->getComponent<Gnd>())
+			std::cerr << "Map has no gnd" << std::endl;
+		else
+		{
+			int objectCount = 0;
+			activeMapView->map->rootNode->traverse([&objectCount](Node* n) { if (n->getComponent<RswObject>()) objectCount++; });
 
-		ImGui::SameLine(ImGui::GetWindowWidth() - len2.x - len.x - 2*ImGui::GetStyle().FramePadding.x - 14);
+			sprintf_s(txt, 1024, "Map: %s, Tiles(%zu), Lightmaps(%zu), Objects(%d)", activeMapView->map->name.c_str(), activeMapView->map->rootNode->getComponent<Gnd>()->tiles.size(), activeMapView->map->rootNode->getComponent<Gnd>()->lightmaps.size(), objectCount);
+			auto len2 = ImGui::CalcTextSize(txt);
 
-		ImRect bb(ImGui::GetCursorScreenPos() - ImVec2(3, 3), ImGui::GetCursorScreenPos() + len2 + ImVec2(6,6));
-		ImGui::RenderFrame(bb.Min, bb.Max, 0, true, ImGui::GetStyle().FrameRounding);
+			ImGui::SameLine(ImGui::GetWindowWidth() - len2.x - len.x - 2 * ImGui::GetStyle().FramePadding.x - 14);
 
-		ImGui::Text(txt);
+			ImRect bb(ImGui::GetCursorScreenPos() - ImVec2(3, 3), ImGui::GetCursorScreenPos() + len2 + ImVec2(6, 6));
+			ImGui::RenderFrame(bb.Min, bb.Max, 0, true, ImGui::GetStyle().FrameRounding);
+
+			ImGui::Text(txt);
+		}
 	}
 	ImGui::PopStyleVar();
 	ImGui::SameLine(150);
