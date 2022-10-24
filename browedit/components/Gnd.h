@@ -26,9 +26,6 @@ public:
 	void makeLightmapsUnique();
 	void makeLightmapsClear();
 	void makeLightmapBorders(BrowEdit* browEdit);
-	void makeLightmapBorders(int x, int y);
-	int getLightmapBrightness(int x, int y, int lightmapX, int lightmapY);
-	glm::ivec3 getLightmapColor(int x, int y, int lightmapX, int lightmapY);
 	void makeLightmapsSmooth(BrowEdit* browEdit);
 	void makeTilesUnique();
 	void cleanLightmaps();
