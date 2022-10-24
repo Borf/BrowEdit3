@@ -175,7 +175,7 @@ void MapView::postRenderWallMode(BrowEdit* browEdit)
 						glm::vec3 v2(10 * tile.x + 10, -cube->h4, 10 * gnd->height - 10 * tile.y);
 						glm::vec3 v3(10 * tile.x + 10, -gnd->cubes[tile.x + 1][tile.y]->h1, 10 * gnd->height - 10 * tile.y + 10);
 						glm::vec3 v4(10 * tile.x + 10, -gnd->cubes[tile.x + 1][tile.y]->h3, 10 * gnd->height - 10 * tile.y);
-						if (side == 2)
+						if (selectionSide == 2)
 						{
 							v1 = glm::vec3(10 * tile.x, -cube->h3, 10 * gnd->height - 10 * tile.y);
 							v2 = glm::vec3(10 * tile.x + 10, -cube->h4, 10 * gnd->height - 10 * tile.y);
@@ -203,11 +203,11 @@ void MapView::postRenderWallMode(BrowEdit* browEdit)
 						glEnable(GL_DEPTH_TEST);
 
 					}
-					if (side == 1 && tile.y == tileHovered.y)
+					if (selectionSide == 1 && tile.y == tileHovered.y)
 						break;
-					if (side == 2 && tile.x == tileHovered.x)
+					if (selectionSide == 2 && tile.x == tileHovered.x)
 						break;
-					if (side == 1)
+					if (selectionSide == 1)
 						tile += glm::ivec2(0, glm::sign(tileHovered.y - selectionStart.y));
 					else
 						tile += glm::ivec2(glm::sign(tileHovered.x - selectionStart.x), 0);
@@ -223,11 +223,11 @@ void MapView::postRenderWallMode(BrowEdit* browEdit)
 				{
 					if (gnd->inMap(tile) && std::find(selectedWalls.begin(), selectedWalls.end(), glm::ivec3(tile, selectionSide)) == selectedWalls.end())
 						ga->addAction(new SelectWallAction(map, glm::ivec3(tile, selectionSide), ga->isEmpty() ? ImGui::GetIO().KeyShift : true, false));
-					if (side == 1 && tile.y == tileHovered.y)
+					if (selectionSide == 1 && tile.y == tileHovered.y)
 						break;
-					if (side == 2 && tile.x == tileHovered.x)
+					if (selectionSide == 2 && tile.x == tileHovered.x)
 						break;
-					if (side == 1)
+					if (selectionSide == 1)
 						tile += glm::ivec2(0, glm::sign(tileHovered.y - selectionStart.y));
 					else
 						tile += glm::ivec2(glm::sign(tileHovered.x - selectionStart.x), 0);
