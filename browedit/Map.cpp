@@ -856,7 +856,7 @@ void WallCalculation::calcUV(const glm::ivec3& position, Gnd* gnd)
 	float minHeight = 0;
 	float maxHeight = 0;
 
-	if (position.z == 1 && position.x < gnd->width) //tileside
+	if (position.z == 1 && position.x < gnd->width-1) //tileside
 	{
 		auto cube2 = gnd->cubes[position.x + 1][position.y];
 		if (cube->h2 > cube2->h1 && cube->h4 > cube2->h3)
@@ -864,7 +864,7 @@ void WallCalculation::calcUV(const glm::ivec3& position, Gnd* gnd)
 		minHeight = glm::min(glm::min(glm::min(-cube->h2, -cube->h4), -cube2->h1), -cube2->h3);
 		maxHeight = glm::max(glm::max(glm::max(-cube->h2, -cube->h4), -cube2->h1), -cube2->h3);
 	}
-	if (position.z == 2 && position.y < gnd->height) //tilefront
+	if (position.z == 2 && position.y < gnd->height-1) //tilefront
 	{
 		auto cube2 = gnd->cubes[position.x][position.y + 1];
 		if (cube2->h2 > cube->h4 && cube2->h1 > cube->h3)
@@ -889,7 +889,7 @@ void WallCalculation::calcUV(const glm::ivec3& position, Gnd* gnd)
 	g_uv3.y = 1 - g_uv3.y;
 	g_uv4.y = 1 - g_uv4.y;
 
-	if (position.z == 2 && position.y < gnd->height) //tilefront
+	if (position.z == 2 && position.y < gnd->height-1) //tilefront
 	{
 		auto cube2 = gnd->cubes[position.x][position.y + 1];
 		if (cube2->h2 > cube->h4 && cube2->h1 > cube->h3)
@@ -900,7 +900,7 @@ void WallCalculation::calcUV(const glm::ivec3& position, Gnd* gnd)
 			std::swap(g_uv2.y, g_uv4.y);
 		}
 	}
-	if (position.z == 1 && position.x < gnd->width) //tileside
+	if (position.z == 1 && position.x < gnd->width-1) //tileside
 	{
 		auto cube2 = gnd->cubes[position.x + 1][position.y];
 		if (cube->h2 < cube2->h1 && cube->h4 < cube2->h3)
