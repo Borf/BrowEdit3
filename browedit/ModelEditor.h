@@ -2,7 +2,7 @@
 
 #include <string>
 #include <browedit/NodeRenderer.h>
-
+#include <browedit/components/Rsm.h>
 class Node;
 class BrowEdit;
 namespace gl { class FBO; }
@@ -14,6 +14,8 @@ class ModelEditor
 	public:
 		Node* node;
 		gl::FBO* fbo;
+		Rsm::Mesh* selectedMesh = nullptr;
+		glm::vec3 camera = glm::vec3(0,0,50);
 	};
 
 public:

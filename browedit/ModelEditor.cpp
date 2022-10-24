@@ -8,8 +8,11 @@
 #include <browedit/gl/FBO.h>
 #include <imgui.h>
 #include <imgui_internal.h>
-
+#include <misc/cpp/imgui_stdlib.h>
+#include <functional>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <magic_enum.hpp>
 
 void ModelEditor::load(const std::string& fileName)
 {
@@ -55,9 +58,14 @@ void ModelEditor::run(BrowEdit* browEdit)
 		auto rsm = m.node->getComponent<Rsm>();
 		if (ImGui::Begin(rsm->fileName.c_str()))
 		{
+			auto size = ImGui::GetContentRegionAvail();
 			auto rsm = m.node->getComponent<Rsm>();
 			if (!rsm->loaded)
 				return;
+
+			if (m.fbo->getWidth() != size.x || m.fbo->getHeight() != size.y)
+				m.fbo->resize(size.x, size.y);
+
 			m.fbo->bind();
 			glViewport(0, 0, m.fbo->getWidth(), m.fbo->getHeight());
 			glClearColor(browEdit->config.backgroundColor.r, browEdit->config.backgroundColor.g, browEdit->config.backgroundColor.b, 1.0f);
@@ -72,35 +80,153 @@ void ModelEditor::run(BrowEdit* browEdit)
 
 			float ratio = m.fbo->getWidth() / (float)m.fbo->getHeight();
 			nodeRenderContext.projectionMatrix = glm::perspective(glm::radians(45.0f), ratio, 0.1f, 5000.0f);
-			nodeRenderContext.viewMatrix = glm::lookAt(glm::vec3(0.0f, -rsm->bbrange.y - distance, -distance), glm::vec3(0.0f, rsm->bbrange.y, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+
+			nodeRenderContext.viewMatrix = glm::mat4(1.0f);
+			nodeRenderContext.viewMatrix = glm::translate(nodeRenderContext.viewMatrix, glm::vec3(0, 0, -m.camera.z));
+			nodeRenderContext.viewMatrix = glm::rotate(nodeRenderContext.viewMatrix, -glm::radians(m.camera.x), glm::vec3(1, 0, 0));
+			nodeRenderContext.viewMatrix = glm::rotate(nodeRenderContext.viewMatrix, -glm::radians(m.camera.y), glm::vec3(0, 1, 0));
+			nodeRenderContext.viewMatrix = glm::translate(nodeRenderContext.viewMatrix, glm::vec3(0,-rsm->bbrange.y,0));
+	
 			RsmRenderer::RsmRenderContext::getInstance()->viewLighting = false;
 			RsmRenderer::RsmRenderContext::getInstance()->viewTextures = true;
 			RsmRenderer::RsmRenderContext::getInstance()->viewFog = false;
-			m.node->getComponent<RsmRenderer>()->matrixCache = glm::rotate(glm::mat4(1.0f), glm::radians((float)ImGui::GetTime()*100), glm::vec3(0, 1, 0));
+			m.node->getComponent<RsmRenderer>()->matrixCache = glm::mat4(1.0f);// rotate(glm::mat4(1.0f), glm::radians((float)ImGui::GetTime() * 100), glm::vec3(0, 1, 0));
 			NodeRenderer::render(m.node, nodeRenderContext);
 			m.fbo->unbind();
-			auto size = ImGui::GetContentRegionAvail();
 			ImGui::ImageButton((ImTextureID)(long long)m.fbo->texid[0], size, ImVec2(1, 0), ImVec2(0, 1), 0, ImVec4(0, 0, 0, 1), ImVec4(1, 1, 1, 1));
-
+			if (ImGui::IsItemHovered())
+			{
+				if ((ImGui::IsMouseDown(ImGuiMouseButton_Right) || ImGui::IsMouseDown(ImGuiMouseButton_Middle)))
+				{
+					m.camera.x += ImGui::GetIO().MouseDelta.y;
+					m.camera.y += ImGui::GetIO().MouseDelta.x;
+				}
+				m.camera.z *= (1 - (ImGui::GetIO().MouseWheel * 0.1f));
+			}
 		}
 		ImGui::End();
 	}
-	if (ImGui::Begin("ModelEditorProperties"))
-	{
-		ImGui::Text("Right");
 
-	}
-	ImGui::End();
+	auto& activeModelView = models[0];
+	auto rsm = activeModelView.node->getComponent<Rsm>();
+
 	if (ImGui::Begin("ModelEditorTimeline"))
 	{
 
-		ImGui::End();
 	}
+	ImGui::End();
 	if (ImGui::Begin("ModelEditorNodes"))
 	{
+		std::function<void(Rsm::Mesh*)> buildTree;
+		buildTree = [&buildTree,&activeModelView](Rsm::Mesh* mesh) {
+			bool empty = mesh->children.empty();
 
-		ImGui::End();
+			int flags = empty ? (ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_Bullet) : (ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_OpenOnDoubleClick);
+			if (activeModelView.selectedMesh == mesh)
+				flags |= ImGuiTreeNodeFlags_Selected;
+
+			bool opened = ImGui::TreeNodeEx(mesh->name.c_str(), flags);
+			if (ImGui::IsItemClicked())
+				activeModelView.selectedMesh = mesh;
+			if (opened)
+			{
+				for (auto c : mesh->children)
+					buildTree(c);
+				ImGui::TreePop();
+			}
+		};
+
+
+		bool opened = ImGui::TreeNodeEx(rsm->fileName.c_str(), (ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_OpenOnDoubleClick) | (activeModelView.selectedMesh == nullptr ? ImGuiTreeNodeFlags_Selected : 0));
+		if (ImGui::IsItemClicked())
+			activeModelView.selectedMesh = nullptr;
+		if(opened)
+		{
+			buildTree(rsm->rootMesh);
+			ImGui::TreePop();
+		}
 	}
+	ImGui::End();
+
+	if (ImGui::Begin("ModelEditorProperties"))
+	{
+		if (activeModelView.selectedMesh == nullptr)
+		{
+			ImGui::InputScalar("Alpha", ImGuiDataType_U8, &rsm->alpha);
+			char versionStr[10];
+			sprintf_s(versionStr, 10, "%04x", rsm->version);
+			if (ImGui::BeginCombo("Version", versionStr))
+			{
+				if (ImGui::Selectable("0103", rsm->version == 0x0103))
+					rsm->version = 0x0103;
+				if (ImGui::Selectable("0104", rsm->version == 0x0104))
+					rsm->version = 0x0104;
+				if (ImGui::Selectable("0108", rsm->version == 0x0108))
+					rsm->version = 0x0108;
+				if (ImGui::Selectable("0109", rsm->version == 0x0109))
+					rsm->version = 0x0109;
+				if (ImGui::Selectable("0201", rsm->version == 0x0201))
+					rsm->version = 0x0201;
+				if (ImGui::Selectable("0202", rsm->version == 0x0202))
+					rsm->version = 0x0202;
+				if (ImGui::Selectable("0203", rsm->version == 0x0203))
+					rsm->version = 0x0203;
+				if (ImGui::Selectable("0204", rsm->version == 0x0204))
+					rsm->version = 0x0204;
+				ImGui::EndCombo();
+			}
+			ImGui::InputInt("Animation Length", &rsm->animLen);
+
+
+
+			if (ImGui::BeginCombo("Shade Type", std::string(magic_enum::enum_name(rsm->shadeType)).c_str()))
+			{
+				for (const auto& e : magic_enum::enum_entries<Rsm::ShadeType>())
+				{
+					if (ImGui::Selectable(std::string(e.second).c_str(), rsm->shadeType == e.first))
+						rsm->shadeType = e.first;
+				}
+				ImGui::EndCombo();
+			}
+		}
+		else //activeModelView.selectedMesh selected
+		{
+			ImGui::InputText("Name", &activeModelView.selectedMesh->name);
+			ImGui::InputFloat3("Position", glm::value_ptr(activeModelView.selectedMesh->pos));
+			ImGui::InputFloat4("Offset1", glm::value_ptr(activeModelView.selectedMesh->offset) + 0);
+			ImGui::InputFloat4("Offset2", glm::value_ptr(activeModelView.selectedMesh->offset) + 4);
+			ImGui::InputFloat4("Offset3", glm::value_ptr(activeModelView.selectedMesh->offset) + 8);
+			ImGui::InputFloat4("Offset4", glm::value_ptr(activeModelView.selectedMesh->offset) + 12);
+
+			ImGui::InputFloat3("Position_", glm::value_ptr(activeModelView.selectedMesh->pos_));
+			ImGui::InputFloat("Rotation Angle", &activeModelView.selectedMesh->rotangle);
+			ImGui::InputFloat3("Rotation Axis", glm::value_ptr(activeModelView.selectedMesh->rotaxis));
+			ImGui::InputFloat3("Scale", glm::value_ptr(activeModelView.selectedMesh->scale));
+
+			ImGui::LabelText("Face count", "%d", activeModelView.selectedMesh->faces.size());
+
+
+			bool differentValues = false;
+			for (const auto& f : activeModelView.selectedMesh->faces)
+				if (f.twoSided != activeModelView.selectedMesh->faces[0].twoSided)
+					differentValues = true;
+			bool twoSided = activeModelView.selectedMesh->faces[0].twoSided != 0;
+			ImGui::PushItemFlag(ImGuiItemFlags_MixedValue, differentValues);
+			if (ImGui::Checkbox("Two-sided faces", &twoSided))
+				for (auto& f : activeModelView.selectedMesh->faces)
+					f.twoSided = twoSided ? 1 : 0;
+			ImGui::PopItemFlag();
+
+			if (ImGui::CollapsingHeader("Textures", ImGuiTreeNodeFlags_DefaultOpen))
+			{
+
+			}
+
+		}
+
+	}
+	ImGui::End();
+
 	
 
 
