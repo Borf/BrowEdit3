@@ -164,10 +164,10 @@ glm::vec3 Gat::rayCast(const math::Ray& ray, int xMin, int yMin, int xMax, int y
 				{
 					auto cube = cubes[x][y];
 
-					glm::vec3 v1(5 * x, -cube->h3, 5 * height - 5 * y);
-					glm::vec3 v2(5 * x + 5, -cube->h4, 5 * height - 5 * y);
-					glm::vec3 v3(5 * x, -cube->h1, 5 * height - 5 * y + 5);
-					glm::vec3 v4(5 * x + 5, -cube->h2, 5 * height - 5 * y + 5);
+					glm::vec3 v1(5 * x, -cube->h3, 5 * height - 5 * y + 5);
+					glm::vec3 v2(5 * x + 5, -cube->h4, 5 * height - 5 * y + 5);
+					glm::vec3 v3(5 * x, -cube->h1, 5 * height - 5 * y + 10);
+					glm::vec3 v4(5 * x + 5, -cube->h2, 5 * height - 5 * y + 10);
 
 					{
 						std::vector<glm::vec3> v{ v4, v2, v1 };

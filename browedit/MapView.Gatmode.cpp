@@ -828,7 +828,10 @@ void MapView::postRenderGatMode(BrowEdit* browEdit)
 
 
 			ImGui::Begin("Statusbar");
+			ImGui::Text("Shift to add to select, Ctrl to remove from selection");
+			ImGui::SameLine();
 			ImGui::Text("Selection: (%d,%d) - (%d,%d)", tileMinX, tileMinY, tileMaxX, tileMaxY);
+			ImGui::SameLine();
 			ImGui::End();
 
 			if (browEdit->selectTool == BrowEdit::SelectTool::Rectangle)

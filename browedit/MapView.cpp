@@ -502,6 +502,10 @@ void MapView::update(BrowEdit* browEdit, const ImVec2 &size, float deltaTime)
 	{
 		if ((mouseState.buttons&6) != 0)
 		{
+			ImGui::Begin("Statusbar");
+			browEdit->statusText = true;
+			ImGui::Text("Camera: shift to rotate, ctrl to go up/down, ctrl+shift to zoom");
+			ImGui::End();
 			if (ImGui::GetIO().KeyShift && ImGui::GetIO().KeyCtrl)
 			{
 				cameraDistance *= 1.0f + (mouseState.position.y - prevMouseState.position.y) * 0.0025f * browEdit->config.cameraMouseSpeed;

@@ -204,6 +204,7 @@ public:
 	float nudgeDistance = 1.0f;
 	float rotateDistance = 45.0f;
 	bool useGridForNudge = true;
+	bool statusText = false;
 
 	glm::vec4	colorEditBrushColor = glm::vec4(1);
 	int			colorEditBrushSize = 1;
