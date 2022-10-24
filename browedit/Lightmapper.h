@@ -22,15 +22,7 @@ class Lightmapper
 	std::thread mainThread;
 public:
 	Map* map;
-	int quality = 1;
-	bool diffuseLighting = true;
-	bool sunLight = true;
-	bool shadows = true;
-	bool heightSelectionOnly = false;
-	int threadCount = 4;
 	bool buildDebugPoints = false;
-	glm::ivec2 rangeX;
-	glm::ivec2 rangeY;
 	bool running = true;
 
 	Lightmapper(Map* map, BrowEdit* browEdit);

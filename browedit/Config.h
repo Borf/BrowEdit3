@@ -49,7 +49,7 @@ public:
 	std::vector<std::string> recentFiles;
 	int defaultEditMode = 0;
 	float toolbarHeight() { return toolbarButtonSize + 8; }
-
+	int lightmapperThreadCount = 4;
 	std::string isValid() const;
 	bool showWindow(BrowEdit* browEdit);
 	void setupFileIO();
@@ -83,5 +83,6 @@ public:
 		defaultEditMode,
 		recalculateQuadtreeOnSave,
 		colorPresets,
-		ffmpegPath);
+		ffmpegPath,
+		lightmapperThreadCount);
 };

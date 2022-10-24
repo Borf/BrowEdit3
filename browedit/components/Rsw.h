@@ -115,6 +115,20 @@ public:
 		CameraTarget() : lookAt(LookAt::Point), point(glm::vec3(0)), turnSpeed(0.1f), angle(-1, 0, 0, 0) {}
 	};
 
+	class LightmapSettings
+	{
+	public:
+		int quality = 1;
+		bool diffuseLighting = true;
+		bool sunLight = true;
+		bool shadows = true;
+		bool heightSelectionOnly = false;
+		glm::ivec2 rangeX;
+		glm::ivec2 rangeY;
+
+		NLOHMANN_DEFINE_TYPE_INTRUSIVE(LightmapSettings, quality, diffuseLighting, sunLight, shadows, heightSelectionOnly, rangeX, rangeY);
+	} lightmapSettings;
+
 	std::vector<Track> cinematicTracks;
 	float cinematicLength;
 

@@ -22,8 +22,11 @@ extern std::vector<std::vector<glm::vec3>> debugPoints;
 
 Lightmapper::Lightmapper(Map* map, BrowEdit* browEdit) : map(map), browEdit(browEdit)
 {
-	rangeX = glm::ivec2(0, map->rootNode->getComponent<Gnd>()->width);
-	rangeY = glm::ivec2(0, map->rootNode->getComponent<Gnd>()->height);
+	auto rsw = map->rootNode->getComponent<Rsw>();
+	auto gnd = map->rootNode->getComponent<Gnd>();
+
+	rsw->lightmapSettings.rangeX = glm::ivec2(0, gnd->width);
+	rsw->lightmapSettings.rangeY = glm::ivec2(0, gnd->height);
 }
 
 void Lightmapper::begin()
@@ -91,6 +94,9 @@ void Lightmapper::run()
 			lights.push_back(n);
 		});
 
+	auto rsw = map->rootNode->getComponent<Rsw>();
+	auto& settings = rsw->lightmapSettings;
+
 
 	lightDirection[0] = -glm::cos(glm::radians((float)rsw->light.longitude)) * glm::sin(glm::radians((float)rsw->light.latitude));
 	lightDirection[1] = glm::cos(glm::radians((float)rsw->light.latitude));
@@ -126,14 +132,14 @@ void Lightmapper::run()
 
 	setProgressText("Calculating lightmaps");
 	std::vector<std::thread> threads;
-	std::atomic<int> finishedX(rangeX[0]);
+	std::atomic<int> finishedX(settings.rangeX[0]);
 	std::atomic<int> finishedThreadCount(0);
 	std::mutex progressMutex;
 
 
 	threads.push_back(std::thread([&]()
 		{
-			while ((finishedX < rangeX[1] || finishedThreadCount < threadCount) && running)
+			while ((finishedX < settings.rangeX[1] || finishedThreadCount < browEdit->config.lightmapperThreadCount) && running)
 			{
 				std::this_thread::sleep_for(std::chrono::seconds(2));
 				progressMutex.lock();
@@ -147,11 +153,11 @@ void Lightmapper::run()
 			browEdit->windowData.progressWindowVisible = false;
 			progressMutex.unlock();
 		}));
-	for (int t = 0; t < threadCount; t++)
+	for (int t = 0; t < browEdit->config.lightmapperThreadCount; t++)
 	{
 		threads.push_back(std::thread([&, t]()
 			{
-				for (int x; (x = finishedX++) < rangeX[1] && running;)
+				for (int x; (x = finishedX++) < settings.rangeX[1] && running;)
 				{
 					std::cout << "Row " << x << std::endl;
 
@@ -159,9 +165,9 @@ void Lightmapper::run()
 					browEdit->windowData.progressWindowProgres = x / (float)gnd->width;
 					progressMutex.unlock();
 
-					for (int y = rangeY[0]; y < rangeY[1]; y++)
+					for (int y = settings.rangeY[0]; y < settings.rangeY[1]; y++)
 					{
-						if (heightSelectionOnly && std::find(map->tileSelection.begin(), map->tileSelection.end(), glm::ivec2(x, y)) == map->tileSelection.end())
+						if (settings.heightSelectionOnly && std::find(map->tileSelection.begin(), map->tileSelection.end(), glm::ivec2(x, y)) == map->tileSelection.end())
 							continue;
 						Gnd::Cube* cube = gnd->cubes[x][y];
 
@@ -195,21 +201,23 @@ std::pair<glm::vec3, int> Lightmapper::calculateLight(const glm::vec3& groundPos
 {
 	int intensity = 0;
 	glm::vec3 colorInc(0.0f);
+	auto rsw = map->rootNode->getComponent<Rsw>();
+	auto& settings = rsw->lightmapSettings;
 
 	if (rsw->light.lightmapAmbient > 0)
 		intensity = (int)(rsw->light.lightmapAmbient * 255);
 
-	if (sunLight)
+	if (settings.sunLight)
 	{
 		//sunlight calculation
 		float dotProd = glm::dot(normal, lightDirection);
-		if (!diffuseLighting)
+		if (!settings.diffuseLighting)
 			dotProd = 1;
 		if (rsw->light.lightmapIntensity > 0 && dotProd > 0)
 		{
 			bool collides = false;
 			float shadowStrength = 0.0f;
-			if (shadows)
+			if (settings.shadows)
 			{
 				math::Ray ray(groundPos, glm::normalize(lightDirection));
 				//check objects
@@ -286,7 +294,7 @@ std::pair<glm::vec3, int> Lightmapper::calculateLight(const glm::vec3& groundPos
 
 			bool collides = false;
 			float shadowStrength = 0.0f;
-			if (shadows)
+			if (settings.shadows)
 			{
 				math::Ray ray(lightPosition, -lightDirection2);
 				if (rswLight->givesShadow && attenuation > 0)
@@ -349,7 +357,10 @@ bool TriangleContainsPoint(const glm::vec2 &a, const glm::vec2& b, const glm::ve
 
 void Lightmapper::calcPos(int direction, int tileId, int x, int y)
 {
-	float qualityStep = 1.0f / quality;
+	auto rsw = map->rootNode->getComponent<Rsw>();
+	auto& settings = rsw->lightmapSettings;
+
+	float qualityStep = 1.0f / settings.quality;
 	int height = gnd->height;
 	const float s = 10 / 6.0f;
 

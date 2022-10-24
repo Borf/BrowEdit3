@@ -198,7 +198,11 @@ bool Config::showWindow(BrowEdit* browEdit)
 		ImGui::ColorEdit4("Toolbar Object Edit", &toolbarButtonsObjectEdit.x);
 		ImGui::ColorEdit4("Toolbar Wall Edit", &toolbarButtonsWallEdit.x);
 		ImGui::ColorEdit4("Toolbar Gat Edit", &toolbarButtonsGatEdit.x);
-
+		ImGui::InputInt("Lightmapper threadcount", &lightmapperThreadCount);
+		if (lightmapperThreadCount < 0)
+			lightmapperThreadCount = 0;
+		if (lightmapperThreadCount > 50)
+			lightmapperThreadCount = 50;
 
 		std::string editModes = "";
 		for (auto e : magic_enum::enum_entries<BrowEdit::EditMode>())

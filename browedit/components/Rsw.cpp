@@ -198,6 +198,8 @@ void Rsw::load(const std::string& fileName, Map* map, BrowEdit* browEdit, bool l
 		extraProperties = util::FileIO::getJson(fileName + ".extra.json");
 		if (extraProperties.find("colorPresets") != extraProperties.end())
 			colorPresets = extraProperties["colorPresets"];
+		if (extraProperties.find("lightmap") != extraProperties.end())
+			lightmapSettings = extraProperties["lightmap"];
 	}
 	catch (const std::exception& e)
 	{
@@ -489,10 +491,12 @@ void Rsw::save(const std::string& fileName, BrowEdit* browEdit)
 	extraProperties["mapproperties"]["lightmapAmbient"] = light.lightmapAmbient;
 	extraProperties["mapproperties"]["lightmapIntensity"] = light.lightmapIntensity;
 	extraProperties["colorPresets"] = colorPresets;
+	extraProperties["lightmap"] = lightmapSettings;
 
 	extraProperties["cinematic"] = json::object();
 	extraProperties["cinematic"]["length"] = cinematicLength;
 	extraProperties["cinematic"]["tracks"] = json::array();
+
 	for (const auto& t : cinematicTracks)
 	{
 		json track = json::object();

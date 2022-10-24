@@ -3,6 +3,7 @@
 #include <browedit/Map.h>
 #include <browedit/Node.h>
 #include <browedit/components/Gnd.h>
+#include <browedit/components/Rsw.h>
 #include <glm/gtc/type_ptr.hpp>
 
 void BrowEdit::showLightmapSettingsWindow()
@@ -18,15 +19,17 @@ void BrowEdit::showLightmapSettingsWindow()
 	if (ImGui::BeginPopupModal("Lightmap Settings"))
 	{
 		auto gnd = lightmapper->map->rootNode->getComponent<Gnd>();
-		ImGui::DragInt("Quality", &lightmapper->quality, 1, 1, 10);
-		ImGui::Checkbox("Sunlight", &lightmapper->sunLight);
-		ImGui::Checkbox("Shadows", &lightmapper->shadows);
-		ImGui::Checkbox("Diffuse Lighting", &lightmapper->diffuseLighting);
+		auto rsw = lightmapper->map->rootNode->getComponent<Rsw>();
+		auto& settings = rsw->lightmapSettings;
+		ImGui::DragInt("Quality", &settings.quality, 1, 1, 10);
+		ImGui::Checkbox("Sunlight", &settings.sunLight);
+		ImGui::Checkbox("Shadows", &settings.shadows);
+		ImGui::Checkbox("Diffuse Lighting", &settings.diffuseLighting);
 		ImGui::Checkbox("Debug Points", &lightmapper->buildDebugPoints);
-		ImGui::Checkbox("Height Edit Mode Selection Only", &lightmapper->heightSelectionOnly);
-		ImGui::DragInt2("Generate Range X", glm::value_ptr(lightmapper->rangeX), 1, 0, gnd->width);
-		ImGui::DragInt2("Generate Range Y", glm::value_ptr(lightmapper->rangeY), 1, 0, gnd->height);
-		ImGui::DragInt("Thread Count", &lightmapper->threadCount, 1, 1, 32);
+		ImGui::Checkbox("Height Edit Mode Selection Only", &settings.heightSelectionOnly);
+		ImGui::DragInt2("Generate Range X", glm::value_ptr(settings.rangeX), 1, 0, gnd->width);
+		ImGui::DragInt2("Generate Range Y", glm::value_ptr(settings.rangeY), 1, 0, gnd->height);
+		ImGui::DragInt("Thread Count", &config.lightmapperThreadCount, 1, 1, 32);
 
 		if (ImGui::Button("Lightmap!"))
 		{
