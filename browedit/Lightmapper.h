@@ -39,7 +39,7 @@ private:
 	void run();
 	void onDone();
 
-	bool collidesMap(const math::Ray& ray);
+	bool collidesMap(const math::Ray& ray, float maxDistance);
 	std::pair<glm::vec3, int> calculateLight(const glm::vec3& groundPos, const glm::vec3& normal);
 	void calcPos(int direction, int tileId, int x, int y);
 

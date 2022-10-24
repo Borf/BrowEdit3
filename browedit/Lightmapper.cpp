@@ -184,29 +184,10 @@ void Lightmapper::run()
 
 }
 
-bool Lightmapper::collidesMap(const math::Ray& ray)
+bool Lightmapper::collidesMap(const math::Ray& ray, float maxDistance)
 {
-	return gnd->rayCast(ray, false, 0,0,-1,-1,0.05f) != glm::vec3(std::numeric_limits<float>().max());
-	/*
-	std::vector<glm::vec3> quad;
-	quad.resize(3);
-	float t;
-	for (std::size_t i = 0; i < mapQuads.size(); i += 4)
-	{
-		quad[0] = mapQuads[i + 0];
-		quad[1] = mapQuads[i + 1];
-		quad[2] = mapQuads[i + 2];
-		if (ray.LineIntersectPolygon(quad, t))
-			if (t > 0.05)
-				return true;
-		quad[0] = mapQuads[i + 2];
-		quad[1] = mapQuads[i + 3];
-		quad[2] = mapQuads[i + 0];
-		if (ray.LineIntersectPolygon(quad, t))
-			if (t > 0.05)
-				return true;
-	}
-	return false;*/
+	auto point = gnd->rayCast(ray, false, 0, 0, -1, -1, 0.05f);
+	return point != glm::vec3(std::numeric_limits<float>().max()) && glm::distance(point, ray.origin) < maxDistance;
 };
 
 
@@ -247,7 +228,7 @@ std::pair<glm::vec3, int> Lightmapper::calculateLight(const glm::vec3& groundPos
 					}
 					});
 
-				if (!collides && shadowStrength < 1.0f && collidesMap(ray))
+				if (!collides && shadowStrength < 1.0f && collidesMap(ray, 9999999999.9f))
 				{
 					collides = true;
 					shadowStrength = 1;
@@ -325,7 +306,7 @@ std::pair<glm::vec3, int> Lightmapper::calculateLight(const glm::vec3& groundPos
 						}
 						});
 				}
-				if (!collides && shadowStrength < 1 && collidesMap(math::Ray(groundPos, lightDirection2)))
+				if (!collides && shadowStrength < 1 && collidesMap(math::Ray(groundPos, lightDirection2), distance))
 				{
 					collides = true;
 					shadowStrength = 1;
