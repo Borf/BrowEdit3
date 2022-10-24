@@ -59,7 +59,7 @@ public:
 
 		float ratio = fbo->getWidth() / (float)fbo->getHeight();
 		nodeRenderContext.projectionMatrix = glm::perspective(glm::radians(45.0f), ratio, 0.1f, 5000.0f);
-		nodeRenderContext.viewMatrix = glm::lookAt(glm::vec3(0.0f, -distance, -distance), glm::vec3(0.0f, -rsm->bbrange.y, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		nodeRenderContext.viewMatrix = glm::lookAt(glm::vec3(0.0f, -distance, -distance), glm::vec3(0.0f, rsm->bbrange.y, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 		RsmRenderer::RsmRenderContext::getInstance()->viewLighting = false;
 		node->getComponent<RsmRenderer>()->matrixCache = glm::rotate(glm::mat4(1.0f), glm::radians(rotation), glm::vec3(0, 1, 0));
 		NodeRenderer::render(node, nodeRenderContext);

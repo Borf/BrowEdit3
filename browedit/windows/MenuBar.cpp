@@ -41,6 +41,7 @@ void BrowEdit::menuBar()
 				}
 			ImGui::EndMenu();
 		}
+		hotkeyMenuItem("Open Model Editor", HotkeyAction::Global_ModelEditor_Open);
 		hotkeyMenuItem("Quit", HotkeyAction::Global_Exit);
 		ImGui::EndMenu();
 	}

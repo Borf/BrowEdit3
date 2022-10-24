@@ -403,6 +403,9 @@
     <ClCompile Include="lib\imGuIZMO.quat\imGuIZMO.quat\imGuIZMOquat.cpp">
       <Filter>lib\imGuIZMO.quat</Filter>
     </ClCompile>
+    <ClCompile Include="browedit\ModelEditor.cpp">
+      <Filter>browedit</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="lib\imgui\imgui.h">
@@ -695,6 +698,9 @@
     </ClInclude>
     <ClInclude Include="lib\imGuIZMO.quat\imGuIZMO.quat\vgMath.h">
       <Filter>lib\imGuIZMO.quat</Filter>
+    </ClInclude>
+    <ClInclude Include="browedit\ModelEditor.h">
+      <Filter>browedit</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

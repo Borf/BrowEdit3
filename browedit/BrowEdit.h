@@ -8,6 +8,7 @@
 #include <mutex>
 #include <browedit/util/FileIO.h>
 #include <browedit/components/Gnd.h>
+#include <browedit/ModelEditor.h>
 class Action;
 class Lightmapper;
 using json = nlohmann::json;
@@ -17,6 +18,7 @@ class Hotkey;
 struct GLFWwindow;
 struct GLFWcursor;
 enum class HotkeyAction;
+
 namespace gl
 {
 	class Texture;
@@ -47,6 +49,7 @@ class BrowEdit
 	std::vector<Map*> maps;
 public:
 	std::list<MapView> mapViews; //list, because vector reallocates mapviews when pushing back, which breaks activeMapview pointer
+	ModelEditor modelEditor;
 	gl::Texture* iconsTexture;
 	gl::Texture* gatTexture;
 	Lightmapper* lightmapper = nullptr;

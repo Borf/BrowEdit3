@@ -72,6 +72,7 @@
     <ClCompile Include="browedit\math\Polygon.cpp" />
     <ClCompile Include="browedit\math\Ray.cpp" />
     <ClCompile Include="browedit\Mesh.cpp" />
+    <ClCompile Include="browedit\ModelEditor.cpp" />
     <ClCompile Include="browedit\Node.cpp" />
     <ClCompile Include="browedit\NodeRenderer.cpp" />
     <ClCompile Include="browedit\util\FileIO.cpp" />
@@ -183,6 +184,7 @@
     <ClInclude Include="browedit\math\Polygon.h" />
     <ClInclude Include="browedit\math\Ray.h" />
     <ClInclude Include="browedit\Mesh.h" />
+    <ClInclude Include="browedit\ModelEditor.h" />
     <ClInclude Include="browedit\Node.h" />
     <ClInclude Include="browedit\NodeRenderer.h" />
     <ClInclude Include="browedit\shaders\GndShader.h" />

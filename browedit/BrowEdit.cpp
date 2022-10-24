@@ -21,6 +21,7 @@
 #include <browedit/Node.h>
 #include <browedit/Gadget.h>
 #include <browedit/Lightmapper.h>
+#include <browedit/ModelEditor.h>
 #include <browedit/components/Rsw.h>
 #include <browedit/components/Gat.h>
 #include <browedit/components/Gnd.h>
@@ -161,14 +162,32 @@ void BrowEdit::run()
 //		loadMap("data\\guild_vs1.rsw");
 //		loadMap("data\\effects_ro.rsw");
 //		loadMap("data\\prt_in.rsw");
-		loadMap("data\\wall_colour.rsw");
+//		loadMap("data\\wall_colour.rsw");
 //		loadMap("data\\untomb_05s.rsw");
 //		loadMap("data\\easter_la.rsw");
 //		loadMap("data\\2@alice_mad.rsw");
 //		loadMap("data\\prt_vilg01.rsw");
 //		loadMap("data\\dae_paysq.rsw");
 //		loadMap("data\\veins.rsw");
+
+		//loadModel("data\\model\\prontera_re\\streetlamp_01.rsm");
+	//	loadModel("data\\model\\크리스마스마을\\xmas_내부트리.rsm");
+	//	loadModel("data\\model\\인던02\\인던02b중앙장식01.rsm");
+		//loadModel("data\\model\\event\\3차전직_석상02.rsm"); //bigass statue
+		//loadModel("data\\model\\para\\alchemy_01.rsm");
+		//loadModel("data\\model\\para\\mora_01.rsm");
+		//loadModel("data\\model\\para\\mora_02.rsm");
+		//loadModel("data\\model\\masin\\fire_land.rsm");
+		//loadModel("data\\model인던02인던02미이라.rsm");
+		//loadModel("data\\model\\pud\\stall_01.rsm");
+		//loadModel("data\\model\\pud\\stall_02.rsm");
+		//loadModel("data\\model\\pud\\stall_03.rsm");
+		//loadModel("data\\model\\pud\\swing_01.rsm");
+		//loadModel("data\\model\\pud\\balloon_01.rsm");
+		//loadModel("data\\model\\plants_e_01.rsm2");
+	modelEditor.load("data\\model\\para\\mora_01.rsm");
 #endif
+
 
 	double time = ImGui::GetTime();
 	while (true)
@@ -305,6 +324,10 @@ void BrowEdit::run()
 			else
 				it++;
 		}
+
+		modelEditor.run(this);
+
+
 
 		if (!ImGui::GetIO().WantTextInput)
 		{
