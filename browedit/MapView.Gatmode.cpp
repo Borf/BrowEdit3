@@ -60,7 +60,7 @@ void MapView::postRenderGatMode(BrowEdit* browEdit)
 	bool canSelect = true;
 
 
-	auto mouse3D = gat->rayCast(mouseRay, viewEmptyTiles);
+	auto mouse3D = gat->rayCast(mouseRay);
 	glm::ivec2 tileHovered((int)glm::floor(mouse3D.x / 5), gat->height - (int)glm::floor(mouse3D.z / 5)+1);
 
 	ImGui::Begin("Statusbar");
