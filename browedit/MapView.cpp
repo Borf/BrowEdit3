@@ -502,7 +502,11 @@ void MapView::update(BrowEdit* browEdit, const ImVec2 &size, float deltaTime)
 	{
 		if ((mouseState.buttons&6) != 0)
 		{
-			if (ImGui::GetIO().KeyShift)
+			if (ImGui::GetIO().KeyShift && ImGui::GetIO().KeyCtrl)
+			{
+				cameraDistance *= 1.0f + (mouseState.position.y - prevMouseState.position.y) * 0.0025f * browEdit->config.cameraMouseSpeed;
+			}
+			else if (ImGui::GetIO().KeyShift)
 			{
 				cameraRot.x += (mouseState.position.y - prevMouseState.position.y) * 0.25f * browEdit->config.cameraMouseSpeed;
 				cameraRot.y += (mouseState.position.x - prevMouseState.position.x) * 0.25f * browEdit->config.cameraMouseSpeed;
