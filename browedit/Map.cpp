@@ -914,15 +914,21 @@ void WallCalculation::calcUV(const glm::ivec3& position, Gnd* gnd)
 	{
 		float h1 = -cube->h4;
 		float h2 = -cube->h2;
-		float h3 = -gnd->cubes[position.x + 1][position.y]->h3;
-		float h4 = -gnd->cubes[position.x + 1][position.y]->h1;
-		if (position.z == 2)
+		float h3, h4;
+		if (position.z == 1 && gnd->inMap(position + glm::ivec3(1, 0, 0)))
+		{
+			h3 = -gnd->cubes[position.x + 1][position.y]->h3;
+			h4 = -gnd->cubes[position.x + 1][position.y]->h1;
+		}
+		else if (position.z == 2 && gnd->inMap(position + glm::ivec3(0, 1, 0)))
 		{
 			h1 = -cube->h3;
 			h2 = -cube->h4;
 			h4 = -gnd->cubes[position.x][position.y + 1]->h2;
 			h3 = -gnd->cubes[position.x][position.y + 1]->h1;
 		}
+		else
+			return;
 		glm::vec2 guv1(g_uv1.x, glm::mix(g_uv1.y, g_uv3.y, (h1 - minHeight) / (maxHeight - minHeight)));
 		glm::vec2 guv2(g_uv2.x, glm::mix(g_uv2.y, g_uv4.y, (h2 - minHeight) / (maxHeight - minHeight)));
 		glm::vec2 guv3(g_uv3.x, glm::mix(g_uv1.y, g_uv3.y, (h3 - minHeight) / (maxHeight - minHeight)));
