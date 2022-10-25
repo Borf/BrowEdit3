@@ -334,7 +334,8 @@ void BrowEdit::showHeightWindow()
 							ImGuiContext& g = *GImGui;
 
 							ImGui::RenderFrame(bb.Min, bb.Max, ImGui::GetColorU32(ImGuiCol_FrameBg, 1), true, style.FrameRounding);
-							window->DrawList->AddImage((ImTextureID)(long long)gndRenderer->textures[tile->textureIndex]->id(), bb.Min + ImVec2(1, 1), bb.Max - ImVec2(1, 1), ImVec2(0, 1), ImVec2(1, 0));
+							if(gndRenderer->textures.size() > tile->textureIndex && gndRenderer->textures[tile->textureIndex]->loaded)
+								window->DrawList->AddImage((ImTextureID)(long long)gndRenderer->textures[tile->textureIndex]->id(), bb.Min + ImVec2(1, 1), bb.Max - ImVec2(1, 1), ImVec2(0, 1), ImVec2(1, 0));
 
 							for (int i = 0; i < 4; i++)
 							{
