@@ -49,6 +49,7 @@ void BrowEdit::registerActions()
 				rsmRenderer->begin();
 				});
 		});
+	HotkeyRegistry::registerAction(HotkeyAction::Global_CloseTab,				[this]() { activeMapView->opened = false; }, hasActiveMapView );
 	HotkeyRegistry::registerAction(HotkeyAction::Global_ModelEditor_Open,		[this]() { modelEditor.opened = !modelEditor.opened; });
 	HotkeyRegistry::registerAction(HotkeyAction::Global_Copy,					[this]() { if (editMode == EditMode::Object) { activeMapView->map->copySelection(); } }, hasActiveMapView);
 	HotkeyRegistry::registerAction(HotkeyAction::Global_Paste,					[this]() { if (editMode == EditMode::Object) { activeMapView->map->pasteSelection(this); } }, hasActiveMapView);

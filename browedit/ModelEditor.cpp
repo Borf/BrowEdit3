@@ -115,6 +115,13 @@ void ModelEditor::run(BrowEdit* browEdit)
 
 	}
 	ImGui::End();
+
+	if (ImGui::Begin("ModelEditorTimelineProperties"))
+	{
+
+	}
+	ImGui::End();
+
 	if (ImGui::Begin("ModelEditorNodes"))
 	{
 		std::function<void(Rsm::Mesh*)> buildTree;
@@ -157,27 +164,23 @@ void ModelEditor::run(BrowEdit* browEdit)
 			sprintf_s(versionStr, 10, "%04x", rsm->version);
 			if (ImGui::BeginCombo("Version", versionStr))
 			{
+				if (ImGui::Selectable("0101", rsm->version == 0x0101))
+					rsm->version = 0x0101;
+				if (ImGui::Selectable("0102", rsm->version == 0x0102))
+					rsm->version = 0x0102;
 				if (ImGui::Selectable("0103", rsm->version == 0x0103))
 					rsm->version = 0x0103;
 				if (ImGui::Selectable("0104", rsm->version == 0x0104))
 					rsm->version = 0x0104;
-				if (ImGui::Selectable("0108", rsm->version == 0x0108))
-					rsm->version = 0x0108;
-				if (ImGui::Selectable("0109", rsm->version == 0x0109))
-					rsm->version = 0x0109;
-				if (ImGui::Selectable("0201", rsm->version == 0x0201))
-					rsm->version = 0x0201;
+				if (ImGui::Selectable("0105", rsm->version == 0x0105))
+					rsm->version = 0x0105;
 				if (ImGui::Selectable("0202", rsm->version == 0x0202))
 					rsm->version = 0x0202;
 				if (ImGui::Selectable("0203", rsm->version == 0x0203))
 					rsm->version = 0x0203;
-				if (ImGui::Selectable("0204", rsm->version == 0x0204))
-					rsm->version = 0x0204;
 				ImGui::EndCombo();
 			}
 			ImGui::InputInt("Animation Length", &rsm->animLen);
-
-
 
 			if (ImGui::BeginCombo("Shade Type", std::string(magic_enum::enum_name(rsm->shadeType)).c_str()))
 			{
@@ -188,6 +191,17 @@ void ModelEditor::run(BrowEdit* browEdit)
 				}
 				ImGui::EndCombo();
 			}
+
+			if (ImGui::CollapsingHeader("Textures", ImGuiTreeNodeFlags_DefaultOpen))
+			{
+				for (auto& t : rsm->textures)
+				{
+					ImGui::PushID(t.c_str());
+					ImGui::InputText("Texture", &t);
+					ImGui::PopID();
+				}
+			}
+
 		}
 		else //activeModelView.selectedMesh selected
 		{

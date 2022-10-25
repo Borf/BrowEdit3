@@ -19,6 +19,7 @@ enum class HotkeyAction
 	Global_Settings,
 	Global_ReloadTextures,
 	Global_ReloadModels,
+	Global_CloseTab,
 	Global_ModelEditor_Open,
 
 	Global_Copy,
