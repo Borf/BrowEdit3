@@ -987,6 +987,22 @@ void MapView::postRenderTextureMode(BrowEdit* browEdit)
 
 	
 	}
+	else if (browEdit->textureBrushMode == BrowEdit::TextureBrushMode::Dropper)
+	{
+		browEdit->cursor = browEdit->dropperCursor;
+		if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+		{
+			if (gnd->inMap(tileHovered))
+			{
+				if (gnd->cubes[tileHovered.x][tileHovered.y]->tileUp != -1)
+				{
+					textureSelected = gnd->tiles[gnd->cubes[tileHovered.x][tileHovered.y]->tileUp]->textureIndex;
+					browEdit->textureBrushMode = browEdit->brushModeBeforeDropper;
+				}
+			}
+		}
+	}
+
 
 
 	fbo->unbind();

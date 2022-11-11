@@ -203,6 +203,7 @@ void BrowEdit::run()
 			ImGui::SetMouseCursor(ImGuiMouseCursor_None);
 			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 			glfwSetCursor(window, cursor);
+			cursor = nullptr;
 		}
 
 		double newTime = ImGui::GetTime();

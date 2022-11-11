@@ -187,9 +187,11 @@ public:
 	{
 		Stamp,
 		Select,
-		Fill
+		Fill,
+		Dropper
 	} textureBrushMode = TextureBrushMode::Stamp;
-	
+	TextureBrushMode brushModeBeforeDropper;
+
 	bool heightDoodle = true;
 	bool gatDoodle = false;
 

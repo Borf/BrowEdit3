@@ -53,12 +53,18 @@ void BrowEdit::showTextureBrushWindow()
 		if (toolBarToggleButton("stamp", ICON_TEXTUREBRUSH_STAMP, textureBrushMode == TextureBrushMode::Stamp, "Texture Stamping"))
 			textureBrushMode = TextureBrushMode::Stamp;
 		ImGui::SameLine();
-		if(toolBarToggleButton("bucket", ICON_TEXTUREBRUSH_BUCKET, textureBrushMode == TextureBrushMode::Fill, "Texture filling"))
+		if (toolBarToggleButton("bucket", ICON_TEXTUREBRUSH_BUCKET, textureBrushMode == TextureBrushMode::Fill, "Texture filling"))
 			textureBrushMode = TextureBrushMode::Fill;
 		ImGui::SameLine();
-		if(toolBarToggleButton("select", ICON_TEXTUREBRUSH_SELECT, textureBrushMode == TextureBrushMode::Select, "Texture Selecting & fill"))
+		if (toolBarToggleButton("select", ICON_TEXTUREBRUSH_SELECT, textureBrushMode == TextureBrushMode::Select, "Texture Selecting & fill"))
 			textureBrushMode = TextureBrushMode::Select;
-		
+		ImGui::SameLine();
+		if (toolBarToggleButton("dropper", ICON_DROPPER, textureBrushMode == TextureBrushMode::Dropper, "Picking texture with dropper"))
+		{
+			brushModeBeforeDropper = textureBrushMode;
+			textureBrushMode = TextureBrushMode::Dropper;
+		}
+
 
 		if (textureBrushMode == TextureBrushMode::Select)
 		{ //todo: put this somewhere shared between height & texture mode
