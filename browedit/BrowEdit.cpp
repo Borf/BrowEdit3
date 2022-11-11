@@ -486,7 +486,10 @@ bool BrowEdit::toolBarToggleButton(const std::string_view& name, int icon, bool 
 void BrowEdit::showMapWindow(MapView& mapView, float deltaTime)
 {
 	ImGui::SetNextWindowSizeConstraints(ImVec2(300, 300), ImVec2(2048, 2048));
-	if (ImGui::Begin(mapView.viewName.c_str(), &mapView.opened))
+	int flags = 0;
+	if (mapView.map->changed)
+		flags |= ImGuiWindowFlags_UnsavedDocument;
+	if (ImGui::Begin(mapView.viewName.c_str(), &mapView.opened, flags))
 	{
 		mapView.toolbar(this);
 		auto size = ImGui::GetContentRegionAvail();
@@ -627,6 +630,8 @@ void BrowEdit::saveMap(Map* map)
 	map->rootNode->getComponent<Rsw>()->save(rswName, this);
 	map->rootNode->getComponent<Gnd>()->save(gndName);
 	map->rootNode->getComponent<Gat>()->save(gatName);
+
+	map->changed = false;
 }
 
 void BrowEdit::saveAsMap(Map* map)

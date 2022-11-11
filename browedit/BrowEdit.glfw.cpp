@@ -11,6 +11,11 @@ static void glfw_error_callback(int error, const char* description)
     std::cerr<<"Glfw Error" << error << " -> " << description << std::endl;
 }
 
+static void glfw_close_callback(GLFWwindow* window)
+{
+
+}
+
 #ifdef _WIN32
 void APIENTRY onDebug(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
 #else
@@ -77,6 +82,8 @@ bool BrowEdit::glfwBegin()
         image.pixels = stbi_load_from_memory((stbi_uc*)fileData, (int)len, &image.width, &image.height, &depth, 4);
         dropperCursor = glfwCreateCursor(&image, 1, 29);
     }
+
+    glfwSetWindowCloseCallback(window, glfw_close_callback);
 
     return true;
 }

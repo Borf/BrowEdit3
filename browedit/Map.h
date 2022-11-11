@@ -22,6 +22,8 @@ public:
 	std::vector<glm::ivec2> tileSelection;
 	std::vector<glm::ivec2> gatSelection;
 
+	bool changed = false;
+
 	std::vector<glm::ivec2> getSelectionAroundTiles();
 
 

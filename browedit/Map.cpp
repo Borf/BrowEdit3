@@ -36,6 +36,7 @@ Map::Map(const std::string& name, BrowEdit* browEdit) : name(name)
 	auto rsw = new Rsw();
 	rootNode->addComponent(rsw);	
 	rsw->load(name, this, browEdit);
+	changed = false;
 }
 
 Map::Map(const std::string& name, int width, int height, BrowEdit* browEdit) : name(name)
@@ -44,6 +45,7 @@ Map::Map(const std::string& name, int width, int height, BrowEdit* browEdit) : n
 	auto rsw = new Rsw();
 	rootNode->addComponent(rsw);
 	rsw->newMap(name, width, height, this, browEdit);
+	changed = true;
 }
 
 
@@ -112,6 +114,8 @@ void Map::doAction(Action* action, BrowEdit* browEdit)
 		throw "Oops";
 		return;
 	}
+
+	changed = true;
 	action->perform(this, browEdit);
 	undoStack.push_back(action);
 
