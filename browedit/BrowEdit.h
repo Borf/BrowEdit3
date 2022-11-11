@@ -46,8 +46,8 @@ class BrowEdit
 	gl::Texture* soundTexture;
 	gl::Texture* prefabTexture;
 
-	std::vector<Map*> maps;
 public:
+	std::vector<Map*> maps;
 	std::list<MapView> mapViews; //list, because vector reallocates mapviews when pushing back, which breaks activeMapview pointer
 	ModelEditor modelEditor;
 	gl::Texture* iconsTexture;
@@ -154,6 +154,11 @@ public:
 		bool textureManageWindowVisible = true; //TODO: load from config
 		util::FileIO::Node* textureManageWindowSelectedTreeNode = nullptr;
 		std::map<std::string, gl::Texture*> textureManageWindowCache;
+
+
+		bool showQuitConfirm = false;
+
+
 	} windowData;
 	ImFont* font;
 	enum class EditMode

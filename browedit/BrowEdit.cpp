@@ -103,9 +103,11 @@ int main()
 }
 
 std::map<Map*, MapView*> firstRender; //DIRTY HACK
+BrowEdit* browEdit; //EVEN DIRTIER HACK
 
 void BrowEdit::run()
 {
+	browEdit = this;
 	configBegin();
 	if (!glfwBegin())
 	{
@@ -259,7 +261,7 @@ void BrowEdit::run()
 		if (editMode == EditMode::Cinematic)
 			showCinematicModeWindow();
 
-		if(windowData.hotkeyEditWindowVisible)
+		if (windowData.hotkeyEditWindowVisible)
 			showHotkeyEditorWindow();
 
 		showLightmapSettingsWindow();
@@ -288,7 +290,7 @@ void BrowEdit::run()
 		else if (windowData.progressWindowProgres >= 1.0f)
 		{
 			windowData.progressWindowProgres = 0;
-			if(windowData.progressWindowOnDone)
+			if (windowData.progressWindowOnDone)
 				windowData.progressWindowOnDone();
 			windowData.progressWindowOnDone = nullptr;
 			windowData.progressCancel = nullptr;
@@ -326,6 +328,32 @@ void BrowEdit::run()
 		}
 
 		modelEditor.run(this);
+
+		if (windowData.showQuitConfirm)
+		{
+			windowData.showQuitConfirm = false;
+			ImGui::OpenPopup("QuitConfirm");
+		}
+		if (ImGui::BeginPopupModal("QuitConfirm"))
+		{
+			ImGui::Text("There are unsaved changes in one of your maps. Are you sure you want to quit?");
+			if (ImGui::Button("Save & Quit"))
+			{
+				for (auto m : maps)
+					if (m->changed)
+						saveMap(m);
+				glfwSetWindowShouldClose(window, GLFW_TRUE);
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("Cancel"))
+				ImGui::CloseCurrentPopup();
+			ImGui::SameLine();
+			if (ImGui::Button("Quit"))
+				glfwSetWindowShouldClose(window, GLFW_TRUE);
+
+			ImGui::EndPopup();
+		}
+
 
 
 

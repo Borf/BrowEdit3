@@ -32,7 +32,13 @@ void BrowEdit::registerActions()
 	HotkeyRegistry::registerAction(HotkeyAction::Global_New, 			[this]() { windowData.showNewMapPopup = true; });
 	HotkeyRegistry::registerAction(HotkeyAction::Global_Save,			[this]() { saveMap(activeMapView->map); }, hasActiveMapView);
 	HotkeyRegistry::registerAction(HotkeyAction::Global_Load,			[this]() { showOpenWindow(); });
-	HotkeyRegistry::registerAction(HotkeyAction::Global_Exit,			[this]() { glfwSetWindowShouldClose(window, 1); });
+	HotkeyRegistry::registerAction(HotkeyAction::Global_Exit,			[this]() { 
+		bool changed = false;
+		for (auto m : maps)
+			windowData.showQuitConfirm |= m->changed;
+		if(!windowData.showQuitConfirm)
+			glfwSetWindowShouldClose(window, GLFW_TRUE);
+	});
 
 	HotkeyRegistry::registerAction(HotkeyAction::Global_Undo,			[this]() { activeMapView->map->undo(this); }, hasActiveMapView);
 	HotkeyRegistry::registerAction(HotkeyAction::Global_Redo,			[this]() { activeMapView->map->redo(this); }, hasActiveMapView);

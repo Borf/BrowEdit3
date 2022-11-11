@@ -5,6 +5,9 @@
 #include <GLFW/glfw3.h>
 #include <Version.h>
 #include <browedit/Image.h>
+#include <browedit/Map.h>
+
+extern BrowEdit* browEdit; //meh
 
 static void glfw_error_callback(int error, const char* description)
 {
@@ -13,7 +16,14 @@ static void glfw_error_callback(int error, const char* description)
 
 static void glfw_close_callback(GLFWwindow* window)
 {
+    for (auto m : browEdit->maps)
+        browEdit->windowData.showQuitConfirm |= m->changed;
 
+    if (browEdit->windowData.showQuitConfirm)
+    {
+        glfwSetWindowShouldClose(window, GLFW_FALSE);
+        browEdit->windowData.showQuitConfirm = true;
+    }
 }
 
 #ifdef _WIN32
