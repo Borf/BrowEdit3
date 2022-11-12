@@ -1,3 +1,4 @@
+#define IMGUI_DEFINE_MATH_OPERATORS
 #include "ModelEditor.h"
 #include <browedit/BrowEdit.h>
 #include <browedit/Config.h>
@@ -13,6 +14,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <magic_enum.hpp>
+#include <browedit/Icons.h>
 
 void ModelEditor::load(const std::string& fileName)
 {
@@ -64,7 +66,7 @@ void ModelEditor::run(BrowEdit* browEdit)
 				return;
 
 			if (m.fbo->getWidth() != size.x || m.fbo->getHeight() != size.y)
-				m.fbo->resize(size.x, size.y);
+				m.fbo->resize((int)size.x, (int)size.y);
 
 			m.fbo->bind();
 			glViewport(0, 0, m.fbo->getWidth(), m.fbo->getHeight());
@@ -110,9 +112,79 @@ void ModelEditor::run(BrowEdit* browEdit)
 	auto& activeModelView = models[0];
 	auto rsm = activeModelView.node->getComponent<Rsm>();
 
+	static int leftAreaSize = 200;
+	static float scale = 1;
+	static float timeSelected = 0.0f;
+	static float rowHeight = 25;
+
+
 	if (ImGui::Begin("ModelEditorTimeline"))
 	{
+		const ImGuiStyle& style = ImGui::GetStyle();
+		const ImGuiIO& IO = ImGui::GetIO();
 
+
+		ImGui::SetNextItemWidth(150);
+		ImGui::DragFloat("##CurrentTime", &timeSelected, 0.1f, 0, 10000.0f);
+		if (ImGui::IsItemHovered())
+			ImGui::SetTooltip("Animation time");
+		ImGui::SameLine();
+		if (browEdit->toolBarButton("Prev", ICON_PREV, "Previous Keyframe", ImVec4(1, 1, 1, 1)))
+		{
+			//if (selectedTrack >= 0 && selectedTrack < rsw->cinematicTracks.size() && selectedKeyFrame > 0)
+			//	selectedKeyFrame--;
+		}
+		ImGui::SameLine();
+		if (browEdit->toolBarButton("PlayPause", ICON_PLAY, "Play / Pause", ImVec4(1, 1, 1, 1)))
+			;// playing = !playing;
+		ImGui::SameLine();
+		if (browEdit->toolBarButton("Next", ICON_NEXT, "Nexts Keyframe", ImVec4(1, 1, 1, 1)))
+		{
+			//if (selectedTrack >= 0 && selectedTrack < rsw->cinematicTracks.size() && selectedKeyFrame < rsw->cinematicTracks[selectedTrack].frames.size() - 1)
+			//	selectedKeyFrame++;
+		}
+
+
+		if (rsm->animLen > 0 && ImGui::BeginChild("KeyframeEditor", ImVec2(-1, 200), true, ImGuiWindowFlags_AlwaysHorizontalScrollbar))
+		{
+			ImDrawList* DrawList = ImGui::GetWindowDrawList();
+			auto window = ImGui::GetCurrentWindow();
+
+			ImRect bb(window->DC.CursorPos, window->DC.CursorPos + ImVec2(leftAreaSize + scale * rsm->animLen, 100));
+			ImGui::ItemSize(bb);
+			if (ImGui::ItemAdd(bb, NULL))
+			{
+				ImVec2 cursorPos = ImGui::GetCursorScreenPos();
+				ImGui::RenderFrame(bb.Min, bb.Max, ImGui::GetColorU32(ImGuiCol_PopupBg, 1), true, style.FrameRounding);
+
+				int trackIndex = 0;
+				std::function<void(Rsm::Mesh* mesh, int level)> drawTrack;
+				//TODO: put the labels in a second subitem so only the keyframe things scroll
+				drawTrack = [&](Rsm::Mesh* mesh, int level)
+				{
+					ImGui::RenderText(bb.Min + ImVec2(10 + 20 * level, rowHeight + rowHeight * trackIndex + 2), mesh->name.c_str()); //todo: center
+					ImGui::RenderFrame(bb.Min + ImVec2(leftAreaSize, rowHeight + rowHeight * trackIndex + 1), bb.Min + ImVec2(leftAreaSize + scale * rsm->animLen, rowHeight + rowHeight * trackIndex + rowHeight - 2), ImGui::GetColorU32(ImGuiCol_FrameBg, 1), true, style.FrameRounding);
+					trackIndex++;
+					for (auto m : mesh->children)
+						drawTrack(m, level + 1);
+				};
+				drawTrack(rsm->rootMesh, 0);
+				int trackCount = trackIndex;
+
+				for (int i = 0; i < rsm->animLen; i+=100)
+				{
+					ImGui::RenderText(bb.Min + ImVec2(leftAreaSize + scale * i + 4, 0), std::to_string(i).c_str());
+					for (int ii = 0; ii < 100; ii += 10)
+					{
+						window->DrawList->AddLine(bb.Min + ImVec2(leftAreaSize + scale * i + scale * ii, rowHeight - 5), bb.Min + ImVec2(leftAreaSize + scale * i + scale * ii, rowHeight), ImGui::GetColorU32(ImGuiCol_TextDisabled, 1.0f));
+						window->DrawList->AddLine(bb.Min + ImVec2(leftAreaSize + scale * i + scale * ii, rowHeight), bb.Min + ImVec2(leftAreaSize + scale * i + scale * ii, rowHeight * (trackCount + 1)), ImGui::GetColorU32(ImGuiCol_TextDisabled, 0.5f));
+					}
+					window->DrawList->AddLine(bb.Min + ImVec2(leftAreaSize + scale * i, 0), bb.Min + ImVec2(leftAreaSize + scale * i, rowHeight * (trackCount + 1)), ImGui::GetColorU32(ImGuiCol_Text, 1));
+				}
+
+			}
+			ImGui::EndChild();
+		}
 	}
 	ImGui::End();
 
