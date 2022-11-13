@@ -28,24 +28,25 @@ public:
 			glm::ivec3 smoothGroups = glm::ivec3(-1);
 			short padding;
 		};
-
-		class RotFrame
+		class Frame
 		{
 		public:
-			int							time;
+			int time;
+		};
+		class RotFrame : public Frame
+		{
+		public:
 			glm::quat					quaternion;
 		};
-		class ScaleFrame
+		class ScaleFrame : public Frame
 		{
 		public:
-			int							time;
 			glm::vec3					scale;
 			float						data; //???????
 		};
-		class PosFrame
+		class PosFrame : public Frame
 		{
 		public:
-			int							time;
 			glm::vec3					position;
 			float						data; //???????
 		};

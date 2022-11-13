@@ -113,7 +113,7 @@ void ModelEditor::run(BrowEdit* browEdit)
 	auto rsm = activeModelView.node->getComponent<Rsm>();
 
 	static int leftAreaSize = 200;
-	static float scale = 1;
+	static float scale = 0.1;
 	static float timeSelected = 0.0f;
 	static float rowHeight = 25;
 
@@ -144,13 +144,17 @@ void ModelEditor::run(BrowEdit* browEdit)
 			//	selectedKeyFrame++;
 		}
 
+		int trackCount = 0;
+		if (rsm)
+			rsm->rootMesh->foreach([&trackCount](Rsm::Mesh*) {trackCount++; });
 
-		if (rsm->animLen > 0 && ImGui::BeginChild("KeyframeEditor", ImVec2(-1, 200), true, ImGuiWindowFlags_AlwaysHorizontalScrollbar))
+
+		if (rsm->animLen > 0 && ImGui::BeginChild("KeyframeEditor", ImVec2(-1, (trackCount*3+1) * rowHeight + 4 ), true, ImGuiWindowFlags_AlwaysHorizontalScrollbar))
 		{
 			ImDrawList* DrawList = ImGui::GetWindowDrawList();
 			auto window = ImGui::GetCurrentWindow();
 
-			ImRect bb(window->DC.CursorPos, window->DC.CursorPos + ImVec2(leftAreaSize + scale * rsm->animLen, 100));
+			ImRect bb(window->DC.CursorPos, window->DC.CursorPos + ImVec2(leftAreaSize + scale * rsm->animLen, (trackCount*3+1)*rowHeight));
 			ImGui::ItemSize(bb);
 			if (ImGui::ItemAdd(bb, NULL))
 			{
@@ -162,25 +166,68 @@ void ModelEditor::run(BrowEdit* browEdit)
 				//TODO: put the labels in a second subitem so only the keyframe things scroll
 				drawTrack = [&](Rsm::Mesh* mesh, int level)
 				{
-					ImGui::RenderText(bb.Min + ImVec2(10 + 20 * level, rowHeight + rowHeight * trackIndex + 2), mesh->name.c_str()); //todo: center
-					ImGui::RenderFrame(bb.Min + ImVec2(leftAreaSize, rowHeight + rowHeight * trackIndex + 1), bb.Min + ImVec2(leftAreaSize + scale * rsm->animLen, rowHeight + rowHeight * trackIndex + rowHeight - 2), ImGui::GetColorU32(ImGuiCol_FrameBg, 1), true, style.FrameRounding);
+					ImGui::RenderText(bb.Min + ImVec2(10 + 20 * level, rowHeight + 3*rowHeight * trackIndex + 2), mesh->name.c_str()); //todo: center
+					ImGui::RenderFrame(bb.Min + ImVec2(leftAreaSize, rowHeight + 3*rowHeight * trackIndex + 1), 
+										bb.Min + ImVec2(leftAreaSize + scale * rsm->animLen, rowHeight + 3*rowHeight * trackIndex + rowHeight - 2), ImGui::GetColorU32(ImGuiCol_FrameBg, 1), true, style.FrameRounding);
 					trackIndex++;
 					for (auto m : mesh->children)
 						drawTrack(m, level + 1);
 				};
 				drawTrack(rsm->rootMesh, 0);
-				int trackCount = trackIndex;
 
 				for (int i = 0; i < rsm->animLen; i+=100)
 				{
 					ImGui::RenderText(bb.Min + ImVec2(leftAreaSize + scale * i + 4, 0), std::to_string(i).c_str());
-					for (int ii = 0; ii < 100; ii += 10)
+					if (scale >= 1)
 					{
-						window->DrawList->AddLine(bb.Min + ImVec2(leftAreaSize + scale * i + scale * ii, rowHeight - 5), bb.Min + ImVec2(leftAreaSize + scale * i + scale * ii, rowHeight), ImGui::GetColorU32(ImGuiCol_TextDisabled, 1.0f));
-						window->DrawList->AddLine(bb.Min + ImVec2(leftAreaSize + scale * i + scale * ii, rowHeight), bb.Min + ImVec2(leftAreaSize + scale * i + scale * ii, rowHeight * (trackCount + 1)), ImGui::GetColorU32(ImGuiCol_TextDisabled, 0.5f));
+						for (int ii = 0; ii < 100; ii += 10)
+						{
+							window->DrawList->AddLine(bb.Min + ImVec2(leftAreaSize + scale * i + scale * ii, rowHeight - 5), bb.Min + ImVec2(leftAreaSize + scale * i + scale * ii, rowHeight), ImGui::GetColorU32(ImGuiCol_TextDisabled, 1.0f));
+							window->DrawList->AddLine(bb.Min + ImVec2(leftAreaSize + scale * i + scale * ii, rowHeight), bb.Min + ImVec2(leftAreaSize + scale * i + scale * ii, rowHeight * (3 * trackCount + 1)), ImGui::GetColorU32(ImGuiCol_TextDisabled, 0.5f));
+						}
 					}
-					window->DrawList->AddLine(bb.Min + ImVec2(leftAreaSize + scale * i, 0), bb.Min + ImVec2(leftAreaSize + scale * i, rowHeight * (trackCount + 1)), ImGui::GetColorU32(ImGuiCol_Text, 1));
+					window->DrawList->AddLine(bb.Min + ImVec2(leftAreaSize + scale * i, 0), bb.Min + ImVec2(leftAreaSize + scale * i, rowHeight * (3*trackCount + 1)), ImGui::GetColorU32(ImGuiCol_Text, 1));
 				}
+
+
+				trackIndex = 0;
+				std::function<void(Rsm::Mesh* mesh)> drawKeyframes;
+				//TODO: put the labels in a second subitem so only the keyframe things scroll
+				drawKeyframes = [&](Rsm::Mesh* mesh)
+				{
+					float y = (3 * trackIndex + 1) * rowHeight;
+					for (auto& f : mesh->rotFrames)
+					{
+						ImGui::PushID(&f);
+						ImGui::SetCursorScreenPos(bb.Min + ImVec2(leftAreaSize + scale * f.time - 5, rowHeight + (3*rowHeight+0) * trackIndex));
+						ImGui::Button("##", ImVec2(10, rowHeight));
+						ImGui::PopID();
+					}
+					for (auto& f : mesh->scaleFrames)
+					{
+						ImGui::PushID(&f);
+						ImGui::SetCursorScreenPos(bb.Min + ImVec2(leftAreaSize + scale * f.time - 5, rowHeight + (3 * rowHeight + 1) * trackIndex));
+						ImGui::Button("##", ImVec2(10, rowHeight));
+						ImGui::PopID();
+					}
+					for (auto& f : mesh->posFrames)
+					{
+						ImGui::PushID(&f);
+						ImGui::SetCursorScreenPos(bb.Min + ImVec2(leftAreaSize + scale * f.time - 5, rowHeight + (3 * rowHeight + 2) * trackIndex));
+						ImGui::Button("##", ImVec2(10, rowHeight));
+						ImGui::PopID();
+					}
+
+
+
+					trackIndex++;
+					for (auto m : mesh->children)
+						drawKeyframes(m);
+				};
+				ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetColorU32(ImGuiCol_Button, 10));
+				drawKeyframes(rsm->rootMesh);
+				ImGui::PopStyleColor();
+
 
 			}
 			ImGui::EndChild();

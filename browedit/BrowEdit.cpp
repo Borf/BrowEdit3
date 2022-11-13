@@ -187,7 +187,8 @@ void BrowEdit::run()
 		//loadModel("data\\model\\pud\\swing_01.rsm");
 		//loadModel("data\\model\\pud\\balloon_01.rsm");
 		//loadModel("data\\model\\plants_e_01.rsm2");
-	modelEditor.load("data\\model\\para\\mora_01.rsm");
+	//	modelEditor.load("data\\model\\para\\mora_01.rsm");
+		modelEditor.load("data\\model\\프론테라\\교역소.rsm");
 #endif
 
 

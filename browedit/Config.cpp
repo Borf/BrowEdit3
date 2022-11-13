@@ -450,6 +450,12 @@ void Config::defaultHotkeys()
 {
 	hotkeys.clear();
 	std::ifstream in("data\\defaulthotkeys.json");
+	if (!in.is_open())
+	{
+		std::cout << "Warning, data folder is not found. Please use a proper browedit3 distribution, don't try to compile it yourself if you don't know what you're doing" << std::endl;
+		MessageBox(NULL, "Warning, data folder is not found. Please use a proper browedit3 distribution, don't try to compile it yourself if you don't know what you're doing", "Warning, improper use detected", MB_OK);
+		exit(0);
+	}
 	json j;
 	in >> j;
 
