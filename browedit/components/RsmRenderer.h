@@ -61,6 +61,8 @@ public:
 	Gnd* gnd;
 	Rsw* rsw;
 
+	float time = -1;
+
 	std::vector<gl::Texture*> textures; //should this be shared over all RsmRenderers with the same Rsm? static map<Rsm, std::vector<Texture*> ???
 	bool matrixCached = false;
 

@@ -15,6 +15,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <magic_enum.hpp>
 #include <browedit/Icons.h>
+#include <imGuIZMOquat.h>
 
 void ModelEditor::load(const std::string& fileName)
 {
@@ -54,11 +55,12 @@ void ModelEditor::run(BrowEdit* browEdit)
 	}
 	ImGui::End();
 
-	
+	static float timeSelected = 0.0f;
+
 	for (auto &m : models)
 	{
 		auto rsm = m.node->getComponent<Rsm>();
-		if (ImGui::Begin(rsm->fileName.c_str()))
+		if (ImGui::Begin(util::iso_8859_1_to_utf8(rsm->fileName).c_str()))
 		{
 			auto size = ImGui::GetContentRegionAvail();
 			auto rsm = m.node->getComponent<Rsm>();
@@ -67,6 +69,9 @@ void ModelEditor::run(BrowEdit* browEdit)
 
 			if (m.fbo->getWidth() != size.x || m.fbo->getHeight() != size.y)
 				m.fbo->resize((int)size.x, (int)size.y);
+
+			auto rsmRenderer = m.node->getComponent<RsmRenderer>();
+			rsmRenderer->time = timeSelected;
 
 			m.fbo->bind();
 			glViewport(0, 0, m.fbo->getWidth(), m.fbo->getHeight());
@@ -113,13 +118,15 @@ void ModelEditor::run(BrowEdit* browEdit)
 	auto rsm = activeModelView.node->getComponent<Rsm>();
 
 	static int leftAreaSize = 200;
-	static float scale = 0.1;
-	static float timeSelected = 0.0f;
+	static float scale = 0.1f;
 	static float rowHeight = 25;
+	static Rsm::Mesh::Frame* selectedFrame = nullptr;
 
 
 	if (ImGui::Begin("ModelEditorTimeline"))
 	{
+		//TODO: check if the RSM version supports translation / rotation / scale animations
+
 		const ImGuiStyle& style = ImGui::GetStyle();
 		const ImGuiIO& IO = ImGui::GetIO();
 
@@ -149,7 +156,7 @@ void ModelEditor::run(BrowEdit* browEdit)
 			rsm->rootMesh->foreach([&trackCount](Rsm::Mesh*) {trackCount++; });
 
 
-		if (rsm->animLen > 0 && ImGui::BeginChild("KeyframeEditor", ImVec2(-1, (trackCount*3+1) * rowHeight + 4 ), true, ImGuiWindowFlags_AlwaysHorizontalScrollbar))
+		if (rsm->animLen > 0 && ImGui::BeginChild("KeyframeEditor", ImVec2(-1, (trackCount*3+1) * rowHeight + 34 ), true, ImGuiWindowFlags_AlwaysHorizontalScrollbar))
 		{
 			ImDrawList* DrawList = ImGui::GetWindowDrawList();
 			auto window = ImGui::GetCurrentWindow();
@@ -175,9 +182,9 @@ void ModelEditor::run(BrowEdit* browEdit)
 				};
 				drawTrack(rsm->rootMesh, 0);
 
-				for (int i = 0; i < rsm->animLen; i+=100)
+				float lastLabel = -10000;
+				for (int i = 0; i < rsm->animLen; i += 100)
 				{
-					ImGui::RenderText(bb.Min + ImVec2(leftAreaSize + scale * i + 4, 0), std::to_string(i).c_str());
 					if (scale >= 1)
 					{
 						for (int ii = 0; ii < 100; ii += 10)
@@ -186,7 +193,12 @@ void ModelEditor::run(BrowEdit* browEdit)
 							window->DrawList->AddLine(bb.Min + ImVec2(leftAreaSize + scale * i + scale * ii, rowHeight), bb.Min + ImVec2(leftAreaSize + scale * i + scale * ii, rowHeight * (3 * trackCount + 1)), ImGui::GetColorU32(ImGuiCol_TextDisabled, 0.5f));
 						}
 					}
-					window->DrawList->AddLine(bb.Min + ImVec2(leftAreaSize + scale * i, 0), bb.Min + ImVec2(leftAreaSize + scale * i, rowHeight * (3*trackCount + 1)), ImGui::GetColorU32(ImGuiCol_Text, 1));
+					if (scale * i - lastLabel > 100)
+					{
+						ImGui::RenderText(bb.Min + ImVec2(leftAreaSize + scale * i, 0), std::to_string(i).c_str());
+						window->DrawList->AddLine(bb.Min + ImVec2(leftAreaSize + scale * i, 0), bb.Min + ImVec2(leftAreaSize + scale * i, rowHeight * (3 * trackCount + 1)), ImGui::GetColorU32(ImGuiCol_Text, 1));
+						lastLabel = scale * i;
+					}
 				}
 
 
@@ -196,28 +208,24 @@ void ModelEditor::run(BrowEdit* browEdit)
 				drawKeyframes = [&](Rsm::Mesh* mesh)
 				{
 					float y = (3 * trackIndex + 1) * rowHeight;
-					for (auto& f : mesh->rotFrames)
+					auto drawFrame = [&](Rsm::Mesh::Frame& frame, int yoffset)
 					{
-						ImGui::PushID(&f);
-						ImGui::SetCursorScreenPos(bb.Min + ImVec2(leftAreaSize + scale * f.time - 5, rowHeight + (3*rowHeight+0) * trackIndex));
-						ImGui::Button("##", ImVec2(10, rowHeight));
+						ImGui::PushID(&frame);
+						ImGui::SetCursorScreenPos(bb.Min + ImVec2(leftAreaSize + scale * frame.time - 5, rowHeight + (3 * rowHeight + yoffset) * trackIndex));
+						if (ImGui::Button("##", ImVec2(10, rowHeight)))
+						{
+							selectedFrame = &frame;
+						}
 						ImGui::PopID();
-					}
-					for (auto& f : mesh->scaleFrames)
-					{
-						ImGui::PushID(&f);
-						ImGui::SetCursorScreenPos(bb.Min + ImVec2(leftAreaSize + scale * f.time - 5, rowHeight + (3 * rowHeight + 1) * trackIndex));
-						ImGui::Button("##", ImVec2(10, rowHeight));
-						ImGui::PopID();
-					}
-					for (auto& f : mesh->posFrames)
-					{
-						ImGui::PushID(&f);
-						ImGui::SetCursorScreenPos(bb.Min + ImVec2(leftAreaSize + scale * f.time - 5, rowHeight + (3 * rowHeight + 2) * trackIndex));
-						ImGui::Button("##", ImVec2(10, rowHeight));
-						ImGui::PopID();
-					}
+					};
 
+
+					for (auto& f : mesh->rotFrames)
+						drawFrame(f, 0);
+					for (auto& f : mesh->scaleFrames)
+						drawFrame(f, 1);
+					for (auto& f : mesh->posFrames)
+						drawFrame(f, 2);
 
 
 					trackIndex++;
@@ -237,7 +245,16 @@ void ModelEditor::run(BrowEdit* browEdit)
 
 	if (ImGui::Begin("ModelEditorTimelineProperties"))
 	{
-
+		if (selectedFrame != nullptr)
+		{
+			ImGui::InputInt("Time", &selectedFrame->time);
+			auto rotFrame = dynamic_cast<Rsm::Mesh::RotFrame*>(selectedFrame);
+			if (rotFrame)
+			{
+				ImGui::InputFloat4("Quaternion", glm::value_ptr(rotFrame->quaternion));
+				ImGui::gizmo3D("Rotation", rotFrame->quaternion);
+			}
+		}
 	}
 	ImGui::End();
 
@@ -263,7 +280,7 @@ void ModelEditor::run(BrowEdit* browEdit)
 		};
 
 
-		bool opened = ImGui::TreeNodeEx(rsm->fileName.c_str(), (ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_OpenOnDoubleClick) | (activeModelView.selectedMesh == nullptr ? ImGuiTreeNodeFlags_Selected : 0));
+		bool opened = ImGui::TreeNodeEx(util::iso_8859_1_to_utf8(rsm->fileName).c_str(), (ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_OpenOnDoubleClick) | (activeModelView.selectedMesh == nullptr ? ImGuiTreeNodeFlags_Selected : 0));
 		if (ImGui::IsItemClicked())
 			activeModelView.selectedMesh = nullptr;
 		if(opened)

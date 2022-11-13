@@ -32,6 +32,7 @@ public:
 		{
 		public:
 			int time;
+			virtual ~Frame() {};
 		};
 		class RotFrame : public Frame
 		{

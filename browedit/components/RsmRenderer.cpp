@@ -187,7 +187,10 @@ void RsmRenderer::renderMesh(Rsm::Mesh* mesh, const glm::mat4& matrix)
 	if (mesh && (!mesh->rotFrames.empty() || mesh->matrixDirty))
 	{
 		mesh->matrixDirty = false;
-		mesh->calcMatrix1((int)floor(glfwGetTime() * 1000));
+		if(time < 0)
+			mesh->calcMatrix1((int)floor(glfwGetTime() * 1000));
+		else
+			mesh->calcMatrix1((int)floor(time * 1000));
 		renderInfo[mesh->index].matrix = matrix * mesh->matrix1 * mesh->matrix2;
 		renderInfo[mesh->index].matrixSub = matrix * mesh->matrix1;
 	}
