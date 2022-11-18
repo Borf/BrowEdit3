@@ -112,6 +112,7 @@
     <ClCompile Include="lib\imgui\misc\cpp\imgui_stdlib.cpp" />
     <ClCompile Include="lib\sfl\stb\stb_image.cpp" />
     <ClCompile Include="lib\sfl\stb\stb_image_write.cpp" />
+    <ClCompile Include="lib\tinygltf\tiny_gltf.cc" />
     <ClCompile Include="lib\zlib\adler32.c" />
     <ClCompile Include="lib\zlib\compress.c" />
     <ClCompile Include="lib\zlib\crc32.c" />
@@ -214,6 +215,7 @@
     <ClInclude Include="lib\imgui\imstb_textedit.h" />
     <ClInclude Include="lib\imgui\imstb_truetype.h" />
     <ClInclude Include="lib\imgui\misc\cpp\imgui_stdlib.h" />
+    <ClInclude Include="lib\tinygltf\tiny_gltf.h" />
     <ClInclude Include="lib\zlib\crc32.h" />
     <ClInclude Include="lib\zlib\deflate.h" />
     <ClInclude Include="lib\zlib\gzguts.h" />

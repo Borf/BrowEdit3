@@ -221,7 +221,10 @@ void Rsm::updateMatrices()
 	maxRange = glm::max(glm::max(realbbmax.x, -realbbmin.x), glm::max(glm::max(realbbmax.y, -realbbmin.y), glm::max(realbbmax.z, -realbbmin.z)));
 }
 
-
+Rsm::Mesh::Mesh(Rsm* model)
+{
+	this->model = model;
+}
 
 Rsm::Mesh::Mesh(Rsm* model, std::istream* rsmFile)
 {

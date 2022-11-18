@@ -76,6 +76,23 @@ void RsmRenderer::render()
 		initMeshInfo(rsm->rootMesh);
 	}
 
+
+	if (meshDirty)
+	{
+		for (auto ri : renderInfo)
+		{
+			delete ri.vbo;
+			if (ri.textures.size() > 0)
+				for (auto t : ri.textures)
+					util::ResourceManager<gl::Texture>::unload(t);
+		}
+		renderInfo.clear();
+		renderInfo.resize(rsm->meshCount);
+		initMeshInfo(rsm->rootMesh);
+	}
+
+
+
 	if (!matrixCached && this->rswModel && this->gnd && this->rsw)
 	{
 		matrixCache = glm::mat4(1.0f);
@@ -180,6 +197,7 @@ void RsmRenderer::initMeshInfo(Rsm::Mesh* mesh, const glm::mat4 &matrix)
 	
 	for (size_t i = 0; i < mesh->children.size(); i++)
 		initMeshInfo(mesh->children[i], renderInfo[mesh->index].matrixSub);
+	meshDirty = false;
 }
 
 void RsmRenderer::renderMesh(Rsm::Mesh* mesh, const glm::mat4& matrix)

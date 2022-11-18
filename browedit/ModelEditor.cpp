@@ -1,4 +1,6 @@
 #define IMGUI_DEFINE_MATH_OPERATORS
+#define TINYGLTF_NO_INCLUDE_STB_IMAGE
+#define TINYGLTF_NO_INCLUDE_STB_IMAGE_WRITE
 #include "ModelEditor.h"
 #include <browedit/BrowEdit.h>
 #include <browedit/Config.h>
@@ -16,6 +18,7 @@
 #include <magic_enum.hpp>
 #include <browedit/Icons.h>
 #include <imGuIZMOquat.h>
+#include <lib/tinygltf/tiny_gltf.h>
 
 void ModelEditor::load(const std::string& fileName)
 {
@@ -41,11 +44,14 @@ void ModelEditor::run(BrowEdit* browEdit)
 			if (ImGui::BeginMenu("File"))
 			{
 				if (ImGui::MenuItem("New"))
-					;
+				{
+				}
 				if (ImGui::MenuItem("Open"))
-					;
+				{
+				}
 				if (ImGui::MenuItem("Save"))
-					;
+				{
+				}
 				ImGui::EndMenu();
 			}
 		}
@@ -60,6 +66,7 @@ void ModelEditor::run(BrowEdit* browEdit)
 	for (auto &m : models)
 	{
 		auto rsm = m.node->getComponent<Rsm>();
+		auto rsmRenderer = m.node->getComponent<RsmRenderer>();
 		if (ImGui::Begin(util::iso_8859_1_to_utf8(rsm->fileName).c_str()))
 		{
 			auto size = ImGui::GetContentRegionAvail();
@@ -70,8 +77,7 @@ void ModelEditor::run(BrowEdit* browEdit)
 			if (m.fbo->getWidth() != size.x || m.fbo->getHeight() != size.y)
 				m.fbo->resize((int)size.x, (int)size.y);
 
-			auto rsmRenderer = m.node->getComponent<RsmRenderer>();
-			rsmRenderer->time = timeSelected;
+			rsmRenderer->time = timeSelected/1000.0f;
 
 			m.fbo->bind();
 			glViewport(0, 0, m.fbo->getWidth(), m.fbo->getHeight());
@@ -116,8 +122,9 @@ void ModelEditor::run(BrowEdit* browEdit)
 
 	auto& activeModelView = models[0];
 	auto rsm = activeModelView.node->getComponent<Rsm>();
+	auto rsmRenderer = activeModelView.node->getComponent<RsmRenderer>();
 
-	static int leftAreaSize = 200;
+	static float leftAreaSize = 200.0f;
 	static float scale = 0.1f;
 	static float rowHeight = 25;
 	static Rsm::Mesh::Frame* selectedFrame = nullptr;
@@ -143,13 +150,20 @@ void ModelEditor::run(BrowEdit* browEdit)
 		}
 		ImGui::SameLine();
 		if (browEdit->toolBarButton("PlayPause", ICON_PLAY, "Play / Pause", ImVec4(1, 1, 1, 1)))
-			;// playing = !playing;
+		{
+			// playing = !playing;
+		}
 		ImGui::SameLine();
 		if (browEdit->toolBarButton("Next", ICON_NEXT, "Nexts Keyframe", ImVec4(1, 1, 1, 1)))
 		{
 			//if (selectedTrack >= 0 && selectedTrack < rsw->cinematicTracks.size() && selectedKeyFrame < rsw->cinematicTracks[selectedTrack].frames.size() - 1)
 			//	selectedKeyFrame++;
 		}
+		ImGui::SameLine();
+		ImGui::SetNextItemWidth(150);
+		ImGui::DragFloat("##Scale", &scale, 0.01f, 0.00001f, 10, "%.3f", ImGuiSliderFlags_Logarithmic);
+		if (ImGui::IsItemHovered())
+			ImGui::SetTooltip("Scale");
 
 		int trackCount = 0;
 		if (rsm)
@@ -173,7 +187,7 @@ void ModelEditor::run(BrowEdit* browEdit)
 				//TODO: put the labels in a second subitem so only the keyframe things scroll
 				drawTrack = [&](Rsm::Mesh* mesh, int level)
 				{
-					ImGui::RenderText(bb.Min + ImVec2(10 + 20 * level, rowHeight + 3*rowHeight * trackIndex + 2), mesh->name.c_str()); //todo: center
+					ImGui::RenderText(bb.Min + ImVec2(10.0f + 20.0f * level, rowHeight + 3*rowHeight * trackIndex + 2.0f), mesh->name.c_str()); //todo: center
 					ImGui::RenderFrame(bb.Min + ImVec2(leftAreaSize, rowHeight + 3*rowHeight * trackIndex + 1), 
 										bb.Min + ImVec2(leftAreaSize + scale * rsm->animLen, rowHeight + 3*rowHeight * trackIndex + rowHeight - 2), ImGui::GetColorU32(ImGuiCol_FrameBg, 1), true, style.FrameRounding);
 					trackIndex++;
@@ -200,6 +214,20 @@ void ModelEditor::run(BrowEdit* browEdit)
 						lastLabel = scale * i;
 					}
 				}
+
+
+				window->DrawList->AddLine(bb.Min + ImVec2(leftAreaSize + scale * timeSelected, 0), bb.Min + ImVec2(leftAreaSize + scale * timeSelected, rowHeight * (3 * trackCount + 1)), ImGui::GetColorU32(ImGuiCol_Text, 1));
+				ImGui::SetCursorScreenPos(bb.Min + ImVec2(leftAreaSize, 0));
+				ImGui::InvisibleButton("##", ImVec2(scale* rsm->animLen, rowHeight));
+				if (ImGui::IsItemActive() && ImGui::IsMouseDown(ImGuiMouseButton_Left))
+				{
+					timeSelected = (ImGui::GetMousePos().x - (bb.Min.x + leftAreaSize)) / (bb.GetWidth() - leftAreaSize) * rsm->animLen;
+					if (timeSelected > rsm->animLen)
+						timeSelected = (float)rsm->animLen;
+					if (timeSelected < 0)
+						timeSelected = 0;
+				}
+
 
 
 				trackIndex = 0;
@@ -261,7 +289,7 @@ void ModelEditor::run(BrowEdit* browEdit)
 	if (ImGui::Begin("ModelEditorNodes"))
 	{
 		std::function<void(Rsm::Mesh*)> buildTree;
-		buildTree = [&buildTree,&activeModelView](Rsm::Mesh* mesh) {
+		buildTree = [&buildTree,&activeModelView, &rsm, &rsmRenderer](Rsm::Mesh* mesh) {
 			bool empty = mesh->children.empty();
 
 			int flags = empty ? (ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_Bullet) : (ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_OpenOnDoubleClick);
@@ -269,8 +297,25 @@ void ModelEditor::run(BrowEdit* browEdit)
 				flags |= ImGuiTreeNodeFlags_Selected;
 
 			bool opened = ImGui::TreeNodeEx(mesh->name.c_str(), flags);
-			if (ImGui::IsItemClicked())
+			if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
 				activeModelView.selectedMesh = mesh;
+			if (ImGui::BeginPopupContextItem())
+			{
+				if (ImGui::MenuItem("Add child node"))
+				{
+					auto subMesh = new Rsm::Mesh(rsm);
+					subMesh->name = "new";
+					subMesh->index = 0;
+					rsm->rootMesh->foreach([&subMesh](Rsm::Mesh* m) { subMesh->index = glm::max(subMesh->index, m->index + 1); });
+					mesh->children.push_back(subMesh);
+					rsm->meshCount++;
+					rsmRenderer->setMeshesDirty();
+				}
+				ImGui::MenuItem("Copy");
+				ImGui::MenuItem("Paste");
+				ImGui::MenuItem("Delete");
+				ImGui::EndPopup();
+			}
 			if (opened)
 			{
 				for (auto c : mesh->children)
@@ -360,7 +405,9 @@ void ModelEditor::run(BrowEdit* browEdit)
 			for (const auto& f : activeModelView.selectedMesh->faces)
 				if (f.twoSided != activeModelView.selectedMesh->faces[0].twoSided)
 					differentValues = true;
-			bool twoSided = activeModelView.selectedMesh->faces[0].twoSided != 0;
+			bool twoSided = false;
+			if(activeModelView.selectedMesh->faces.size() > 0)
+				twoSided = activeModelView.selectedMesh->faces[0].twoSided != 0;
 			ImGui::PushItemFlag(ImGuiItemFlags_MixedValue, differentValues);
 			if (ImGui::Checkbox("Two-sided faces", &twoSided))
 				for (auto& f : activeModelView.selectedMesh->faces)
@@ -370,6 +417,114 @@ void ModelEditor::run(BrowEdit* browEdit)
 			if (ImGui::CollapsingHeader("Textures", ImGuiTreeNodeFlags_DefaultOpen))
 			{
 
+			}
+
+			if (ImGui::Button("Import file"))
+			{
+				std::string filename = "D:\\CloudStation\\3D models\\monkey\\monkey.glb";
+				tinygltf::TinyGLTF loader;
+				tinygltf::Model model;
+				std::string err, warn;
+				bool loaded = loader.LoadBinaryFromFile(&model, &err, &warn, filename);
+
+				if(loaded)
+				{
+					std::cout << "Loaded file " << filename << warn << std::endl;
+					bool ok = true;
+					if (model.meshes.size() != 1)
+					{
+						std::cout << "This file has too many models" << std::endl;
+						ok = false;
+					}
+					if (ok && model.meshes[0].primitives.size() != 1)
+					{
+						std::cout << "Too many primitives in model" << std::endl;
+						ok = false;
+					}
+
+					if (ok)
+					{
+						auto& primitive = model.meshes[0].primitives[0];
+						// primitive.mode 4 = triangles
+
+						int posAccessorIndex = primitive.attributes["POSITION"];
+						int texCoordAccessorIndex = primitive.attributes["TEXCOORD_0"];
+
+						auto& posAccessor = model.accessors[posAccessorIndex];
+						auto& texCoordAccessor = model.accessors[texCoordAccessorIndex];
+						auto& indicesAccessor = model.accessors[primitive.indices];
+
+						auto& posBufferView = model.bufferViews[posAccessor.bufferView];
+						auto& texCoordBufferView = model.bufferViews[texCoordAccessor.bufferView];
+						auto& indicesBufferView = model.bufferViews[indicesAccessor.bufferView];
+
+						auto& posBuffer = model.buffers[posBufferView.buffer];
+						auto& texCoordBuffer = model.buffers[texCoordBufferView.buffer];
+						auto& indicesBuffer = model.buffers[indicesBufferView.buffer];
+
+						if (ok && (
+							texCoordAccessor.type != TINYGLTF_TYPE_VEC2 || 
+							posAccessor.type != TINYGLTF_TYPE_VEC3 || 
+							texCoordAccessor.componentType != TINYGLTF_COMPONENT_TYPE_FLOAT || 
+							posAccessor.componentType != TINYGLTF_COMPONENT_TYPE_FLOAT))
+						{
+							std::cout << "Weird vertex format" << std::endl;
+							ok = false;
+						}
+						if (ok)
+						{
+							unsigned char* pos = posBuffer.data.data() + posAccessor.byteOffset + posBufferView.byteOffset;
+							int posStride = posBufferView.byteStride;
+							if (posStride == 0)
+								posStride = 3 * sizeof(float);
+
+							unsigned char* index = indicesBuffer.data.data() + indicesAccessor.byteOffset + indicesBufferView.byteOffset;
+							int indicesStride = indicesBufferView.byteStride;
+							if (indicesStride == 0)
+								indicesStride = indicesAccessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT ? sizeof(short) : sizeof(int);
+
+							auto& mesh = activeModelView.selectedMesh;
+							std::vector<glm::vec3> faces;
+							for (auto i = 0; i < indicesBufferView.byteLength; i += indicesStride)
+							{
+								int ind = 0;
+								if (indicesAccessor.componentType == TINYGLTF_COMPONENT_TYPE_SHORT)
+									ind = *((short*)(index + i));
+								else if (indicesAccessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT)
+									ind = *((unsigned short*)(index + i));
+								else if (indicesAccessor.componentType == TINYGLTF_COMPONENT_TYPE_INT)
+									ind = *((int*)(index + i));
+								else if (indicesAccessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT)
+									ind = *((unsigned int*)(index + i));
+
+								glm::vec3 p = glm::make_vec3((float*)(pos + ind *posStride));
+								std::cout << p.x<<","<<p.y<<","<<p.z << std::endl;
+								faces.push_back(p);
+							}
+							mesh->faces.clear();
+							mesh->vertices = faces;
+							//mesh->texCoords.clear();
+							for (int i = 0; i < faces.size(); i += 3)
+							{
+								Rsm::Mesh::Face f;
+								f.texId = 0;
+								f.texCoordIds[0] = 0;
+								f.texCoordIds[1] = 0;
+								f.texCoordIds[2] = 0;
+
+								f.vertexIds[0] = i;
+								f.vertexIds[1] = i+1;
+								f.vertexIds[2] = i+2;
+
+								mesh->faces.push_back(f);
+							}
+
+							rsmRenderer->setMeshesDirty();
+						}
+					}
+				}
+				else
+					std::cout << "Error loading file " << filename << " " << err << ", " << warn << std::endl;
 			}
 
 		}

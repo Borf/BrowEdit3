@@ -56,6 +56,9 @@
     <Filter Include="lib\imGuIZMO.quat">
       <UniqueIdentifier>{32e382ac-bc7d-4025-92b3-d5e39761b9c3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="lib\tinygltf">
+      <UniqueIdentifier>{a9871e34-e995-4a29-a682-f6821a7ec290}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="lib\imgui\imgui.cpp">
@@ -406,6 +409,9 @@
     <ClCompile Include="browedit\ModelEditor.cpp">
       <Filter>browedit</Filter>
     </ClCompile>
+    <ClCompile Include="lib\tinygltf\tiny_gltf.cc">
+      <Filter>lib\tinygltf</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="lib\imgui\imgui.h">
@@ -701,6 +707,9 @@
     </ClInclude>
     <ClInclude Include="browedit\ModelEditor.h">
       <Filter>browedit</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\tinygltf\tiny_gltf.h">
+      <Filter>lib\tinygltf</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

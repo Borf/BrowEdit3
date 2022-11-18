@@ -62,6 +62,7 @@ public:
 	Rsw* rsw;
 
 	float time = -1;
+	bool meshDirty = true;
 
 	std::vector<gl::Texture*> textures; //should this be shared over all RsmRenderers with the same Rsm? static map<Rsm, std::vector<Texture*> ???
 	bool matrixCached = false;
@@ -77,6 +78,7 @@ public:
 	void renderMesh(Rsm::Mesh* mesh, const glm::mat4& matrix);
 	
 
+	void setMeshesDirty() { this->meshDirty = true; }
 
 	void setDirty() { this->matrixCached = false; }
 	bool selected = false;
