@@ -19,6 +19,7 @@
 #include <browedit/Icons.h>
 #include <imGuIZMOquat.h>
 #include <lib/tinygltf/tiny_gltf.h>
+#include <glm/glm.hpp>
 
 void ModelEditor::load(const std::string& fileName)
 {
@@ -387,19 +388,27 @@ void ModelEditor::run(BrowEdit* browEdit)
 		else //activeModelView.selectedMesh selected
 		{
 			ImGui::InputText("Name", &activeModelView.selectedMesh->name);
-			ImGui::InputFloat3("Position", glm::value_ptr(activeModelView.selectedMesh->pos));
-			ImGui::InputFloat4("Offset1", glm::value_ptr(activeModelView.selectedMesh->offset) + 0);
-			ImGui::InputFloat4("Offset2", glm::value_ptr(activeModelView.selectedMesh->offset) + 4);
-			ImGui::InputFloat4("Offset3", glm::value_ptr(activeModelView.selectedMesh->offset) + 8);
-			ImGui::InputFloat4("Offset4", glm::value_ptr(activeModelView.selectedMesh->offset) + 12);
+			if (ImGui::InputFloat3("Position", glm::value_ptr(activeModelView.selectedMesh->pos)))
+				rsm->updateMatrices();
+			if (ImGui::InputFloat4("Offset1", glm::value_ptr(activeModelView.selectedMesh->offset) + 0))
+				rsm->updateMatrices();
+			if(ImGui::InputFloat4("Offset2", glm::value_ptr(activeModelView.selectedMesh->offset) + 4))
+				rsm->updateMatrices();
+			if(ImGui::InputFloat4("Offset3", glm::value_ptr(activeModelView.selectedMesh->offset) + 8))
+				rsm->updateMatrices();
+			if(ImGui::InputFloat4("Offset4", glm::value_ptr(activeModelView.selectedMesh->offset) + 12))
+				rsm->updateMatrices();
 
-			ImGui::InputFloat3("Position_", glm::value_ptr(activeModelView.selectedMesh->pos_));
-			ImGui::InputFloat("Rotation Angle", &activeModelView.selectedMesh->rotangle);
-			ImGui::InputFloat3("Rotation Axis", glm::value_ptr(activeModelView.selectedMesh->rotaxis));
-			ImGui::InputFloat3("Scale", glm::value_ptr(activeModelView.selectedMesh->scale));
+			if(ImGui::InputFloat3("Position_", glm::value_ptr(activeModelView.selectedMesh->pos_)))
+				rsm->updateMatrices();
+			if(ImGui::InputFloat("Rotation Angle", &activeModelView.selectedMesh->rotangle))
+				rsm->updateMatrices();
+			if(ImGui::InputFloat3("Rotation Axis", glm::value_ptr(activeModelView.selectedMesh->rotaxis)))
+				rsm->updateMatrices();
+			if(ImGui::InputFloat3("Scale", glm::value_ptr(activeModelView.selectedMesh->scale)))
+				rsm->updateMatrices();
 
 			ImGui::LabelText("Face count", "%d", activeModelView.selectedMesh->faces.size());
-
 
 			bool differentValues = false;
 			for (const auto& f : activeModelView.selectedMesh->faces)
@@ -475,16 +484,31 @@ void ModelEditor::run(BrowEdit* browEdit)
 						{
 							unsigned char* pos = posBuffer.data.data() + posAccessor.byteOffset + posBufferView.byteOffset;
 							int posStride = posBufferView.byteStride;
-							if (posStride == 0)
-								posStride = 3 * sizeof(float);
+							posStride += 3 * sizeof(float);
+							unsigned char* tex = texCoordBuffer.data.data() + texCoordAccessor.byteOffset + texCoordAccessor.byteOffset;
+							int texStride = texCoordBufferView.byteStride;
+							texStride += 2 * sizeof(float);
+
+							auto& mesh = activeModelView.selectedMesh;
+							mesh->vertices.clear();
+							mesh->texCoords.clear();
+							mesh->faces.clear();
+
+							for (unsigned char* p = pos; p < pos + posBufferView.byteLength; p += posStride)
+								mesh->vertices.push_back(glm::make_vec3((float*)p));
+							for (unsigned char* t = tex; t < tex + texCoordBufferView.byteLength; t += texStride)
+								mesh->texCoords.push_back(glm::make_vec2((float*)t));
+
 
 							unsigned char* index = indicesBuffer.data.data() + indicesAccessor.byteOffset + indicesBufferView.byteOffset;
 							int indicesStride = indicesBufferView.byteStride;
 							if (indicesStride == 0)
 								indicesStride = indicesAccessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT ? sizeof(short) : sizeof(int);
 
-							auto& mesh = activeModelView.selectedMesh;
-							std::vector<glm::vec3> faces;
+							Rsm::Mesh::Face f;
+							f.texId = 0;
+							f.twoSided = false;
+							int faceIndex = 0;
 							for (auto i = 0; i < indicesBufferView.byteLength; i += indicesStride)
 							{
 								int ind = 0;
@@ -497,28 +521,22 @@ void ModelEditor::run(BrowEdit* browEdit)
 								else if (indicesAccessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT)
 									ind = *((unsigned int*)(index + i));
 
-								glm::vec3 p = glm::make_vec3((float*)(pos + ind *posStride));
-								std::cout << p.x<<","<<p.y<<","<<p.z << std::endl;
-								faces.push_back(p);
+								f.vertexIds[faceIndex] = ind;
+								f.texCoordIds[faceIndex] = ind;
+								faceIndex++;
+								if (primitive.mode == TINYGLTF_MODE_TRIANGLES)
+								{
+									if (faceIndex == 3)
+									{
+										f.normal = glm::normalize(glm::cross(mesh->vertices[f.vertexIds[1]] - mesh->vertices[f.vertexIds[0]], mesh->vertices[f.vertexIds[2]] - mesh->vertices[f.vertexIds[0]]));
+										mesh->faces.push_back(f);
+										faceIndex = 0;
+									}
+								}
+								else
+									std::cout << "Unknown primitive mode" << std::endl;
 							}
-							mesh->faces.clear();
-							mesh->vertices = faces;
-							//mesh->texCoords.clear();
-							for (int i = 0; i < faces.size(); i += 3)
-							{
-								Rsm::Mesh::Face f;
-								f.texId = 0;
-								f.texCoordIds[0] = 0;
-								f.texCoordIds[1] = 0;
-								f.texCoordIds[2] = 0;
-
-								f.vertexIds[0] = i;
-								f.vertexIds[1] = i+1;
-								f.vertexIds[2] = i+2;
-
-								mesh->faces.push_back(f);
-							}
-
+							rsm->updateMatrices();
 							rsmRenderer->setMeshesDirty();
 						}
 					}
