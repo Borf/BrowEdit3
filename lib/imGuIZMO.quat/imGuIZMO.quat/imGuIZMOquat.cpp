@@ -640,7 +640,7 @@ bool imguiGizmo::drawFunc(const char* label, float size)
                         vec3 norm( _q * fastRotate(arrowAxis, *itNorm++));
 #endif
                         //col[h] = addLightEffect(ImU32(0xFF) << arrowAxis*8, float(0xa0)*norm.z+.5f);
-                        col[h] = addLightEffect(vec4(float(arrowAxis==axisIsX),float(arrowAxis==axisIsY),float(arrowAxis==axisIsZ), 1.0), norm.z, coord.z);
+                        col[h] = addLightEffect(vec4(float(arrowAxis==axisIsX),float(arrowAxis==axisIsY),float(arrowAxis==axisIsZ), 1.0f), norm.z, coord.z);
                     }
                     addTriangle();
                 }
@@ -709,7 +709,7 @@ bool imguiGizmo::drawFunc(const char* label, float size)
     //////////////////////////////////////////////////////////////////
     auto drawRotationHelper = [&] () {
         const ImVec2 center(normalizeToControlSize(CENTER_HELPER_X, CENTER_HELPER_Y));
-        const float radius = returnSizeFromRatio(.05);
+        const float radius = returnSizeFromRatio(.05f);
         const int nSegments = 12;
         const ImU32 color = (vgMods & vg::evShiftModifier)   ? 0xff0000ff : 
                             (vgMods & vg::evControlModifier) ? 0xff00ff00 : 0xffff0000;
@@ -718,7 +718,7 @@ bool imguiGizmo::drawFunc(const char* label, float size)
             draw_list->AddCircleFilled(center, radius, color, nSegments);
         } else { // draw arc
             const float thickness = squareSize/100.f;  
-            const float a_max = (IM_PI * 1.5f) * ((float)nSegments) / (float)nSegments;
+            const float a_max = (float)(IM_PI * 1.5f) * ((float)nSegments) / (float)nSegments;
             draw_list->PathClear();
             draw_list->PathArcTo(center, radius - 0.5f, 0.0f, a_max, nSegments);
             draw_list->PathStroke(color, false, thickness);
@@ -854,7 +854,7 @@ void imguiGizmo::buildSphere(const float radius, const int tessFactor)
 #   define V(x,y,z) sphereVtx.push_back(vec3(x, y, z))
 #   define T(t)     sphereTess.push_back(t)
  
-    const float incAngle = 2.0f*T_PI/(float)( meridians );
+    constexpr float incAngle = (float)(2.0f*T_PI/(float)( meridians ));
     float angle = incAngle;
 
     // Adjust z and radius as stacks are drawn.

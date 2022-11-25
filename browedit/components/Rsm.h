@@ -89,7 +89,7 @@ public:
 		glm::vec3 rotaxis;
 		glm::vec3 scale;
 
-		std::vector<std::string> textureFiles; //for > 0203
+		//std::vector<std::string> textureFiles; //for > 0203
 		std::vector<int> textures;
 		std::vector<RotFrame> rotFrames;
 		std::vector<PosFrame> posFrames;

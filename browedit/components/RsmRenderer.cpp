@@ -6,6 +6,7 @@
 #include <browedit/util/ResourceManager.h>
 #include <browedit/gl/Texture.h>
 #include <browedit/shaders/RsmShader.h>
+#include <browedit/util/ResourceManager.h>
 #include <glm/glm.hpp>
 
 RsmRenderer::RsmRenderer()
@@ -191,9 +192,9 @@ void RsmRenderer::initMeshInfo(Rsm::Mesh* mesh, const glm::mat4 &matrix)
 	renderInfo[mesh->index].matrix = matrix * mesh->matrix1 * mesh->matrix2;
 	renderInfo[mesh->index].matrixSub = matrix * mesh->matrix1;
 
-	if (mesh->textureFiles.size() > 0) // 0x0203
-		for (auto& textureFilename : mesh->textureFiles)
-			renderInfo[mesh->index].textures.push_back(util::ResourceManager<gl::Texture>::load("data\\texture\\" + textureFilename));
+	//if (mesh->textureFiles.size() > 0) // 0x0203
+	//	for (auto& textureFilename : mesh->textureFiles)
+	//		renderInfo[mesh->index].textures.push_back(util::ResourceManager<gl::Texture>::load("data\\texture\\" + textureFilename));
 	
 	for (size_t i = 0; i < mesh->children.size(); i++)
 		initMeshInfo(mesh->children[i], renderInfo[mesh->index].matrixSub);
@@ -202,6 +203,12 @@ void RsmRenderer::initMeshInfo(Rsm::Mesh* mesh, const glm::mat4 &matrix)
 
 void RsmRenderer::renderMesh(Rsm::Mesh* mesh, const glm::mat4& matrix)
 {
+	if (textures.empty())
+	{
+		for (const auto& textureFilename : rsm->textures)
+			textures.push_back(util::ResourceManager<gl::Texture>::load("data\\texture\\" + textureFilename));
+	}
+
 	if (mesh && (!mesh->rotFrames.empty() || mesh->matrixDirty))
 	{
 		mesh->matrixDirty = false;
@@ -236,6 +243,14 @@ void RsmRenderer::renderMesh(Rsm::Mesh* mesh, const glm::mat4& matrix)
 
 	for (const auto& m : mesh->children)
 		renderMesh(m, renderInfo[mesh->index].matrixSub);
+}
+
+void RsmRenderer::setMeshesDirty() {
+	this->meshDirty = true;
+	this->matrixCached = false;
+	for (auto t : textures)
+		util::ResourceManager<gl::Texture>::unload(t);
+	textures.clear();
 }
 
 

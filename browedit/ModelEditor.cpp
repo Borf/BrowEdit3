@@ -379,7 +379,12 @@ void ModelEditor::run(BrowEdit* browEdit)
 				for (auto& t : rsm->textures)
 				{
 					ImGui::PushID(t.c_str());
-					ImGui::InputText("Texture", &t);
+					std::string texture = util::iso_8859_1_to_utf8(t);
+					if (ImGui::InputText("Texture", &texture))
+					{
+						t = util::utf8_to_iso_8859_1(texture);
+					}
+
 					ImGui::PopID();
 				}
 			}
@@ -425,6 +430,26 @@ void ModelEditor::run(BrowEdit* browEdit)
 
 			if (ImGui::CollapsingHeader("Textures", ImGuiTreeNodeFlags_DefaultOpen))
 			{
+				int i = 0;
+				for (auto& t : activeModelView.selectedMesh->textures)
+				{
+					ImGui::PushID(t);
+					if (ImGui::BeginCombo(("Texture " + std::to_string(i)).c_str(), util::iso_8859_1_to_utf8(rsm->textures[t]).c_str()))
+					{
+						for (auto ii = 0; ii < rsm->textures.size(); ii++)
+						{
+							if (ImGui::Selectable(util::iso_8859_1_to_utf8(rsm->textures[ii]).c_str(), t == ii))
+							{
+								activeModelView.selectedMesh->textures[i] = ii;
+								rsmRenderer->setMeshesDirty();
+							}
+						}
+						ImGui::EndCombo();
+					}					
+					ImGui::PopID();
+					i++;
+				}
+
 
 			}
 
@@ -445,99 +470,112 @@ void ModelEditor::run(BrowEdit* browEdit)
 						std::cout << "This file has too many models" << std::endl;
 						ok = false;
 					}
-					if (ok && model.meshes[0].primitives.size() != 1)
-					{
-						std::cout << "Too many primitives in model" << std::endl;
-						ok = false;
-					}
 
 					if (ok)
 					{
-						auto& primitive = model.meshes[0].primitives[0];
-						// primitive.mode 4 = triangles
-
-						int posAccessorIndex = primitive.attributes["POSITION"];
-						int texCoordAccessorIndex = primitive.attributes["TEXCOORD_0"];
-
-						auto& posAccessor = model.accessors[posAccessorIndex];
-						auto& texCoordAccessor = model.accessors[texCoordAccessorIndex];
-						auto& indicesAccessor = model.accessors[primitive.indices];
-
-						auto& posBufferView = model.bufferViews[posAccessor.bufferView];
-						auto& texCoordBufferView = model.bufferViews[texCoordAccessor.bufferView];
-						auto& indicesBufferView = model.bufferViews[indicesAccessor.bufferView];
-
-						auto& posBuffer = model.buffers[posBufferView.buffer];
-						auto& texCoordBuffer = model.buffers[texCoordBufferView.buffer];
-						auto& indicesBuffer = model.buffers[indicesBufferView.buffer];
-
-						if (ok && (
-							texCoordAccessor.type != TINYGLTF_TYPE_VEC2 || 
-							posAccessor.type != TINYGLTF_TYPE_VEC3 || 
-							texCoordAccessor.componentType != TINYGLTF_COMPONENT_TYPE_FLOAT || 
-							posAccessor.componentType != TINYGLTF_COMPONENT_TYPE_FLOAT))
+						auto& mesh = activeModelView.selectedMesh;
+						mesh->vertices.clear();
+						mesh->texCoords.clear();
+						mesh->faces.clear();
+						mesh->textures.clear();
+						std::set<int> texturesUsed;
+						std::map<int, int> textureMap;
+						for (auto& primitive : model.meshes[0].primitives)
+							texturesUsed.insert(model.materials[primitive.material].values["baseColorTexture"].TextureIndex());
+						for (auto& tex : texturesUsed)
 						{
-							std::cout << "Weird vertex format" << std::endl;
-							ok = false;
+							textureMap[tex] = (int)mesh->textures.size();
+							mesh->textures.push_back((int)rsm->textures.size());
+							rsm->textures.push_back("texture.bmp");
 						}
-						if (ok)
+
+
+						for (auto& primitive : model.meshes[0].primitives)
 						{
-							unsigned char* pos = posBuffer.data.data() + posAccessor.byteOffset + posBufferView.byteOffset;
-							int posStride = posBufferView.byteStride;
-							posStride += 3 * sizeof(float);
-							unsigned char* tex = texCoordBuffer.data.data() + texCoordAccessor.byteOffset + texCoordAccessor.byteOffset;
-							int texStride = texCoordBufferView.byteStride;
-							texStride += 2 * sizeof(float);
+							// primitive.mode 4 = triangles
+							auto& material = model.materials[primitive.material];
 
-							auto& mesh = activeModelView.selectedMesh;
-							mesh->vertices.clear();
-							mesh->texCoords.clear();
-							mesh->faces.clear();
+							int posAccessorIndex = primitive.attributes["POSITION"];
+							int texCoordAccessorIndex = primitive.attributes["TEXCOORD_0"];
 
-							for (unsigned char* p = pos; p < pos + posBufferView.byteLength; p += posStride)
-								mesh->vertices.push_back(glm::make_vec3((float*)p));
-							for (unsigned char* t = tex; t < tex + texCoordBufferView.byteLength; t += texStride)
-								mesh->texCoords.push_back(glm::make_vec2((float*)t));
+							auto& posAccessor = model.accessors[posAccessorIndex];
+							auto& texCoordAccessor = model.accessors[texCoordAccessorIndex];
+							auto& indicesAccessor = model.accessors[primitive.indices];
 
+							auto& posBufferView = model.bufferViews[posAccessor.bufferView];
+							auto& texCoordBufferView = model.bufferViews[texCoordAccessor.bufferView];
+							auto& indicesBufferView = model.bufferViews[indicesAccessor.bufferView];
 
-							unsigned char* index = indicesBuffer.data.data() + indicesAccessor.byteOffset + indicesBufferView.byteOffset;
-							int indicesStride = indicesBufferView.byteStride;
-							if (indicesStride == 0)
-								indicesStride = indicesAccessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT ? sizeof(short) : sizeof(int);
+							auto& posBuffer = model.buffers[posBufferView.buffer];
+							auto& texCoordBuffer = model.buffers[texCoordBufferView.buffer];
+							auto& indicesBuffer = model.buffers[indicesBufferView.buffer];
 
-							Rsm::Mesh::Face f;
-							f.texId = 0;
-							f.twoSided = false;
-							int faceIndex = 0;
-							for (auto i = 0; i < indicesBufferView.byteLength; i += indicesStride)
+							if (ok && (
+								texCoordAccessor.type != TINYGLTF_TYPE_VEC2 ||
+								posAccessor.type != TINYGLTF_TYPE_VEC3 ||
+								texCoordAccessor.componentType != TINYGLTF_COMPONENT_TYPE_FLOAT ||
+								posAccessor.componentType != TINYGLTF_COMPONENT_TYPE_FLOAT))
 							{
-								int ind = 0;
-								if (indicesAccessor.componentType == TINYGLTF_COMPONENT_TYPE_SHORT)
-									ind = *((short*)(index + i));
-								else if (indicesAccessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT)
-									ind = *((unsigned short*)(index + i));
-								else if (indicesAccessor.componentType == TINYGLTF_COMPONENT_TYPE_INT)
-									ind = *((int*)(index + i));
-								else if (indicesAccessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT)
-									ind = *((unsigned int*)(index + i));
-
-								f.vertexIds[faceIndex] = ind;
-								f.texCoordIds[faceIndex] = ind;
-								faceIndex++;
-								if (primitive.mode == TINYGLTF_MODE_TRIANGLES)
-								{
-									if (faceIndex == 3)
-									{
-										f.normal = glm::normalize(glm::cross(mesh->vertices[f.vertexIds[1]] - mesh->vertices[f.vertexIds[0]], mesh->vertices[f.vertexIds[2]] - mesh->vertices[f.vertexIds[0]]));
-										mesh->faces.push_back(f);
-										faceIndex = 0;
-									}
-								}
-								else
-									std::cout << "Unknown primitive mode" << std::endl;
+								std::cout << "Weird vertex format" << std::endl;
+								ok = false;
 							}
-							rsm->updateMatrices();
-							rsmRenderer->setMeshesDirty();
+							if (ok)
+							{
+								auto vertexStart = mesh->vertices.size();
+								unsigned char* pos = posBuffer.data.data() + posBufferView.byteOffset + posAccessor.byteOffset;
+								auto posStride = posBufferView.byteStride;
+								posStride += 3 * sizeof(float);
+								unsigned char* tex = texCoordBuffer.data.data() + texCoordBufferView.byteOffset + texCoordAccessor.byteOffset;
+								auto texStride = texCoordBufferView.byteStride;
+								texStride += 2 * sizeof(float);
+
+								for (unsigned char* p = pos; p < pos + posBufferView.byteLength; p += posStride)
+									mesh->vertices.push_back(glm::make_vec3((float*)p));
+								for (unsigned char* t = tex; t < tex + texCoordBufferView.byteLength; t += texStride)
+									mesh->texCoords.push_back(glm::make_vec2((float*)t));
+
+								unsigned char* index = indicesBuffer.data.data() + indicesAccessor.byteOffset + indicesBufferView.byteOffset;
+								auto indicesStride = indicesBufferView.byteStride;
+								if (indicesStride == 0)
+									indicesStride = indicesAccessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT ? sizeof(short) : sizeof(int);
+
+								Rsm::Mesh::Face f;
+
+								auto texIndex = material.values["baseColorTexture"].TextureIndex();
+
+								f.texId = textureMap[texIndex];
+								f.twoSided = material.doubleSided;
+								int faceIndex = 0;
+								for (size_t i = 0; i < indicesBufferView.byteLength; i += indicesStride)
+								{
+									int ind = 0;
+									if (indicesAccessor.componentType == TINYGLTF_COMPONENT_TYPE_SHORT)
+										ind = *((short*)(index + i));
+									else if (indicesAccessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT)
+										ind = *((unsigned short*)(index + i));
+									else if (indicesAccessor.componentType == TINYGLTF_COMPONENT_TYPE_INT)
+										ind = *((int*)(index + i));
+									else if (indicesAccessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT)
+										ind = *((unsigned int*)(index + i));
+
+									f.vertexIds[faceIndex] = (short)(vertexStart + ind);
+									f.texCoordIds[faceIndex] = (short)(vertexStart + ind);
+									faceIndex++;
+									if (primitive.mode == TINYGLTF_MODE_TRIANGLES)
+									{
+										if (faceIndex == 3)
+										{
+											f.normal = glm::normalize(glm::cross(mesh->vertices[f.vertexIds[1]] - mesh->vertices[f.vertexIds[0]], mesh->vertices[f.vertexIds[2]] - mesh->vertices[f.vertexIds[0]]));
+											mesh->faces.push_back(f);
+											faceIndex = 0;
+										}
+									}
+									else
+										std::cout << "Unknown primitive mode" << std::endl;
+								}
+								rsm->updateMatrices();
+								rsmRenderer->setMeshesDirty();
+							}
 						}
 					}
 				}

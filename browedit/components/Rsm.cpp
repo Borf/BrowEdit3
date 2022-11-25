@@ -240,15 +240,17 @@ Rsm::Mesh::Mesh(Rsm* model, std::istream* rsmFile)
 		parentName = util::FileIO::readString(rsmFile, 40);
 	}
 
+	size_t textureStart = 0;
 	if (model->version >= 0x0203)
 	{
+		textureStart = model->textures.size();
 		int textureCount;
 		rsmFile->read(reinterpret_cast<char*>(&textureCount), sizeof(int));
 		for (int i = 0; i < textureCount; i++)
 		{
 			std::string textureFile = util::FileIO::readStringDyn(rsmFile);
-			textures.push_back((int)textureFiles.size());
-			textureFiles.push_back(textureFile);
+			textures.push_back((int)model->textures.size());
+			model->textures.push_back(textureFile);
 		}
 	}
 	else
@@ -341,7 +343,7 @@ Rsm::Mesh::Mesh(Rsm* model, std::istream* rsmFile)
 		rsmFile->read(reinterpret_cast<char*>(f->texCoordIds), sizeof(short) * 3);
 		rsmFile->read(reinterpret_cast<char*>(&f->texId), sizeof(short));
 		if (model->version >= 0x0202)
-			f->texId = 0;//TODO: remove this
+			f->texId += (short)textureStart;
 
 		rsmFile->read(reinterpret_cast<char*>(&f->padding), sizeof(short));
 

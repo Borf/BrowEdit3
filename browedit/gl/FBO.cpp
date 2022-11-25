@@ -374,7 +374,7 @@ namespace gl
 				buf.write((char*)data, size);
 			}, &buf, w, h, 4, data, quality);
 		delete[] data;
-		len = buf.str().size();
+		len = (int)buf.str().size();
 		return (char*)buf.str().c_str();
 	}
 

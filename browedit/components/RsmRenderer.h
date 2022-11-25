@@ -78,7 +78,7 @@ public:
 	void renderMesh(Rsm::Mesh* mesh, const glm::mat4& matrix);
 	
 
-	void setMeshesDirty() { this->meshDirty = true; this->matrixCached = false; }
+	void setMeshesDirty();
 
 	void setDirty() { this->matrixCached = false; }
 	bool selected = false;

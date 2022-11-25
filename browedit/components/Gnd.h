@@ -120,7 +120,7 @@ public:
 	class Tile
 	{
 	public:
-		Tile() : textureIndex(-1), lightmapIndex(-1), v1(0.0f), v2(0.0f), v3(0.0f), v4(0.0f) {};
+		Tile() : textureIndex(-1), lightmapIndex(-1), v1(0.0f), v2(0.0f), v3(0.0f), v4(0.0f), color(255,255,255,255) {};
 		Tile(const Tile& o) {
 			v1 = o.v1;
 			v2 = o.v2;
@@ -152,6 +152,7 @@ public:
 	public:
 		Cube()
 		{
+			h1 = h2 = h3 = h4 = 0;
 			selected = false;
 			tileUp = -1;
 			tileFront = -1;
