@@ -73,49 +73,55 @@ void ModelEditor::run(BrowEdit* browEdit)
 			auto size = ImGui::GetContentRegionAvail();
 			auto rsm = m.node->getComponent<Rsm>();
 			if (!rsm->loaded)
-				return;
+			{
+				ImGui::End();
+				continue;
+			}
 
 			if (m.fbo->getWidth() != size.x || m.fbo->getHeight() != size.y)
 				m.fbo->resize((int)size.x, (int)size.y);
 
 			rsmRenderer->time = timeSelected/1000.0f;
 
-			m.fbo->bind();
-			glViewport(0, 0, m.fbo->getWidth(), m.fbo->getHeight());
-			glClearColor(browEdit->config.backgroundColor.r, browEdit->config.backgroundColor.g, browEdit->config.backgroundColor.b, 1.0f);
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-			glDisable(GL_CULL_FACE);
-			glEnable(GL_DEPTH_TEST);
-			glEnable(GL_BLEND);
-			glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-
-			float distance = 1.5f * glm::max(glm::abs(rsm->realbbmax.y), glm::max(glm::abs(rsm->realbbmax.z), glm::abs(rsm->realbbmax.x)));
-
-			float ratio = m.fbo->getWidth() / (float)m.fbo->getHeight();
-			nodeRenderContext.projectionMatrix = glm::perspective(glm::radians(45.0f), ratio, 0.1f, 5000.0f);
-
-			nodeRenderContext.viewMatrix = glm::mat4(1.0f);
-			nodeRenderContext.viewMatrix = glm::translate(nodeRenderContext.viewMatrix, glm::vec3(0, 0, -m.camera.z));
-			nodeRenderContext.viewMatrix = glm::rotate(nodeRenderContext.viewMatrix, -glm::radians(m.camera.x), glm::vec3(1, 0, 0));
-			nodeRenderContext.viewMatrix = glm::rotate(nodeRenderContext.viewMatrix, -glm::radians(m.camera.y), glm::vec3(0, 1, 0));
-			nodeRenderContext.viewMatrix = glm::translate(nodeRenderContext.viewMatrix, glm::vec3(0,-rsm->bbrange.y,0));
-	
-			RsmRenderer::RsmRenderContext::getInstance()->viewLighting = false;
-			RsmRenderer::RsmRenderContext::getInstance()->viewTextures = true;
-			RsmRenderer::RsmRenderContext::getInstance()->viewFog = false;
-			m.node->getComponent<RsmRenderer>()->matrixCache = glm::mat4(1.0f);// rotate(glm::mat4(1.0f), glm::radians((float)ImGui::GetTime() * 100), glm::vec3(0, 1, 0));
-			NodeRenderer::render(m.node, nodeRenderContext);
-			m.fbo->unbind();
-			ImGui::ImageButton((ImTextureID)(long long)m.fbo->texid[0], size, ImVec2(1, 0), ImVec2(0, 1), 0, ImVec4(0, 0, 0, 1), ImVec4(1, 1, 1, 1));
-			if (ImGui::IsItemHovered())
+			if (size.x > 0 && size.y > 0)
 			{
-				if ((ImGui::IsMouseDown(ImGuiMouseButton_Right) || ImGui::IsMouseDown(ImGuiMouseButton_Middle)))
+				m.fbo->bind();
+				glViewport(0, 0, m.fbo->getWidth(), m.fbo->getHeight());
+				glClearColor(browEdit->config.backgroundColor.r, browEdit->config.backgroundColor.g, browEdit->config.backgroundColor.b, 1.0f);
+				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+				glDisable(GL_CULL_FACE);
+				glEnable(GL_DEPTH_TEST);
+				glEnable(GL_BLEND);
+				glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+
+				float distance = 1.5f * glm::max(glm::abs(rsm->realbbmax.y), glm::max(glm::abs(rsm->realbbmax.z), glm::abs(rsm->realbbmax.x)));
+
+				float ratio = m.fbo->getWidth() / (float)m.fbo->getHeight();
+				nodeRenderContext.projectionMatrix = glm::perspective(glm::radians(45.0f), ratio, 0.1f, 5000.0f);
+
+				nodeRenderContext.viewMatrix = glm::mat4(1.0f);
+				nodeRenderContext.viewMatrix = glm::translate(nodeRenderContext.viewMatrix, glm::vec3(0, 0, -m.camera.z));
+				nodeRenderContext.viewMatrix = glm::rotate(nodeRenderContext.viewMatrix, -glm::radians(m.camera.x), glm::vec3(1, 0, 0));
+				nodeRenderContext.viewMatrix = glm::rotate(nodeRenderContext.viewMatrix, -glm::radians(m.camera.y), glm::vec3(0, 1, 0));
+				nodeRenderContext.viewMatrix = glm::translate(nodeRenderContext.viewMatrix, glm::vec3(0, -rsm->bbrange.y, 0));
+
+				RsmRenderer::RsmRenderContext::getInstance()->viewLighting = false;
+				RsmRenderer::RsmRenderContext::getInstance()->viewTextures = true;
+				RsmRenderer::RsmRenderContext::getInstance()->viewFog = false;
+				m.node->getComponent<RsmRenderer>()->matrixCache = glm::mat4(1.0f);// rotate(glm::mat4(1.0f), glm::radians((float)ImGui::GetTime() * 100), glm::vec3(0, 1, 0));
+				NodeRenderer::render(m.node, nodeRenderContext);
+				m.fbo->unbind();
+				ImGui::ImageButton((ImTextureID)(long long)m.fbo->texid[0], size, ImVec2(1, 0), ImVec2(0, 1), 0, ImVec4(0, 0, 0, 1), ImVec4(1, 1, 1, 1));
+				if (ImGui::IsItemHovered())
 				{
-					m.camera.x += ImGui::GetIO().MouseDelta.y;
-					m.camera.y += ImGui::GetIO().MouseDelta.x;
+					if ((ImGui::IsMouseDown(ImGuiMouseButton_Right) || ImGui::IsMouseDown(ImGuiMouseButton_Middle)))
+					{
+						m.camera.x += ImGui::GetIO().MouseDelta.y;
+						m.camera.y += ImGui::GetIO().MouseDelta.x;
+					}
+					m.camera.z *= (1 - (ImGui::GetIO().MouseWheel * 0.1f));
 				}
-				m.camera.z *= (1 - (ImGui::GetIO().MouseWheel * 0.1f));
 			}
 		}
 		ImGui::End();
@@ -126,6 +132,8 @@ void ModelEditor::run(BrowEdit* browEdit)
 
 	auto& activeModelView = models[0];
 	auto rsm = activeModelView.node->getComponent<Rsm>();
+	if (!rsm->loaded)
+		return;
 	auto rsmRenderer = activeModelView.node->getComponent<RsmRenderer>();
 
 	static float leftAreaSize = 200.0f;

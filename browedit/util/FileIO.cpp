@@ -341,7 +341,10 @@ namespace util
 		int len;
 		is->read(reinterpret_cast<char*>(&len), sizeof(int));
 		if (len < 0 || len > 1024)
+		{
+			std::cout << "Error offset " << is->tellg() << std::endl;
 			throw std::exception("Error loading string");
+		}
 		char* buf = new char[len];
 		is->read(buf, len);
 		std::string ret(buf, len);

@@ -39,6 +39,11 @@ void BrowEdit::showExportWindow()
 				std::filesystem::create_directories(p);
 
 				auto is = util::FileIO::open(e.filename);
+				if (!is)
+				{
+					std::cout << "Error opening " << e.filename << std::endl;
+					continue;
+				}
 				auto os = std::ofstream(outFileName, std::ios_base::out | std::ios_base::binary);
 				while (!is->eof())
 				{

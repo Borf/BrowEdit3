@@ -321,11 +321,11 @@ Rsm::Mesh::Mesh(Rsm* model, std::istream* rsmFile)
 		float todo = 0;
 		if (model->version >= 0x0102)
 		{
-			rsmFile->read(reinterpret_cast<char*>(&todo), sizeof(float));
+			rsmFile->read(reinterpret_cast<char*>(&todo), sizeof(float)); //color??
 			//assert(todo == 0);
 		}
 		rsmFile->read(reinterpret_cast<char*>(glm::value_ptr(texCoords[i])), sizeof(float) * 2);
-		texCoords[i].y = texCoords[i].y;
+//		texCoords[i].y = texCoords[i].y;
 	}
 
 	int faceCount;
@@ -458,10 +458,17 @@ Rsm::Mesh::Mesh(Rsm* model, std::istream* rsmFile)
 
 				for (int i = 0; i < textureIdAnimationCount; i++)
 				{
-					int frame;
-					rsmFile->read(reinterpret_cast<char*>(&frame), sizeof(int));
-					float offset;
-					rsmFile->read(reinterpret_cast<char*>(&offset), sizeof(float));
+					int type, amountFrames;
+					rsmFile->read(reinterpret_cast<char*>(&type), sizeof(int));
+					rsmFile->read(reinterpret_cast<char*>(&amountFrames), sizeof(int));
+
+					for (int ii = 0; ii < amountFrames; ii++)
+					{
+						int frame;
+						rsmFile->read(reinterpret_cast<char*>(&frame), sizeof(int));
+						float offset;
+						rsmFile->read(reinterpret_cast<char*>(&offset), sizeof(float));
+					}
 				}
 			}
 
