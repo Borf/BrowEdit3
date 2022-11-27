@@ -117,14 +117,14 @@ void BrowEdit::exportMap(Map* map)
 			//find all textures used by this model
 			std::vector<std::string> textures;
 			textures.insert(textures.end(), rsm->textures.begin(), rsm->textures.end());
-			std::function<void(Rsm::Mesh*)> addTex;
-			addTex = [&textures, &addTex](Rsm::Mesh* m)
-			{
-				textures.insert(textures.end(), m->textureFiles.begin(), m->textureFiles.end());
-				for (auto n : m->children)
-					addTex(n);
-			};
-			addTex(rsm->rootMesh);
+			//std::function<void(Rsm::Mesh*)> addTex;
+			//addTex = [&textures, &addTex](Rsm::Mesh* m)
+			//{
+			//	textures.insert(textures.end(), m->textureFiles.begin(), m->textureFiles.end());
+			//	for (auto n : m->children)
+			//		addTex(n);
+			//};
+			//addTex(rsm->rootMesh);
 			std::sort(textures.begin(), textures.end());
 			auto last = std::unique(textures.begin(), textures.end());
 			textures.erase(last, textures.end());

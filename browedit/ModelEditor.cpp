@@ -121,6 +121,9 @@ void ModelEditor::run(BrowEdit* browEdit)
 		ImGui::End();
 	}
 
+	if(models.size() == 0)
+		return;
+
 	auto& activeModelView = models[0];
 	auto rsm = activeModelView.node->getComponent<Rsm>();
 	auto rsmRenderer = activeModelView.node->getComponent<RsmRenderer>();

@@ -68,7 +68,7 @@ void Rsm::reload()
 		int rootMeshCount;
 		rsmFile->read(reinterpret_cast<char*>(&rootMeshCount), sizeof(int));
 		if (rootMeshCount > 1)
-			std::cerr << "Warning: multiple root meshes, this is not supported yet" << std::endl;
+			std::cerr << "RSM "<<fileName<<" Warning: multiple root meshes, this is not supported yet" << std::endl;
 		for (int i = 0; i < rootMeshCount; i++)
 		{
 			auto rootMeshName = util::FileIO::readStringDyn(rsmFile);
@@ -342,9 +342,6 @@ Rsm::Mesh::Mesh(Rsm* model, std::istream* rsmFile)
 		rsmFile->read(reinterpret_cast<char*>(f->vertexIds), sizeof(short) * 3);
 		rsmFile->read(reinterpret_cast<char*>(f->texCoordIds), sizeof(short) * 3);
 		rsmFile->read(reinterpret_cast<char*>(&f->texId), sizeof(short));
-		if (model->version >= 0x0202)
-			f->texId += (short)textureStart;
-
 		rsmFile->read(reinterpret_cast<char*>(&f->padding), sizeof(short));
 
 		rsmFile->read(reinterpret_cast<char*>(&f->twoSided), sizeof(int));
