@@ -4,11 +4,14 @@
 #include "ModelEditor.h"
 #include <browedit/BrowEdit.h>
 #include <browedit/Config.h>
+#include <browedit/Node.h>
+#include <browedit/Icons.h>
 #include <browedit/util/ResourceManager.h>
 #include <browedit/components/RsmRenderer.h>
 #include <browedit/components/Rsm.h>
-#include <browedit/Node.h>
 #include <browedit/gl/FBO.h>
+#include <browedit/gl/Texture.h>
+#include <browedit/shaders/SimpleShader.h>
 #include <imgui.h>
 #include <imgui_internal.h>
 #include <misc/cpp/imgui_stdlib.h>
@@ -16,7 +19,6 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <magic_enum.hpp>
-#include <browedit/Icons.h>
 #include <imGuIZMOquat.h>
 #include <lib/tinygltf/tiny_gltf.h>
 #include <glm/glm.hpp>
@@ -30,6 +32,9 @@ void ModelEditor::load(const std::string& fileName)
 	ModelView mv{ node, new gl::FBO(1024, 1024, true) }; //TODO: resolution? };
 	models.push_back(mv);
 
+	simpleShader = util::ResourceManager<gl::Shader>::load<SimpleShader>();
+	gridTexture = util::ResourceManager<gl::Texture>::load("data\\grid.png");
+	gridTexture->setWrapMode(GL_REPEAT);
 }
 
 
@@ -98,8 +103,8 @@ void ModelEditor::run(BrowEdit* browEdit)
 				glEnable(GL_BLEND);
 				glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
-				float distance = 1.5f * glm::max(glm::abs(rsm->realbbmax.y), glm::max(glm::abs(rsm->realbbmax.z), glm::abs(rsm->realbbmax.x)));
 
+				float distance = 1.5f * glm::max(glm::abs(rsm->realbbmax.y), glm::max(glm::abs(rsm->realbbmax.z), glm::abs(rsm->realbbmax.x)));
 				float ratio = m.fbo->getWidth() / (float)m.fbo->getHeight();
 				nodeRenderContext.projectionMatrix = glm::perspective(glm::radians(45.0f), ratio, 0.1f, 5000.0f);
 
@@ -108,6 +113,35 @@ void ModelEditor::run(BrowEdit* browEdit)
 				nodeRenderContext.viewMatrix = glm::rotate(nodeRenderContext.viewMatrix, -glm::radians(m.camera.x), glm::vec3(1, 0, 0));
 				nodeRenderContext.viewMatrix = glm::rotate(nodeRenderContext.viewMatrix, -glm::radians(m.camera.y), glm::vec3(0, 1, 0));
 				nodeRenderContext.viewMatrix = glm::translate(nodeRenderContext.viewMatrix, glm::vec3(0, -rsm->bbrange.y, 0));
+
+
+				simpleShader->use();
+				simpleShader->setUniform(SimpleShader::Uniforms::projectionMatrix, nodeRenderContext.projectionMatrix);
+				simpleShader->setUniform(SimpleShader::Uniforms::viewMatrix, nodeRenderContext.viewMatrix);
+				simpleShader->setUniform(SimpleShader::Uniforms::modelMatrix, glm::mat4(1.0f));
+				simpleShader->setUniform(SimpleShader::Uniforms::textureFac, 1.0f);
+				simpleShader->setUniform(SimpleShader::Uniforms::colorMult, glm::vec4(1.0f));
+				simpleShader->setUniform(SimpleShader::Uniforms::lightMin, 1.0f);
+				gridTexture->bind();
+
+				std::vector<VertexP3T2N3> verts;
+				verts.push_back(VertexP3T2N3(glm::vec3(-128, 0, -128), glm::vec2(0, 0), glm::vec3(0.0f, 1.0f, 0.0f)));
+				verts.push_back(VertexP3T2N3(glm::vec3( 128, 0, -128), glm::vec2(8, 0), glm::vec3(0.0f, 1.0f, 0.0f)));
+				verts.push_back(VertexP3T2N3(glm::vec3( 128, 0,  128), glm::vec2(8, 8), glm::vec3(0.0f, 1.0f, 0.0f)));
+				verts.push_back(VertexP3T2N3(glm::vec3(-128, 0,  128), glm::vec2(0, 8), glm::vec3(0.0f, 1.0f, 0.0f)));
+				glEnableVertexAttribArray(0);
+				glEnableVertexAttribArray(1);
+				glEnableVertexAttribArray(2);
+				glDisableVertexAttribArray(3);
+				glDisableVertexAttribArray(4); //TODO: vao
+				glBindBuffer(GL_ARRAY_BUFFER, 0);
+				glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexP3T2N3), verts[0].data);
+				glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexP3T2N3), verts[0].data + 3);
+				glVertexAttribPointer(2, 3, GL_FLOAT, false, sizeof(VertexP3T2N3), verts[0].data + 5);
+				glDrawArrays(GL_QUADS, 0, (int)verts.size());
+
+
+
 
 				RsmRenderer::RsmRenderContext::getInstance()->viewLighting = false;
 				RsmRenderer::RsmRenderContext::getInstance()->viewTextures = true;

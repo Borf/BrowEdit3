@@ -6,6 +6,7 @@
 class Node;
 class BrowEdit;
 namespace gl { class FBO; class Texture;  }
+class SimpleShader;
 
 class ModelEditor
 {
@@ -24,6 +25,7 @@ public:
 	NodeRenderContext nodeRenderContext;
 
 	gl::Texture* gridTexture;
+	SimpleShader* simpleShader;
 
 #ifdef _DEBUG
 	bool opened = true;

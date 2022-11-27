@@ -168,6 +168,13 @@ namespace gl
 
 	}
 
+	void Texture::setWrapMode(GLuint mode)
+	{
+		bind();
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, mode);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, mode);
+	}
+
 	void Texture::setSubImage(char* data, int x, int y, int width, int height)
 	{
 		bind();
