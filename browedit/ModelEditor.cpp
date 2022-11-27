@@ -355,7 +355,6 @@ void ModelEditor::run(BrowEdit* browEdit)
 	{
 		if (activeModelView.selectedMesh == nullptr)
 		{
-			ImGui::InputScalar("Alpha", ImGuiDataType_U8, &rsm->alpha);
 			char versionStr[10];
 			sprintf_s(versionStr, 10, "%04x", rsm->version);
 			if (ImGui::BeginCombo("Version", versionStr))
@@ -376,7 +375,13 @@ void ModelEditor::run(BrowEdit* browEdit)
 					rsm->version = 0x0203;
 				ImGui::EndCombo();
 			}
+			if (rsm->version > 0x0104)
+				ImGui::InputScalar("Alpha", ImGuiDataType_U8, &rsm->alpha);
+
 			ImGui::InputInt("Animation Length", &rsm->animLen);
+
+			if(rsm->version >= 0x0202)
+				ImGui::InputFloat("FPS", &rsm->fps);
 
 			if (ImGui::BeginCombo("Shade Type", std::string(magic_enum::enum_name(rsm->shadeType)).c_str()))
 			{
@@ -407,8 +412,9 @@ void ModelEditor::run(BrowEdit* browEdit)
 		else //activeModelView.selectedMesh selected
 		{
 			ImGui::InputText("Name", &activeModelView.selectedMesh->name);
-			if (ImGui::InputFloat3("Position", glm::value_ptr(activeModelView.selectedMesh->pos)))
-				rsm->updateMatrices();
+			if(rsm->version < 0x0202)
+				if (ImGui::InputFloat3("Position", glm::value_ptr(activeModelView.selectedMesh->pos)))
+					rsm->updateMatrices();
 			if (ImGui::InputFloat4("Offset1", glm::value_ptr(activeModelView.selectedMesh->offset) + 0))
 				rsm->updateMatrices();
 			if(ImGui::InputFloat4("Offset2", glm::value_ptr(activeModelView.selectedMesh->offset) + 4))
@@ -420,12 +426,15 @@ void ModelEditor::run(BrowEdit* browEdit)
 
 			if(ImGui::InputFloat3("Position_", glm::value_ptr(activeModelView.selectedMesh->pos_)))
 				rsm->updateMatrices();
-			if(ImGui::InputFloat("Rotation Angle", &activeModelView.selectedMesh->rotangle))
-				rsm->updateMatrices();
-			if(ImGui::InputFloat3("Rotation Axis", glm::value_ptr(activeModelView.selectedMesh->rotaxis)))
-				rsm->updateMatrices();
-			if(ImGui::InputFloat3("Scale", glm::value_ptr(activeModelView.selectedMesh->scale)))
-				rsm->updateMatrices();
+			if (rsm->version < 0x0202)
+				if(ImGui::InputFloat("Rotation Angle", &activeModelView.selectedMesh->rotangle))
+					rsm->updateMatrices();
+			if (rsm->version < 0x0202)
+				if(ImGui::InputFloat3("Rotation Axis", glm::value_ptr(activeModelView.selectedMesh->rotaxis)))
+					rsm->updateMatrices();
+			if (rsm->version < 0x0202)
+				if(ImGui::InputFloat3("Scale", glm::value_ptr(activeModelView.selectedMesh->scale)))
+					rsm->updateMatrices();
 
 			ImGui::LabelText("Face count", "%d", activeModelView.selectedMesh->faces.size());
 

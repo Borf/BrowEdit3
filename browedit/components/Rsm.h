@@ -9,6 +9,52 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 
+#ifdef _DEBUG
+#define VERSIONLIMIT(min, max, type, name) \
+private:\
+	type _##name##;\
+public:\
+	inline type & getProp_##name##()\
+	{\
+		if (version < min || version > max)\
+			throw "Invalid version use!";\
+		return _##name##;\
+	}\
+	inline void putProp_##name##(type value)\
+	{\
+		if (version < min|| version > max)\
+			throw "Invalid version use!";\
+		_##name## = value;\
+	}\
+public:\
+	__declspec(property(get = getProp_##name##, put = putProp_##name##)) type name;
+#else
+#define VERSIONLIMIT(min, max, type, name) type name;
+#endif
+/*
+#ifdef _DEBUG
+#define VERSIONLIMITMESH(min, max, type, name) \
+private:\
+	type _##name##;\
+public:\
+	inline type & getProp_##name##()\
+	{\
+		if (model-version < min || model-version > max)\
+			throw "Invalid version use!";\
+		return _##name##;\
+	}\
+	inline void putProp_##name##(type value)\
+	{\
+		if (model-version < min|| model-version > max)\
+			throw "Invalid version use!";\
+		_##name## = value;\
+	}\
+public:\
+	__declspec(property(get = getProp_##name##, put = putProp_##name##)) type name;
+#else
+#define VERSIONLIMITMESH(min, max, type, name) type name;
+#endif
+*/
 
 class Rsm : public Component
 {
@@ -120,11 +166,15 @@ public:
 	bool loaded;
 	short version;
 	Mesh* rootMesh;
-	char unknown[16];
-	char alpha;
+
+
+
+	VERSIONLIMIT(0x0104, 0xFFFF, char, alpha);
 	int animLen;
 	std::vector<std::string> textures;
-	float fps;
+
+	VERSIONLIMIT(0x0202, 0xFFFF, float, fps);
+	char unknown[16]; //TODO: make this versionlimit too (< 0x0202)
 
 
 

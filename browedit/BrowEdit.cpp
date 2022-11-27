@@ -190,7 +190,7 @@ void BrowEdit::run()
 		//loadModel("data\\model\\plants_e_01.rsm2");
 	//	modelEditor.load("data\\model\\para\\mora_01.rsm");
 		modelEditor.load("data\\model\\프론테라\\교역소.rsm");
-		modelEditor.load("data\\model\\ilusion\\goldberg_s_01.rsm2");
+//		modelEditor.load("data\\model\\ilusion\\goldberg_s_01.rsm2");
 #endif
 
 

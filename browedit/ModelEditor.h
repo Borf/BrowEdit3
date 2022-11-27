@@ -5,7 +5,7 @@
 #include <browedit/components/Rsm.h>
 class Node;
 class BrowEdit;
-namespace gl { class FBO; }
+namespace gl { class FBO; class Texture;  }
 
 class ModelEditor
 {
@@ -22,6 +22,9 @@ public:
 	std::string id;
 	std::vector<ModelView> models;
 	NodeRenderContext nodeRenderContext;
+
+	gl::Texture* gridTexture;
+
 #ifdef _DEBUG
 	bool opened = true;
 #else
