@@ -124,6 +124,8 @@ public:
 	char alpha;
 	int animLen;
 	std::vector<std::string> textures;
+	float fps;
+
 
 
 

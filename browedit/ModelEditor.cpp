@@ -63,6 +63,7 @@ void ModelEditor::run(BrowEdit* browEdit)
 	ImGui::End();
 
 	static float timeSelected = 0.0f;
+	static ModelView* activeModelViewPtr = nullptr; // :(
 
 	for (auto &m : models)
 	{
@@ -70,6 +71,8 @@ void ModelEditor::run(BrowEdit* browEdit)
 		auto rsmRenderer = m.node->getComponent<RsmRenderer>();
 		if (ImGui::Begin(util::iso_8859_1_to_utf8(rsm->fileName).c_str()))
 		{
+			if (ImGui::IsWindowFocused())
+				activeModelViewPtr = &m;
 			auto size = ImGui::GetContentRegionAvail();
 			auto rsm = m.node->getComponent<Rsm>();
 			if (!rsm->loaded)
@@ -127,10 +130,10 @@ void ModelEditor::run(BrowEdit* browEdit)
 		ImGui::End();
 	}
 
-	if(models.size() == 0)
+	if(models.size() == 0 || !activeModelViewPtr)
 		return;
 
-	auto& activeModelView = models[0];
+	auto& activeModelView = *activeModelViewPtr;
 	auto rsm = activeModelView.node->getComponent<Rsm>();
 	if (!rsm->loaded)
 		return;

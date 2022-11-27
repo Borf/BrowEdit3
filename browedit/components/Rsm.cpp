@@ -63,8 +63,8 @@ void Rsm::reload()
 
 	if (version >= 0x0203)
 	{
-		float fps;
 		rsmFile->read(reinterpret_cast<char*>(&fps), sizeof(float));
+		animLen = (int)ceil(animLen * fps);
 		int rootMeshCount;
 		rsmFile->read(reinterpret_cast<char*>(&rootMeshCount), sizeof(int));
 		if (rootMeshCount > 1)
@@ -415,6 +415,8 @@ Rsm::Mesh::Mesh(Rsm* model, std::istream* rsmFile)
 			rsmFile->read(reinterpret_cast<char*>(&scaleFrames[i].time), sizeof(int));
 			rsmFile->read(reinterpret_cast<char*>(glm::value_ptr(scaleFrames[i].scale)), sizeof(float) * 3);
 			rsmFile->read(reinterpret_cast<char*>(&scaleFrames[i].data), sizeof(float));
+			if (model->version > 0x0202)
+				scaleFrames[i].time = ceil(scaleFrames[i].time * model->fps);
 		}
 	}
 
@@ -431,6 +433,9 @@ Rsm::Mesh::Mesh(Rsm* model, std::istream* rsmFile)
 		rsmFile->read(reinterpret_cast<char*>(&z), sizeof(float));
 		rsmFile->read(reinterpret_cast<char*>(&w), sizeof(float));
 		rotFrames[i].quaternion = glm::quat(w, x, y, z);
+		if (model->version > 0x0202)
+			rotFrames[i].time = ceil(rotFrames[i].time * model->fps);
+
 	}
 
 	if (model->version >= 0x0202)
@@ -443,6 +448,7 @@ Rsm::Mesh::Mesh(Rsm* model, std::istream* rsmFile)
 			rsmFile->read(reinterpret_cast<char*>(&posFrames[i].time), sizeof(int));
 			rsmFile->read(reinterpret_cast<char*>(glm::value_ptr(posFrames[i].position)), sizeof(float) * 3);
 			rsmFile->read(reinterpret_cast<char*>(&posFrames[i].data), sizeof(float));
+			posFrames[i].time = ceil(posFrames[i].time * model->fps);
 		}
 		if (model->version >= 0x0203)
 		{
