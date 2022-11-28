@@ -261,7 +261,10 @@ Gnd::Gnd(int width, int height)
 {
 	this->width = width;
 	this->height = height;
-	this->version = 0x0106;
+	this->version = 0x0107;
+	this->lightmapWidth = 8;
+	this->lightmapHeight = 8;
+	this->gridSizeCell = 1;
 
 	Lightmap* l = new Lightmap();
 	lightmaps.push_back(l);
