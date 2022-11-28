@@ -68,7 +68,11 @@ void ModelEditor::run(BrowEdit* browEdit)
 	ImGui::End();
 
 	static float timeSelected = 0.0f;
+	static bool playing = true;
 	static ModelView* activeModelViewPtr = nullptr; // :(
+
+	if (playing)
+		timeSelected += ImGui::GetIO().DeltaTime*1000;
 
 	for (auto &m : models)
 	{
@@ -89,7 +93,7 @@ void ModelEditor::run(BrowEdit* browEdit)
 			if (m.fbo->getWidth() != size.x || m.fbo->getHeight() != size.y)
 				m.fbo->resize((int)size.x, (int)size.y);
 
-			rsmRenderer->time = timeSelected/1000.0f;
+			rsmRenderer->time = fmod(timeSelected/1000.0f, rsm->animLen/1000.0f);
 
 			if (size.x > 0 && size.y > 0)
 			{
@@ -125,10 +129,10 @@ void ModelEditor::run(BrowEdit* browEdit)
 				gridTexture->bind();
 
 				std::vector<VertexP3T2N3> verts;
-				verts.push_back(VertexP3T2N3(glm::vec3(-128, 0, -128), glm::vec2(0, 0), glm::vec3(0.0f, 1.0f, 0.0f)));
-				verts.push_back(VertexP3T2N3(glm::vec3( 128, 0, -128), glm::vec2(8, 0), glm::vec3(0.0f, 1.0f, 0.0f)));
-				verts.push_back(VertexP3T2N3(glm::vec3( 128, 0,  128), glm::vec2(8, 8), glm::vec3(0.0f, 1.0f, 0.0f)));
-				verts.push_back(VertexP3T2N3(glm::vec3(-128, 0,  128), glm::vec2(0, 8), glm::vec3(0.0f, 1.0f, 0.0f)));
+				verts.push_back(VertexP3T2N3(glm::vec3(-100, 0, -100), glm::vec2(0, 0), glm::vec3(0.0f, 1.0f, 0.0f)));
+				verts.push_back(VertexP3T2N3(glm::vec3( 100, 0, -100), glm::vec2(8, 0), glm::vec3(0.0f, 1.0f, 0.0f)));
+				verts.push_back(VertexP3T2N3(glm::vec3( 100, 0,  100), glm::vec2(8, 8), glm::vec3(0.0f, 1.0f, 0.0f)));
+				verts.push_back(VertexP3T2N3(glm::vec3(-100, 0,  100), glm::vec2(0, 8), glm::vec3(0.0f, 1.0f, 0.0f)));
 				glEnableVertexAttribArray(0);
 				glEnableVertexAttribArray(1);
 				glEnableVertexAttribArray(2);
@@ -178,6 +182,13 @@ void ModelEditor::run(BrowEdit* browEdit)
 	static float rowHeight = 25;
 	static Rsm::Mesh::Frame* selectedFrame = nullptr;
 
+	int rowPerTrack = 1;
+	if (rsm->version >= 0x0106)
+		rowPerTrack = 2;
+	if (rsm->version >= 0x0202)
+		rowPerTrack = 3;
+
+	timeSelected = (float)std::fmod(timeSelected, rsm->animLen);
 
 	if (ImGui::Begin("ModelEditorTimeline"))
 	{
@@ -198,9 +209,9 @@ void ModelEditor::run(BrowEdit* browEdit)
 			//	selectedKeyFrame--;
 		}
 		ImGui::SameLine();
-		if (browEdit->toolBarButton("PlayPause", ICON_PLAY, "Play / Pause", ImVec4(1, 1, 1, 1)))
+		if (browEdit->toolBarButton("PlayPause", playing ? ICON_PAUSE : ICON_PLAY, "Play / Pause", ImVec4(1, 1, 1, 1)))
 		{
-			// playing = !playing;
+			playing = !playing;
 		}
 		ImGui::SameLine();
 		if (browEdit->toolBarButton("Next", ICON_NEXT, "Nexts Keyframe", ImVec4(1, 1, 1, 1)))
@@ -213,6 +224,8 @@ void ModelEditor::run(BrowEdit* browEdit)
 		ImGui::DragFloat("##Scale", &scale, 0.01f, 0.00001f, 10, "%.3f", ImGuiSliderFlags_Logarithmic);
 		if (ImGui::IsItemHovered())
 			ImGui::SetTooltip("Scale");
+		if (scale <= 0)
+			scale = 0.000001f;
 
 		int trackCount = 0;
 		if (rsm)
@@ -236,9 +249,14 @@ void ModelEditor::run(BrowEdit* browEdit)
 				//TODO: put the labels in a second subitem so only the keyframe things scroll
 				drawTrack = [&](Rsm::Mesh* mesh, int level)
 				{
-					ImGui::RenderText(bb.Min + ImVec2(10.0f + 20.0f * level, rowHeight + 3*rowHeight * trackIndex + 2.0f), mesh->name.c_str()); //todo: center
-					ImGui::RenderFrame(bb.Min + ImVec2(leftAreaSize, rowHeight + 3*rowHeight * trackIndex + 1), 
-										bb.Min + ImVec2(leftAreaSize + scale * rsm->animLen, rowHeight + 3*rowHeight * trackIndex + rowHeight - 2), ImGui::GetColorU32(ImGuiCol_FrameBg, 1), true, style.FrameRounding);
+					ImGui::RenderText(bb.Min + ImVec2(10.0f + 20.0f * level, rowHeight + rowPerTrack * rowHeight * trackIndex + 2.0f), mesh->name.c_str());
+					ImGui::RenderText(bb.Min + ImVec2(130.0f, 1*rowHeight + rowPerTrack * rowHeight * trackIndex + 2.0f), "Rotation");
+					if(rsm->version >= 0x0106)
+						ImGui::RenderText(bb.Min + ImVec2(130.0f, 2*rowHeight + rowPerTrack * rowHeight * trackIndex + 2.0f), "Scale");
+					if (rsm->version >= 0x0202)
+						ImGui::RenderText(bb.Min + ImVec2(130.0f, 3*rowHeight + rowPerTrack * rowHeight * trackIndex + 2.0f), "Position");
+					ImGui::RenderFrame(bb.Min + ImVec2(leftAreaSize, rowHeight + rowPerTrack *rowHeight * trackIndex + 1),
+										bb.Min + ImVec2(leftAreaSize + scale * rsm->animLen, rowHeight + rowPerTrack *rowHeight * trackIndex + rowHeight - 2), ImGui::GetColorU32(ImGuiCol_FrameBg, 1), true, style.FrameRounding);
 					trackIndex++;
 					for (auto m : mesh->children)
 						drawTrack(m, level + 1);
@@ -253,19 +271,19 @@ void ModelEditor::run(BrowEdit* browEdit)
 						for (int ii = 0; ii < 100; ii += 10)
 						{
 							window->DrawList->AddLine(bb.Min + ImVec2(leftAreaSize + scale * i + scale * ii, rowHeight - 5), bb.Min + ImVec2(leftAreaSize + scale * i + scale * ii, rowHeight), ImGui::GetColorU32(ImGuiCol_TextDisabled, 1.0f));
-							window->DrawList->AddLine(bb.Min + ImVec2(leftAreaSize + scale * i + scale * ii, rowHeight), bb.Min + ImVec2(leftAreaSize + scale * i + scale * ii, rowHeight * (3 * trackCount + 1)), ImGui::GetColorU32(ImGuiCol_TextDisabled, 0.5f));
+							window->DrawList->AddLine(bb.Min + ImVec2(leftAreaSize + scale * i + scale * ii, rowHeight), bb.Min + ImVec2(leftAreaSize + scale * i + scale * ii, rowHeight * (rowPerTrack * trackCount + 1)), ImGui::GetColorU32(ImGuiCol_TextDisabled, 0.5f));
 						}
 					}
 					if (scale * i - lastLabel > 100)
 					{
 						ImGui::RenderText(bb.Min + ImVec2(leftAreaSize + scale * i, 0), std::to_string(i).c_str());
-						window->DrawList->AddLine(bb.Min + ImVec2(leftAreaSize + scale * i, 0), bb.Min + ImVec2(leftAreaSize + scale * i, rowHeight * (3 * trackCount + 1)), ImGui::GetColorU32(ImGuiCol_Text, 1));
+						window->DrawList->AddLine(bb.Min + ImVec2(leftAreaSize + scale * i, 0), bb.Min + ImVec2(leftAreaSize + scale * i, rowHeight * (rowPerTrack * trackCount + 1)), ImGui::GetColorU32(ImGuiCol_Text, 1));
 						lastLabel = scale * i;
 					}
 				}
 
 
-				window->DrawList->AddLine(bb.Min + ImVec2(leftAreaSize + scale * timeSelected, 0), bb.Min + ImVec2(leftAreaSize + scale * timeSelected, rowHeight * (3 * trackCount + 1)), ImGui::GetColorU32(ImGuiCol_Text, 1));
+				window->DrawList->AddLine(bb.Min + ImVec2(leftAreaSize + scale * timeSelected, 0), bb.Min + ImVec2(leftAreaSize + scale * timeSelected, rowHeight * (rowPerTrack * trackCount + 1)), ImGui::GetColorU32(ImGuiCol_Text, 1));
 				ImGui::SetCursorScreenPos(bb.Min + ImVec2(leftAreaSize, 0));
 				ImGui::InvisibleButton("##", ImVec2(scale* rsm->animLen, rowHeight));
 				if (ImGui::IsItemActive() && ImGui::IsMouseDown(ImGuiMouseButton_Left))
@@ -288,7 +306,7 @@ void ModelEditor::run(BrowEdit* browEdit)
 					auto drawFrame = [&](Rsm::Mesh::Frame& frame, int yoffset)
 					{
 						ImGui::PushID(&frame);
-						ImGui::SetCursorScreenPos(bb.Min + ImVec2(leftAreaSize + scale * frame.time - 5, rowHeight + (3 * rowHeight + yoffset) * trackIndex));
+						ImGui::SetCursorScreenPos(bb.Min + ImVec2(leftAreaSize + scale * frame.time - 5, rowHeight + (rowPerTrack * rowHeight + yoffset) * trackIndex));
 						if (ImGui::Button("##", ImVec2(10, rowHeight)))
 						{
 							selectedFrame = &frame;
@@ -299,10 +317,12 @@ void ModelEditor::run(BrowEdit* browEdit)
 
 					for (auto& f : mesh->rotFrames)
 						drawFrame(f, 0);
-					for (auto& f : mesh->scaleFrames)
-						drawFrame(f, 1);
-					for (auto& f : mesh->posFrames)
-						drawFrame(f, 2);
+					if(rsm->version >= 0x0106)
+						for (auto& f : mesh->scaleFrames)
+							drawFrame(f, 1);
+					if(rsm->version >= 0x0202)
+						for (auto& f : mesh->posFrames)
+							drawFrame(f, 2);
 
 
 					trackIndex++;
@@ -403,6 +423,8 @@ void ModelEditor::run(BrowEdit* browEdit)
 					rsm->version = 0x0104;
 				if (ImGui::Selectable("0105", rsm->version == 0x0105))
 					rsm->version = 0x0105;
+				if (ImGui::Selectable("0106", rsm->version == 0x0106))
+					rsm->version = 0x0106;
 				if (ImGui::Selectable("0202", rsm->version == 0x0202))
 					rsm->version = 0x0202;
 				if (ImGui::Selectable("0203", rsm->version == 0x0203))
