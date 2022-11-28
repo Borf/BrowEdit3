@@ -337,8 +337,8 @@ void ModelEditor::run(BrowEdit* browEdit)
 			}
 			ImGui::EndChild();
 		}
+		ImGui::End();
 	}
-	ImGui::End();
 
 	if (ImGui::Begin("ModelEditorTimelineProperties"))
 	{

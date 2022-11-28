@@ -190,7 +190,7 @@ void BrowEdit::run()
 		//loadModel("data\\model\\plants_e_01.rsm2");
 	//	modelEditor.load("data\\model\\para\\mora_01.rsm");
 		modelEditor.load("data\\model\\프론테라\\교역소.rsm");
-//		modelEditor.load("data\\model\\ilusion\\goldberg_s_01.rsm2");
+		modelEditor.load("data\\model\\ilusion\\goldberg_s_01.rsm2");
 #endif
 
 
@@ -591,7 +591,8 @@ void fixBackup(const std::string& fileName, const std::string& backupfileName)
 	{
 		std::filesystem::path path(backupfileName);
 		auto p = path.parent_path().string();
-		std::filesystem::create_directories(p);
+		if(!std::filesystem::exists(p))
+			std::filesystem::create_directories(p);
 
 		int c = 0;
 		for(int i = 0; i < 999; i++)
