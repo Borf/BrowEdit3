@@ -352,6 +352,7 @@ void MapView::render(BrowEdit* browEdit)
 		map->rootNode->getComponent<GndRenderer>()->smoothColors = smoothColors;
 		map->rootNode->getComponent<GndRenderer>()->gndShadowDirty = true;
 	}
+	map->rootNode->getComponent<WaterRenderer>()->viewFog = viewFog;
 
 	RsmRenderer::RsmRenderContext::getInstance()->viewLighting = viewLighting;
 	RsmRenderer::RsmRenderContext::getInstance()->viewTextures = viewTextures;

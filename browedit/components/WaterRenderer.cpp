@@ -74,6 +74,12 @@ void WaterRenderer::render()
 	shader->setUniform(WaterShader::Uniforms::wavePitch, rsw->water.wavePitch);
 	shader->setUniform(WaterShader::Uniforms::frameTime, glm::fract(time * 60 / rsw->water.textureAnimSpeed));
 
+	shader->setUniform(WaterShader::Uniforms::fogEnabled, viewFog);
+	shader->setUniform(WaterShader::Uniforms::fogNear, rsw->fog.nearPlane * 240 * 2.5f);
+	shader->setUniform(WaterShader::Uniforms::fogFar, rsw->fog.farPlane * 240 * 2.5f);
+	shader->setUniform(WaterShader::Uniforms::fogExp, rsw->fog.factor);
+	shader->setUniform(WaterShader::Uniforms::fogColor, rsw->fog.color);
+
 	glDepthMask(0);
 	glEnable(GL_BLEND);
 	vbo->bind();

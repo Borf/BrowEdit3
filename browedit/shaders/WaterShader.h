@@ -20,6 +20,11 @@ public:
 			waveSpeed,
 			wavePitch,
 			frameTime,
+			fogEnabled,
+			fogColor,
+			fogNear,
+			fogFar,
+			fogExp,
 			End
 		};
 	};
@@ -36,6 +41,11 @@ public:
 		bindUniform(Uniforms::waveSpeed, "waveSpeed");
 		bindUniform(Uniforms::wavePitch, "wavePitch");
 		bindUniform(Uniforms::frameTime, "frameTime");
+		bindUniform(Uniforms::fogEnabled, "fogEnabled");
+		bindUniform(Uniforms::fogColor, "fogColor");
+		bindUniform(Uniforms::fogNear, "fogNear");
+		bindUniform(Uniforms::fogFar, "fogFar");
+		bindUniform(Uniforms::fogExp, "fogExp");
 		
 	}
 };

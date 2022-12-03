@@ -31,6 +31,7 @@ public:
 	Rsw* rsw;
 	gl::VBO<VertexP3T2>* vbo = nullptr;
 	bool dirty = true;
+	bool viewFog = false;
 
 	WaterRenderer();
 	~WaterRenderer();
