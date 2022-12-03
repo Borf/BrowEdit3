@@ -2,6 +2,7 @@
 
 #include "Component.h"
 #include <browedit/util/Util.h>
+#include <browedit/components/ImguiProps.h>
 #include <string>
 #include <vector>
 #include <glm/glm.hpp>
@@ -11,7 +12,7 @@
 class Map;
 class BrowEdit;
 
-class Gat : public Component
+class Gat : public Component, public ImguiProps
 {
 public:
 	Gat(const std::string& fileName);
@@ -19,6 +20,7 @@ public:
 	~Gat();
 	void save(const std::string &fileName);
 	glm::vec3 rayCast(const math::Ray& ray, int xMin = 0, int yMin = 0, int xMax = -1, int yMax = -1, float offset = 0.0f);
+	void buildImGui(BrowEdit* browEdit);
 
 	void flattenTiles(Map* map, BrowEdit* browEdit, const std::vector<glm::ivec2>& tiles);
 	void smoothTiles(Map* map, BrowEdit* browEdit, const std::vector<glm::ivec2>& tiles, int axis);

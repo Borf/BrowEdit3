@@ -36,6 +36,8 @@ Gat::Gat(const std::string& fileName)
 	file->read(reinterpret_cast<char*>(&width), sizeof(int));
 	file->read(reinterpret_cast<char*>(&height), sizeof(int));
 
+	std::cout << std::hex << "Gat: Version 0x" << version << std::dec << ", width "<<width<<", height "<<height << std::endl;
+
 	cubes.resize(width, std::vector<Cube*>(height, NULL));
 	for (int y = 0; y < height; y++)
 	{
@@ -59,6 +61,7 @@ Gat::Gat(int width, int height)
 {
 	this->width = width;
 	this->height = height;
+	this->version = 0x0201;
 	cubes.resize(width, std::vector<Cube*>(height, NULL));
 	for (int y = 0; y < height; y++)
 	{
@@ -196,6 +199,34 @@ glm::vec3 Gat::rayCast(const math::Ray& ray, int xMin, int yMin, int xMax, int y
 	return collisions[0];
 }
 
+
+
+void Gat::buildImGui(BrowEdit* browEdit)
+{
+	ImGui::Text("GAT");
+	char versionStr[10];
+	sprintf_s(versionStr, 10, "%04x", version);
+	if (ImGui::BeginCombo("GatVersion", versionStr))
+	{
+		if (ImGui::Selectable("0103", version == 0x0103))
+			version = 0x0103;
+		if (ImGui::Selectable("0104", version == 0x0104))
+			version = 0x0104;
+		if (ImGui::Selectable("0108", version == 0x0108))
+			version = 0x0108;
+		if (ImGui::Selectable("0109", version == 0x0109))
+			version = 0x0109;
+		if (ImGui::Selectable("0201", version == 0x0201))
+			version = 0x0201;
+		if (ImGui::Selectable("0202", version == 0x0202))
+			version = 0x0202;
+		if (ImGui::Selectable("0203", version == 0x0203))
+			version = 0x0203;
+		if (ImGui::Selectable("0204", version == 0x0204))
+			version = 0x0204;
+		ImGui::EndCombo();
+	}
+}
 
 /*void Gat::flattenTiles(Map* map, BrowEdit* browEdit, const std::vector<glm::ivec2>& tiles)
 {

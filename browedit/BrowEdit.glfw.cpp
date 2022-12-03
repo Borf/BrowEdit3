@@ -37,6 +37,7 @@ void onDebug(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei len
         false)
         return;
     std::cerr<< "OpenGL Debug\t"<<id<<"\t"<<message << std::endl;
+    std::cerr << util::callstack() << std::endl;
 }
 
 #define Q(x) #x

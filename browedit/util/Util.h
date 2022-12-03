@@ -95,6 +95,9 @@ namespace util
 	//todo: move to math
 	glm::quat RotationBetweenVectors(glm::vec3 start, glm::vec3 dest);
 	glm::quat RotateTowards(glm::quat q1, const glm::quat &q2, float maxAngle);
+
+
+	std::string callstack();
 }
 
 namespace glm

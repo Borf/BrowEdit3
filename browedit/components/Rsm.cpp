@@ -240,17 +240,23 @@ Rsm::Mesh::Mesh(Rsm* model, std::istream* rsmFile)
 		parentName = util::FileIO::readString(rsmFile, 40);
 	}
 
-	size_t textureStart = 0;
 	if (model->version >= 0x0203)
 	{
-		textureStart = model->textures.size();
 		int textureCount;
 		rsmFile->read(reinterpret_cast<char*>(&textureCount), sizeof(int));
 		for (int i = 0; i < textureCount; i++)
 		{
 			std::string textureFile = util::FileIO::readStringDyn(rsmFile);
-			textures.push_back((int)model->textures.size());
-			model->textures.push_back(textureFile);
+			auto it = std::find(model->textures.begin(), model->textures.end(), textureFile);
+			if (it != model->textures.end())
+			{
+				textures.push_back((int)(it - model->textures.begin()));
+			}
+			else
+			{
+				textures.push_back((int)model->textures.size());
+				model->textures.push_back(textureFile);
+			}
 		}
 	}
 	else

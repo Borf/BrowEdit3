@@ -6,7 +6,6 @@
 #include <browedit/Image.h>
 #include <browedit/components/Gnd.h>
 #include <browedit/components/GndRenderer.h>
-#include <browedit/components/Gnd.h>
 #include <browedit/components/Rsw.h>
 #include <browedit/math/Ray.h>
 #include <browedit/util/ResourceManager.h>

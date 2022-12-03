@@ -20,6 +20,11 @@
 #include <browedit/actions/GroupAction.h>
 #include <browedit/gl/Texture.h>
 
+#ifdef WIN32
+#include <DbgHelp.h>
+#pragma comment(lib,"dbghelp.lib")
+#endif
+
 
 namespace util
 {
@@ -1721,7 +1726,64 @@ namespace util
 
 	}
 
+	std::string callstack()
+	{
+#ifdef WIN32
+//#ifdef _DEBUG
+#if 1
+		if (IsDebuggerPresent())
+			return "";
+		std::string ret;
+		unsigned int   i;
+		void* stack[100];
+		unsigned short frames;
+		SYMBOL_INFO* symbol;
+		IMAGEHLP_LINE line;
+		HANDLE         process;
 
+		process = GetCurrentProcess();
+
+		SymInitialize(process, NULL, TRUE);
+
+		frames = CaptureStackBackTrace(0, 100, stack, NULL);
+		symbol = (SYMBOL_INFO*)calloc(sizeof(SYMBOL_INFO) + 128 * sizeof(char), 1);
+		symbol->MaxNameLen = 127;
+		symbol->SizeOfStruct = sizeof(SYMBOL_INFO);
+
+		ZeroMemory(&line, sizeof(IMAGEHLP_LINE));
+		line.SizeOfStruct = sizeof(IMAGEHLP_LINE);
+		DWORD dwDisplacement;
+
+		for (i = 0; i < frames; i++)
+		{
+			SymFromAddr(process, (DWORD64)(stack[i]), 0, symbol);
+			SymGetLineFromAddr(process, (DWORD64)(stack[i]), &dwDisplacement, &line);
+			char buf[2048];
+			sprintf_s(buf, 2048, "%i: (%s:%i)\t%s\n", frames - i - 1, line.FileName, line.LineNumber, symbol->Name);
+
+			ret += buf;
+		}
+		SymCleanup(process);
+		free(symbol);
+
+		return ret;
+#else //no debug
+		return "";
+#endif
+#elif !defined(BLIB_ANDROID) && !defined(BLIB_NX)
+		std::string ret;
+		void* callstack[128];
+		int frames = backtrace(callstack, 128);
+		char** strs = backtrace_symbols(callstack, frames);
+		for (int i = 0; i < frames; i++)
+		{
+			ret += std::string(strs[i]) + "\n";
+		}
+		free(strs);
+		return ret;
+#endif
+		return "";
+	}
 
 }
 
