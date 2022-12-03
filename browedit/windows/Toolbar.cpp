@@ -159,11 +159,21 @@ void BrowEdit::toolbar()
 	else
 		sprintf_s(images, 100, "");
 
+	static bool hasMemory = true;
 	int mem[4] = { 0,0,0,0 };
-	glGetIntegerv(0x9048, &mem[1]); //GPU_MEMORY_INFO_TOTAL_AVAILABLE_MEMORY_NVX      
-	glGetIntegerv(0x9049, &mem[0]); //GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX  
+	if (hasMemory)
+	{
+		glGetIntegerv(0x9048, &mem[1]); //GPU_MEMORY_INFO_TOTAL_AVAILABLE_MEMORY_NVX      
+		glGetIntegerv(0x9049, &mem[0]); //GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX  
+
+		if (mem[0] == 0 || mem[1] == 0)
+			hasMemory = false;
+	}
 	static char txt[1024];
-	sprintf_s(txt, 1024, "Load: Tex(%zu), Models(%zu), %sMem(%zu MB), GPU(%d MB / %d MB)", util::ResourceManager<gl::Texture>::count(), util::ResourceManager<Rsm>::count(), images, pmc.WorkingSetSize / 1024/1024, (mem[1]-mem[0])/1024, mem[1]/1024);
+	if(hasMemory)
+		sprintf_s(txt, 1024, "Load: Tex(%zu), Models(%zu), %sMem(%zu MB), GPU(%d MB / %d MB)", util::ResourceManager<gl::Texture>::count(), util::ResourceManager<Rsm>::count(), images, pmc.WorkingSetSize / 1024/1024, (mem[1]-mem[0])/1024, mem[1]/1024);
+	else
+		sprintf_s(txt, 1024, "Load: Tex(%zu), Models(%zu), %sMem(%zu MB)", util::ResourceManager<gl::Texture>::count(), util::ResourceManager<Rsm>::count(), images, pmc.WorkingSetSize / 1024 / 1024);
 	auto len = ImGui::CalcTextSize(txt);
 	ImGui::SameLine(ImGui::GetWindowWidth() - len.x - 6 - ImGui::GetStyle().FramePadding.x);
 	ImRect bb(ImGui::GetCursorScreenPos() - ImVec2(3,3), ImGui::GetCursorScreenPos() + len + ImVec2(6,6));
