@@ -1005,7 +1005,7 @@ bool RswModelCollider::collidesTexture(Rsm::Mesh* mesh, const math::Ray& ray, co
 			glm::vec3 hitPoint = ray.origin + ray.dir * t;
 			if (img && img->hasAlpha)
 			{
-				if (glm::distance(hitPoint, ray.origin) > minDistance && maxDistance - t > 0)
+				if (glm::distance(hitPoint, ray.origin) >= minDistance && maxDistance - t > 0)
 				{
 					auto f1 = verts[0] - hitPoint;
 					auto f2 = verts[1] - hitPoint;
@@ -1037,7 +1037,7 @@ bool RswModelCollider::collidesTexture(Rsm::Mesh* mesh, const math::Ray& ray, co
 						return true;
 				}
 			}
-			else if(glm::distance(hitPoint, ray.origin) > minDistance && maxDistance - t > 0)
+			else if(glm::distance(hitPoint, ray.origin) >= minDistance && maxDistance - t > 0) //remove the if condition here????
 				return true;
 
 		}

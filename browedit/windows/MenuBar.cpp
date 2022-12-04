@@ -17,6 +17,7 @@
 #include <browedit/HotkeyRegistry.h>
 #include <GLFW/glfw3.h>
 #include <imgui_internal.h>
+#include <fstream>
 
 void BrowEdit::menuBar()
 {
@@ -40,6 +41,44 @@ void BrowEdit::menuBar()
 					break;
 				}
 			ImGui::EndMenu();
+		}
+		if (activeMapView && ImGui::MenuItem("Export mapdata for lightmapping"))
+		{
+			nlohmann::json mapData;
+			auto rsw = activeMapView->map->rootNode->getComponent<Rsw>();
+			auto gnd = activeMapView->map->rootNode->getComponent<Gnd>();
+
+			mapData["lights"] = nlohmann::json::array();
+			activeMapView->map->rootNode->traverse([&](Node* n) {
+				auto light = n->getComponent<RswLight>();
+				auto object = n->getComponent<RswObject>();
+				if (light && object)
+				{
+					nlohmann::json l;
+					to_json(l, *light);
+					to_json(l, *object);
+					mapData["lights"].push_back(l);
+				}
+			});
+
+			mapData["floorTiles"] = gnd->getMapQuads();
+
+			mapData["modelPolygons"] = nlohmann::json::array();
+			activeMapView->map->rootNode->traverse([&](Node* n) {
+				auto rsm = n->getComponent<Rsm>();
+				auto rswModel = n->getComponent<RswModel>();
+				auto collider = n->getComponent<RswModelCollider>();
+				if (rsm && rswModel)
+				{
+					auto verts = collider->getVerticesWorldSpace();
+					for (const auto& v : verts)
+						mapData["modelPolygons"].push_back(v);
+				}
+				});
+
+
+			std::ofstream mapDataFile("mapdata.json");
+			mapDataFile << std::setw(2) << mapData;
 		}
 		hotkeyMenuItem("Open Model Editor", HotkeyAction::Global_ModelEditor_Open);
 		hotkeyMenuItem("Quit", HotkeyAction::Global_Exit);
