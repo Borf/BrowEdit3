@@ -681,7 +681,7 @@ void Map::importLightMap(BrowEdit* browEdit, bool exportWalls, bool exportBorder
 	auto gnd = rootNode->getComponent<Gnd>();
 	gnd->makeLightmapsUnique();
 	int w, h, c;
-	unsigned char* img = stbi_load((browEdit->config.ropath + name + ".colormap.png").c_str(), &w, &h, &c, 1);
+	unsigned char* img = stbi_load((browEdit->config.ropath + name + ".colormap.png").c_str(), &w, &h, &c, 3);
 	if (w != gnd->width * wallMultiplier*tileSize ||
 		h != gnd->height * wallMultiplier*tileSize)
 	{
@@ -726,9 +726,9 @@ void Map::importLightMap(BrowEdit* browEdit, bool exportWalls, bool exportBorder
 					lightmapcpy(gnd->lightmaps[gnd->tiles[cube->tileFront]->lightmapIndex]->data, img, xx + tileSize, yy, tileSize * wallMultiplier * gnd->width);
 				}
 			}
-			gnd->makeLightmapsUnique();
 		}
 	}
+	gnd->makeLightmapsUnique();
 	rootNode->getComponent<GndRenderer>()->gndShadowDirty = true;
 
 	stbi_image_free(img);

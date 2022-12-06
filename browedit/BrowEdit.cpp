@@ -155,7 +155,7 @@ void BrowEdit::run()
 	if(config.isValid() == "")
 //		loadMap("data\\aldebaran.rsw");
 //		loadMap("data\\prontera.rsw");
-//		loadMap("data\\amicit01.rsw"); //RSM2
+		loadMap("data\\amicit01.rsw"); //RSM2
 //		loadMap("data\\grademk.rsw"); //special effects
 //		loadMap("data\\noel02.rsw");
 //		loadMap("data\\icecastle.rsw");
@@ -191,6 +191,7 @@ void BrowEdit::run()
 	//	modelEditor.load("data\\model\\para\\mora_01.rsm");
 		modelEditor.load("data\\model\\프론테라\\교역소.rsm");
 		modelEditor.load("data\\model\\ilusion\\goldberg_s_01.rsm2");
+		modelEditor.load("data\\model\\job4for\\purifier_s_01.rsm2");
 #endif
 
 
