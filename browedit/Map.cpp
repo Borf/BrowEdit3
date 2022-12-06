@@ -679,6 +679,7 @@ void Map::importLightMap(BrowEdit* browEdit, bool exportWalls, bool exportBorder
 					dst[64 + ((x + tilePadding) + 8 * (y + tilePadding)) * 3 + c] = src[((srcx + x) + w * (srcy + y)) * 3 + c];
 	};
 	auto gnd = rootNode->getComponent<Gnd>();
+	gnd->makeLightmapsUnique();
 	int w, h, c;
 	unsigned char* img = stbi_load((browEdit->config.ropath + name + ".colormap.png").c_str(), &w, &h, &c, 1);
 	if (w != gnd->width * wallMultiplier*tileSize ||
@@ -695,15 +696,37 @@ void Map::importLightMap(BrowEdit* browEdit, bool exportWalls, bool exportBorder
 			int xx = tileSize * wallMultiplier * x;
 			int yy = tileSize * wallMultiplier * y;
 
-			if (cube->tileUp > -1 && gnd->tiles[cube->tileUp]->lightmapIndex > -1)
+			if (cube->tileUp > -1)
+			{
+				if (gnd->tiles[cube->tileUp]->lightmapIndex == -1)
+				{
+					gnd->tiles[cube->tileUp]->lightmapIndex = (int)gnd->lightmaps.size();
+					gnd->lightmaps.push_back(new Gnd::Lightmap());
+				}
 				lightmapcpy(gnd->lightmaps[gnd->tiles[cube->tileUp]->lightmapIndex]->data, img, xx, yy, tileSize * wallMultiplier * gnd->width);
+			}
 			if (exportWalls)
 			{
-				if (cube->tileSide > -1 && gnd->tiles[cube->tileSide]->lightmapIndex > -1)
+				if (cube->tileSide > -1)
+				{
+					if (gnd->tiles[cube->tileSide]->lightmapIndex == -1)
+					{
+						gnd->tiles[cube->tileSide]->lightmapIndex = (int)gnd->lightmaps.size();
+						gnd->lightmaps.push_back(new Gnd::Lightmap());
+					}
 					lightmapcpy(gnd->lightmaps[gnd->tiles[cube->tileSide]->lightmapIndex]->data, img, xx, yy + tileSize, tileSize * wallMultiplier * gnd->width);
-				if (cube->tileFront > -1 && gnd->tiles[cube->tileFront]->lightmapIndex > -1)
+				}
+				if (cube->tileFront > -1)
+				{
+					if (gnd->tiles[cube->tileFront]->lightmapIndex == -1)
+					{
+						gnd->tiles[cube->tileFront]->lightmapIndex = (int)gnd->lightmaps.size();
+						gnd->lightmaps.push_back(new Gnd::Lightmap());
+					}
 					lightmapcpy(gnd->lightmaps[gnd->tiles[cube->tileFront]->lightmapIndex]->data, img, xx + tileSize, yy, tileSize * wallMultiplier * gnd->width);
+				}
 			}
+			gnd->makeLightmapsUnique();
 		}
 	}
 	rootNode->getComponent<GndRenderer>()->gndShadowDirty = true;
