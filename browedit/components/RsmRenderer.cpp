@@ -129,6 +129,13 @@ void RsmRenderer::render()
 			}
 		}
 	}
+
+	if (!matrixCached && rsm->version >= 0x0202)
+	{
+		matrixCache = glm::mat4(1.0f);
+		matrixCache = glm::scale(matrixCache, glm::vec3(1, -1, 1));
+		matrixCache = glm::translate(matrixCache, glm::vec3(0, rsm->realbbmax.y, 0));
+	}
 	auto shader = dynamic_cast<RsmRenderContext*>(renderContext)->shader;
 	shader->setUniform(RsmShader::Uniforms::shadeType, (int)rsm->shadeType);
 	shader->setUniform(RsmShader::Uniforms::modelMatrix2, matrixCache);
@@ -253,6 +260,7 @@ void RsmRenderer::renderMesh(Rsm::Mesh* mesh, const glm::mat4& matrix)
 void RsmRenderer::setMeshesDirty() {
 	this->meshDirty = true;
 	this->matrixCached = false;
+	rsm->updateMatrices();
 	for (auto t : textures)
 		util::ResourceManager<gl::Texture>::unload(t);
 	textures.clear();

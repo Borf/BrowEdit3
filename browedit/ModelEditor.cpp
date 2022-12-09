@@ -42,7 +42,7 @@ void ModelEditor::run(BrowEdit* browEdit)
 {
 	if (!opened)
 		return;
-
+	static bool openOpenPopup = false;
 	if (ImGui::Begin("ModelEditor", &opened, ImGuiWindowFlags_MenuBar))
 	{
 		if (ImGui::BeginMenuBar())
@@ -53,19 +53,86 @@ void ModelEditor::run(BrowEdit* browEdit)
 				{
 				}
 				if (ImGui::MenuItem("Open"))
-				{
-				}
+					openOpenPopup = true;
 				if (ImGui::MenuItem("Save"))
 				{
 				}
 				ImGui::EndMenu();
 			}
 		}
+		static std::vector<std::string> modelFiles;
+		if (openOpenPopup)
+		{
+			ImGui::OpenPopup("OpenModel");
+			modelFiles = util::FileIO::listAllFiles();
+			modelFiles.erase(std::remove_if(modelFiles.begin(), modelFiles.end(), [](const std::string& map) { return map.substr(map.size() - 4, 4) != ".rsm" && map.substr(map.size() - 5, 5) != ".rsm2"; }), modelFiles.end());
+			std::sort(modelFiles.begin(), modelFiles.end());
+			auto last = std::unique(modelFiles.begin(), modelFiles.end());
+			modelFiles.erase(last, modelFiles.end());
+		}
+		ImGui::SetNextWindowSize(ImVec2(400, 600));
+		if (ImGui::BeginPopup("OpenModel"))
+		{
+			static bool selectFirst = false;
+			ImGui::Text("Filter");
+			ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+			if(openOpenPopup)
+				ImGui::SetKeyboardFocusHere();
+			openOpenPopup = false;
+			static std::string openFilter = "";
+			static std::string lastOpenFilter = "";
+			static std::size_t openFileSelected = 0;
+			if (ImGui::InputText("##filter", &openFilter, ImGuiInputTextFlags_EnterReturnsTrue))
+			{
+				load(modelFiles[openFileSelected]);
+				ImGui::CloseCurrentPopup();
+			}
+			if (lastOpenFilter != openFilter)
+			{
+				selectFirst = true;
+				lastOpenFilter = openFilter;
+			}
+			if (ImGui::BeginListBox("##Files", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y - 40)))
+			{
+				for (std::size_t i = 0; i < modelFiles.size(); i++)
+				{
+					if (openFilter == "" || modelFiles[i].find(openFilter) != std::string::npos)
+					{
+						if (selectFirst)
+						{
+							selectFirst = false;
+							openFileSelected = i;
+						}
+						if (ImGui::Selectable(util::iso_8859_1_to_utf8(modelFiles[i]).c_str(), openFileSelected == i))
+							openFileSelected = i;
+						if (ImGui::IsItemClicked(0) && ImGui::IsMouseDoubleClicked(0))
+						{
+							load(modelFiles[openFileSelected]);
+							ImGui::CloseCurrentPopup();
+						}
+					}
+				}
+				ImGui::EndListBox();
+			}
+
+			if (ImGui::Button("Open"))
+			{
+				load(modelFiles[openFileSelected]);
+				ImGui::CloseCurrentPopup();
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("Cancel"))
+				ImGui::CloseCurrentPopup();
+			ImGui::EndPopup();
+		}
 		ImGui::EndMenuBar();
 
 		ImGui::DockSpace(ImGui::GetID("ModelEdit"));
 	}
 	ImGui::End();
+
+
+
 
 	static float timeSelected = 0.0f;
 	static bool playing = true;
@@ -116,7 +183,10 @@ void ModelEditor::run(BrowEdit* browEdit)
 				nodeRenderContext.viewMatrix = glm::translate(nodeRenderContext.viewMatrix, glm::vec3(0, 0, -m.camera.z));
 				nodeRenderContext.viewMatrix = glm::rotate(nodeRenderContext.viewMatrix, -glm::radians(m.camera.x), glm::vec3(1, 0, 0));
 				nodeRenderContext.viewMatrix = glm::rotate(nodeRenderContext.viewMatrix, -glm::radians(m.camera.y), glm::vec3(0, 1, 0));
-				nodeRenderContext.viewMatrix = glm::translate(nodeRenderContext.viewMatrix, glm::vec3(0, -rsm->bbrange.y, 0));
+				if(rsm->version >= 0x0202)
+					nodeRenderContext.viewMatrix = glm::translate(nodeRenderContext.viewMatrix, glm::vec3(0, rsm->bbrange.y, 0));
+				else
+					nodeRenderContext.viewMatrix = glm::translate(nodeRenderContext.viewMatrix, glm::vec3(0, -rsm->bbrange.y, 0));
 
 				// draw grid
 				simpleShader->use();
@@ -340,8 +410,8 @@ void ModelEditor::run(BrowEdit* browEdit)
 			}
 			ImGui::EndChild();
 		}
-		ImGui::End();
 	}
+	ImGui::End();
 
 	if (ImGui::Begin("ModelEditorTimelineProperties"))
 	{
@@ -378,6 +448,8 @@ void ModelEditor::run(BrowEdit* browEdit)
 					auto subMesh = new Rsm::Mesh(rsm);
 					subMesh->name = "new";
 					subMesh->index = 0;
+					subMesh->scale = glm::vec3(1.0f);
+					subMesh->offset = glm::mat4(1.0f);
 					rsm->rootMesh->foreach([&subMesh](Rsm::Mesh* m) { subMesh->index = glm::max(subMesh->index, m->index + 1); });
 					mesh->children.push_back(subMesh);
 					rsm->meshCount++;
@@ -417,21 +489,45 @@ void ModelEditor::run(BrowEdit* browEdit)
 			if (ImGui::BeginCombo("Version", versionStr))
 			{
 				if (ImGui::Selectable("0101", rsm->version == 0x0101))
+				{
 					rsm->version = 0x0101;
+					rsmRenderer->setMeshesDirty();
+				}
 				if (ImGui::Selectable("0102", rsm->version == 0x0102))
+				{
 					rsm->version = 0x0102;
+					rsmRenderer->setMeshesDirty();
+				}
 				if (ImGui::Selectable("0103", rsm->version == 0x0103))
+				{
 					rsm->version = 0x0103;
+					rsmRenderer->setMeshesDirty();
+				}
 				if (ImGui::Selectable("0104", rsm->version == 0x0104))
+				{
 					rsm->version = 0x0104;
+					rsmRenderer->setMeshesDirty();
+				}
 				if (ImGui::Selectable("0105", rsm->version == 0x0105))
+				{
 					rsm->version = 0x0105;
+					rsmRenderer->setMeshesDirty();
+				}
 				if (ImGui::Selectable("0106", rsm->version == 0x0106))
+				{
 					rsm->version = 0x0106;
+					rsmRenderer->setMeshesDirty();
+				}
 				if (ImGui::Selectable("0202", rsm->version == 0x0202))
+				{
 					rsm->version = 0x0202;
+					rsmRenderer->setMeshesDirty();
+				}
 				if (ImGui::Selectable("0203", rsm->version == 0x0203))
+				{
 					rsm->version = 0x0203;
+					rsmRenderer->setMeshesDirty();
+				}
 				ImGui::EndCombo();
 			}
 			if (rsm->version > 0x0104)
@@ -461,6 +557,7 @@ void ModelEditor::run(BrowEdit* browEdit)
 					if (ImGui::InputText("Texture", &texture))
 					{
 						t = util::utf8_to_iso_8859_1(texture);
+						rsmRenderer->setMeshesDirty();
 					}
 
 					ImGui::PopID();
@@ -472,28 +569,28 @@ void ModelEditor::run(BrowEdit* browEdit)
 		{
 			ImGui::InputText("Name", &activeModelView.selectedMesh->name);
 			if(rsm->version < 0x0202)
-				if (ImGui::InputFloat3("Position", glm::value_ptr(activeModelView.selectedMesh->pos)))
-					rsm->updateMatrices();
+				if (ImGui::DragFloat3("Position", glm::value_ptr(activeModelView.selectedMesh->pos), 0.1f))
+					rsmRenderer->setMeshesDirty();
 			if (ImGui::InputFloat4("Offset1", glm::value_ptr(activeModelView.selectedMesh->offset) + 0))
-				rsm->updateMatrices();
+				rsmRenderer->setMeshesDirty();
 			if(ImGui::InputFloat4("Offset2", glm::value_ptr(activeModelView.selectedMesh->offset) + 4))
-				rsm->updateMatrices();
+				rsmRenderer->setMeshesDirty();
 			if(ImGui::InputFloat4("Offset3", glm::value_ptr(activeModelView.selectedMesh->offset) + 8))
-				rsm->updateMatrices();
+				rsmRenderer->setMeshesDirty();
 			if(ImGui::InputFloat4("Offset4", glm::value_ptr(activeModelView.selectedMesh->offset) + 12))
-				rsm->updateMatrices();
+				rsmRenderer->setMeshesDirty();
 
-			if(ImGui::InputFloat3("Position_", glm::value_ptr(activeModelView.selectedMesh->pos_)))
-				rsm->updateMatrices();
+			if(ImGui::DragFloat3("Position_", glm::value_ptr(activeModelView.selectedMesh->pos_), 0.1f))
+				rsmRenderer->setMeshesDirty();
 			if (rsm->version < 0x0202)
-				if(ImGui::InputFloat("Rotation Angle", &activeModelView.selectedMesh->rotangle))
-					rsm->updateMatrices();
+				if(ImGui::DragFloat("Rotation Angle", &activeModelView.selectedMesh->rotangle, 0.02f, 0.0f, 2 * glm::pi<float>()))
+					rsmRenderer->setMeshesDirty();
 			if (rsm->version < 0x0202)
 				if(ImGui::InputFloat3("Rotation Axis", glm::value_ptr(activeModelView.selectedMesh->rotaxis)))
-					rsm->updateMatrices();
+					rsmRenderer->setMeshesDirty();
 			if (rsm->version < 0x0202)
-				if(ImGui::InputFloat3("Scale", glm::value_ptr(activeModelView.selectedMesh->scale)))
-					rsm->updateMatrices();
+				if(ImGui::DragFloat3("Scale", glm::value_ptr(activeModelView.selectedMesh->scale), 0.1f))
+					rsmRenderer->setMeshesDirty();
 
 			ImGui::LabelText("Face count", "%d", activeModelView.selectedMesh->faces.size());
 
