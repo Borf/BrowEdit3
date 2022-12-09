@@ -155,7 +155,7 @@ void BrowEdit::run()
 	if(config.isValid() == "")
 //		loadMap("data\\aldebaran.rsw");
 //		loadMap("data\\prontera.rsw");
-		loadMap("data\\amicit01.rsw"); //RSM2
+//		loadMap("data\\amicit01.rsw"); //RSM2
 //		loadMap("data\\grademk.rsw"); //special effects
 //		loadMap("data\\noel02.rsw");
 //		loadMap("data\\icecastle.rsw");

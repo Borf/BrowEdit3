@@ -227,6 +227,10 @@ void RsmRenderer::renderMesh(Rsm::Mesh* mesh, const glm::mat4& matrix)
 	{
 		ri.vbo->bind();
 		shader->setUniform(RsmShader::Uniforms::modelMatrix, ri.matrix);
+		shader->setUniform(RsmShader::Uniforms::selection, ri.selected ? 1.0f : 0.0f);
+		if (ri.selected)
+			glDisable(GL_DEPTH_TEST);
+
 		glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexP3T2N3), (void*)(0 * sizeof(float)));
 		glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexP3T2N3), (void*)(3 * sizeof(float)));
 		glVertexAttribPointer(2, 3, GL_FLOAT, false, sizeof(VertexP3T2N3), (void*)(5 * sizeof(float)));
@@ -239,6 +243,7 @@ void RsmRenderer::renderMesh(Rsm::Mesh* mesh, const glm::mat4& matrix)
 				textures[mesh->textures[it.texture]]->bind();
 			glDrawArrays(GL_TRIANGLES, (int)it.begin, (int)it.count);
 		}
+		glEnable(GL_DEPTH_TEST);
 	}
 
 	for (const auto& m : mesh->children)

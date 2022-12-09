@@ -118,7 +118,7 @@ void ModelEditor::run(BrowEdit* browEdit)
 				nodeRenderContext.viewMatrix = glm::rotate(nodeRenderContext.viewMatrix, -glm::radians(m.camera.y), glm::vec3(0, 1, 0));
 				nodeRenderContext.viewMatrix = glm::translate(nodeRenderContext.viewMatrix, glm::vec3(0, -rsm->bbrange.y, 0));
 
-
+				// draw grid
 				simpleShader->use();
 				simpleShader->setUniform(SimpleShader::Uniforms::projectionMatrix, nodeRenderContext.projectionMatrix);
 				simpleShader->setUniform(SimpleShader::Uniforms::viewMatrix, nodeRenderContext.viewMatrix);
@@ -150,7 +150,10 @@ void ModelEditor::run(BrowEdit* browEdit)
 				RsmRenderer::RsmRenderContext::getInstance()->viewLighting = false;
 				RsmRenderer::RsmRenderContext::getInstance()->viewTextures = true;
 				RsmRenderer::RsmRenderContext::getInstance()->viewFog = false;
-				m.node->getComponent<RsmRenderer>()->matrixCache = glm::mat4(1.0f);// rotate(glm::mat4(1.0f), glm::radians((float)ImGui::GetTime() * 100), glm::vec3(0, 1, 0));
+				auto rsmRenderer = m.node->getComponent<RsmRenderer>();
+				for (auto i = 0; i < rsmRenderer->renderInfo.size(); i++)
+					rsmRenderer->renderInfo[i].selected = m.selectedMesh && i == m.selectedMesh->index;
+				rsmRenderer->matrixCache = glm::mat4(1.0f);// rotate(glm::mat4(1.0f), glm::radians((float)ImGui::GetTime() * 100), glm::vec3(0, 1, 0));
 				NodeRenderer::render(m.node, nodeRenderContext);
 				m.fbo->unbind();
 				ImGui::ImageButton((ImTextureID)(long long)m.fbo->texid[0], size, ImVec2(1, 0), ImVec2(0, 1), 0, ImVec4(0, 0, 0, 1), ImVec4(1, 1, 1, 1));

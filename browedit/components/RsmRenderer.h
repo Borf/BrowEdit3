@@ -51,6 +51,7 @@ public:
 		glm::mat4 matrix = glm::mat4(1.0f);
 		glm::mat4 matrixSub = glm::mat4(1.0f);
 		std::vector<gl::Texture*> textures; //should this be shared over all RenderInfo with the same RsmMesh?
+		bool selected = false;
 	};
 
 	std::vector<RenderInfo> renderInfo; //TODO: not happy about this one
