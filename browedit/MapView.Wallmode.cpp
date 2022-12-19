@@ -405,7 +405,7 @@ void MapView::postRenderWallMode(BrowEdit* browEdit)
 			glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexP3T2N3), verts[0].data + 0);
 			glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexP3T2N3), verts[0].data + 3);
 			glVertexAttribPointer(2, 3, GL_FLOAT, false, sizeof(VertexP3T2N3), verts[0].data + 5);
-			if (previewWall)
+			if (previewWall && browEdit->activeMapView->textureSelected >= 0 && browEdit->activeMapView->textureSelected < gndRenderer->textures.size())
 			{
 				simpleShader->setUniform(SimpleShader::Uniforms::textureFac, 1.0f);
 				simpleShader->setUniform(SimpleShader::Uniforms::color, glm::vec4(1, 1, 1, 1));
