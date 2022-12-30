@@ -1,5 +1,4 @@
 uniform sampler2D s_texture;
-uniform vec4 highlightColor;
 
 uniform vec3 lightDiffuse;
 uniform vec3 lightAmbient;
@@ -45,5 +44,4 @@ void main()
 	}	
 
 	gl_FragData[0] = mix(color, vec4(1,0,0,1), min(1.0,selection));
-	//gl_FragData[1] = highlightColor;
 }

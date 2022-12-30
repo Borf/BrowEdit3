@@ -163,7 +163,7 @@ void RsmRenderer::render()
 		glLineWidth(20.0f);
 		glDepthMask(GL_FALSE);
 		shader->setUniform(RsmShader::Uniforms::selection, 1.0f);
-		renderMesh(rsm->rootMesh, glm::mat4(1.0f));
+		renderMesh(rsm->rootMesh, glm::mat4(1.0f), true);
 
 		glDepthMask(GL_TRUE);
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -208,7 +208,7 @@ void RsmRenderer::initMeshInfo(Rsm::Mesh* mesh, const glm::mat4 &matrix)
 	meshDirty = false;
 }
 
-void RsmRenderer::renderMesh(Rsm::Mesh* mesh, const glm::mat4& matrix)
+void RsmRenderer::renderMesh(Rsm::Mesh* mesh, const glm::mat4& matrix, bool selectionPhase)
 {
 	if (textures.empty())
 	{
@@ -234,8 +234,8 @@ void RsmRenderer::renderMesh(Rsm::Mesh* mesh, const glm::mat4& matrix)
 	{
 		ri.vbo->bind();
 		shader->setUniform(RsmShader::Uniforms::modelMatrix, ri.matrix);
-		shader->setUniform(RsmShader::Uniforms::selection, ri.selected ? 1.0f : 0.0f);
-		if (ri.selected)
+		shader->setUniform(RsmShader::Uniforms::selection, (ri.selected || selectionPhase) ? 1.0f : 0.0f);
+		if (ri.selected || selectionPhase)
 			glDisable(GL_DEPTH_TEST);
 
 		glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexP3T2N3), (void*)(0 * sizeof(float)));
