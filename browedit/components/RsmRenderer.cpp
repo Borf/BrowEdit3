@@ -234,8 +234,13 @@ void RsmRenderer::renderMesh(Rsm::Mesh* mesh, const glm::mat4& matrix, bool sele
 	{
 		ri.vbo->bind();
 		shader->setUniform(RsmShader::Uniforms::modelMatrix, ri.matrix);
-		shader->setUniform(RsmShader::Uniforms::selection, (ri.selected || selectionPhase) ? 1.0f : 0.0f);
 		if (ri.selected || selectionPhase)
+			shader->setUniform(RsmShader::Uniforms::selection, 1.0f);
+		else if(!selectionPhase && selected)
+			shader->setUniform(RsmShader::Uniforms::selection, .25f);
+		else
+			shader->setUniform(RsmShader::Uniforms::selection, .0f);
+		if (ri.selected)
 			glDisable(GL_DEPTH_TEST);
 
 		glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexP3T2N3), (void*)(0 * sizeof(float)));
@@ -250,7 +255,8 @@ void RsmRenderer::renderMesh(Rsm::Mesh* mesh, const glm::mat4& matrix, bool sele
 				textures[mesh->textures[it.texture]]->bind();
 			glDrawArrays(GL_TRIANGLES, (int)it.begin, (int)it.count);
 		}
-		glEnable(GL_DEPTH_TEST);
+		if (ri.selected)
+			glEnable(GL_DEPTH_TEST);
 	}
 
 	for (const auto& m : mesh->children)
@@ -272,6 +278,7 @@ void RsmRenderer::setMeshesDirty() {
 RsmRenderer::RsmRenderContext::RsmRenderContext() : shader(util::ResourceManager<gl::Shader>::load<RsmShader>())
 {
 	order = 1;
+	phases = 2;
 	shader->use();
 	shader->setUniform(RsmShader::Uniforms::s_texture, 0);
 }

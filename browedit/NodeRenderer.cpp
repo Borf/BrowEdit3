@@ -43,9 +43,10 @@ void NodeRenderer::render(Node* rootNode, NodeRenderContext& context)
 	for (auto r : ordered)
 	{
 		r->preFrame(context.projectionMatrix, context.viewMatrix);
-		for (auto renderer : renderers[r])
-			if(renderer->enabled)
-				renderer->render();
+		for(int phase = 0; phase < r->phases; phase++)
+			for (auto renderer : renderers[r])
+				if(renderer->enabled && renderer->shouldRender(phase))
+					renderer->render();
 	}
 
 
