@@ -172,6 +172,7 @@ void BrowEdit::run()
 //		loadMap("data\\dae_paysq.rsw");
 //		loadMap("data\\veins.rsw");
 //		loadMap("data\\rag_fes.rsw");
+		loadMap("data\\justincase.rsw");
 
 		//loadModel("data\\model\\prontera_re\\streetlamp_01.rsm");
 	//	loadModel("data\\model\\크리스마스마을\\xmas_내부트리.rsm");
@@ -189,9 +190,9 @@ void BrowEdit::run()
 		//loadModel("data\\model\\pud\\balloon_01.rsm");
 		//loadModel("data\\model\\plants_e_01.rsm2");
 	//	modelEditor.load("data\\model\\para\\mora_01.rsm");
-		modelEditor.load("data\\model\\프론테라\\교역소.rsm");
-		modelEditor.load("data\\model\\ilusion\\goldberg_s_01.rsm2");
-		modelEditor.load("data\\model\\job4for\\purifier_s_01.rsm2");
+		//modelEditor.load("data\\model\\프론테라\\교역소.rsm");
+		//modelEditor.load("data\\model\\ilusion\\goldberg_s_01.rsm2");
+		//modelEditor.load("data\\model\\job4for\\purifier_s_01.rsm2");
 #endif
 
 

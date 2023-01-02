@@ -977,7 +977,7 @@ bool RswModelCollider::collidesTexture(const math::Ray& ray, float minDistance, 
 
 bool RswModelCollider::collidesTexture(Rsm::Mesh* mesh, const math::Ray& ray, const glm::mat4& matrix, float minDistance, float maxDistance)
 {
-	if (mesh->index >= rsmRenderer->renderInfo.size())
+	if (!mesh || mesh->index >= rsmRenderer->renderInfo.size())
 		return false;
 	std::vector<glm::vec3> ret;
 

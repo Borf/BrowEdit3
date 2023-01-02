@@ -27,11 +27,11 @@ public:
 	gl::Texture* gridTexture;
 	SimpleShader* simpleShader;
 
-#ifdef _DEBUG
-	bool opened = true;
-#else
+//#ifdef _DEBUG
+//	bool opened = true;
+//#else
 	bool opened = false;
-#endif
+//#endif
 
 	void load(const std::string& fileName);
 	void run(BrowEdit* browEdit);

@@ -33,6 +33,7 @@ void BrowEdit::showLightmapSettingsWindow()
 
 		if (ImGui::Button("Lightmap!"))
 		{
+			config.save();
 			lightmapper->begin();
 			ImGui::CloseCurrentPopup();
 		}

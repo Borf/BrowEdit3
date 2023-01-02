@@ -16,7 +16,7 @@
 
 extern std::mutex debugPointMutex;
 extern std::vector<std::vector<glm::vec3>> debugPoints;
-
+double startTime;
 
 
 Lightmapper::Lightmapper(Map* map, BrowEdit* browEdit) : map(map), browEdit(browEdit)
@@ -30,6 +30,7 @@ Lightmapper::Lightmapper(Map* map, BrowEdit* browEdit) : map(map), browEdit(brow
 
 void Lightmapper::begin()
 {
+	startTime = ImGui::GetTime();
 	if (buildDebugPoints)
 	{
 		debugPoints.clear();
@@ -69,6 +70,7 @@ void Lightmapper::begin()
 		be->lightmapper->mainThread.join();
 		delete be->lightmapper;
 		be->lightmapper = nullptr;
+		std::cout << "Lightmapper: took " + std::to_string(ImGui::GetTime() - startTime) + " seconds" << std::endl;
 	};
 }
 
@@ -383,8 +385,8 @@ void Lightmapper::calcPos(int direction, int tileId, int x, int y)
 				{
 					if (!running)
 						return;
-					glm::vec3 groundPos;
-					glm::vec3 normal;
+					glm::vec3 groundPos(0,0,0);
+					glm::vec3 normal(0,1,0);
 
 					if (direction == 0)
 					{
@@ -395,15 +397,15 @@ void Lightmapper::calcPos(int direction, int tileId, int x, int y)
 						glm::vec2 p(10 * x + s * ((xx + xxx) - 1), 10 * height + 10 - 10 * y - s * ((yy + yyy) - 1));
 
 						float h = (v1.y + v2.y + v3.y + v4.y) / 4.0f;
-						
+
 						if (TriangleContainsPoint(v1, v2, v3, p))
 						{
 							float u, v, w;
-							TriangleBarycentricCoords(v1,v2,v3, p, u, v, w);
+							TriangleBarycentricCoords(v1, v2, v3, p, u, v, w);
 							h = u * -cube->heights[2] + v * -cube->heights[0] + w * -cube->heights[1];
 							normal = u * cube->normals[2] + v * cube->normals[0] + w * cube->normals[1];
 						}
-						else if(TriangleContainsPoint(v3, v4, v1, p))
+						else if (TriangleContainsPoint(v3, v4, v1, p))
 						{
 							float u, v, w;
 							TriangleBarycentricCoords(v3, v4, v1, p, u, v, w);
@@ -418,7 +420,7 @@ void Lightmapper::calcPos(int direction, int tileId, int x, int y)
 						normal = glm::normalize(normal);
 						groundPos = glm::vec3(p.x, h, p.y);
 					}
-					else if (direction == 1 && y < gnd->height-1) //side
+					else if (direction == 1 && y < gnd->height - 1) //side
 					{
 						auto otherCube = gnd->cubes[x][y + 1];
 						float h1 = glm::mix(cube->h3, cube->h4, ((xx + xxx) - 1) / 6.0f);
@@ -432,20 +434,21 @@ void Lightmapper::calcPos(int direction, int tileId, int x, int y)
 							normal = -normal;
 
 					}
-					else if (direction == 2 && x < gnd->width-1) //front
+					else if (direction == 2 && x < gnd->width - 1) //front
 					{
 						auto otherCube = gnd->cubes[x + 1][y];
 						float h1 = glm::mix(cube->h4, cube->h2, ((xx + xxx) - 1) / 6.0f);
 						float h2 = glm::mix(otherCube->h3, otherCube->h1, ((xx + xxx) - 1) / 6.0f);
 						float h = glm::mix(h1, h2, ((yy + yyy) - 1) / 6.0f);
 
-						groundPos = glm::vec3(10 * x+10, -h, 10 * height - 10 * y + s * ((xx + xxx) - 1));
+						groundPos = glm::vec3(10 * x + 10, -h, 10 * height - 10 * y + s * ((xx + xxx) - 1));
 						normal = glm::vec3(-1, 0, 0);
 
 						if (h1 < h2)
 							normal = -normal;
-
 					}
+					else
+						throw "wtf";
 					if (buildDebugPoints)
 					{
 						debugPointMutex.lock();
