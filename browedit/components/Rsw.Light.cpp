@@ -37,6 +37,11 @@ void RswLight::loadExtra(nlohmann::json data)
 			type = Type::Point;
 		if (data["type"] == "spot")
 			type = Type::Spot;
+		if (data["type"] == "sun")
+			type = Type::Sun;
+		enabled = data["enabled"];
+		sunMatchRswDirection = data["sunMatchRswDirection"];
+		direction = data["direction"];
 		givesShadow = data["shadow"];
 		affectShadowMap = data["affectshadowmap"];
 		affectLightmap = data["affectlightmap"];
@@ -44,6 +49,7 @@ void RswLight::loadExtra(nlohmann::json data)
 		intensity = data["intensity"];
 		falloff = data["falloff"].get<std::vector<glm::vec2>>();
 		falloffStyle = data["falloffstyle"];
+		spotlightWidth = data["spotlightWidth"];
 
 		if (data.find("minShadowDistance") != data.end())
 			minShadowDistance = data["minShadowDistance"];
@@ -73,6 +79,8 @@ nlohmann::json RswLight::saveExtra()
 	nlohmann::json ret;
 	if (type == Type::Point)
 		ret["type"] = "point";
+	else if(type == Type::Sun)
+		ret["type"] = "sun";
 	else
 		ret["type"] = "spot";
 	ret["shadow"] = givesShadow;
@@ -83,6 +91,10 @@ nlohmann::json RswLight::saveExtra()
 	ret["falloff"] = falloff;
 	ret["falloffstyle"] = falloffStyle;
 	ret["minShadowDistance"] = minShadowDistance;
+	ret["enabled"] = enabled;
+	ret["sunMatchRswDirection"] = sunMatchRswDirection;
+	ret["direction"] = direction;
+	ret["spotlightWidth"] = spotlightWidth;
 
 	return ret;
 }
@@ -139,42 +151,64 @@ void RswLight::buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>& nod
 	}
 	ImGui::PopID();
 
+	util::ComboBoxMulti<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Falloff style", "Point\0Spot\0Sun\0", [](RswLight* l) { return (int*) &l->type; });
+	bool differentValues = !std::all_of(rswLights.begin(), rswLights.end(), [&](RswLight* o) { return o->type== rswLights.front()->type; });
+	if (differentValues)
+	{
+		ImGui::Text("Warning, selection has different types of light");
+	}
+	util::CheckboxMulti<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Enabled", [](RswLight* l) { return &l->enabled; });
+
 	util::ColorEdit3Multi<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Color", [](RswLight* l) { return &l->color; });
-	util::DragFloatMulti<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Range", [](RswLight* l) { return &l->range; }, 1.0f, 0.0f, 1000.0f);
+	if(rswLights.front()->type != RswLight::Type::Sun)
+		util::DragFloatMulti<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Range", [](RswLight* l) { return &l->range; }, 1.0f, 0.0f, 1000.0f);
 	util::CheckboxMulti<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Gives Shadows", [](RswLight* l) { return &l->givesShadow; });
 	util::CheckboxMulti<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Affects Shadowmap", [](RswLight* l) { return &l->affectShadowMap; });
 	util::CheckboxMulti<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Affects Colormap", [](RswLight* l) { return &l->affectLightmap; });
+	util::DragFloatMulti<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Intensity", [](RswLight* l) { return &l->intensity; }, 0.05f, 0.0f, 100000.0f);
 
-	util::ComboBoxMulti<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Falloff style", "exponential\0spline tweak\0lagrange tweak\0linear tweak\0magic\0", [](RswLight* l) { return &l->falloffStyle; });
-
-	bool differentValues = !std::all_of(rswLights.begin(), rswLights.end(), [&](RswLight* o) { return o->falloffStyle == rswLights.front()->falloffStyle; });
-	if (!differentValues)
+	if (rswLights.front()->type == RswLight::Type::Spot)
 	{
-		auto falloffStyle = rswLights.front()->falloffStyle;
+		util::DragFloatMulti<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Spotlight Angle", [](RswLight* l) { return &l->spotlightWidth; }, 0.01f, 0.0f, 1.0f);
+		util::DragFloat3Multi<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Direction", [](RswLight* l) { return &l->direction; }, 0.05f, -1.0f, 1.0f);
+	}
+	if (rswLights.front()->type != RswLight::Type::Sun)
+	{
+		util::ComboBoxMulti<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Light type", "exponential\0spline tweak\0lagrange tweak\0linear tweak\0magic\0", [](RswLight* l) { return (int*) & l->falloffStyle; });
 
-		util::DragFloatMulti<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Intensity", [](RswLight* l) { return &l->intensity; }, 1.00f, 0.0f, 100000.0f);
-		util::DragFloatMulti<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Minimum Shadow Distance", [](RswLight* l) { return &l->minShadowDistance; }, 1.00f, 0.0f, 100000.0f);
-		if (falloffStyle == FalloffStyle::Magic)
+		differentValues = !std::all_of(rswLights.begin(), rswLights.end(), [&](RswLight* o) { return o->falloffStyle == rswLights.front()->falloffStyle; });
+		if (!differentValues)
 		{
-			util::DragFloatMulti<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Cutoff", [](RswLight* l) { return &l->cutOff; }, 0.01f, 0.0f, 10.0f);
-		}
-		else if (falloffStyle == FalloffStyle::SplineTweak)
-			util::EditableGraphMulti<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Light Falloff", [](RswLight* l) {return &l->falloff; }, util::interpolateSpline);
-		else if (falloffStyle == FalloffStyle::LagrangeTweak)
-			util::EditableGraphMulti<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Light Falloff", [](RswLight* l) {return &l->falloff; }, util::interpolateLagrange);
-		else if (falloffStyle == FalloffStyle::LinearTweak)
-			util::EditableGraphMulti<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Light Falloff", [](RswLight* l) {return &l->falloff; }, util::interpolateLinear);
-		else if (falloffStyle == FalloffStyle::Exponential)
-		{
-			bool differentFalloff = !std::all_of(rswLights.begin(), rswLights.end(), [&](RswLight* o) { return o->falloffStyle == rswLights.front()->falloffStyle; });
-			util::DragFloatMulti<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Falloff", [](RswLight* l) { return &l->cutOff; }, 0.01f, 0.0f, 10.0f);
-			if(differentFalloff)
-				util::Graph("Light Falloff", [&](float x) { return 0.0f; });
-			else
-				util::Graph("Light Falloff", [&](float x) { return 1.0f - glm::pow(x, rswLights.front()->cutOff); });
+			auto falloffStyle = rswLights.front()->falloffStyle;
+
+			util::DragFloatMulti<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Minimum Shadow Distance", [](RswLight* l) { return &l->minShadowDistance; }, 1.00f, 0.0f, 100000.0f);
+			if (falloffStyle == FalloffStyle::Magic)
+			{
+				util::DragFloatMulti<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Cutoff", [](RswLight* l) { return &l->cutOff; }, 0.01f, 0.0f, 10.0f);
+			}
+			else if (falloffStyle == FalloffStyle::SplineTweak)
+				util::EditableGraphMulti<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Light Falloff", [](RswLight* l) {return &l->falloff; }, util::interpolateSpline);
+			else if (falloffStyle == FalloffStyle::LagrangeTweak)
+				util::EditableGraphMulti<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Light Falloff", [](RswLight* l) {return &l->falloff; }, util::interpolateLagrange);
+			else if (falloffStyle == FalloffStyle::LinearTweak)
+				util::EditableGraphMulti<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Light Falloff", [](RswLight* l) {return &l->falloff; }, util::interpolateLinear);
+			else if (falloffStyle == FalloffStyle::Exponential)
+			{
+				bool differentFalloff = !std::all_of(rswLights.begin(), rswLights.end(), [&](RswLight* o) { return o->falloffStyle == rswLights.front()->falloffStyle; });
+				util::DragFloatMulti<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Light Direction follows RSW light direction", [](RswLight* l) { return &l->cutOff; }, 0.01f, 0.0f, 10.0f);
+				if (differentFalloff)
+					util::Graph("Light Falloff", [&](float x) { return 0.0f; });
+				else
+					util::Graph("Light Falloff", [&](float x) { return 1.0f - glm::pow(x, rswLights.front()->cutOff); });
+			}
 		}
 	}
+	else {
+		util::CheckboxMulti<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Gives Shadows", [](RswLight* l) { return &l->sunMatchRswDirection; });
+		if(!rswLights.front()->sunMatchRswDirection)
+			util::DragFloat3Multi<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Direction", [](RswLight* l) { return &l->direction; }, 0.05f, -1.0f, 1.0f);
 
+	}
 
 	ImGui::Separator();
 	ImGui::Text("Save as template:");

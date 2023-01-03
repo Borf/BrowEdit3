@@ -62,6 +62,7 @@ void Lightmapper::begin()
 	{
 		running = false;
 	};
+	std::cout << "Lightmapper: Complexity " + rsw->lightmapSettings.quality<<"² *" << gnd->width << "*" << gnd->height << "*" << lights.size() << "*" << models.size() << "=" << rsw->lightmapSettings.quality * rsw->lightmapSettings.quality * gnd->width * gnd->height * lights.size() * models.size() << std::endl;
 	mainThread = std::thread(&Lightmapper::run, this);
 	browEdit->windowData.progressWindowOnDone = [&]()
 	{
@@ -90,18 +91,23 @@ void Lightmapper::setProgress(float progress)
 void Lightmapper::run()
 {
 	setProgressText("Gathering Lights");
+	lights.clear();
+	models.clear();
 	map->rootNode->traverse([&](Node* n) {
 		if (n->getComponent<RswLight>())
-			lights.push_back(n);
-		});
+		lights.push_back(n);
+		if (RswModel* m = n->getComponent<RswModel>())
+			if(m->shadowStrength > 0)
+				models.push_back(n);
+	});
 
 	auto rsw = map->rootNode->getComponent<Rsw>();
 	auto& settings = rsw->lightmapSettings;
 
 
-	lightDirection[0] = -glm::cos(glm::radians((float)rsw->light.longitude)) * glm::sin(glm::radians((float)rsw->light.latitude));
+	lightDirection[0] = glm::cos(glm::radians((float)rsw->light.longitude)) * glm::sin(glm::radians((float)rsw->light.latitude));
 	lightDirection[1] = glm::cos(glm::radians((float)rsw->light.latitude));
-	lightDirection[2] = glm::sin(glm::radians((float)rsw->light.longitude)) * glm::sin(glm::radians((float)rsw->light.latitude));
+	lightDirection[2] = -glm::sin(glm::radians((float)rsw->light.longitude)) * glm::sin(glm::radians((float)rsw->light.latitude));
 
 	//setProgressText("Calculating map quads");
 	//mapQuads = gnd->getMapQuads();
@@ -208,89 +214,65 @@ std::pair<glm::vec3, int> Lightmapper::calculateLight(const glm::vec3& groundPos
 	if (rsw->light.lightmapAmbient > 0)
 		intensity = (int)(rsw->light.lightmapAmbient * 255);
 
-	if (settings.sunLight)
-	{
-		//sunlight calculation
-		float dotProd = glm::dot(normal, lightDirection);
-		if (!settings.diffuseLighting)
-			dotProd = 1;
-		if (rsw->light.lightmapIntensity > 0 && dotProd > 0)
-		{
-			bool collides = false;
-			float shadowStrength = 0.0f;
-			if (settings.shadows)
-			{
-				math::Ray ray(groundPos, glm::normalize(lightDirection));
-				//check objects
-				map->rootNode->traverse([&collides, &ray, &shadowStrength](Node* n) {
-					if (collides && shadowStrength > 1.0f)
-						return;
-					auto rswModel = n->getComponent<RswModel>();
-					if (rswModel && rswModel->shadowStrength > 0)
-					{
-						auto collider = n->getComponent<RswModelCollider>();
-						if (collider->collidesTexture(ray))
-						{
-							collides = true;
-							shadowStrength += rswModel->shadowStrength;
-						}
-					}
-					});
-
-				if (!collides && shadowStrength < 1.0f && collidesMap(ray, 9999999999.9f))
-				{
-					collides = true;
-					shadowStrength = 1;
-				}
-			}
-
-			if (shadowStrength > 1)
-				shadowStrength = 1;
-
-			if (!collides)
-				intensity += (int)(dotProd * rsw->light.lightmapIntensity * 255);
-			else
-				intensity += (int)((1- shadowStrength) * dotProd * rsw->light.lightmapIntensity * 255);
-			
-		}
-	}
-
 	for (auto light : lights)
 	{
 		auto rswObject = light->getComponent<RswObject>();
 		auto rswLight = light->getComponent<RswLight>();
-
+		if (!rswLight->enabled)
+			continue;
 		glm::vec3 lightPosition(5 * gnd->width + rswObject->position.x, -rswObject->position.y, 5 * gnd->height - rswObject->position.z+10);
-
 		glm::vec3 lightDirection2 = glm::normalize(lightPosition - groundPos);
+		if (rswLight->type == RswLight::Type::Sun && !rswLight->sunMatchRswDirection)
+			lightDirection2 = rswLight->direction; //TODO: should this be -direction?
+		else if (rswLight->type == RswLight::Type::Sun && rswLight->sunMatchRswDirection)
+			lightDirection2 = lightDirection;
+
 		if (glm::dot(normal, lightDirection2) > 0)
 		{
 			float distance = glm::distance(lightPosition, groundPos);
 			float attenuation = 0;
-			if (rswLight->falloffStyle == RswLight::FalloffStyle::Magic)
+			if (rswLight->type != RswLight::Type::Sun)
 			{
-				if (distance > rswLight->realRange())
-					continue;
+				if (rswLight->falloffStyle == RswLight::FalloffStyle::Magic)
+				{
+					if (distance > rswLight->realRange())
+						continue;
 
-				float d = glm::max(distance - rswLight->range, 0.0f);
-				float denom = d / rswLight->range + 1;
-				attenuation = rswLight->intensity / (denom * denom);
-				if (rswLight->cutOff > 0)
-					attenuation = glm::max(0.0f, (attenuation - rswLight->cutOff) / (1 - rswLight->cutOff));
+					float d = glm::max(distance - rswLight->range, 0.0f);
+					float denom = d / rswLight->range + 1;
+					attenuation = rswLight->intensity / (denom * denom);
+					if (rswLight->cutOff > 0)
+						attenuation = glm::max(0.0f, (attenuation - rswLight->cutOff) / (1 - rswLight->cutOff));
+				}
+				else
+				{
+					if (distance > rswLight->range)
+						continue;
+					float d = distance / rswLight->range;
+					if (rswLight->falloffStyle == RswLight::FalloffStyle::SplineTweak)
+						attenuation = glm::clamp(util::interpolateSpline(rswLight->falloff, d), 0.0f, 1.0f) * 255.0f;
+					else if (rswLight->falloffStyle == RswLight::FalloffStyle::LagrangeTweak)
+						attenuation = glm::clamp(util::interpolateLagrange(rswLight->falloff, d), 0.0f, 1.0f) * 255.0f;
+					else if (rswLight->falloffStyle == RswLight::FalloffStyle::LinearTweak)
+						attenuation = glm::clamp(util::interpolateLinear(rswLight->falloff, d), 0.0f, 1.0f) * 255.0f;
+					else if (rswLight->falloffStyle == RswLight::FalloffStyle::Exponential)
+						attenuation = glm::clamp((1 - glm::pow(d, rswLight->cutOff)), 0.0f, 1.0f) * 255.0f;
+				}
+				if (rswLight->type == RswLight::Type::Spot)
+				{
+					float dp = glm::dot(lightDirection2, -glm::normalize(rswLight->direction));
+					if (dp < 1 - rswLight->spotlightWidth)
+						attenuation = 0;
+					else
+					{
+						float fac = 1-((1-glm::abs(dp)) / rswLight->spotlightWidth);
+						attenuation *= fac;
+					}
+				}
 			}
-			else
+			else if (rswLight->type == RswLight::Type::Sun)
 			{
-				if (distance > rswLight->range)
-					continue;
-				float d = distance / rswLight->range;
-				if (rswLight->falloffStyle == RswLight::FalloffStyle::SplineTweak)
-					attenuation = glm::clamp(util::interpolateSpline(rswLight->falloff, d), 0.0f, 1.0f) * 255.0f;
-				else if (rswLight->falloffStyle == RswLight::FalloffStyle::LagrangeTweak)
-					attenuation = glm::clamp(util::interpolateLagrange(rswLight->falloff, d),0.0f, 1.0f)*255.0f;
-				else if (rswLight->falloffStyle == RswLight::FalloffStyle::LinearTweak)
-					attenuation = glm::clamp(util::interpolateLinear(rswLight->falloff, d),0.0f, 1.0f)*255.0f;
-				else if (rswLight->falloffStyle == RswLight::FalloffStyle::Exponential)
-					attenuation = glm::clamp((1 - glm::pow(d, rswLight->cutOff)), 0.0f, 1.0f) * 255.0f;
+				attenuation = 255;
 			}
 
 			bool collides = false;
@@ -300,20 +282,17 @@ std::pair<glm::vec3, int> Lightmapper::calculateLight(const glm::vec3& groundPos
 				math::Ray ray(lightPosition, -lightDirection2);
 				if (rswLight->givesShadow && attenuation > 0)
 				{
-					map->rootNode->traverse([&](Node* n) {
+					for(auto& n : models) {
 						if (collides && shadowStrength >= 1)
-							return;
+							continue;
 						auto rswModel = n->getComponent<RswModel>();
-						if (rswModel && rswModel->shadowStrength > 0)
+						auto collider = n->getComponent<RswModelCollider>();
+						if (collider->collidesTexture(ray, rswLight->minShadowDistance, distance))
 						{
-							auto collider = n->getComponent<RswModelCollider>();
-							if (collider->collidesTexture(ray, rswLight->minShadowDistance, distance))
-							{
-								collides = true;
-								shadowStrength += rswModel->shadowStrength;
-							}
+							collides = true;
+							shadowStrength += rswModel->shadowStrength;
 						}
-						});
+					}
 				}
 				if (!collides && shadowStrength < 1 && collidesMap(math::Ray(groundPos, lightDirection2), distance))
 				{

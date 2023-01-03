@@ -22,7 +22,6 @@ void BrowEdit::showLightmapSettingsWindow()
 		auto rsw = lightmapper->map->rootNode->getComponent<Rsw>();
 		auto& settings = rsw->lightmapSettings;
 		ImGui::DragInt("Quality", &settings.quality, 1, 1, 10);
-		ImGui::Checkbox("Sunlight", &settings.sunLight);
 		ImGui::Checkbox("Shadows", &settings.shadows);
 		ImGui::Checkbox("Diffuse Lighting", &settings.diffuseLighting);
 		ImGui::Checkbox("Debug Points", &lightmapper->buildDebugPoints);

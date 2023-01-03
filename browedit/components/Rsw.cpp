@@ -298,8 +298,8 @@ void Rsw::load(const std::string& fileName, Map* map, BrowEdit* browEdit, bool l
 	{
 		if (extraProperties["mapproperties"].find("lightmapAmbient") != extraProperties["mapproperties"].end())
 			light.lightmapAmbient = extraProperties["mapproperties"]["lightmapAmbient"];
-		if (extraProperties["mapproperties"].find("lightmapIntensity") != extraProperties["mapproperties"].end())
-			light.lightmapIntensity = extraProperties["mapproperties"]["lightmapIntensity"];
+//		if (extraProperties["mapproperties"].find("lightmapIntensity") != extraProperties["mapproperties"].end())
+//			light.lightmapIntensity = extraProperties["mapproperties"]["lightmapIntensity"];
 	}
 
 	if (extraProperties.find("cinematic") != extraProperties.end())
@@ -489,7 +489,7 @@ void Rsw::save(const std::string& fileName, BrowEdit* browEdit)
 
 	extraProperties["light"] = json();
 	extraProperties["mapproperties"]["lightmapAmbient"] = light.lightmapAmbient;
-	extraProperties["mapproperties"]["lightmapIntensity"] = light.lightmapIntensity;
+//	extraProperties["mapproperties"]["lightmapIntensity"] = light.lightmapIntensity;
 	extraProperties["colorPresets"] = colorPresets;
 	extraProperties["lightmap"] = lightmapSettings;
 
@@ -763,8 +763,8 @@ void Rsw::buildImGui(BrowEdit* browEdit)
 		util::ColorEdit3(browEdit, browEdit->activeMapView->map, node, "Ambient", &light.ambient);
 
 
-		util::DragFloat(browEdit, browEdit->activeMapView->map, node, "lightmapAmbient", &light.lightmapAmbient, 0.01f, 0, 1);
-		util::DragFloat(browEdit, browEdit->activeMapView->map, node, "lightmapIntensity", &light.lightmapIntensity, 0.01f, 0, 1);
+//		util::DragFloat(browEdit, browEdit->activeMapView->map, node, "lightmapAmbient", &light.lightmapAmbient, 0.01f, 0, 1);
+//		util::DragFloat(browEdit, browEdit->activeMapView->map, node, "lightmapIntensity", &light.lightmapIntensity, 0.01f, 0, 1);
 
 	}
 	if (ImGui::CollapsingHeader("Water", ImGuiTreeNodeFlags_DefaultOpen))

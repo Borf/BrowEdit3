@@ -58,7 +58,6 @@ public:
 		glm::vec3	ambient;
 		float		intensity;
 		float		lightmapAmbient = 0.5f; //EXTRA
-		float		lightmapIntensity = 0.5f; // EXTRA
 	} light;
 
 
@@ -120,13 +119,12 @@ public:
 	public:
 		int quality = 1;
 		bool diffuseLighting = true;
-		bool sunLight = true;
 		bool shadows = true;
 		bool heightSelectionOnly = false;
 		glm::ivec2 rangeX;
 		glm::ivec2 rangeY;
 
-		NLOHMANN_DEFINE_TYPE_INTRUSIVE(LightmapSettings, quality, diffuseLighting, sunLight, shadows, heightSelectionOnly, rangeX, rangeY);
+		NLOHMANN_DEFINE_TYPE_INTRUSIVE(LightmapSettings, quality, diffuseLighting, shadows, heightSelectionOnly, rangeX, rangeY);
 	} lightmapSettings;
 
 	std::vector<Track> cinematicTracks;
@@ -203,20 +201,27 @@ public:
 	enum class Type
 	{
 		Point,
-		Spot
+		Spot,
+		Sun
 	} type = Type::Point;
 	bool givesShadow = true;
 	bool affectShadowMap = true;
 	bool affectLightmap = true;
+	bool enabled = true;
 
-	int falloffStyle = 0;
-	enum FalloffStyle {
+	bool sunMatchRswDirection = true;
+	glm::vec3 direction = glm::normalize(glm::vec3(1, -1, 1));
+
+	float spotlightWidth = .5f;
+
+	enum class FalloffStyle {
 		Exponential = 0,
 		SplineTweak = 1,
 		LagrangeTweak = 2,
 		LinearTweak = 3,
 		Magic = 4,
 	};
+	FalloffStyle falloffStyle = FalloffStyle::Exponential;
 
 	float cutOff = 0.5f;
 	float intensity = 1;
@@ -231,7 +236,7 @@ public:
 	void save(std::ofstream& file);
 	nlohmann::json saveExtra();
 	static void buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>&);
-	NLOHMANN_DEFINE_TYPE_INTRUSIVE(RswLight, color, range, givesShadow, cutOff, cutOff, intensity, affectShadowMap, affectLightmap, falloff, falloffStyle);
+	NLOHMANN_DEFINE_TYPE_INTRUSIVE(RswLight, color, enabled, sunMatchRswDirection, direction, range, givesShadow, cutOff, cutOff, intensity, affectShadowMap, affectLightmap, falloff, falloffStyle);
 };
 
 class LubEffect : public Component
