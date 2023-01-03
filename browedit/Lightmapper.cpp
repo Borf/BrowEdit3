@@ -62,7 +62,6 @@ void Lightmapper::begin()
 	{
 		running = false;
 	};
-	std::cout << "Lightmapper: Complexity " + rsw->lightmapSettings.quality<<"² *" << gnd->width << "*" << gnd->height << "*" << lights.size() << "*" << models.size() << "=" << rsw->lightmapSettings.quality * rsw->lightmapSettings.quality * gnd->width * gnd->height * lights.size() * models.size() << std::endl;
 	mainThread = std::thread(&Lightmapper::run, this);
 	browEdit->windowData.progressWindowOnDone = [&]()
 	{
@@ -100,8 +99,11 @@ void Lightmapper::run()
 			if(m->shadowStrength > 0)
 				models.push_back(n);
 	});
-
 	auto rsw = map->rootNode->getComponent<Rsw>();
+	auto gnd = map->rootNode->getComponent<Gnd>();
+
+	std::cout << "Lightmapper: Complexity " << rsw->lightmapSettings.quality << "*"<< rsw->lightmapSettings.quality<<"*" << gnd->width << "*" << gnd->height << "*" << lights.size() << "*" << models.size() << "=" << rsw->lightmapSettings.quality * rsw->lightmapSettings.quality * gnd->width * gnd->height * lights.size() * models.size() << std::endl;
+
 	auto& settings = rsw->lightmapSettings;
 
 
