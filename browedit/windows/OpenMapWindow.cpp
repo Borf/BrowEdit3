@@ -2,11 +2,13 @@
 #include <browedit/BrowEdit.h>
 #include <misc/cpp/imgui_stdlib.h>
 #include <browedit/util/FileIO.h>
+#include <browedit/gl/Texture.h>
+#include <browedit/util/ResourceManager.h>
 #include <iostream>
 
 void BrowEdit::openWindow()
 {
-
+	static gl::Texture* preview = nullptr;
 	if (windowData.openJustVisible)
 		ImGui::OpenPopup("Open Map");
 	ImVec2 center = ImGui::GetMainViewport()->GetCenter();
@@ -49,8 +51,8 @@ void BrowEdit::openWindow()
 				}
 			ImGui::EndListBox();
 		}
-
-		if (ImGui::BeginListBox("##Files", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y-40-100)))
+		
+		if (ImGui::BeginListBox("##Files", ImVec2(ImGui::GetContentRegionAvail().x-200, ImGui::GetContentRegionAvail().y-40)))
 		{
 			for (std::size_t i = 0; i < windowData.openFiles.size(); i++)
 			{
@@ -62,7 +64,19 @@ void BrowEdit::openWindow()
 						windowData.openFileSelected = i;
 					}
 					if (ImGui::Selectable(windowData.openFiles[i].c_str(), windowData.openFileSelected == i))
+					{
 						windowData.openFileSelected = i;
+						if (preview)
+							util::ResourceManager<gl::Texture>::unload(preview);
+						std::string filename = windowData.openFiles[i];
+						if (filename.find(".") != std::string::npos)
+							filename = filename.substr(0, filename.rfind("."));
+						if (filename.find("data\\") != std::string::npos)
+							filename = filename.substr(filename.find("data\\") + 5);
+
+						filename = "data\\texture\\유저인터페이스\\map\\" + filename + ".bmp";
+						preview = util::ResourceManager<gl::Texture>::load(filename);
+					}
 					if (ImGui::IsItemClicked(0) && ImGui::IsMouseDoubleClicked(0))
 					{
 						loadMap(windowData.openFiles[windowData.openFileSelected]);
@@ -71,6 +85,11 @@ void BrowEdit::openWindow()
 				}
 			}
 			ImGui::EndListBox();
+		}
+		if (preview)
+		{
+			ImGui::SameLine();
+			ImGui::Image((ImTextureID)preview->id(), ImVec2(200, 200));
 		}
 
 		if (ImGui::Button("Open"))
