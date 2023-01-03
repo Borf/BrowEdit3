@@ -203,7 +203,7 @@ public:
 		Point,
 		Spot,
 		Sun
-	} type = Type::Point;
+	} lightType = Type::Point;
 	bool givesShadow = true;
 	bool affectShadowMap = true;
 	bool affectLightmap = true;
@@ -236,7 +236,7 @@ public:
 	void save(std::ofstream& file);
 	nlohmann::json saveExtra();
 	static void buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>&);
-	NLOHMANN_DEFINE_TYPE_INTRUSIVE(RswLight, color, enabled, sunMatchRswDirection, direction, range, givesShadow, cutOff, cutOff, intensity, affectShadowMap, affectLightmap, falloff, falloffStyle);
+	NLOHMANN_DEFINE_TYPE_INTRUSIVE(RswLight, color, enabled, lightType, spotlightWidth, sunMatchRswDirection, direction, range, givesShadow, cutOff, cutOff, intensity, affectShadowMap, affectLightmap, falloff, falloffStyle);
 };
 
 class LubEffect : public Component

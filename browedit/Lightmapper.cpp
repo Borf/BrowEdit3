@@ -222,16 +222,16 @@ std::pair<glm::vec3, int> Lightmapper::calculateLight(const glm::vec3& groundPos
 			continue;
 		glm::vec3 lightPosition(5 * gnd->width + rswObject->position.x, -rswObject->position.y, 5 * gnd->height - rswObject->position.z+10);
 		glm::vec3 lightDirection2 = glm::normalize(lightPosition - groundPos);
-		if (rswLight->type == RswLight::Type::Sun && !rswLight->sunMatchRswDirection)
+		if (rswLight->lightType == RswLight::Type::Sun && !rswLight->sunMatchRswDirection)
 			lightDirection2 = rswLight->direction; //TODO: should this be -direction?
-		else if (rswLight->type == RswLight::Type::Sun && rswLight->sunMatchRswDirection)
+		else if (rswLight->lightType == RswLight::Type::Sun && rswLight->sunMatchRswDirection)
 			lightDirection2 = lightDirection;
 
 		if (glm::dot(normal, lightDirection2) > 0)
 		{
 			float distance = glm::distance(lightPosition, groundPos);
 			float attenuation = 0;
-			if (rswLight->type != RswLight::Type::Sun)
+			if (rswLight->lightType != RswLight::Type::Sun)
 			{
 				if (rswLight->falloffStyle == RswLight::FalloffStyle::Magic)
 				{
@@ -258,7 +258,7 @@ std::pair<glm::vec3, int> Lightmapper::calculateLight(const glm::vec3& groundPos
 					else if (rswLight->falloffStyle == RswLight::FalloffStyle::Exponential)
 						attenuation = glm::clamp((1 - glm::pow(d, rswLight->cutOff)), 0.0f, 1.0f) * 255.0f;
 				}
-				if (rswLight->type == RswLight::Type::Spot)
+				if (rswLight->lightType == RswLight::Type::Spot)
 				{
 					float dp = glm::dot(lightDirection2, -glm::normalize(rswLight->direction));
 					if (dp < 1 - rswLight->spotlightWidth)
@@ -270,7 +270,7 @@ std::pair<glm::vec3, int> Lightmapper::calculateLight(const glm::vec3& groundPos
 					}
 				}
 			}
-			else if (rswLight->type == RswLight::Type::Sun)
+			else if (rswLight->lightType == RswLight::Type::Sun)
 			{
 				attenuation = 255;
 			}

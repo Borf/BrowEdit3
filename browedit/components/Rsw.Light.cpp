@@ -34,11 +34,11 @@ void RswLight::loadExtra(nlohmann::json data)
 {
 	try {
 		if (data["type"] == "point")
-			type = Type::Point;
+			lightType = Type::Point;
 		if (data["type"] == "spot")
-			type = Type::Spot;
+			lightType = Type::Spot;
 		if (data["type"] == "sun")
-			type = Type::Sun;
+			lightType = Type::Sun;
 		enabled = data["enabled"];
 		sunMatchRswDirection = data["sunMatchRswDirection"];
 		direction = data["direction"];
@@ -77,9 +77,9 @@ void RswLight::save(std::ofstream& file)
 nlohmann::json RswLight::saveExtra()
 {
 	nlohmann::json ret;
-	if (type == Type::Point)
+	if (lightType == Type::Point)
 		ret["type"] = "point";
-	else if(type == Type::Sun)
+	else if(lightType == Type::Sun)
 		ret["type"] = "sun";
 	else
 		ret["type"] = "spot";
@@ -151,8 +151,8 @@ void RswLight::buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>& nod
 	}
 	ImGui::PopID();
 
-	util::ComboBoxMulti<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Light type", "Point\0Spot\0Sun\0", [](RswLight* l) { return (int*) &l->type; });
-	bool differentValues = !std::all_of(rswLights.begin(), rswLights.end(), [&](RswLight* o) { return o->type== rswLights.front()->type; });
+	util::ComboBoxMulti<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Light type", "Point\0Spot\0Sun\0", [](RswLight* l) { return (int*) &l->lightType; });
+	bool differentValues = !std::all_of(rswLights.begin(), rswLights.end(), [&](RswLight* o) { return o->lightType== rswLights.front()->lightType; });
 	if (differentValues)
 	{
 		ImGui::Text("Warning, selection has different types of light");
@@ -160,19 +160,19 @@ void RswLight::buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>& nod
 	util::CheckboxMulti<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Enabled", [](RswLight* l) { return &l->enabled; });
 
 	util::ColorEdit3Multi<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Color", [](RswLight* l) { return &l->color; });
-	if(rswLights.front()->type != RswLight::Type::Sun)
+	if(rswLights.front()->lightType != RswLight::Type::Sun)
 		util::DragFloatMulti<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Range", [](RswLight* l) { return &l->range; }, 1.0f, 0.0f, 1000.0f);
 	util::CheckboxMulti<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Gives Shadows", [](RswLight* l) { return &l->givesShadow; });
 	util::CheckboxMulti<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Affects Shadowmap", [](RswLight* l) { return &l->affectShadowMap; });
 	util::CheckboxMulti<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Affects Colormap", [](RswLight* l) { return &l->affectLightmap; });
 	util::DragFloatMulti<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Intensity", [](RswLight* l) { return &l->intensity; }, 0.05f, 0.0f, 100000.0f);
 
-	if (rswLights.front()->type == RswLight::Type::Spot)
+	if (rswLights.front()->lightType == RswLight::Type::Spot)
 	{
 		util::DragFloatMulti<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Spotlight Angle", [](RswLight* l) { return &l->spotlightWidth; }, 0.01f, 0.0f, 1.0f);
 		util::DragFloat3Multi<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Direction", [](RswLight* l) { return &l->direction; }, 0.05f, -1.0f, 1.0f);
 	}
-	if (rswLights.front()->type != RswLight::Type::Sun)
+	if (rswLights.front()->lightType != RswLight::Type::Sun)
 	{
 		util::ComboBoxMulti<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Falloff style", "exponential\0spline tweak\0lagrange tweak\0linear tweak\0magic\0", [](RswLight* l) { return (int*) & l->falloffStyle; });
 

@@ -763,7 +763,7 @@ void Rsw::buildImGui(BrowEdit* browEdit)
 		util::ColorEdit3(browEdit, browEdit->activeMapView->map, node, "Ambient", &light.ambient);
 
 
-//		util::DragFloat(browEdit, browEdit->activeMapView->map, node, "lightmapAmbient", &light.lightmapAmbient, 0.01f, 0, 1);
+		util::DragFloat(browEdit, browEdit->activeMapView->map, node, "lightmapAmbient", &light.lightmapAmbient, 0.01f, 0, 1);
 //		util::DragFloat(browEdit, browEdit->activeMapView->map, node, "lightmapIntensity", &light.lightmapIntensity, 0.01f, 0, 1);
 
 	}
