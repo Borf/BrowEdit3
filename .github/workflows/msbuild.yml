@@ -45,7 +45,7 @@ jobs:
         xcopy /y /q imgui.ini dist\
         xcopy /y /q lib\bugtrap\BugTrap-x64.dll dist\
         xcopy /y /q /s data dist\data\
-        xcopy /y /q /s doc dist\doc\
+        xcopy /y /q /s docs dist\doc\
 
     - name: UploadArtifact
       uses: actions/upload-artifact@master
@@ -55,7 +55,7 @@ jobs:
           BrowEdit3.exe
           BrowEdit3.pdb
           imgui.ini
-          doc/
+          docs/
           data/
 
     - name: Package

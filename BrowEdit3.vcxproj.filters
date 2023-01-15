@@ -44,20 +44,20 @@
     <Filter Include="browedit\windows">
       <UniqueIdentifier>{74f0a97e-2bd6-4a0a-8c84-ce3a6ea8c82b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="doc">
-      <UniqueIdentifier>{6937a0c7-581a-45a1-ace2-1ef984d7823a}</UniqueIdentifier>
-    </Filter>
     <Filter Include="browedit\shaders">
       <UniqueIdentifier>{4a696fe1-8d62-4f88-a26d-004f83ecf6bd}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="doc\formats">
-      <UniqueIdentifier>{ada228bb-85f8-4714-b5e0-fc414f2ce1a9}</UniqueIdentifier>
     </Filter>
     <Filter Include="lib\imGuIZMO.quat">
       <UniqueIdentifier>{32e382ac-bc7d-4025-92b3-d5e39761b9c3}</UniqueIdentifier>
     </Filter>
     <Filter Include="lib\tinygltf">
       <UniqueIdentifier>{a9871e34-e995-4a29-a682-f6821a7ec290}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="docs">
+      <UniqueIdentifier>{6937a0c7-581a-45a1-ace2-1ef984d7823a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="docs\formats">
+      <UniqueIdentifier>{ada228bb-85f8-4714-b5e0-fc414f2ce1a9}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -721,8 +721,8 @@
     <Image Include="icon.ico">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="doc\banner.png">
-      <Filter>doc</Filter>
+    <Image Include="docs\banner.png">
+      <Filter>docs</Filter>
     </Image>
   </ItemGroup>
   <ItemGroup>
@@ -750,18 +750,6 @@
     <None Include="data\shaders\billboard.vs">
       <Filter>data\shaders</Filter>
     </None>
-    <None Include="doc\Configuration.md">
-      <Filter>doc</Filter>
-    </None>
-    <None Include="doc\Lightmapping.md">
-      <Filter>doc</Filter>
-    </None>
-    <None Include="doc\ObjectEdit.md">
-      <Filter>doc</Filter>
-    </None>
-    <None Include="doc\Readme.md">
-      <Filter>doc</Filter>
-    </None>
     <None Include=".github\workflows\msbuild.yml" />
     <None Include="data\shaders\water.vs">
       <Filter>data\shaders</Filter>
@@ -775,14 +763,26 @@
     <None Include="data\shaders\lub.fs">
       <Filter>data\shaders</Filter>
     </None>
-    <None Include="doc\formats\Rsm.md">
-      <Filter>doc\formats</Filter>
+    <None Include="docs\Lightmapping.md">
+      <Filter>docs</Filter>
     </None>
-    <None Include="doc\formats\Rsw.md">
-      <Filter>doc\formats</Filter>
+    <None Include="docs\ObjectEdit.md">
+      <Filter>docs</Filter>
     </None>
-    <None Include="doc\formats\Gnd.md">
-      <Filter>doc\formats</Filter>
+    <None Include="docs\Readme.md">
+      <Filter>docs</Filter>
+    </None>
+    <None Include="docs\Configuration.md">
+      <Filter>docs</Filter>
+    </None>
+    <None Include="docs\formats\Rsm.md">
+      <Filter>docs\formats</Filter>
+    </None>
+    <None Include="docs\formats\Rsw.md">
+      <Filter>docs\formats</Filter>
+    </None>
+    <None Include="docs\formats\Gnd.md">
+      <Filter>docs\formats</Filter>
     </None>
   </ItemGroup>
 </Project>
