@@ -273,6 +273,7 @@ public:
 	void showCinematicModeWindow();
 
 	void copyTiles();
+	void copyGat();
 	void pasteTiles();
 
 	bool toolBarToggleButton(const std::string_view &name, int icon, bool status, const char* tooltip, HotkeyAction action, ImVec4 tint = ImVec4(1, 1, 1, 1));

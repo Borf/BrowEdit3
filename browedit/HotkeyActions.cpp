@@ -57,8 +57,20 @@ void BrowEdit::registerActions()
 		});
 	HotkeyRegistry::registerAction(HotkeyAction::Global_CloseTab,				[this]() { activeMapView->opened = false; }, hasActiveMapView);
 	HotkeyRegistry::registerAction(HotkeyAction::Global_ModelEditor_Open,		[this]() { modelEditor.opened = !modelEditor.opened; });
-	HotkeyRegistry::registerAction(HotkeyAction::Global_Copy,					[this]() { if (editMode == EditMode::Object) { activeMapView->map->copySelection(); } }, hasActiveMapView);
-	HotkeyRegistry::registerAction(HotkeyAction::Global_Paste,					[this]() { if (editMode == EditMode::Object) { activeMapView->map->pasteSelection(this); } }, hasActiveMapView);
+	HotkeyRegistry::registerAction(HotkeyAction::Global_Copy, [this]() {
+		if (editMode == EditMode::Object)
+		activeMapView->map->copySelection();
+		else if (editMode == EditMode::Height && !heightDoodle)
+			copyTiles();
+		else if (editMode == EditMode::Gat && !heightDoodle)
+			copyGat();
+	}, hasActiveMapView);
+	HotkeyRegistry::registerAction(HotkeyAction::Global_Paste,					[this]() { 
+		if (editMode == EditMode::Object) 
+			activeMapView->map->pasteSelection(this); 
+		else if(editMode == EditMode::Height && !heightDoodle)
+			pasteTiles();	
+	}, hasActiveMapView);
 	HotkeyRegistry::registerAction(HotkeyAction::Global_PasteChangeHeight,		[this]() { if (editMode == EditMode::Object) { newNodeHeight = !newNodeHeight; } }, hasActiveMapView);
 
 	HotkeyRegistry::registerAction(HotkeyAction::Global_ClearZeroHeightWalls,	[this]() { activeMapView->map->rootNode->getComponent<Gnd>()->removeZeroHeightWalls(); }, hasActiveMapView);

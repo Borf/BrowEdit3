@@ -164,7 +164,7 @@ void BrowEdit::run()
 //		loadMap("data\\guild_vs1.rsw");
 //		loadMap("data\\effects_ro.rsw");
 //		loadMap("data\\prt_in.rsw");
-//		loadMap("data\\wall_colour.rsw");
+		loadMap("data\\wall_colour.rsw");
 //		loadMap("data\\untomb_05s.rsw");
 //		loadMap("data\\easter_la.rsw");
 //		loadMap("data\\2@alice_mad.rsw");
@@ -173,7 +173,7 @@ void BrowEdit::run()
 //		loadMap("data\\veins.rsw");
 //		loadMap("data\\rag_fes.rsw");
 //		loadMap("data\\justincase.rsw");
-		loadMap("data\\market_xmas.rsw");
+//		loadMap("data\\market_xmas.rsw");
 
 		//loadModel("data\\model\\prontera_re\\streetlamp_01.rsm");
 	//	loadModel("data\\model\\크리스마스마을\\xmas_내부트리.rsm");
@@ -375,13 +375,6 @@ void BrowEdit::run()
 						activeMapView->map->growTileSelection(this);
 					if (ImGui::IsKeyPressed(GLFW_KEY_KP_SUBTRACT))
 						activeMapView->map->shrinkTileSelection(this);
-					if (ImGui::GetIO().KeyCtrl)
-					{
-						if (ImGui::IsKeyPressed('C'))
-							copyTiles();
-						if (ImGui::IsKeyPressed('V'))
-							pasteTiles();
-					}
 				}
 
 			}	
@@ -782,6 +775,23 @@ void BrowEdit::copyTiles()
 				if(tile->lightmapIndex > -1)
 					clipboard["lightmaps"][std::to_string(tile->lightmapIndex)] = json(*gnd->lightmaps[tile->lightmapIndex]);
 			}
+	}
+	ImGui::SetClipboardText(clipboard.dump(1).c_str());
+}
+void BrowEdit::copyGat()
+{
+	auto gat = activeMapView->map->rootNode->getComponent<Gat>();
+	json clipboard;
+	glm::ivec2 center(0);
+	for (auto n : activeMapView->map->gatSelection)
+		center += n;
+	center /= activeMapView->map->gatSelection.size();
+	for (auto n : activeMapView->map->gatSelection)
+	{
+		auto c = gat->cubes[n.x][n.y];
+		json cube = *c;
+		cube["pos"] = n - center;
+		clipboard["gats"].push_back(cube);
 	}
 	ImGui::SetClipboardText(clipboard.dump(1).c_str());
 }
