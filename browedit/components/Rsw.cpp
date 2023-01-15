@@ -350,6 +350,16 @@ void Rsw::load(const std::string& fileName, Map* map, BrowEdit* browEdit, bool l
 	file->read(reinterpret_cast<char*>(&objectCount), sizeof(int));
 	std::cout << "RSW: Loading " << objectCount << " objects" << std::endl;
 
+	std::map<int, json> modelLookup;
+	std::map<int, json> lightLookup;
+
+	if(extraProperties["model"].is_array())
+		for (const json& l : extraProperties["model"])
+			modelLookup[l["id"]] = l;
+	if(extraProperties["light"].is_array())
+		for (const json& l : extraProperties["light"])
+			lightLookup[l["id"]] = l;
+
 	int lubIndex = 0;
 	for (int i = 0; i < objectCount; i++)
 	{
@@ -360,15 +370,15 @@ void Rsw::load(const std::string& fileName, Map* map, BrowEdit* browEdit, bool l
 
 		if (object->getComponent<RswLight>() && extraProperties.is_object() && extraProperties["light"].is_array())
 		{
-			for (const json& l : extraProperties["light"])
-				if (l["id"] == i)
-					object->getComponent<RswLight>()->loadExtra(l);
+			auto extra = lightLookup.find(i);
+			if (extra != lightLookup.end())
+				object->getComponent<RswLight>()->loadExtra(extra->second);
 		}
 		if (object->getComponent<RswModel>() && extraProperties.is_object() && extraProperties["model"].is_array())
 		{
-			for (const json& l : extraProperties["model"])
-				if (l["id"] == i)
-					object->getComponent<RswModel>()->loadExtra(l);
+			auto extra = modelLookup.find(i);
+			if (extra != modelLookup.end())
+				object->getComponent<RswModel>()->loadExtra(extra->second);
 		}
 		auto rswEffect = object->getComponent<RswEffect>();
 		if (rswEffect && rswEffect->id == 974)
