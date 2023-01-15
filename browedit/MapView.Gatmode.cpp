@@ -74,20 +74,20 @@ void MapView::postRenderGatMode(BrowEdit* browEdit)
 		snap = !snap;
 
 	//draw paste
-	if (browEdit->newCubes.size() > 0)
+	if (browEdit->newGatCubes.size() > 0)
 	{
 		canSelect = false;
 		std::vector<VertexP3T2N3> verts;
 		float dist = 0.002f * cameraDistance;
-		for (auto cube : browEdit->newCubes)
+		for (auto cube : browEdit->newGatCubes)
 		{
-			verts.push_back(VertexP3T2N3(glm::vec3(5 * (tileHovered.x + cube->pos.x), -cube->h3 + dist, 5 * gat->height - 5 * (tileHovered.y + cube->pos.y)), glm::vec2(0), cube->normals[2]));
-			verts.push_back(VertexP3T2N3(glm::vec3(5 * (tileHovered.x + cube->pos.x) + 5, -cube->h2 + dist, 5 * gat->height - 5 * (tileHovered.y + cube->pos.y) + 5), glm::vec2(0), cube->normals[1]));
-			verts.push_back(VertexP3T2N3(glm::vec3(5 * (tileHovered.x + cube->pos.x) + 5, -cube->h4 + dist, 5 * gat->height - 5 * (tileHovered.y + cube->pos.y)), glm::vec2(0), cube->normals[3]));
+			verts.push_back(VertexP3T2N3(glm::vec3(5 * (tileHovered.x + cube->pos.x), -cube->h3 + dist, 5 * gat->height - 5 * (tileHovered.y + cube->pos.y)), glm::vec2(0), cube->normal));
+			verts.push_back(VertexP3T2N3(glm::vec3(5 * (tileHovered.x + cube->pos.x) + 5, -cube->h2 + dist, 5 * gat->height - 5 * (tileHovered.y + cube->pos.y) + 5), glm::vec2(0), cube->normal));
+			verts.push_back(VertexP3T2N3(glm::vec3(5 * (tileHovered.x + cube->pos.x) + 5, -cube->h4 + dist, 5 * gat->height - 5 * (tileHovered.y + cube->pos.y)), glm::vec2(0), cube->normal));
 
-			verts.push_back(VertexP3T2N3(glm::vec3(5 * (tileHovered.x + cube->pos.x), -cube->h1 + dist, 5 * gat->height - 5 * (tileHovered.y + cube->pos.y) + 5), glm::vec2(0), cube->normals[0]));
-			verts.push_back(VertexP3T2N3(glm::vec3(5 * (tileHovered.x + cube->pos.x), -cube->h3 + dist, 5 * gat->height - 5 * (tileHovered.y + cube->pos.y)), glm::vec2(0), cube->normals[2]));
-			verts.push_back(VertexP3T2N3(glm::vec3(5 * (tileHovered.x + cube->pos.x) + 5, -cube->h2 + dist, 5 * gat->height - 5 * (tileHovered.y + cube->pos.y) + 5), glm::vec2(0), cube->normals[1]));
+			verts.push_back(VertexP3T2N3(glm::vec3(5 * (tileHovered.x + cube->pos.x), -cube->h1 + dist, 5 * gat->height - 5 * (tileHovered.y + cube->pos.y) + 5), glm::vec2(0), cube->normal));
+			verts.push_back(VertexP3T2N3(glm::vec3(5 * (tileHovered.x + cube->pos.x), -cube->h3 + dist, 5 * gat->height - 5 * (tileHovered.y + cube->pos.y)), glm::vec2(0), cube->normal));
+			verts.push_back(VertexP3T2N3(glm::vec3(5 * (tileHovered.x + cube->pos.x) + 5, -cube->h2 + dist, 5 * gat->height - 5 * (tileHovered.y + cube->pos.y) + 5), glm::vec2(0), cube->normal));
 		}
 		glEnableVertexAttribArray(0);
 		glEnableVertexAttribArray(1);
@@ -105,16 +105,25 @@ void MapView::postRenderGatMode(BrowEdit* browEdit)
 		if (ImGui::IsMouseReleased(0))
 		{
 			std::vector<glm::ivec2> cubeSelected;
-			for (auto c : browEdit->newCubes)
+			for (auto c : browEdit->newGatCubes)
 				if(gat->inMap(c->pos + tileHovered))
 					cubeSelected.push_back(c->pos + tileHovered);
 			auto action1 = new CubeHeightChangeAction<Gat, Gat::Cube>(gat, cubeSelected);
 			//auto action2 = new CubeTileChangeAction(gnd, cubeSelected);
-			for (auto cube : browEdit->newCubes)
+			for (auto cube : browEdit->newGatCubes)
 			{
-				for (int i = 0; i < 4; i++)
-					gat->cubes[tileHovered.x + cube->pos.x][tileHovered.y + cube->pos.y]->heights[i] = cube->heights[i];
-				gat->cubes[tileHovered.x + cube->pos.x][tileHovered.y + cube->pos.y]->normal = cube->normal;
+				if (!gat->inMap(tileHovered + cube->pos))
+					continue;
+
+				if (browEdit->windowData.gatEdit.pasteHeight)
+				{
+					for (int i = 0; i < 4; i++)
+						gat->cubes[tileHovered.x + cube->pos.x][tileHovered.y + cube->pos.y]->heights[i] = cube->heights[i];
+					gat->cubes[tileHovered.x + cube->pos.x][tileHovered.y + cube->pos.y]->normal = cube->normal;
+				}
+
+				if(browEdit->windowData.gatEdit.pasteType)
+					gat->cubes[tileHovered.x + cube->pos.x][tileHovered.y + cube->pos.y]->gatType = cube->gatType;
 			}
 			action1->setNewHeights(gat, cubeSelected);
 			//action2->setNewTiles(gnd, cubeSelected);
@@ -124,9 +133,9 @@ void MapView::postRenderGatMode(BrowEdit* browEdit)
 			//ga->addAction(action2);
 			ga->addAction(new GatTileSelectAction(map, cubeSelected));
 			map->doAction(ga, browEdit);
-			for (auto c : browEdit->newCubes)
+			for (auto c : browEdit->newGatCubes)
 				delete c;
-			browEdit->newCubes.clear();
+			browEdit->newGatCubes.clear();
 		}
 
 

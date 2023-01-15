@@ -110,6 +110,9 @@ void BrowEdit::showGatWindow()
 
 	if (!heightDoodle && !gatDoodle)
 	{
+		ImGui::Checkbox("Paste gat types", &windowData.gatEdit.pasteType);
+		ImGui::Checkbox("Paste gat heights", &windowData.gatEdit.pasteHeight);
+
 		if (ImGui::TreeNodeEx("Selection Options", ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed))
 		{
 			toolBarToggleButton("TriangleSplit", windowData.gatEdit.splitTriangleFlip ? ICON_HEIGHT_SPLIT_1 : ICON_HEIGHT_SPLIT_2, &windowData.gatEdit.splitTriangleFlip, "Change the way quads are split into triangles");

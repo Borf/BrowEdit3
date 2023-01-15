@@ -43,7 +43,7 @@ class CopyCubeGat : public Gat::Cube
 public:
 	glm::ivec2 pos;
 	CopyCubeGat() : pos(0) {}
-	NLOHMANN_DEFINE_TYPE_INTRUSIVE(CopyCubeGat, h1, h2, h3, h4, gatType, normal);
+	NLOHMANN_DEFINE_TYPE_INTRUSIVE(CopyCubeGat, h1, h2, h3, h4, gatType, pos);
 };
 
 
@@ -145,6 +145,9 @@ public:
 			bool showCornerArrows = true;
 			bool showEdgeArrows = true;
 			int edgeMode = 0;
+
+			bool pasteHeight = true;
+			bool pasteType = true;
 		} gatEdit;
 
 		bool openPrefabPopup = false;

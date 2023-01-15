@@ -846,9 +846,10 @@ void BrowEdit::pasteGat()
 		json clipboard = json::parse(cb);
 		if (clipboard.size() > 0)
 		{
-			for (auto jsonCube : clipboard["gat"])
+			for (auto jsonCube : clipboard["gats"])
 			{
 				auto cube = new CopyCubeGat();
+				cube->calcNormal();
 				from_json(jsonCube, *cube);
 				newGatCubes.push_back(cube);
 			}
