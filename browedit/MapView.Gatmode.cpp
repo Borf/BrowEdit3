@@ -236,7 +236,7 @@ void MapView::postRenderGatMode(BrowEdit* browEdit)
 		}
 
 	}
-	else if (browEdit->gatDoodle && hovered)
+	else if (browEdit->windowData.gatEdit.doodle && hovered)
 	{
 		static GroupAction* gatGroupAction = nullptr;
 		std::vector<VertexP3T2N3> verts;

@@ -148,6 +148,8 @@ public:
 
 			bool pasteHeight = true;
 			bool pasteType = true;
+
+			bool doodle = false;
 		} gatEdit;
 
 		bool openPrefabPopup = false;
@@ -206,7 +208,6 @@ public:
 	TextureBrushMode brushModeBeforeDropper;
 
 	bool heightDoodle = true;
-	bool gatDoodle = false;
 
 	std::map<std::string, std::vector<std::string>> tagList; // tag -> [ file ], utf8
 	std::map<std::string, std::vector<std::string>> tagListReverse; // file -> [ tag ], kr

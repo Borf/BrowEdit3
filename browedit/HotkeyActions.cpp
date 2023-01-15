@@ -149,18 +149,18 @@ void BrowEdit::registerActions()
 	HotkeyRegistry::registerAction(HotkeyAction::WallEdit_FlipSelectedVertical,		[this]() { activeMapView->map->wallFlipSelectedTextureVertical(this); }, hasActiveMapViewWallMode);
 
 	
-	HotkeyRegistry::registerAction(HotkeyAction::GatEdit_NextTileType,				[this]() { windowData.gatEdit.gatIndex = (windowData.gatEdit.gatIndex + 1)%10;	heightDoodle = false;	gatDoodle = true; }, hasActiveMapViewGatMode);
-	HotkeyRegistry::registerAction(HotkeyAction::GatEdit_PrevTileType,				[this]() { windowData.gatEdit.gatIndex = (windowData.gatEdit.gatIndex + 11)%10;	heightDoodle = false;	gatDoodle = true; }, hasActiveMapViewGatMode);
-	HotkeyRegistry::registerAction(HotkeyAction::GatEdit_Tile0,						[this]() { windowData.gatEdit.gatIndex = 0;	heightDoodle = false;	gatDoodle = true; }, hasActiveMapViewGatMode);
-	HotkeyRegistry::registerAction(HotkeyAction::GatEdit_Tile1,						[this]() { windowData.gatEdit.gatIndex = 1;	heightDoodle = false;	gatDoodle = true; }, hasActiveMapViewGatMode);
-	HotkeyRegistry::registerAction(HotkeyAction::GatEdit_Tile2,						[this]() { windowData.gatEdit.gatIndex = 2;	heightDoodle = false;	gatDoodle = true; }, hasActiveMapViewGatMode);
-	HotkeyRegistry::registerAction(HotkeyAction::GatEdit_Tile3,						[this]() { windowData.gatEdit.gatIndex = 3;	heightDoodle = false;	gatDoodle = true; }, hasActiveMapViewGatMode);
-	HotkeyRegistry::registerAction(HotkeyAction::GatEdit_Tile4,						[this]() { windowData.gatEdit.gatIndex = 4;	heightDoodle = false;	gatDoodle = true; }, hasActiveMapViewGatMode);
-	HotkeyRegistry::registerAction(HotkeyAction::GatEdit_Tile5,						[this]() { windowData.gatEdit.gatIndex = 5;	heightDoodle = false;	gatDoodle = true; }, hasActiveMapViewGatMode);
-	HotkeyRegistry::registerAction(HotkeyAction::GatEdit_Tile6,						[this]() { windowData.gatEdit.gatIndex = 6;	heightDoodle = false;	gatDoodle = true; }, hasActiveMapViewGatMode);
-	HotkeyRegistry::registerAction(HotkeyAction::GatEdit_Tile7,						[this]() { windowData.gatEdit.gatIndex = 7;	heightDoodle = false;	gatDoodle = true; }, hasActiveMapViewGatMode);
-	HotkeyRegistry::registerAction(HotkeyAction::GatEdit_Tile8,						[this]() { windowData.gatEdit.gatIndex = 8;	heightDoodle = false;	gatDoodle = true; }, hasActiveMapViewGatMode);
-	HotkeyRegistry::registerAction(HotkeyAction::GatEdit_Tile9,						[this]() { windowData.gatEdit.gatIndex = 9;	heightDoodle = false;	gatDoodle = true; }, hasActiveMapViewGatMode);
+	HotkeyRegistry::registerAction(HotkeyAction::GatEdit_NextTileType,				[this]() { windowData.gatEdit.gatIndex = (windowData.gatEdit.gatIndex + 1)%10;	heightDoodle = false;	windowData.gatEdit.doodle = true; }, hasActiveMapViewGatMode);
+	HotkeyRegistry::registerAction(HotkeyAction::GatEdit_PrevTileType,				[this]() { windowData.gatEdit.gatIndex = (windowData.gatEdit.gatIndex + 11)%10;	heightDoodle = false;	windowData.gatEdit.doodle = true; }, hasActiveMapViewGatMode);
+	HotkeyRegistry::registerAction(HotkeyAction::GatEdit_Tile0,						[this]() { windowData.gatEdit.gatIndex = 0;	heightDoodle = false;	windowData.gatEdit.doodle = true; }, hasActiveMapViewGatMode);
+	HotkeyRegistry::registerAction(HotkeyAction::GatEdit_Tile1,						[this]() { windowData.gatEdit.gatIndex = 1;	heightDoodle = false;	windowData.gatEdit.doodle = true; }, hasActiveMapViewGatMode);
+	HotkeyRegistry::registerAction(HotkeyAction::GatEdit_Tile2,						[this]() { windowData.gatEdit.gatIndex = 2;	heightDoodle = false;	windowData.gatEdit.doodle = true; }, hasActiveMapViewGatMode);
+	HotkeyRegistry::registerAction(HotkeyAction::GatEdit_Tile3,						[this]() { windowData.gatEdit.gatIndex = 3;	heightDoodle = false;	windowData.gatEdit.doodle = true; }, hasActiveMapViewGatMode);
+	HotkeyRegistry::registerAction(HotkeyAction::GatEdit_Tile4,						[this]() { windowData.gatEdit.gatIndex = 4;	heightDoodle = false;	windowData.gatEdit.doodle = true; }, hasActiveMapViewGatMode);
+	HotkeyRegistry::registerAction(HotkeyAction::GatEdit_Tile5,						[this]() { windowData.gatEdit.gatIndex = 5;	heightDoodle = false;	windowData.gatEdit.doodle = true; }, hasActiveMapViewGatMode);
+	HotkeyRegistry::registerAction(HotkeyAction::GatEdit_Tile6,						[this]() { windowData.gatEdit.gatIndex = 6;	heightDoodle = false;	windowData.gatEdit.doodle = true; }, hasActiveMapViewGatMode);
+	HotkeyRegistry::registerAction(HotkeyAction::GatEdit_Tile7,						[this]() { windowData.gatEdit.gatIndex = 7;	heightDoodle = false;	windowData.gatEdit.doodle = true; }, hasActiveMapViewGatMode);
+	HotkeyRegistry::registerAction(HotkeyAction::GatEdit_Tile8,						[this]() { windowData.gatEdit.gatIndex = 8;	heightDoodle = false;	windowData.gatEdit.doodle = true; }, hasActiveMapViewGatMode);
+	HotkeyRegistry::registerAction(HotkeyAction::GatEdit_Tile9,						[this]() { windowData.gatEdit.gatIndex = 9;	heightDoodle = false;	windowData.gatEdit.doodle = true; }, hasActiveMapViewGatMode);
 	
 	HotkeyRegistry::registerAction(HotkeyAction::ColorEdit_Dropper,					[this]() { dropperEnabled = !dropperEnabled; cursor = dropperEnabled ? dropperCursor : nullptr; }, hasActiveMapViewGatMode);
 

@@ -28,8 +28,8 @@ void BrowEdit::showGatWindow()
 
 	ImGui::PushItemWidth(-200);
 
-	if (gatDoodle && heightDoodle)
-		gatDoodle = false;
+	if (windowData.gatEdit.doodle && heightDoodle)
+		windowData.gatEdit.doodle = false;
 
 	if (ImGui::TreeNodeEx("Tool", ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed))
 	{
@@ -53,7 +53,7 @@ void BrowEdit::showGatWindow()
 			{
 				windowData.gatEdit.gatIndex = i;
 				heightDoodle = false;
-				gatDoodle = true;
+				windowData.gatEdit.doodle = true;
 			}
 			if (i < 15 && next_button_x2 < window_visible_x2)
 				ImGui::SameLine();
@@ -61,54 +61,54 @@ void BrowEdit::showGatWindow()
 		if (toolBarToggleButton("Height", ICON_HEIGHT_DOODLE, heightDoodle, "Height editing", ImVec4(1, 1, 1, 1)))
 		{
 			heightDoodle = true;
-			gatDoodle = false;
+			windowData.gatEdit.doodle = false;
 		}
 		ImGui::SameLine();
-		if (toolBarToggleButton("Rectangle", ICON_SELECT_RECTANGLE, !heightDoodle && !gatDoodle && selectTool == BrowEdit::SelectTool::Rectangle, "Rectangle Select", ImVec4(1, 1, 1, 1)))
+		if (toolBarToggleButton("Rectangle", ICON_SELECT_RECTANGLE, !heightDoodle && !windowData.gatEdit.doodle && selectTool == BrowEdit::SelectTool::Rectangle, "Rectangle Select", ImVec4(1, 1, 1, 1)))
 		{
 			selectTool = BrowEdit::SelectTool::Rectangle;
 			heightDoodle = false;
-			gatDoodle = false;
+			windowData.gatEdit.doodle = false;
 		}
 		ImGui::SameLine();
-		if (toolBarToggleButton("Lasso", ICON_SELECT_LASSO, !heightDoodle && !gatDoodle && selectTool == BrowEdit::SelectTool::Lasso, "Lasso Select", ImVec4(1, 1, 1, 1)))
+		if (toolBarToggleButton("Lasso", ICON_SELECT_LASSO, !heightDoodle && !windowData.gatEdit.doodle && selectTool == BrowEdit::SelectTool::Lasso, "Lasso Select", ImVec4(1, 1, 1, 1)))
 		{
 			selectTool = BrowEdit::SelectTool::Lasso;
 			heightDoodle = false;
-			gatDoodle = false;
+			windowData.gatEdit.doodle = false;
 		}
 		ImGui::SameLine();
-		if (toolBarToggleButton("WandTex", ICON_SELECT_WAND_TEX, !heightDoodle && !gatDoodle && selectTool == BrowEdit::SelectTool::WandTex, "Magic Wand (Texture)", ImVec4(1, 1, 1, 1)))
+		if (toolBarToggleButton("WandTex", ICON_SELECT_WAND_TEX, !heightDoodle && !windowData.gatEdit.doodle && selectTool == BrowEdit::SelectTool::WandTex, "Magic Wand (Texture)", ImVec4(1, 1, 1, 1)))
 		{
 			selectTool = BrowEdit::SelectTool::WandTex;
 			heightDoodle = false;
-			gatDoodle = false;
+			windowData.gatEdit.doodle = false;
 		}
 		ImGui::SameLine();
-		if (toolBarToggleButton("WandHeight", ICON_SELECT_WAND_HEIGHT, !heightDoodle && !gatDoodle && selectTool == BrowEdit::SelectTool::WandHeight, "Magic Wand (Height)", ImVec4(1, 1, 1, 1)))
+		if (toolBarToggleButton("WandHeight", ICON_SELECT_WAND_HEIGHT, !heightDoodle && !windowData.gatEdit.doodle && selectTool == BrowEdit::SelectTool::WandHeight, "Magic Wand (Height)", ImVec4(1, 1, 1, 1)))
 		{
 			selectTool = BrowEdit::SelectTool::WandHeight;
 			heightDoodle = false;
-			gatDoodle = false;
+			windowData.gatEdit.doodle = false;
 		}
 		ImGui::SameLine();
-		if (toolBarToggleButton("AllTex", ICON_SELECT_ALL_TEX, !heightDoodle && !gatDoodle && selectTool == BrowEdit::SelectTool::AllTex, "Select All (Texture)", ImVec4(1, 1, 1, 1)))
+		if (toolBarToggleButton("AllTex", ICON_SELECT_ALL_TEX, !heightDoodle && !windowData.gatEdit.doodle && selectTool == BrowEdit::SelectTool::AllTex, "Select All (Texture)", ImVec4(1, 1, 1, 1)))
 		{
 			selectTool = BrowEdit::SelectTool::AllTex;
 			heightDoodle = false;
-			gatDoodle = false;
+			windowData.gatEdit.doodle = false;
 		}
 		ImGui::SameLine();
-		if (toolBarToggleButton("AllHeight", ICON_SELECT_ALL_HEIGHT, !heightDoodle && !gatDoodle && selectTool == BrowEdit::SelectTool::AllHeight, "Select All (Height)", ImVec4(1, 1, 1, 1)))
+		if (toolBarToggleButton("AllHeight", ICON_SELECT_ALL_HEIGHT, !heightDoodle && !windowData.gatEdit.doodle && selectTool == BrowEdit::SelectTool::AllHeight, "Select All (Height)", ImVec4(1, 1, 1, 1)))
 		{
 			selectTool = BrowEdit::SelectTool::AllHeight;
 			heightDoodle = false;
-			gatDoodle = false;
+			windowData.gatEdit.doodle = false;
 		}
 		ImGui::TreePop();
 	}
 
-	if (!heightDoodle && !gatDoodle)
+	if (!heightDoodle && !windowData.gatEdit.doodle)
 	{
 		ImGui::Checkbox("Paste gat types", &windowData.gatEdit.pasteType);
 		ImGui::Checkbox("Paste gat heights", &windowData.gatEdit.pasteHeight);
@@ -141,7 +141,7 @@ void BrowEdit::showGatWindow()
 			ImGui::TreePop();
 		}
 	}
-	else if (heightDoodle && !gatDoodle)
+	else if (heightDoodle && !windowData.gatEdit.doodle)
 	{
 		if (ImGui::TreeNodeEx("Brush Options", ImGuiTreeNodeFlags_DefaultOpen))
 		{
@@ -156,7 +156,7 @@ void BrowEdit::showGatWindow()
 				windowData.gatEdit.doodleSize = glm::max(windowData.gatEdit.doodleSize - 1, 0);
 		}
 	}
-	else if (gatDoodle && !heightDoodle)
+	else if (windowData.gatEdit.doodle && !heightDoodle)
 	{
 		if (ImGui::TreeNodeEx("Brush Options", ImGuiTreeNodeFlags_DefaultOpen))
 		{
