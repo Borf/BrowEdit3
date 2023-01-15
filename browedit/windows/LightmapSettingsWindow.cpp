@@ -23,7 +23,6 @@ void BrowEdit::showLightmapSettingsWindow()
 		auto& settings = rsw->lightmapSettings;
 		ImGui::DragInt("Quality", &settings.quality, 1, 1, 10);
 		ImGui::Checkbox("Shadows", &settings.shadows);
-		ImGui::Checkbox("Diffuse Lighting", &settings.diffuseLighting);
 		ImGui::Checkbox("Debug Points", &lightmapper->buildDebugPoints);
 		ImGui::Checkbox("Height Edit Mode Selection Only", &settings.heightSelectionOnly);
 		ImGui::DragInt2("Generate Range X", glm::value_ptr(settings.rangeX), 1, 0, gnd->width);

@@ -118,13 +118,12 @@ public:
 	{
 	public:
 		int quality = 1;
-		bool diffuseLighting = true;
 		bool shadows = true;
 		bool heightSelectionOnly = false;
 		glm::ivec2 rangeX;
 		glm::ivec2 rangeY;
 
-		NLOHMANN_DEFINE_TYPE_INTRUSIVE(LightmapSettings, quality, diffuseLighting, shadows, heightSelectionOnly, rangeX, rangeY);
+		NLOHMANN_DEFINE_TYPE_INTRUSIVE(LightmapSettings, quality, shadows, heightSelectionOnly, rangeX, rangeY);
 	} lightmapSettings;
 
 	std::vector<Track> cinematicTracks;
@@ -198,6 +197,7 @@ public:
 	glm::vec3		color;
 	float			range;
 	// custom properties!!!!!!!!!
+	bool diffuseLighting = true;
 	enum class Type
 	{
 		Point,

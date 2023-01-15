@@ -45,6 +45,10 @@ void RswLight::loadExtra(nlohmann::json data)
 			sunMatchRswDirection = data["sunMatchRswDirection"];
 		if (data.find("direction") != data.end())
 			direction = data["direction"];
+		if (data.find("diffuseLighting") != data.end())
+			diffuseLighting = data["diffuseLighting"];
+
+		
 		givesShadow = data["shadow"];
 		affectShadowMap = data["affectshadowmap"];
 		affectLightmap = data["affectlightmap"];
@@ -99,6 +103,7 @@ nlohmann::json RswLight::saveExtra()
 	ret["sunMatchRswDirection"] = sunMatchRswDirection;
 	ret["direction"] = direction;
 	ret["spotlightWidth"] = spotlightWidth;
+	ret["diffuseLighting"] = diffuseLighting;
 
 	return ret;
 }
@@ -154,6 +159,8 @@ void RswLight::buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>& nod
 		ImGui::EndPopup();
 	}
 	ImGui::PopID();
+
+	util::CheckboxMulti<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Use diffuse factor", [](RswLight* l) { return &l->diffuseLighting; });
 
 	util::ComboBoxMulti<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Light type", "Point\0Spot\0Sun\0", [](RswLight* l) { return (int*) &l->lightType; });
 	bool differentValues = !std::all_of(rswLights.begin(), rswLights.end(), [&](RswLight* o) { return o->lightType== rswLights.front()->lightType; });

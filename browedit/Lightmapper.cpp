@@ -308,7 +308,7 @@ std::pair<glm::vec3, int> Lightmapper::calculateLight(const glm::vec3& groundPos
 			shadowStrength = 1;
 		if (shadowStrength <= 1)
 		{
-			if (rsw->lightmapSettings.diffuseLighting)
+			if (rswLight->diffuseLighting)
 				attenuation *= dotproduct;
 
 			if (rswLight->affectShadowMap)
