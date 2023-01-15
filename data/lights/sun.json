@@ -1,0 +1,33 @@
+{
+  "affectLightmap": true,
+  "affectShadowMap": true,
+  "color": [
+    0.0,
+    0.0,
+    0.0
+  ],
+  "cutOff": 0.5,
+  "direction": [
+    0.5773502588272095,
+    -0.5773502588272095,
+    0.5773502588272095
+  ],
+  "enabled": true,
+  "falloff": [
+    [
+      0.0,
+      1.0
+    ],
+    [
+      1.0,
+      0.0
+    ]
+  ],
+  "falloffStyle": 0,
+  "givesShadow": true,
+  "intensity": 0.5,
+  "lightType": 2,
+  "range": 0.0,
+  "spotlightWidth": 0.5,
+  "sunMatchRswDirection": true
+}

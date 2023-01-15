@@ -39,9 +39,12 @@ void RswLight::loadExtra(nlohmann::json data)
 			lightType = Type::Spot;
 		if (data["type"] == "sun")
 			lightType = Type::Sun;
-		enabled = data["enabled"];
-		sunMatchRswDirection = data["sunMatchRswDirection"];
-		direction = data["direction"];
+		if (data.find("enabled") != data.end())
+			enabled = data["enabled"];
+		if(data.find("sunMatchRswDirection") != data.end())
+			sunMatchRswDirection = data["sunMatchRswDirection"];
+		if (data.find("direction") != data.end())
+			direction = data["direction"];
 		givesShadow = data["shadow"];
 		affectShadowMap = data["affectshadowmap"];
 		affectLightmap = data["affectlightmap"];
@@ -83,6 +86,7 @@ nlohmann::json RswLight::saveExtra()
 		ret["type"] = "sun";
 	else
 		ret["type"] = "spot";
+	ret["enabled"] = enabled;
 	ret["shadow"] = givesShadow;
 	ret["cutoff"] = cutOff;
 	ret["intensity"] = intensity;

@@ -164,7 +164,7 @@ void BrowEdit::run()
 //		loadMap("data\\guild_vs1.rsw");
 //		loadMap("data\\effects_ro.rsw");
 //		loadMap("data\\prt_in.rsw");
-		loadMap("data\\wall_colour.rsw");
+//		loadMap("data\\wall_colour.rsw");
 //		loadMap("data\\untomb_05s.rsw");
 //		loadMap("data\\easter_la.rsw");
 //		loadMap("data\\2@alice_mad.rsw");
@@ -174,6 +174,7 @@ void BrowEdit::run()
 //		loadMap("data\\rag_fes.rsw");
 //		loadMap("data\\justincase.rsw");
 //		loadMap("data\\market_xmas.rsw");
+		loadMap("data\\arena2.rsw");
 
 		//loadModel("data\\model\\prontera_re\\streetlamp_01.rsm");
 	//	loadModel("data\\model\\크리스마스마을\\xmas_내부트리.rsm");
