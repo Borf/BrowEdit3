@@ -20,7 +20,7 @@ void gotoPage(const std::string& f, bool recordHistory = true)
     }
     else
     {
-        auto file = util::FileIO::open("doc\\" + f);
+        auto file = util::FileIO::open("docs\\" + f);
         if (file)
         {
             markdown_ = std::string(std::istreambuf_iterator<char>(*file), std::istreambuf_iterator<char>());
@@ -65,7 +65,7 @@ inline ImGui::MarkdownImageData ImageCallback(ImGui::MarkdownLinkCallbackData da
     gl::Texture* texture = textures[url];
     if (!texture)
     {
-        texture = util::ResourceManager<gl::Texture>::load("doc\\" + url);
+        texture = util::ResourceManager<gl::Texture>::load("docs\\" + url);
         textures[url] = texture;
     }
 
