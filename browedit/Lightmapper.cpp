@@ -262,7 +262,7 @@ std::pair<glm::vec3, int> Lightmapper::calculateLight(const glm::vec3& groundPos
 				}
 				if (rswLight->lightType == RswLight::Type::Spot)
 				{
-					float dp = glm::dot(lightDirection2, -glm::normalize(rswLight->direction));
+					float dp = glm::dot(lightDirection2, -rswLight->direction);
 					if (dp < 1 - rswLight->spotlightWidth)
 						attenuation = 0;
 					else
@@ -281,7 +281,7 @@ std::pair<glm::vec3, int> Lightmapper::calculateLight(const glm::vec3& groundPos
 			float shadowStrength = 0.0f;
 			if (settings.shadows)
 			{
-				math::Ray ray(lightPosition, -lightDirection2);
+				math::Ray ray(groundPos, lightDirection2);
 				if (rswLight->givesShadow && attenuation > 0)
 				{
 					for(auto& n : models) {
@@ -304,7 +304,7 @@ std::pair<glm::vec3, int> Lightmapper::calculateLight(const glm::vec3& groundPos
 			}
 			if (shadowStrength > 1)
 				shadowStrength = 1;
-			if (shadowStrength < 1)
+			if (shadowStrength <= 1)
 			{
 				if (rswLight->affectShadowMap)
 					intensity += (int)((1-shadowStrength) * attenuation * rswLight->intensity);

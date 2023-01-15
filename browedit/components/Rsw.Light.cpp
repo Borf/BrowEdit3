@@ -170,7 +170,9 @@ void RswLight::buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>& nod
 	if (rswLights.front()->lightType == RswLight::Type::Spot)
 	{
 		util::DragFloatMulti<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Spotlight Angle", [](RswLight* l) { return &l->spotlightWidth; }, 0.01f, 0.0f, 1.0f);
-		util::DragFloat3Multi<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Direction", [](RswLight* l) { return &l->direction; }, 0.05f, -1.0f, 1.0f);
+		if (util::DragFloat3Multi<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Direction", [](RswLight* l) { return &l->direction; }, 0.05f, -1.0f, 1.0f))
+			for (auto& l : rswLights)
+				l->direction = glm::normalize(l->direction);
 	}
 	if (rswLights.front()->lightType != RswLight::Type::Sun)
 	{
