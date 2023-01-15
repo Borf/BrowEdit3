@@ -68,8 +68,10 @@ void BrowEdit::registerActions()
 	HotkeyRegistry::registerAction(HotkeyAction::Global_Paste,					[this]() { 
 		if (editMode == EditMode::Object) 
 			activeMapView->map->pasteSelection(this); 
-		else if(editMode == EditMode::Height && !heightDoodle)
-			pasteTiles();	
+		else if (editMode == EditMode::Height && !heightDoodle)
+			pasteTiles();
+		else if (editMode == EditMode::Gat && !heightDoodle)
+			pasteGat();
 	}, hasActiveMapView);
 	HotkeyRegistry::registerAction(HotkeyAction::Global_PasteChangeHeight,		[this]() { if (editMode == EditMode::Object) { newNodeHeight = !newNodeHeight; } }, hasActiveMapView);
 

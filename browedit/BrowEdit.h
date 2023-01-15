@@ -8,6 +8,7 @@
 #include <mutex>
 #include <browedit/util/FileIO.h>
 #include <browedit/components/Gnd.h>
+#include <browedit/components/Gat.h>
 #include <browedit/ModelEditor.h>
 class Action;
 class Lightmapper;
@@ -36,6 +37,15 @@ public:
 	CopyCube() : pos(0) {}
 	NLOHMANN_DEFINE_TYPE_INTRUSIVE(CopyCube, h1, h2, h3, h4, tileUp, tileFront, tileSide, pos, normal, normals);
 };
+
+class CopyCubeGat : public Gat::Cube
+{
+public:
+	glm::ivec2 pos;
+	CopyCubeGat() : pos(0) {}
+	NLOHMANN_DEFINE_TYPE_INTRUSIVE(CopyCubeGat, h1, h2, h3, h4, gatType, normal);
+};
+
 
 class BrowEdit
 {
@@ -206,6 +216,7 @@ public:
 	glm::vec3 newNodesCenter;
 	bool newNodeHeight = false;
 	std::vector<CopyCube*> newCubes;
+	std::vector<CopyCubeGat*> newGatCubes;
 	MapView* activeMapView = nullptr;
 	float statusBarHeight = 10;
 	Map* textureStampMap = nullptr;
@@ -275,6 +286,7 @@ public:
 	void copyTiles();
 	void copyGat();
 	void pasteTiles();
+	void pasteGat();
 
 	bool toolBarToggleButton(const std::string_view &name, int icon, bool status, const char* tooltip, HotkeyAction action, ImVec4 tint = ImVec4(1, 1, 1, 1));
 	bool toolBarToggleButton(const std::string_view& name, int icon, bool* status, const char* tooltip, ImVec4 tint = ImVec4(1, 1, 1, 1));

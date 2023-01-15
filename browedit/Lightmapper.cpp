@@ -107,9 +107,9 @@ void Lightmapper::run()
 	auto& settings = rsw->lightmapSettings;
 
 
-	lightDirection[0] = glm::cos(glm::radians((float)rsw->light.longitude)) * glm::sin(glm::radians((float)rsw->light.latitude));
+	lightDirection[0] = -glm::cos(glm::radians((float)rsw->light.longitude)) * glm::sin(glm::radians((float)rsw->light.latitude));
 	lightDirection[1] = glm::cos(glm::radians((float)rsw->light.latitude));
-	lightDirection[2] = -glm::sin(glm::radians((float)rsw->light.longitude)) * glm::sin(glm::radians((float)rsw->light.latitude));
+	lightDirection[2] = glm::sin(glm::radians((float)rsw->light.longitude)) * glm::sin(glm::radians((float)rsw->light.latitude));
 
 	//setProgressText("Calculating map quads");
 	//mapQuads = gnd->getMapQuads();

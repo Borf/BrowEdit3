@@ -89,7 +89,7 @@ void BrowEdit::openWindow()
 		if (preview)
 		{
 			ImGui::SameLine();
-			ImGui::Image((ImTextureID)preview->id(), ImVec2(200, 200));
+			ImGui::Image((ImTextureID)(long long)preview->id(), ImVec2(200, 200));
 		}
 
 		if (ImGui::Button("Open"))

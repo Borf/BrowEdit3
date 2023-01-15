@@ -810,7 +810,7 @@ void BrowEdit::pasteTiles()
 		{
 			for (auto jsonCube : clipboard["cubes"])
 			{
-				CopyCube* cube = new CopyCube();
+				auto cube = new CopyCube();
 				from_json(jsonCube, *cube);
 				for (int i = 0; i < 3; i++)
 				{
@@ -828,6 +828,33 @@ void BrowEdit::pasteTiles()
 		}
 	}
 	catch (const std::exception &e)
+	{
+		std::cerr << e.what() << std::endl;
+	}
+}
+
+void BrowEdit::pasteGat()
+{
+	try
+	{
+		auto c = ImGui::GetClipboardText();
+		if (c == nullptr)
+			return;
+		std::string cb = c;
+		if (cb == "")
+			return;
+		json clipboard = json::parse(cb);
+		if (clipboard.size() > 0)
+		{
+			for (auto jsonCube : clipboard["gat"])
+			{
+				auto cube = new CopyCubeGat();
+				from_json(jsonCube, *cube);
+				newGatCubes.push_back(cube);
+			}
+		}
+	}
+	catch (const std::exception& e)
 	{
 		std::cerr << e.what() << std::endl;
 	}
