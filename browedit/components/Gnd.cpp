@@ -712,6 +712,41 @@ Gnd::Lightmap* Gnd::getLightmapBottom(const glm::ivec3& pos, int& side)
 	return lightmaps[tile->lightmapIndex];
 }
 
+void Gnd::buildImGui(BrowEdit* browEdit)
+{
+	ImGui::Text("Gnd");
+	char versionStr[10];
+	sprintf_s(versionStr, 10, "%04x", version);
+	if (ImGui::BeginCombo("Version", versionStr))
+	{
+		if (ImGui::Selectable("0103", version == 0x0103))
+			version = 0x0103;
+		if (ImGui::Selectable("0104", version == 0x0104))
+			version = 0x0104;
+		if (ImGui::Selectable("0108", version == 0x0108))
+			version = 0x0108;
+		if (ImGui::Selectable("0109", version == 0x0109))
+			version = 0x0109;
+		if (ImGui::Selectable("0201", version == 0x0201))
+			version = 0x0201;
+		if (ImGui::Selectable("0202", version == 0x0202))
+			version = 0x0202;
+		if (ImGui::Selectable("0203", version == 0x0203))
+			version = 0x0203;
+		if (ImGui::Selectable("0204", version == 0x0204))
+			version = 0x0204;
+		ImGui::EndCombo();
+	}
+	ImGui::InputFloat("Tile Scale", &tileScale);
+	ImGui::InputInt("Max Texture Length", &maxTexName);
+	ImGui::LabelText("Width", "%d", width);
+	ImGui::LabelText("Height", "%d", height);
+	ImGui::LabelText("lightmapWidth", "%d", lightmapWidth);
+	ImGui::LabelText("lightmapHeight", "%d", gridSizeCell);
+	ImGui::LabelText("gridSizeCell", "%d", lightmapHeight);
+
+}
+
 
 void Gnd::makeLightmapBorders(BrowEdit* browEdit)
 {

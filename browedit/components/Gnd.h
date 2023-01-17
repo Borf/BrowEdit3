@@ -2,6 +2,7 @@
 
 #include "Component.h"
 #include <browedit/util/Util.h>
+#include <browedit/components/ImguiProps.h>
 #include <string>
 #include <vector>
 #include <glm/glm.hpp>
@@ -15,7 +16,7 @@ namespace gl {
 	class Texture;
 }
 
-class Gnd : public Component
+class Gnd : public Component, public ImguiProps
 {
 public:
 	Gnd(const std::string& fileName);
@@ -200,8 +201,8 @@ public:
 	short version;
 	int width;
 	int height;
-	float tileScale = 1.0f;
-	int maxTexName;
+	float tileScale = 10.0f;
+	int maxTexName = 80;
 	int lightmapWidth;
 	int lightmapHeight;
 	int gridSizeCell;
@@ -222,5 +223,8 @@ public:
 		{	glm::ivec3(0,0, 2),			glm::ivec3(-1,0, 3),		glm::ivec3(0,1, 0),			glm::ivec3(-1,1, 1),	},
 		{	glm::ivec3(0,0, 3),			glm::ivec3(1,0, 2),			glm::ivec3(0,1, 1),			glm::ivec3(1,1, 0),		}
 	};
+
+
+	virtual void buildImGui(BrowEdit* browEdit) override;
 
 };

@@ -226,6 +226,9 @@ void Gat::buildImGui(BrowEdit* browEdit)
 			version = 0x0204;
 		ImGui::EndCombo();
 	}
+	ImGui::LabelText("Width", "%d", width);
+	ImGui::LabelText("Height", "%d", height);
+
 }
 
 /*void Gat::flattenTiles(Map* map, BrowEdit* browEdit, const std::vector<glm::ivec2>& tiles)
