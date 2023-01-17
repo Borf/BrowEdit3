@@ -200,7 +200,7 @@ public:
 	short version;
 	int width;
 	int height;
-	float tileScale;
+	float tileScale = 1.0f;
 	int maxTexName;
 	int lightmapWidth;
 	int lightmapHeight;
