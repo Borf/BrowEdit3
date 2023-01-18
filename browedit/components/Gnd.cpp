@@ -76,19 +76,19 @@ Gnd::Gnd(const std::string& fileName)
 		file->read(reinterpret_cast<char*>(&gridSizeCell), sizeof(int));
 
 		//Fix lightmap format if it was invalid. by Henko
-		if (lightmapWidth != 8 || lightmapHeight != 8 || gridSizeCell != 1)
-		{
-			std::cerr << "GND: Invalid Lightmap Format in " << fileName << ".gnd" << std::endl;
-			lightmapWidth = 8;
-			lightmapHeight = 8;
-			gridSizeCell = 1;
-		}
+		//if (lightmapWidth != 8 || lightmapHeight != 8 || gridSizeCell != 1)
+		//{
+		//	std::cerr << "GND: Invalid Lightmap Format in " << fileName << ".gnd" << std::endl;
+		//	lightmapWidth = 8;
+		//	lightmapHeight = 8;
+		//	gridSizeCell = 1;
+		//}
 
 		lightmaps.reserve(lightmapCount);
 		for (int i = 0; i < lightmapCount; i++)
 		{
-			Lightmap* lightmap = new Lightmap();
-			file->read((char*)lightmap->data, 256);
+			Lightmap* lightmap = new Lightmap(this);
+			file->read((char*)lightmap->data, lightmapWidth*lightmapHeight*4);
 			lightmaps.push_back(lightmap);
 		}
 
@@ -266,7 +266,7 @@ Gnd::Gnd(int width, int height)
 	this->lightmapHeight = 8;
 	this->gridSizeCell = 1;
 
-	Lightmap* l = new Lightmap();
+	Lightmap* l = new Lightmap(this);
 	lightmaps.push_back(l);
 
 
@@ -350,7 +350,7 @@ void Gnd::save(const std::string& fileName)
 		file.write(reinterpret_cast<char*>(&gridSizeCell), sizeof(int));
 
 		for (auto lightmap : lightmaps)
-			file.write((char*)lightmap->data, 256);
+			file.write((char*)lightmap->data, lightmapWidth*lightmapHeight*4);
 
 		int tileCount = (int)tiles.size();
 		file.write(reinterpret_cast<char*>(&tileCount), sizeof(int));
@@ -548,7 +548,7 @@ void Gnd::makeLightmapsUnique()
 		{
 			Lightmap* l;
 			if(t->lightmapIndex == -1)
-				l = new Lightmap();
+				l = new Lightmap(this);
 			else
 				l = new Lightmap(*lightmaps[t->lightmapIndex]);
 			t->lightmapIndex = (unsigned short)lightmaps.size();
@@ -563,7 +563,7 @@ void Gnd::makeLightmapsUnique()
 void Gnd::makeLightmapsClear()
 {
 	lightmaps.clear();
-	Lightmap* l = new Lightmap();
+	Lightmap* l = new Lightmap(this);
 	lightmaps.push_back(l);
 
 	for (Tile* t : tiles)
@@ -572,6 +572,22 @@ void Gnd::makeLightmapsClear()
 	node->getComponent<GndRenderer>()->gndShadowDirty = true;
 
 }
+
+void Gnd::makeLightmapsDiffRes(int rx, int ry)
+{
+	this->lightmapWidth = rx;
+	this->lightmapHeight = ry;
+	lightmaps.clear();
+	Lightmap* l = new Lightmap(this);
+	lightmaps.push_back(l);
+
+	for (Tile* t : tiles)
+		t->lightmapIndex = 0;
+	node->getComponent<GndRenderer>()->setChunksDirty();
+	node->getComponent<GndRenderer>()->gndShadowDirty = true;
+
+}
+
 
 bool sharp = true;
 
@@ -717,7 +733,7 @@ void Gnd::buildImGui(BrowEdit* browEdit)
 	ImGui::Text("Gnd");
 	char versionStr[10];
 	sprintf_s(versionStr, 10, "%04x", version);
-	if (ImGui::BeginCombo("Version", versionStr))
+	if (ImGui::BeginCombo("Version##gnd", versionStr))
 	{
 		if (ImGui::Selectable("0103", version == 0x0103))
 			version = 0x0103;
@@ -772,41 +788,41 @@ void Gnd::makeLightmapBorders(BrowEdit* browEdit)
 				//first just expand the texture in case there's no neighbour
 				lightmap.expandBorders();
 
-				auto getX = [](int side, int offset, int index)
+				auto getX = [&](int side, int offset, int index)
 				{
 					if (side == 0)	return offset;//left
-					if (side == 1)	return 7-offset;//right
+					if (side == 1)	return lightmapWidth - 1 -offset;//right
 					if (side == 2)	return index;//top
 					if (side == 3)	return index;//bot
-					if (side == 5)	return 7-index;//bot
+					if (side == 5)	return lightmapWidth - 1 -index;//bot
 					throw "oops";
 				};		
-				auto getY = [](int side, int offset, int index)
+				auto getY = [&](int side, int offset, int index)
 				{
 					if (side == 0)	return index;//left
 					if (side == 1)	return index;//right 7-index???
 					if (side == 2)	return offset;//top
-					if (side == 3)	return 7-offset;//bot
-					if (side == 5)	return 7-offset;//bot
+					if (side == 3)	return lightmapHeight-1-offset;//bot
+					if (side == 5)	return lightmapHeight - 1 -offset;//bot
 					throw "oops";
 				};
 
 				int side; // left,right,top,down
 				auto lightmapLeft = getLightmapLeft(glm::ivec3(x, y, i), side);
 				if (lightmapLeft)
-					for (int ii = 1; ii < 7; ii++)
+					for (int ii = 1; ii < lightmapHeight; ii++)
 						lightmap[0][ii] = (*lightmapLeft)[getX(side, 1, ii)][getY(side, 1, ii)];
 				auto lightmapRight = getLightmapRight(glm::ivec3(x, y, i), side);
 				if (lightmapRight)
-					for (int ii = 1; ii < 7; ii++)
-						lightmap[7][ii] = (*lightmapRight)[getX(side, 1, ii)][getY(side, 1, ii)];
+					for (int ii = 1; ii < lightmapHeight; ii++)
+						lightmap[lightmapWidth-1][ii] = (*lightmapRight)[getX(side, 1, ii)][getY(side, 1, ii)];
 				auto lightmapTop = getLightmapTop(glm::ivec3(x, y, i), side);
 				if (lightmapTop)
-					for (int ii = 1; ii < 7; ii++)
-						lightmap[ii][7] = (*lightmapTop)[getX(side, 1, ii)][getY(side, 1, ii)];
+					for (int ii = 1; ii < lightmapWidth; ii++)
+						lightmap[ii][lightmapHeight-1] = (*lightmapTop)[getX(side, 1, ii)][getY(side, 1, ii)];
 				auto lightmapBottom = getLightmapBottom(glm::ivec3(x, y, i), side);
 				if (lightmapBottom)
-					for (int ii = 1; ii < 7; ii++)
+					for (int ii = 1; ii < lightmapWidth; ii++)
 						lightmap[ii][0] = (*lightmapBottom)[getX(side, 1, ii)][getY(side, 1, ii)];
 				//TODO: get corner pixels too....
 			}
@@ -1258,7 +1274,7 @@ const unsigned char Gnd::Lightmap::hash() const //actually a crc, but will work
 {
 #define POLY 0x82f63b78
 	unsigned char crc = ~0;
-	for (int i = 0; i < 256; i++) {
+	for (int i = 0; i < gnd->lightmapWidth*gnd->lightmapHeight*4; i++) {
 		crc ^= data[i];
 		for (int k = 0; k < 8; k++)
 			crc = crc & 1 ? (crc >> 1) ^ POLY : crc >> 1;
@@ -1281,36 +1297,45 @@ const unsigned char Gnd::Tile::hash() const
 
 bool Gnd::Lightmap::operator==(const Lightmap& other) const
 {
-	return memcmp(data, other.data, 256) == 0;
+	return memcmp(data, other.data, gnd->lightmapWidth*gnd->lightmapHeight*4) == 0;
 }
 
 void Gnd::Lightmap::expandBorders()
 {
-	for (int i = 0; i < 8; i++)
+	const int w = gnd->lightmapWidth;
+	const int h = gnd->lightmapHeight;
+	const int o = gnd->lightmapOffset();
+	for (int i = 0; i < w; i++)
 	{
-		data[8 * i + 0] = data[8 * i + 1]; //left
-		data[8 * i + 7] = data[8 * i + 6]; //right
-		data[8 * 0 + i] = data[8 * 1 + i]; //top
-		data[8 * 7 + i] = data[8 * 6 + i]; //bottom
+		data[w * 0 + i] = data[w * 1 + i]; //top
+		data[w * (h-1) + i] = data[w * (h-2) + i]; //bottom
 		for (int c = 0; c < 3; c++)
 		{
-			data[64 + 3 * (8 * i + 0) + c] = data[64 + 3 * (8 * i + 1) + c]; //left
-			data[64 + 3 * (8 * i + 7) + c] = data[64 + 3 * (8 * i + 6) + c]; //right
-			data[64 + 3 * (8 * 0 + i) + c] = data[64 + 3 * (8 * 1 + i) + c]; //top
-			data[64 + 3 * (8 * 7 + i) + c] = data[64 + 3 * (8 * 6 + i) + c]; //bottom
+			data[o + 3 * (w * 0 + i) + c] = data[o + 3 * (w * 1 + i) + c]; //top
+			data[o + 3 * (w * (h-1) + i) + c] = data[o + 3 * (w * (h-2) + i) + c]; //bottom
+		}
+	}
+	for (int i = 0; i < gnd->lightmapHeight; i++)
+	{
+		data[w * i + 0] = data[w * i + 1]; //left
+		data[w * i + 7] = data[w * i + 6]; //right
+		for (int c = 0; c < 3; c++)
+		{
+			data[o + 3 * (w * i + 0) + c] = data[o + 3 * (w * i + 1) + c]; //left
+			data[o + 3 * (w * i + (w-1)) + c] = data[o + 3 * (w * i + (w-2)) + c]; //right
 		}
 	}
 	//corners
-	data[8 * 0 + 0] = data[8 * 1 + 1]; //topleft
-	data[8 * 0 + 7] = data[8 * 1 + 6]; //topright
-	data[8 * 7 + 0] = data[8 * 6 + 1]; //bottomleft
-	data[8 * 7 + 7] = data[8 * 6 + 6]; //bottomright
+	data[w * 0 + 0] = data[w * 1 + 1]; //topleft
+	data[w * 0 + (w-1)] = data[w * 1 + (w-2)]; //topright
+	data[w * (h-1) + 0] = data[w * (h-2) + 1]; //bottomleft
+	data[w * (h-1) + (w-1)] = data[w * (h - 2) + (w - 2)]; //bottomright
 	for (int c = 0; c < 3; c++)
 	{
-		data[64 + 3 * (8 * 0 + 0) + c] = data[64 + 3 * (8 * 1 + 1) + c]; //topleft
-		data[64 + 3 * (8 * 0 + 7) + c] = data[64 + 3 * (8 * 1 + 6) + c]; //topright
-		data[64 + 3 * (8 * 7 + 0) + c] = data[64 + 3 * (8 * 6 + 1) + c]; //bottomleft
-		data[64 + 3 * (8 * 7 + 7) + c] = data[64 + 3 * (8 * 6 + 6) + c]; //bottomright
+		data[o + 3 * (w * 0 + 0) + c] = data[o + 3 * (w * 1 + 1) + c]; //topleft
+		data[o + 3 * (w * 0 + (w-1)) + c] = data[o + 3 * (w * 1 + 6) + c]; //topright
+		data[o + 3 * (w * (h-1) + 0) + c] = data[o + 3 * (w * (h-2) + 1) + c]; //bottomleft
+		data[o + 3 * (w * (h-1) + (w-1)) + c] = data[o + 3 * (w * (h-2) + (w-2)) + c]; //bottomright
 	}
 }
 

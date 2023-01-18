@@ -27,12 +27,36 @@ namespace gl
 
 #define MISSING 63
 
+class CopyLightmap : public Gnd::Lightmap
+{
+public:
+	int width;
+	int height;
+
+	friend void to_json(nlohmann::json& nlohmann_json_j, const CopyLightmap& nlohmann_json_t) {
+		nlohmann_json_j["width"] = nlohmann_json_t.width;
+		nlohmann_json_j["height"] = nlohmann_json_t.height;
+		for (int i = 0; i < nlohmann_json_t.width* nlohmann_json_t.height*4; i++) {
+			nlohmann_json_j["data"].push_back(nlohmann_json_t.data[i]);
+		}
+	}
+	friend void from_json(const nlohmann::json& nlohmann_json_j, CopyLightmap& nlohmann_json_t) { 
+		nlohmann_json_t.width = nlohmann_json_j["width"];
+		nlohmann_json_t.height = nlohmann_json_j["height"];
+		if (!nlohmann_json_t.data)
+			nlohmann_json_t.data = new unsigned char[nlohmann_json_t.width * nlohmann_json_t.height * 4];
+		for (int i = 0; i < nlohmann_json_t.width* nlohmann_json_t.height*4; i++) { nlohmann_json_t.data[i] = nlohmann_json_j["data"][i].get<int>(); } }
+
+	CopyLightmap() {
+	}
+};
+
 class CopyCube : public Gnd::Cube
 {
 public:
 	glm::ivec2 pos;
 	Gnd::Tile tile[3];
-	Gnd::Lightmap lightmap[3];
+	CopyLightmap lightmap[3];
 	Gnd::Texture texture[3];
 	CopyCube() : pos(0) {}
 	NLOHMANN_DEFINE_TYPE_INTRUSIVE(CopyCube, h1, h2, h3, h4, tileUp, tileFront, tileSide, pos, normal, normals);

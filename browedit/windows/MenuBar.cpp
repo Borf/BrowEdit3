@@ -197,6 +197,11 @@ void BrowEdit::menuBar()
 			activeMapView->map->rootNode->getComponent<Gnd>()->makeLightmapsUnique();
 		if (ImGui::MenuItem("Clean up lightmaps"))
 			activeMapView->map->rootNode->getComponent<Gnd>()->cleanLightmaps();
+		static int s[2] = { activeMapView->map->rootNode->getComponent<Gnd>()->lightmapWidth, activeMapView->map->rootNode->getComponent<Gnd>()->lightmapHeight };
+		ImGui::InputInt2("##lightmapRes", s);
+		ImGui::SameLine();
+		if (ImGui::MenuItem("Change Lightmap Resolution"))
+			activeMapView->map->rootNode->getComponent<Gnd>()->makeLightmapsDiffRes(s[0], s[1]);
 
 		if (activeMapView->map->name == "data\\effects_ro.rsw" && ImGui::MenuItem("Generate effects")) //speedrun map
 		{

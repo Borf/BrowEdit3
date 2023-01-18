@@ -348,7 +348,8 @@ void Lightmapper::calcPos(int direction, int tileId, int x, int y)
 
 	float qualityStep = 1.0f / settings.quality;
 	int height = gnd->height;
-	const float s = 10 / 6.0f;
+	const float sx = 10.0f / (gnd->lightmapWidth - 2);
+	const float sy = 10.0f / (gnd->lightmapHeight - 2);
 
 
 	Gnd::Tile* tile = gnd->tiles[tileId];
@@ -357,9 +358,9 @@ void Lightmapper::calcPos(int direction, int tileId, int x, int y)
 
 	Gnd::Cube* cube = gnd->cubes[x][y];
 
-	for (int xx = 1; xx < 7; xx++)
+	for (int xx = 1; xx < gnd->lightmapWidth - 1; xx++)
 	{
-		for (int yy = 1; yy < 7; yy++)
+		for (int yy = 1; yy < gnd->lightmapHeight - 1; yy++)
 		{
 			glm::vec3 totalColor(0.0f);
 			int totalIntensity = 0;
@@ -379,7 +380,7 @@ void Lightmapper::calcPos(int direction, int tileId, int x, int y)
 						glm::vec2 v2((x + 0) * 10, 10 * height - (y + 0) * 10 + 10);//2 , -cube->heights[0]
 						glm::vec2 v3((x + 1) * 10, 10 * height - (y + 0) * 10 + 10);//3 , -cube->heights[1]
 						glm::vec2 v4((x + 1) * 10, 10 * height - (y + 1) * 10 + 10);//4 , -cube->heights[3]
-						glm::vec2 p(10 * x + s * ((xx + xxx) - 1), 10 * height + 10 - 10 * y - s * ((yy + yyy) - 1));
+						glm::vec2 p(10 * x + sx * ((xx + xxx) - 1), 10 * height + 10 - 10 * y - sy * ((yy + yyy) - 1));
 
 						float h = (v1.y + v2.y + v3.y + v4.y) / 4.0f;
 
@@ -412,7 +413,7 @@ void Lightmapper::calcPos(int direction, int tileId, int x, int y)
 						float h2 = glm::mix(otherCube->h1, otherCube->h2, ((xx + xxx) - 1) / 6.0f);
 						float h = glm::mix(h1, h2, ((yy + yyy) - 1) / 6.0f);
 
-						groundPos = glm::vec3(10 * x + s * ((xx + xxx) - 1), -h, 10 * height - 10 * y);
+						groundPos = glm::vec3(10 * x + sx * ((xx + xxx) - 1), -h, 10 * height - 10 * y);
 						normal = glm::vec3(0, 0, 1);
 
 						if (h1 < h2)
@@ -426,7 +427,7 @@ void Lightmapper::calcPos(int direction, int tileId, int x, int y)
 						float h2 = glm::mix(otherCube->h3, otherCube->h1, ((xx + xxx) - 1) / 6.0f);
 						float h = glm::mix(h1, h2, ((yy + yyy) - 1) / 6.0f);
 
-						groundPos = glm::vec3(10 * x + 10, -h, 10 * height - 10 * y + s * ((xx + xxx) - 1));
+						groundPos = glm::vec3(10 * x + 10, -h, 10 * height - 10 * y + sy * ((xx + xxx) - 1));
 						normal = glm::vec3(-1, 0, 0);
 
 						if (h1 < h2)
@@ -454,10 +455,10 @@ void Lightmapper::calcPos(int direction, int tileId, int x, int y)
 
 			glm::vec3 color = totalColor / (float)count;
 
-			lightmap->data[xx + 8 * yy] = intensity;
-			lightmap->data[64 + 3 * (xx + 8 * yy) + 0] = glm::min(255, (int)(color.r * 255));
-			lightmap->data[64 + 3 * (xx + 8 * yy) + 1] = glm::min(255, (int)(color.g * 255));
-			lightmap->data[64 + 3 * (xx + 8 * yy) + 2] = glm::min(255, (int)(color.b * 255));
+			lightmap->data[xx + gnd->lightmapWidth * yy] = intensity;
+			lightmap->data[gnd->lightmapOffset() + 3 * (xx + gnd->lightmapWidth * yy) + 0] = glm::min(255, (int)(color.r * 255));
+			lightmap->data[gnd->lightmapOffset() + 3 * (xx + gnd->lightmapWidth * yy) + 1] = glm::min(255, (int)(color.g * 255));
+			lightmap->data[gnd->lightmapOffset() + 3 * (xx + gnd->lightmapWidth * yy) + 2] = glm::min(255, (int)(color.b * 255));
 		}
 	}
 };
@@ -468,7 +469,8 @@ void Lightmapper::onDone()
 {
 	std::cout << "Done!" << std::endl;
 	gnd->makeLightmapBorders(browEdit);
-	//gnd->cleanLightmaps();
+	gnd->cleanLightmaps();
+	gnd->cleanTiles();
 	map->rootNode->getComponent<GndRenderer>()->gndShadowDirty = true;
 	map->rootNode->getComponent<GndRenderer>()->setChunksDirty();
 	util::ResourceManager<Image>::clear();

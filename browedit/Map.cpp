@@ -701,7 +701,7 @@ void Map::importLightMap(BrowEdit* browEdit, bool exportWalls, bool exportBorder
 				if (gnd->tiles[cube->tileUp]->lightmapIndex == -1)
 				{
 					gnd->tiles[cube->tileUp]->lightmapIndex = (int)gnd->lightmaps.size();
-					gnd->lightmaps.push_back(new Gnd::Lightmap());
+					gnd->lightmaps.push_back(new Gnd::Lightmap(gnd));
 				}
 				lightmapcpy(gnd->lightmaps[gnd->tiles[cube->tileUp]->lightmapIndex]->data, img, xx, yy, tileSize * wallMultiplier * gnd->width);
 			}
@@ -712,7 +712,7 @@ void Map::importLightMap(BrowEdit* browEdit, bool exportWalls, bool exportBorder
 					if (gnd->tiles[cube->tileSide]->lightmapIndex == -1)
 					{
 						gnd->tiles[cube->tileSide]->lightmapIndex = (int)gnd->lightmaps.size();
-						gnd->lightmaps.push_back(new Gnd::Lightmap());
+						gnd->lightmaps.push_back(new Gnd::Lightmap(gnd));
 					}
 					lightmapcpy(gnd->lightmaps[gnd->tiles[cube->tileSide]->lightmapIndex]->data, img, xx, yy + tileSize, tileSize * wallMultiplier * gnd->width);
 				}
@@ -721,7 +721,7 @@ void Map::importLightMap(BrowEdit* browEdit, bool exportWalls, bool exportBorder
 					if (gnd->tiles[cube->tileFront]->lightmapIndex == -1)
 					{
 						gnd->tiles[cube->tileFront]->lightmapIndex = (int)gnd->lightmaps.size();
-						gnd->lightmaps.push_back(new Gnd::Lightmap());
+						gnd->lightmaps.push_back(new Gnd::Lightmap(gnd));
 					}
 					lightmapcpy(gnd->lightmaps[gnd->tiles[cube->tileFront]->lightmapIndex]->data, img, xx + tileSize, yy, tileSize * wallMultiplier * gnd->width);
 				}

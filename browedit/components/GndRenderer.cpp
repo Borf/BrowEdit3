@@ -66,34 +66,35 @@ void GndRenderer::render()
 		for (size_t i = 0; i < gnd->lightmaps.size(); i++)
 		{
 			Gnd::Lightmap* lightMap = gnd->lightmaps[i];
-			for (int xx = 0; xx < 8; xx++)
+			int off = gnd->lightmapOffset();
+			for (int xx = 0; xx < gnd->lightmapWidth; xx++)
 			{
-				for (int yy = 0; yy < 8; yy++)
+				for (int yy = 0; yy < gnd->lightmapHeight; yy++)
 				{
-					int xxx = 8 * x + xx;
-					int yyy = 8 * y + yy;
+					int xxx = gnd->lightmapWidth * x + xx;
+					int yyy = gnd->lightmapHeight * y + yy;
 					if (!smoothColors)
 					{
-						data[4 * (xxx + shadowmapSize * yyy) + 0] = (lightMap->data[64 + 3 * (xx + 8 * yy) + 0] >> 4) << 4;
-						data[4 * (xxx + shadowmapSize * yyy) + 1] = (lightMap->data[64 + 3 * (xx + 8 * yy) + 1] >> 4) << 4;
-						data[4 * (xxx + shadowmapSize * yyy) + 2] = (lightMap->data[64 + 3 * (xx + 8 * yy) + 2] >> 4) << 4;
-						data[4 * (xxx + shadowmapSize * yyy) + 3] = lightMap->data[xx + 8 * yy];
+						data[4 * (xxx + shadowmapSize * yyy) + 0] = (lightMap->data[off + 3 * (xx + gnd->lightmapWidth * yy) + 0] >> 4) << 4;
+						data[4 * (xxx + shadowmapSize * yyy) + 1] = (lightMap->data[off + 3 * (xx + gnd->lightmapWidth * yy) + 1] >> 4) << 4;
+						data[4 * (xxx + shadowmapSize * yyy) + 2] = (lightMap->data[off + 3 * (xx + gnd->lightmapWidth * yy) + 2] >> 4) << 4;
+						data[4 * (xxx + shadowmapSize * yyy) + 3] = lightMap->data[xx + gnd->lightmapWidth * yy];
 					}
 					else
 					{
-						data[4 * (xxx + shadowmapSize * yyy) + 0] = (lightMap->data[64 + 3 * (xx + 8 * yy) + 0]);
-						data[4 * (xxx + shadowmapSize * yyy) + 1] = (lightMap->data[64 + 3 * (xx + 8 * yy) + 1]);
-						data[4 * (xxx + shadowmapSize * yyy) + 2] = (lightMap->data[64 + 3 * (xx + 8 * yy) + 2]);
-						data[4 * (xxx + shadowmapSize * yyy) + 3] = lightMap->data[xx + 8 * yy];
+						data[4 * (xxx + shadowmapSize * yyy) + 0] = (lightMap->data[off + 3 * (xx + gnd->lightmapWidth * yy) + 0]);
+						data[4 * (xxx + shadowmapSize * yyy) + 1] = (lightMap->data[off + 3 * (xx + gnd->lightmapWidth * yy) + 1]);
+						data[4 * (xxx + shadowmapSize * yyy) + 2] = (lightMap->data[off + 3 * (xx + gnd->lightmapWidth * yy) + 2]);
+						data[4 * (xxx + shadowmapSize * yyy) + 3] = lightMap->data[xx + gnd->lightmapWidth * yy];
 					}
 				}
 			}
 			x++;
-			if (x * 8 >= shadowmapSize)
+			if (x * gnd->lightmapWidth >= shadowmapSize)
 			{
 				x = 0;
 				y++;
-				if (y * 8 >= shadowmapSize)
+				if (y * gnd->lightmapHeight >= shadowmapSize)
 				{
 					std::cerr<< "Lightmap too big!" << std::endl;
 					y = 0;
@@ -236,6 +237,11 @@ void GndRenderer::Chunk::rebuild()
 	std::map<int, std::vector<VertexP3T2T2C4N3> > verts;
 	vertIndices.clear();
 
+	const float lmsx = (float)gnd->lightmapWidth;
+	const float lmsy = (float)gnd->lightmapHeight;
+	const float lmsxu = lmsx - 2.0f;
+	const float lmsyu = lmsy - 2.0f;
+
 	for (int x = this->x; x < glm::min(this->x + CHUNKSIZE, (int)gnd->cubes.size()); x++)
 	{
 		for (int y = this->y; y < glm::min(this->y + CHUNKSIZE, (int)gnd->cubes[x].size()); y++)
@@ -247,8 +253,8 @@ void GndRenderer::Chunk::rebuild()
 				Gnd::Tile* tile = gnd->tiles[cube->tileUp];
 				assert(tile->lightmapIndex >= 0);
 
-				glm::vec2 lm1((tile->lightmapIndex % shadowmapRowCount) * (8.0f / shadowmapSize) + 1.0f / shadowmapSize, (tile->lightmapIndex / shadowmapRowCount) * (8.0f / shadowmapSize) + 1.0f / shadowmapSize);
-				glm::vec2 lm2(lm1 + glm::vec2(6.0f / shadowmapSize, 6.0f / shadowmapSize));
+				glm::vec2 lm1((tile->lightmapIndex % shadowmapRowCount) * (lmsx / shadowmapSize) + 1.0f / shadowmapSize, (tile->lightmapIndex / shadowmapRowCount) * (lmsy / shadowmapSize) + 1.0f / shadowmapSize);
+				glm::vec2 lm2(lm1 + glm::vec2(lmsxu / shadowmapSize, lmsyu / shadowmapSize));
 
 				glm::vec4 c1(1.0);
 				if(y < gnd->height-1 && gnd->cubes[x][y + 1]->tileUp != -1)
@@ -284,8 +290,8 @@ void GndRenderer::Chunk::rebuild()
 				Gnd::Tile* tile = gnd->tiles[cube->tileSide];
 				assert(tile->lightmapIndex >= 0);
 
-				glm::vec2 lm1((tile->lightmapIndex % shadowmapRowCount) * (8.0f / shadowmapSize) + 1.0f / shadowmapSize, (tile->lightmapIndex / shadowmapRowCount) * (8.0f / shadowmapSize) + 1.0f / shadowmapSize);
-				glm::vec2 lm2(lm1 + glm::vec2(6.0f / shadowmapSize, 6.0f / shadowmapSize));
+				glm::vec2 lm1((tile->lightmapIndex % shadowmapRowCount) * (lmsx / shadowmapSize) + 1.0f / shadowmapSize, (tile->lightmapIndex / shadowmapRowCount) * (lmsy / shadowmapSize) + 1.0f / shadowmapSize);
+				glm::vec2 lm2(lm1 + glm::vec2(lmsxu / shadowmapSize, lmsyu / shadowmapSize));
 
 
 				glm::vec4 c1(1.0f);
@@ -313,8 +319,8 @@ void GndRenderer::Chunk::rebuild()
 				Gnd::Tile* tile = gnd->tiles[cube->tileFront];
 				assert(tile->lightmapIndex >= 0);
 
-				glm::vec2 lm1((tile->lightmapIndex % shadowmapRowCount) * (8.0f / shadowmapSize) + 1.0f / shadowmapSize, (tile->lightmapIndex / shadowmapRowCount) * (8.0f / shadowmapSize) + 1.0f / shadowmapSize);
-				glm::vec2 lm2(lm1 + glm::vec2(6.0f / shadowmapSize, 6.0f / shadowmapSize));
+				glm::vec2 lm1((tile->lightmapIndex % shadowmapRowCount) * (lmsx / shadowmapSize) + 1.0f / shadowmapSize, (tile->lightmapIndex / shadowmapRowCount) * (lmsy / shadowmapSize) + 1.0f / shadowmapSize);
+				glm::vec2 lm2(lm1 + glm::vec2(lmsxu / shadowmapSize, lmsyu / shadowmapSize));
 
 				glm::vec4 c1(1.0f);
 				if (y < gnd->height - 1 && gnd->cubes[x][y + 1]->tileUp != -1)

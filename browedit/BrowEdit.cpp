@@ -773,8 +773,12 @@ void BrowEdit::copyTiles()
 				auto tile = gnd->tiles[c->tileIds[i]];
 				clipboard["tiles"][std::to_string(c->tileIds[i])] = json(*tile);
 				clipboard["textures"][std::to_string(tile->textureIndex)] = json(*gnd->textures[tile->textureIndex]);
-				if(tile->lightmapIndex > -1)
+				if (tile->lightmapIndex > -1)
+				{
 					clipboard["lightmaps"][std::to_string(tile->lightmapIndex)] = json(*gnd->lightmaps[tile->lightmapIndex]);
+					clipboard["lightmaps"][std::to_string(tile->lightmapIndex)]["width"] = gnd->lightmapWidth;
+					clipboard["lightmaps"][std::to_string(tile->lightmapIndex)]["height"] = gnd->lightmapHeight;
+				}
 			}
 	}
 	ImGui::SetClipboardText(clipboard.dump(1).c_str());
@@ -819,7 +823,10 @@ void BrowEdit::pasteTiles()
 					{
 						from_json(clipboard["tiles"][std::to_string(cube->tileIds[i])], cube->tile[i]);
 						if (cube->tile[i].lightmapIndex > -1)
+						{
+							cube->lightmap[i].gnd = activeMapView->map->rootNode->getComponent<Gnd>();
 							from_json(clipboard["lightmaps"][std::to_string(cube->tile[i].lightmapIndex)], cube->lightmap[i]);
+						}
 						if (cube->tile[i].textureIndex > -1)
 							from_json(clipboard["textures"][std::to_string(cube->tile[i].textureIndex)], cube->texture[i]);
 					}

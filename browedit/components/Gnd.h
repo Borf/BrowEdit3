@@ -30,6 +30,7 @@ public:
 	void makeLightmapsSmooth(BrowEdit* browEdit);
 	void makeTilesUnique();
 	void cleanLightmaps();
+	void makeLightmapsDiffRes(int rx, int ry);
 	void removeZeroHeightWalls();
 	void cleanTiles();
 	void recalculateNormals();
@@ -70,6 +71,13 @@ public:
 
 	class Lightmap
 	{
+	protected:
+		Lightmap() {
+			gnd = nullptr;
+			data = nullptr;
+		}
+		friend class CopyCube;
+
 	public:
 		class LightmapRow
 		{
@@ -82,10 +90,10 @@ public:
 
 				LightmapCell& operator = (const LightmapCell& other)
 				{
-					lightmap->data[8 * y + x] = other.lightmap->data[8 * other.y + other.x];
-					lightmap->data[64 + 3 * (8 * y + x) + 0] = other.lightmap->data[64 + 3 * (8 * other.y + other.x) + 0];
-					lightmap->data[64 + 3 * (8 * y + x) + 1] = other.lightmap->data[64 + 3 * (8 * other.y + other.x) + 1];
-					lightmap->data[64 + 3 * (8 * y + x) + 2] = other.lightmap->data[64 + 3 * (8 * other.y + other.x) + 2];
+					lightmap->data[lightmap->gnd->lightmapWidth * y + x] = other.lightmap->data[other.lightmap->gnd->lightmapWidth * other.y + other.x];
+					lightmap->data[lightmap->gnd->lightmapWidth * lightmap->gnd->lightmapHeight + 3 * (lightmap->gnd->lightmapWidth * y + x) + 0] = other.lightmap->data[other.lightmap->gnd->lightmapWidth * other.lightmap->gnd->lightmapHeight + 3 * (other.lightmap->gnd->lightmapWidth * other.y + other.x) + 0];
+					lightmap->data[lightmap->gnd->lightmapWidth * lightmap->gnd->lightmapHeight + 3 * (lightmap->gnd->lightmapWidth * y + x) + 1] = other.lightmap->data[other.lightmap->gnd->lightmapWidth * other.lightmap->gnd->lightmapHeight + 3 * (other.lightmap->gnd->lightmapWidth * other.y + other.x) + 1];
+					lightmap->data[lightmap->gnd->lightmapWidth * lightmap->gnd->lightmapHeight + 3 * (lightmap->gnd->lightmapWidth * y + x) + 2] = other.lightmap->data[other.lightmap->gnd->lightmapWidth * other.lightmap->gnd->lightmapHeight + 3 * (other.lightmap->gnd->lightmapWidth * other.y + other.x) + 2];
 					return *this;
 				}
 			};
@@ -97,21 +105,32 @@ public:
 			}
 		};
 
-		Lightmap() { 
-			memset(data, 255, 64);
-			memset(data + 64, 0, 256 - 64);
+		Lightmap(Gnd* gnd) {
+			this->gnd = gnd;
+			this->data = new unsigned char[gnd->lightmapWidth * gnd->lightmapHeight * 4];
+			memset(data, 255, gnd->lightmapWidth*gnd->lightmapHeight);
+			memset(data + gnd->lightmapWidth * gnd->lightmapHeight, 0, gnd->lightmapWidth * gnd->lightmapHeight * 3);
 		};
 		Lightmap(const Lightmap& other)
 		{
-			memcpy(data, other.data, 256 * sizeof(unsigned char));
+			gnd = other.gnd;
+			this->data = new unsigned char[gnd->lightmapWidth * gnd->lightmapHeight * 4];
+			memcpy(data, other.data, gnd->lightmapWidth * gnd->lightmapHeight * 4 * sizeof(unsigned char));
 		}
-		unsigned char data[256];
+		~Lightmap()
+		{
+			if(data)
+				delete[] data;
+			data = nullptr;
+		}
+		unsigned char* data;
+		Gnd* gnd;
 		void expandBorders();
 		const unsigned char hash() const;
 		bool operator == (const Lightmap& other) const;
 		LightmapRow operator [] (int x) { return LightmapRow{ this, x }; }
 		friend void to_json(nlohmann::json& nlohmann_json_j, const Lightmap& nlohmann_json_t) {
-			for (int i = 0; i < 256; i++) {
+			for (int i = 0; i < nlohmann_json_t.gnd->lightmapWidth* nlohmann_json_t.gnd->lightmapHeight*4; i++) {
 				nlohmann_json_j["data"].push_back(nlohmann_json_t.data[i]);
 			}
 		}
@@ -206,6 +225,7 @@ public:
 	int lightmapWidth;
 	int lightmapHeight;
 	int gridSizeCell;
+	inline int lightmapOffset() { return lightmapWidth * lightmapHeight; }
 	std::vector<Texture*> textures;
 	std::vector<Lightmap*> lightmaps;
 	std::vector<Tile*> tiles;
