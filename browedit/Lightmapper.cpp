@@ -452,6 +452,8 @@ void Lightmapper::calcPos(int direction, int tileId, int x, int y)
 			int intensity = totalIntensity / count;
 			if (intensity > 255)
 				intensity = 255;
+			if (intensity < 0)
+				intensity = 0;
 
 			glm::vec3 color = totalColor / (float)count;
 
