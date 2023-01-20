@@ -174,6 +174,7 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 						if (gnd->tiles[tileId]->lightmapIndex > -1 && (gnd->tiles[tileId]->lightmapIndex >= gnd->lightmaps.size() || *gnd->lightmaps[gnd->tiles[tileId]->lightmapIndex] != cube->lightmap[i]))
 						{//the lightmap at lightmapindex does not match the pasted tile, first do a lookup and if not found, add the lightmap
 							int lightmapId = -1;
+							cube->lightmap[i].gnd = gnd;
 							for (auto t = 0; t < gnd->lightmaps.size(); t++)
 								if (*gnd->lightmaps[t] == cube->lightmap[i])
 									lightmapId = t;
@@ -597,7 +598,7 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 						cube->calcNormal();
 					}
 
-					if (browEdit->windowData.heightEdit.edgeMode == 3) // add walls
+					if (browEdit->windowData.heightEdit.edgeMode == 3 && gnd->tiles.size() > 0) // add walls
 					{
 						for (auto t : map->tileSelection)
 						{
@@ -609,25 +610,25 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 								gnd->cubes[t.x][t.y]->h1 != gnd->cubes[t.x - 1][t.y]->h2 || 
 								gnd->cubes[t.x][t.y]->h3 != gnd->cubes[t.x - 1][t.y]->h4) &&
 								gnd->cubes[t.x - 1][t.y]->tileSide == -1)
-								gnd->cubes[t.x - 1][t.y]->tileSide = 1;
+								gnd->cubes[t.x - 1][t.y]->tileSide = 0;
 
 							if (t.x < gnd->width-1 && !isTileSelected(t.x + 1, t.y) && (
 								gnd->cubes[t.x][t.y]->h2 != gnd->cubes[t.x + 1][t.y]->h1 ||
 								gnd->cubes[t.x][t.y]->h4 != gnd->cubes[t.x + 1][t.y]->h3) &&
 								gnd->cubes[t.x][t.y]->tileSide == -1)
-								gnd->cubes[t.x][t.y]->tileSide = 1;
+								gnd->cubes[t.x][t.y]->tileSide = 0;
 
 							if (t.y > 0 && !isTileSelected(t.x, t.y - 1) && (
 								gnd->cubes[t.x][t.y]->h1 != gnd->cubes[t.x][t.y - 1]->h3 ||
 								gnd->cubes[t.x][t.y]->h2 != gnd->cubes[t.x][t.y - 1]->h4) &&
 								gnd->cubes[t.x][t.y - 1]->tileFront == -1)
-								gnd->cubes[t.x][t.y - 1]->tileFront = 1;
+								gnd->cubes[t.x][t.y - 1]->tileFront = 0;
 
 							if (t.y < gnd->height-1 && !isTileSelected(t.x, t.y + 1) && (
 								gnd->cubes[t.x][t.y]->h3 != gnd->cubes[t.x][t.y + 1]->h1 ||
 								gnd->cubes[t.x][t.y]->h4 != gnd->cubes[t.x][t.y + 1]->h2) &&
 								gnd->cubes[t.x][t.y]->tileFront == -1)
-								gnd->cubes[t.x][t.y]->tileFront = 1;
+								gnd->cubes[t.x][t.y]->tileFront = 0;
 
 						}
 					}

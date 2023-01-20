@@ -174,7 +174,8 @@ void BrowEdit::run()
 //		loadMap("data\\rag_fes.rsw");
 //		loadMap("data\\justincase.rsw");
 //		loadMap("data\\market_xmas.rsw");
-		loadMap("data\\arena2.rsw");
+//		loadMap("data\\arena2.rsw");
+		loadMap("data\\maze_new.rsw");
 
 		//loadModel("data\\model\\prontera_re\\streetlamp_01.rsm");
 	//	loadModel("data\\model\\크리스마스마을\\xmas_내부트리.rsm");
@@ -771,6 +772,10 @@ void BrowEdit::copyTiles()
 			if (c->tileIds[i] != -1)
 			{
 				auto tile = gnd->tiles[c->tileIds[i]];
+				for (int ii = 0; ii < 4; ii++)
+					for (int iii = 0; iii < 2; iii++)
+						if (std::isnan(tile->texCoords[ii][iii]))
+							tile->texCoords[ii][iii] = 0;
 				clipboard["tiles"][std::to_string(c->tileIds[i])] = json(*tile);
 				clipboard["textures"][std::to_string(tile->textureIndex)] = json(*gnd->textures[tile->textureIndex]);
 				if (tile->lightmapIndex > -1)
@@ -821,14 +826,22 @@ void BrowEdit::pasteTiles()
 				{
 					if (cube->tileIds[i] > -1)
 					{
-						from_json(clipboard["tiles"][std::to_string(cube->tileIds[i])], cube->tile[i]);
-						if (cube->tile[i].lightmapIndex > -1)
-						{
-							cube->lightmap[i].gnd = activeMapView->map->rootNode->getComponent<Gnd>();
-							from_json(clipboard["lightmaps"][std::to_string(cube->tile[i].lightmapIndex)], cube->lightmap[i]);
+						try {
+							from_json(clipboard["tiles"][std::to_string(cube->tileIds[i])], cube->tile[i]);
+							if (cube->tile[i].lightmapIndex > -1)
+							{
+								cube->lightmap[i].gnd = activeMapView->map->rootNode->getComponent<Gnd>();
+								from_json(clipboard["lightmaps"][std::to_string(cube->tile[i].lightmapIndex)], cube->lightmap[i]);
+							}
+							if (cube->tile[i].textureIndex > -1)
+								from_json(clipboard["textures"][std::to_string(cube->tile[i].textureIndex)], cube->texture[i]);
 						}
-						if (cube->tile[i].textureIndex > -1)
-							from_json(clipboard["textures"][std::to_string(cube->tile[i].textureIndex)], cube->texture[i]);
+						catch (const std::exception &ex)
+						{
+							std::cout << ex.what() << std::endl;
+							cube->tile[i].textureIndex = 0;
+							cube->tile[i].lightmapIndex = 0; //wtf
+						}
 					}
 				}
 				newCubes.push_back(cube); //only used here, so when pasting it's safe to assume tile[i] has been filled

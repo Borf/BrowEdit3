@@ -115,7 +115,8 @@ public:
 		{
 			gnd = other.gnd;
 			this->data = new unsigned char[gnd->lightmapWidth * gnd->lightmapHeight * 4];
-			memcpy(data, other.data, gnd->lightmapWidth * gnd->lightmapHeight * 4 * sizeof(unsigned char));
+			if(other.data)
+				memcpy(data, other.data, gnd->lightmapWidth * gnd->lightmapHeight * 4 * sizeof(unsigned char));
 		}
 		~Lightmap()
 		{

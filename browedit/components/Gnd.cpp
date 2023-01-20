@@ -1297,6 +1297,8 @@ const unsigned char Gnd::Tile::hash() const
 
 bool Gnd::Lightmap::operator==(const Lightmap& other) const
 {
+	if (!data || !other.data)
+		return false;
 	return memcmp(data, other.data, gnd->lightmapWidth*gnd->lightmapHeight*4) == 0;
 }
 
