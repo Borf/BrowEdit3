@@ -370,10 +370,20 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 			}
 			ImGui::End();
 
+			glm::vec3 cameraPos = glm::inverse(nodeRenderContext.viewMatrix) * glm::vec4(0, 0, 0, 1);
+			int order[9] = { 0, 1, 2, 3, 4, 5, 6, 7, 8 };
+			std::sort(std::begin(order), std::end(order), [&](int a, int b)
+			{
+				return glm::distance(cameraPos, pos[a]) < glm::distance(cameraPos, pos[b]);
+			});
 
 			static int dragIndex = -1;
-			for (int i = 0; i < 9; i++)
+			for (int ii = 0; ii < 9; ii++)
 			{
+				if (gadgetScale == 0)
+					continue;
+				int i = order[ii];
+
 				if (!browEdit->windowData.heightEdit.showCornerArrows && i < 4)
 					continue;
 				if (!browEdit->windowData.heightEdit.showCenterArrow && i == 4)
