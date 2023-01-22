@@ -76,13 +76,13 @@ Gnd::Gnd(const std::string& fileName)
 		file->read(reinterpret_cast<char*>(&gridSizeCell), sizeof(int));
 
 		//Fix lightmap format if it was invalid. by Henko
-		//if (lightmapWidth != 8 || lightmapHeight != 8 || gridSizeCell != 1)
-		//{
-		//	std::cerr << "GND: Invalid Lightmap Format in " << fileName << ".gnd" << std::endl;
-		//	lightmapWidth = 8;
-		//	lightmapHeight = 8;
-		//	gridSizeCell = 1;
-		//}
+		if (lightmapWidth == 0 || lightmapHeight == 0 || gridSizeCell == 0)
+		{
+			std::cerr << "GND: Invalid Lightmap Format in " << fileName << ".gnd" << std::endl;
+			lightmapWidth = 8;
+			lightmapHeight = 8;
+			gridSizeCell = 1;
+		}
 
 		lightmaps.reserve(lightmapCount);
 		for (int i = 0; i < lightmapCount; i++)
