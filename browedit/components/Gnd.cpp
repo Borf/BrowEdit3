@@ -551,7 +551,7 @@ void Gnd::makeLightmapsUnique()
 				l = new Lightmap(this);
 			else
 				l = new Lightmap(*lightmaps[t->lightmapIndex]);
-			t->lightmapIndex = (unsigned short)lightmaps.size();
+			t->lightmapIndex = (int)lightmaps.size();
 			lightmaps.push_back(l);
 		}
 	}
@@ -577,14 +577,16 @@ void Gnd::makeLightmapsDiffRes(int rx, int ry)
 {
 	this->lightmapWidth = rx;
 	this->lightmapHeight = ry;
+	for (auto l : lightmaps)
+		delete l;
 	lightmaps.clear();
 	Lightmap* l = new Lightmap(this);
 	lightmaps.push_back(l);
 
 	for (Tile* t : tiles)
 		t->lightmapIndex = 0;
-	node->getComponent<GndRenderer>()->setChunksDirty();
 	node->getComponent<GndRenderer>()->gndShadowDirty = true;
+	node->getComponent<GndRenderer>()->setChunksDirty();
 
 }
 
@@ -917,6 +919,8 @@ void Gnd::makeLightmapsSmooth(BrowEdit* browEdit)
 	node->getComponent<GndRenderer>()->gndShadowDirty = true;
 }
 
+//TODO: this method only removes unused tiles
+//test to see if duplicate tiles can also be removed
 void Gnd::cleanTiles()
 {
 	std::cout << "Tiles cleanup, starting with " << tiles.size() << " tiles" << std::endl;
@@ -926,14 +930,14 @@ void Gnd::cleanTiles()
 			for(int i = 0; i < 3; i++)
 				if(cubes[x][y]->tileIds[i] != -1)
 					used.insert(cubes[x][y]->tileIds[i]);
-	std::cout << "Made list of used tiles..." << std::endl;
+	std::cout << "Made list of used tiles..." <<used.size()<< std::endl;
 
 	std::list<std::size_t> toRemove;
 	for (std::size_t i = 0; i < tiles.size(); i++)
 		if (used.find((int)i) == used.end())
 			toRemove.push_back(i);
 	toRemove.reverse();
-	std::cout << "Made list of unused tiles..." << std::endl;
+	std::cout << "Made list of unused tiles..." << toRemove.size()<<std::endl;
 
 	//TODO: make an array of tiles.size() long, initialize at 0. loop through toRemove, and increase values in array to be the amount to lower. Then use as lookup
 

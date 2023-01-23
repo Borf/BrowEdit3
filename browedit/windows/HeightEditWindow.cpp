@@ -399,7 +399,9 @@ void BrowEdit::showHeightWindow()
 							ImGui::RenderFrame(ImVec2(bb.Min.x - 2, bb.Min.y - 2), ImVec2(bb.Max.x + 2, bb.Max.y + 2), ImGui::GetColorU32(ImGuiCol_FrameBg, 1), true, style.FrameRounding);
 
 
-							static gl::Texture* shadow = new gl::Texture(8, 8);
+							static gl::Texture* shadow = new gl::Texture(gnd->lightmapWidth, gnd->lightmapHeight);
+							if (shadow->width != gnd->lightmapWidth || shadow->height != gnd->lightmapHeight)
+								shadow->resize(gnd->lightmapWidth, gnd->lightmapHeight);
 							window->DrawList->AddCallback([](const ImDrawList* parent_list, const ImDrawCmd* cmd)
 							{
 								glGetIntegerv(GL_TEXTURE_BINDING_2D, &oldTextureId);
@@ -411,18 +413,18 @@ void BrowEdit::showHeightWindow()
 							}, gndRenderer);
 
 							auto lm = gnd->lightmaps[lightmapId];
-							unsigned char* data = new unsigned char[8 * 8 * 4];
-							for (int x = 0; x < 8; x++)
+							unsigned char* data = new unsigned char[gnd->lightmapWidth * gnd->lightmapHeight * 4];
+							for (int x = 0; x < gnd->lightmapWidth; x++)
 							{
-								for (int y = 0; y < 8; y++)
+								for (int y = 0; y < gnd->lightmapHeight; y++)
 								{
-									data[4 * (x + 8 * y) + 0] = lm->data[x + 8 * y];
-									data[4 * (x + 8 * y) + 1] = lm->data[x + 8 * y];
-									data[4 * (x + 8 * y) + 2] = lm->data[x + 8 * y];
-									data[4 * (x + 8 * y) + 3] = 255;
+									data[4 * (x + gnd->lightmapWidth * y) + 0] = lm->data[x + gnd->lightmapWidth * y];
+									data[4 * (x + gnd->lightmapWidth * y) + 1] = lm->data[x + gnd->lightmapWidth * y];
+									data[4 * (x + gnd->lightmapWidth * y) + 2] = lm->data[x + gnd->lightmapWidth * y];
+									data[4 * (x + gnd->lightmapWidth * y) + 3] = 255;
 								}
 							}
-							shadow->setSubImage((char*)data, 0, 0, 8, 8);
+							shadow->setSubImage((char*)data, 0, 0, gnd->lightmapWidth, gnd->lightmapHeight);
 
 							window->DrawList->AddImage((ImTextureID)(long long)shadow->id(), bb.Min + ImVec2(1, 1), bb.Max - ImVec2(1, 1), ImVec2(lm1.x, lm2.y), ImVec2(lm2.x, lm1.y));
 							window->DrawList->AddCallback([](const ImDrawList* parent_list, const ImDrawCmd* cmd)
@@ -442,7 +444,9 @@ void BrowEdit::showHeightWindow()
 							ImGui::RenderFrame(ImVec2(bb.Min.x - 2, bb.Min.y - 2), ImVec2(bb.Max.x + 2, bb.Max.y + 2), ImGui::GetColorU32(ImGuiCol_FrameBg, 1), true, style.FrameRounding);
 
 
-							static gl::Texture* color = new gl::Texture(8, 8);
+							static gl::Texture* color = new gl::Texture(gnd->lightmapWidth, gnd->lightmapHeight);
+							if (color->width != gnd->lightmapWidth || shadow->height != gnd->lightmapHeight)
+								color->resize(gnd->lightmapWidth, gnd->lightmapHeight);
 							window->DrawList->AddCallback([](const ImDrawList* parent_list, const ImDrawCmd* cmd)
 							{
 								glGetIntegerv(GL_TEXTURE_BINDING_2D, &oldTextureId);
@@ -453,17 +457,17 @@ void BrowEdit::showHeightWindow()
 								glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 							}, gndRenderer);
 
-							for (int x = 0; x < 8; x++)
+							for (int x = 0; x < gnd->lightmapWidth; x++)
 							{
-								for (int y = 0; y < 8; y++)
+								for (int y = 0; y < gnd->lightmapHeight; y++)
 								{
-									data[4 * (x + 8 * y) + 0] = lm->data[gnd->lightmapOffset() + 3 * (x + 8 * y) + 0];
-									data[4 * (x + 8 * y) + 1] = lm->data[gnd->lightmapOffset() + 3 * (x + 8 * y) + 1];
-									data[4 * (x + 8 * y) + 2] = lm->data[gnd->lightmapOffset() + 3 * (x + 8 * y) + 2];
-									data[4 * (x + 8 * y) + 3] = 255;
+									data[4 * (x + gnd->lightmapWidth * y) + 0] = lm->data[gnd->lightmapOffset() + 3 * (x + gnd->lightmapWidth * y) + 0];
+									data[4 * (x + gnd->lightmapWidth * y) + 1] = lm->data[gnd->lightmapOffset() + 3 * (x + gnd->lightmapWidth * y) + 1];
+									data[4 * (x + gnd->lightmapWidth * y) + 2] = lm->data[gnd->lightmapOffset() + 3 * (x + gnd->lightmapWidth * y) + 2];
+									data[4 * (x + gnd->lightmapWidth * y) + 3] = 255;
 								}
 							}
-							color->setSubImage((char*)data, 0, 0, 8, 8);
+							color->setSubImage((char*)data, 0, 0, gnd->lightmapWidth, gnd->lightmapHeight);
 							delete[] data;
 
 

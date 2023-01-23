@@ -50,6 +50,7 @@ public:
 	int defaultEditMode = 0;
 	float toolbarHeight() { return toolbarButtonSize + 8; }
 	int lightmapperThreadCount = 4;
+	int lightmapperRefreshTimer = 2;
 	std::string isValid() const;
 	bool showWindow(BrowEdit* browEdit);
 	void setupFileIO();
@@ -84,5 +85,6 @@ public:
 		recalculateQuadtreeOnSave,
 		colorPresets,
 		ffmpegPath,
-		lightmapperThreadCount);
+		lightmapperThreadCount,
+		lightmapperRefreshTimer);
 };

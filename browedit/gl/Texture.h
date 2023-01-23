@@ -28,6 +28,7 @@ namespace gl
 		void bind();
 		void setSubImage(char* data, int x, int y, int width, int height);
 		void reload();
+		void resize(int width, int height);
 		void setWrapMode(GLuint mode);
 		GLuint getAnimatedTextureId();
 

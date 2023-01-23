@@ -154,7 +154,7 @@ void BrowEdit::run()
 #ifdef _DEBUG
 	if(config.isValid() == "")
 //		loadMap("data\\aldebaran.rsw");
-//		loadMap("data\\prontera.rsw");
+		loadMap("data\\prontera.rsw");
 //		loadMap("data\\amicit01.rsw"); //RSM2
 //		loadMap("data\\grademk.rsw"); //special effects
 //		loadMap("data\\noel02.rsw");
@@ -175,7 +175,7 @@ void BrowEdit::run()
 //		loadMap("data\\justincase.rsw");
 //		loadMap("data\\market_xmas.rsw");
 //		loadMap("data\\arena2.rsw");
-		loadMap("data\\maze_new.rsw");
+//		loadMap("data\\maze_new.rsw");
 
 		//loadModel("data\\model\\prontera_re\\streetlamp_01.rsm");
 	//	loadModel("data\\model\\크리스마스마을\\xmas_내부트리.rsm");

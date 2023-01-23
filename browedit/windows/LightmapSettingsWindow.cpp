@@ -28,6 +28,7 @@ void BrowEdit::showLightmapSettingsWindow()
 		ImGui::DragInt2("Generate Range X", glm::value_ptr(settings.rangeX), 1, 0, gnd->width);
 		ImGui::DragInt2("Generate Range Y", glm::value_ptr(settings.rangeY), 1, 0, gnd->height);
 		ImGui::DragInt("Thread Count", &config.lightmapperThreadCount, 1, 1, 32);
+		ImGui::DragInt("Update Time", &config.lightmapperRefreshTimer, 1, 1, 600);
 
 		if (ImGui::Button("Lightmap!"))
 		{

@@ -180,6 +180,11 @@ namespace gl
 		bind();
 		glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, width, height, GL_RGBA, GL_UNSIGNED_BYTE, data);
 	}
+	void Texture::resize(int width, int height)
+	{
+		bind();
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+	}
 
 	GLuint Texture::getAnimatedTextureId()
 	{

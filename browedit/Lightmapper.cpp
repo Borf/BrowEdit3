@@ -147,13 +147,19 @@ void Lightmapper::run()
 
 
 	threads.push_back(std::thread([&]()
-		{
+	{
+			int timer = 0;
 			while ((finishedX < settings.rangeX[1] || finishedThreadCount < browEdit->config.lightmapperThreadCount) && running)
 			{
-				std::this_thread::sleep_for(std::chrono::seconds(2));
-				progressMutex.lock();
-				map->rootNode->getComponent<GndRenderer>()->gndShadowDirty = true;
-				progressMutex.unlock();
+				std::this_thread::sleep_for(std::chrono::seconds(1));
+				timer++;
+				if (timer > browEdit->config.lightmapperRefreshTimer)
+				{
+					progressMutex.lock();
+					map->rootNode->getComponent<GndRenderer>()->gndShadowDirty = true;
+					progressMutex.unlock();
+					timer = 0;
+				}
 			}
 			std::cout << "Finished threads: " << finishedThreadCount << std::endl;
 			std::cout << "Done with threads, unlocking main thread!" << std::endl;
