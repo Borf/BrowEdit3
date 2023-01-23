@@ -385,8 +385,8 @@ void BrowEdit::showHeightWindow()
 						}
 						if (lightmapId != -1)
 						{
-							glm::vec2 lm1((tile->lightmapIndex % GndRenderer::shadowmapRowCount) * (8.0f / GndRenderer::shadowmapSize), (tile->lightmapIndex / GndRenderer::shadowmapRowCount) * (8.0f / GndRenderer::shadowmapSize));
-							glm::vec2 lm2(lm1 + glm::vec2(8.0f / GndRenderer::shadowmapSize, 8.0f / GndRenderer::shadowmapSize));
+							glm::vec2 lm1(0,0);
+							glm::vec2 lm2(1,1);
 							ImGuiWindow* window = ImGui::GetCurrentWindow();
 							ImGui::Text("Shadow");
 							const ImGuiStyle& style = ImGui::GetStyle();
@@ -397,22 +397,82 @@ void BrowEdit::showHeightWindow()
 							ImGui::ItemSize(bb);
 							ImGui::ItemAdd(bb, NULL);
 							ImGui::RenderFrame(ImVec2(bb.Min.x - 2, bb.Min.y - 2), ImVec2(bb.Max.x + 2, bb.Max.y + 2), ImGui::GetColorU32(ImGuiCol_FrameBg, 1), true, style.FrameRounding);
+
+
+							static gl::Texture* shadow = new gl::Texture(8, 8);
 							window->DrawList->AddCallback([](const ImDrawList* parent_list, const ImDrawCmd* cmd)
 							{
 								glGetIntegerv(GL_TEXTURE_BINDING_2D, &oldTextureId);
 								GndRenderer* gndRenderer = (GndRenderer*)cmd->UserCallbackData;
 								glDisable(GL_BLEND);
-								gndRenderer->gndShadow->bind();
+								shadow->bind();
 								glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 								glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
 							}, gndRenderer);
-							window->DrawList->AddImage((ImTextureID)(long long)gndRenderer->gndShadow->id(), bb.Min + ImVec2(1, 1), bb.Max - ImVec2(1, 1), ImVec2(lm1.x, lm2.y), ImVec2(lm2.x, lm1.y));
+
+							auto lm = gnd->lightmaps[lightmapId];
+							unsigned char* data = new unsigned char[8 * 8 * 4];
+							for (int x = 0; x < 8; x++)
+							{
+								for (int y = 0; y < 8; y++)
+								{
+									data[4 * (x + 8 * y) + 0] = lm->data[x + 8 * y];
+									data[4 * (x + 8 * y) + 1] = lm->data[x + 8 * y];
+									data[4 * (x + 8 * y) + 2] = lm->data[x + 8 * y];
+									data[4 * (x + 8 * y) + 3] = 255;
+								}
+							}
+							shadow->setSubImage((char*)data, 0, 0, 8, 8);
+
+							window->DrawList->AddImage((ImTextureID)(long long)shadow->id(), bb.Min + ImVec2(1, 1), bb.Max - ImVec2(1, 1), ImVec2(lm1.x, lm2.y), ImVec2(lm2.x, lm1.y));
 							window->DrawList->AddCallback([](const ImDrawList* parent_list, const ImDrawCmd* cmd)
 							{
 								GndRenderer* gndRenderer = (GndRenderer*)cmd->UserCallbackData;
 								glEnable(GL_BLEND);
-								gndRenderer->gndShadow->bind();
+								shadow->bind();
+								glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+								glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+								glBindTexture(GL_TEXTURE_2D, oldTextureId);
+							}, gndRenderer);
+
+
+							bb = ImRect(window->DC.CursorPos, window->DC.CursorPos + Canvas);
+							ImGui::ItemSize(bb);
+							ImGui::ItemAdd(bb, NULL);
+							ImGui::RenderFrame(ImVec2(bb.Min.x - 2, bb.Min.y - 2), ImVec2(bb.Max.x + 2, bb.Max.y + 2), ImGui::GetColorU32(ImGuiCol_FrameBg, 1), true, style.FrameRounding);
+
+
+							static gl::Texture* color = new gl::Texture(8, 8);
+							window->DrawList->AddCallback([](const ImDrawList* parent_list, const ImDrawCmd* cmd)
+							{
+								glGetIntegerv(GL_TEXTURE_BINDING_2D, &oldTextureId);
+								GndRenderer* gndRenderer = (GndRenderer*)cmd->UserCallbackData;
+								glDisable(GL_BLEND);
+								color->bind();
+								glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+								glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+							}, gndRenderer);
+
+							for (int x = 0; x < 8; x++)
+							{
+								for (int y = 0; y < 8; y++)
+								{
+									data[4 * (x + 8 * y) + 0] = lm->data[gnd->lightmapOffset() + 3 * (x + 8 * y) + 0];
+									data[4 * (x + 8 * y) + 1] = lm->data[gnd->lightmapOffset() + 3 * (x + 8 * y) + 1];
+									data[4 * (x + 8 * y) + 2] = lm->data[gnd->lightmapOffset() + 3 * (x + 8 * y) + 2];
+									data[4 * (x + 8 * y) + 3] = 255;
+								}
+							}
+							color->setSubImage((char*)data, 0, 0, 8, 8);
+							delete[] data;
+
+
+							window->DrawList->AddImage((ImTextureID)(long long)color->id(), bb.Min + ImVec2(1, 1), bb.Max - ImVec2(1, 1), ImVec2(lm1.x, lm2.y), ImVec2(lm2.x, lm1.y));
+							window->DrawList->AddCallback([](const ImDrawList* parent_list, const ImDrawCmd* cmd)
+							{
+								GndRenderer* gndRenderer = (GndRenderer*)cmd->UserCallbackData;
+								glEnable(GL_BLEND);
+								color->bind();
 								glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 								glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 								glBindTexture(GL_TEXTURE_2D, oldTextureId);
