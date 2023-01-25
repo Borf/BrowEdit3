@@ -103,9 +103,6 @@ void GndRenderer::render()
 				}
 			}
 		}
-
-		stbi_write_png("shadow.png", shadowmapSize, shadowmapSize, 4, data, 0);
-
 		gndShadow->setSubImage(data, 0, 0, shadowmapSize, shadowmapSize);
 		delete[] data;
 		gndShadowDirty = false;
