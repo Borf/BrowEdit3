@@ -271,7 +271,7 @@ std::pair<glm::vec3, int> Lightmapper::calculateLight(const glm::vec3& groundPos
 			if (rswLight->lightType == RswLight::Type::Spot)
 			{
 				float dp = glm::dot(lightDirection2, -rswLight->direction);
-				if (dp < 1 - rswLight->spotlightWidth)
+				if (dp < (1-rswLight->spotlightWidth))
 					attenuation = 0;
 				else
 				{

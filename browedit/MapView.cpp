@@ -28,6 +28,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/quaternion.hpp>
 
 #include <imgui.h>
 #include <imgui_internal.h>
@@ -741,45 +742,94 @@ void MapView::drawLight(Node* n)
 	auto rswLight = n->getComponent<RswLight>();
 	auto gnd = n->root->getComponent<Gnd>();
 
+	if (rswLight->lightType == RswLight::Type::Sun)
+		return;
+
+
 	glm::mat4 modelMatrix(1.0f);
 	modelMatrix = glm::scale(modelMatrix, glm::vec3(1, 1, -1));
 	modelMatrix = glm::translate(modelMatrix, glm::vec3(5 * gnd->width + rswObject->position.x, -rswObject->position.y, -10 - 5 * gnd->height + rswObject->position.z));
-	if (showLightSphere)
+	if (rswLight->lightType == RswLight::Type::Point)
 	{
-		modelMatrix = glm::scale(modelMatrix, glm::vec3(rswLight->range, rswLight->range, rswLight->range));
+		if (showLightSphere)
+		{
+			modelMatrix = glm::scale(modelMatrix, glm::vec3(rswLight->range, rswLight->range, rswLight->range));
+			simpleShader->use();
+			simpleShader->setUniform(SimpleShader::Uniforms::projectionMatrix, nodeRenderContext.projectionMatrix);
+			simpleShader->setUniform(SimpleShader::Uniforms::viewMatrix, nodeRenderContext.viewMatrix);
+			simpleShader->setUniform(SimpleShader::Uniforms::modelMatrix, modelMatrix);
+			simpleShader->setUniform(SimpleShader::Uniforms::textureFac, 0.0f);
+			simpleShader->setUniform(SimpleShader::Uniforms::color, glm::vec4(rswLight->color, 0.25f));
+			glDepthMask(0);
+			glEnable(GL_BLEND);
+			sphereMesh.draw();
+			glDepthMask(1);
+			glUseProgram(0);
+		}
+		else
+		{
+			std::vector<VertexP3T2> vertsCircle;
+			for (float f = 0; f < 2 * glm::pi<float>(); f += glm::pi<float>() / 50)
+				vertsCircle.push_back(VertexP3T2(glm::vec3(rswLight->range * glm::cos(f), rswLight->range * glm::sin(f), 0), glm::vec2(glm::cos(f), glm::sin(f))));
+			billboardShader->use();
+			billboardShader->setUniform(BillboardRenderer::BillboardShader::Uniforms::cameraMatrix, nodeRenderContext.viewMatrix);
+			billboardShader->setUniform(BillboardRenderer::BillboardShader::Uniforms::projectionMatrix, nodeRenderContext.projectionMatrix);
+			billboardShader->setUniform(BillboardRenderer::BillboardShader::Uniforms::modelMatrix, modelMatrix);
+			billboardShader->setUniform(BillboardRenderer::BillboardShader::Uniforms::color, glm::vec4(rswLight->color, 1));
+			whiteTexture->bind();
+			glBindBuffer(GL_ARRAY_BUFFER, 0);
+			glEnableVertexAttribArray(0);
+			glEnableVertexAttribArray(1);
+			glDisableVertexAttribArray(2);
+			glDisableVertexAttribArray(3);
+			glDisableVertexAttribArray(4); //TODO: vao
+			glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexP3T2), vertsCircle[0].data);
+			glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexP3T2), vertsCircle[0].data + 3);
+			glLineWidth(4.0f);
+			glDrawArrays(GL_LINE_LOOP, 0, (int)vertsCircle.size());
+			glUseProgram(0);
+		}
+	}
+	else if (rswLight->lightType == RswLight::Type::Spot)
+	{
+		auto mm = modelMatrix;
+		mm = mm * glm::toMat4(util::RotationBetweenVectors(glm::vec3(1, 0, 0), rswLight->direction * glm::vec3(1,1,-1)));
+
 		simpleShader->use();
 		simpleShader->setUniform(SimpleShader::Uniforms::projectionMatrix, nodeRenderContext.projectionMatrix);
 		simpleShader->setUniform(SimpleShader::Uniforms::viewMatrix, nodeRenderContext.viewMatrix);
-		simpleShader->setUniform(SimpleShader::Uniforms::modelMatrix, modelMatrix);
+		simpleShader->setUniform(SimpleShader::Uniforms::modelMatrix, mm);
 		simpleShader->setUniform(SimpleShader::Uniforms::textureFac, 0.0f);
-		simpleShader->setUniform(SimpleShader::Uniforms::color, glm::vec4(rswLight->color, 0.25f));
+		simpleShader->setUniform(SimpleShader::Uniforms::color, glm::vec4(rswLight->color, 0.05f));
 		glDepthMask(0);
 		glEnable(GL_BLEND);
-		sphereMesh.draw();
-		glDepthMask(1);
-		glUseProgram(0);
-	}
-	else
-	{
-		std::vector<VertexP3T2> vertsCircle;
-		for (float f = 0; f < 2 * glm::pi<float>(); f += glm::pi<float>() / 50)
-			vertsCircle.push_back(VertexP3T2(glm::vec3(rswLight->range * glm::cos(f), rswLight->range * glm::sin(f), 0), glm::vec2(glm::cos(f), glm::sin(f))));
-		billboardShader->use();
-		billboardShader->setUniform(BillboardRenderer::BillboardShader::Uniforms::cameraMatrix, nodeRenderContext.viewMatrix);
-		billboardShader->setUniform(BillboardRenderer::BillboardShader::Uniforms::projectionMatrix, nodeRenderContext.projectionMatrix);
-		billboardShader->setUniform(BillboardRenderer::BillboardShader::Uniforms::modelMatrix, modelMatrix);
-		billboardShader->setUniform(BillboardRenderer::BillboardShader::Uniforms::color, glm::vec4(rswLight->color, 1));
-		whiteTexture->bind();
+		
+		std::vector<VertexP3T2N3> verts;
+		constexpr float inc = glm::pi<float>() / 10.0f;
+
+		float height = rswLight->range;
+		float width = rswLight->range * tan(glm::acos(1-rswLight->spotlightWidth));
+
+
+		for (float f = 0; f < 2 * 2 * glm::pi<float>(); f += inc)
+		{
+			verts.push_back(VertexP3T2N3(glm::vec3(0, 0, 0), glm::vec2(0), glm::vec3(1.0f)));
+			verts.push_back(VertexP3T2N3(glm::vec3(height, width * glm::sin(f), width * glm::cos(f)), glm::vec2(0), glm::vec3(1.0f)));
+			verts.push_back(VertexP3T2N3(glm::vec3(height, width * glm::sin(f+inc), width * glm::cos(f+inc)), glm::vec2(0), glm::vec3(1.0f)));
+		}
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glEnableVertexAttribArray(0);
 		glEnableVertexAttribArray(1);
-		glDisableVertexAttribArray(2);
+		glEnableVertexAttribArray(2);
 		glDisableVertexAttribArray(3);
 		glDisableVertexAttribArray(4); //TODO: vao
-		glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexP3T2), vertsCircle[0].data);
-		glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexP3T2), vertsCircle[0].data + 3);
-		glLineWidth(4.0f);
-		glDrawArrays(GL_LINE_LOOP, 0, (int)vertsCircle.size());
+		glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexP3T2N3), verts[0].data);
+		glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexP3T2N3), verts[0].data + 3);
+		glVertexAttribPointer(2, 3, GL_FLOAT, false, sizeof(VertexP3T2N3), verts[0].data + 5);
+
+		glDrawArrays(GL_TRIANGLES, 0, (int)verts.size());
+
+		glDepthMask(1);
 		glUseProgram(0);
 	}
 }
