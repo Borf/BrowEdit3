@@ -62,8 +62,6 @@ void GndRenderer::render()
 	if (gndShadowDirty)
 	{
 		char* data = new char[shadowmapSize * shadowmapSize * 4];
-		for (int i = 0; i < shadowmapSize * shadowmapSize * 4; i++)
-			data[i] = rand() % 256;
 		int x = 0; int y = 0;
 		for (size_t i = 0; i < gnd->lightmaps.size(); i++)
 		{

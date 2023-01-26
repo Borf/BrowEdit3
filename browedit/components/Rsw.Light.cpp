@@ -229,8 +229,15 @@ void RswLight::buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>& nod
 	}
 	else {
 		util::CheckboxMulti<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Light Direction follows RSW light direction", [](RswLight* l) { return &l->sunMatchRswDirection; });
-		if(!rswLights.front()->sunMatchRswDirection)
+		if (!rswLights.front()->sunMatchRswDirection)
+		{
 			util::DragFloat3Multi<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Direction", [](RswLight* l) { return &l->direction; }, 0.05f, -1.0f, 1.0f);
+			if (ImGui::gizmo3D("Sunlight Rotation", rswLights.front()->direction, IMGUIZMO_DEF_SIZE, imguiGizmo::modeDirection))
+			{
+				for (auto& l : rswLights)
+					l->direction = glm::normalize(rswLights.front()->direction);
+			}
+		}
 
 	}
 
