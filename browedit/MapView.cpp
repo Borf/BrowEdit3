@@ -491,7 +491,7 @@ void MapView::render(BrowEdit* browEdit)
 		vm[3][0] = 0;	vm[3][1] = 0;	vm[3][2] = 0;	vm[3][3] = 1;
 		simpleShader->setUniform(SimpleShader::Uniforms::projectionMatrix, nodeRenderContext.projectionMatrix);
 		simpleShader->setUniform(SimpleShader::Uniforms::viewMatrix, vm);
-		simpleShader->setUniform(SimpleShader::Uniforms::modelMatrix, glm::scale(glm::translate(glm::rotate(glm::mat4(1.0f), glm::radians(skyboxRotation), glm::vec3(0,1,0)), glm::vec3(0, skyboxHeight, 0)), glm::vec3(4500.0f)));
+		simpleShader->setUniform(SimpleShader::Uniforms::modelMatrix, glm::scale(glm::translate(glm::rotate(glm::mat4(1.0f), glm::radians(skyboxRotation), glm::vec3(0,1,0)), glm::vec3(0, skyboxHeight, 0)), glm::vec3(3500.0f)));
 		simpleShader->setUniform(SimpleShader::Uniforms::textureFac, 1.0f);
 		simpleShader->setUniform(SimpleShader::Uniforms::lightMin, 1.0f);
 		skyTexture->bind();
