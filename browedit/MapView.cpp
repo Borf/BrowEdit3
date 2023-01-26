@@ -811,7 +811,7 @@ void MapView::drawLight(Node* n)
 		float width = rswLight->range * tan(glm::acos(1-rswLight->spotlightWidth));
 
 
-		for (float f = 0; f < 2 * 2 * glm::pi<float>(); f += inc)
+		for (float f = 0; f < 2 * glm::pi<float>(); f += inc)
 		{
 			verts.push_back(VertexP3T2N3(glm::vec3(0, 0, 0), glm::vec2(0), glm::vec3(1.0f)));
 			verts.push_back(VertexP3T2N3(glm::vec3(height, width * glm::sin(f), width * glm::cos(f)), glm::vec2(0), glm::vec3(1.0f)));
