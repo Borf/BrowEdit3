@@ -12,4 +12,5 @@ bugreports
 patch_run
 Patcher/x64
 data/texture/effect
+data/texture/skyboxes
 backups

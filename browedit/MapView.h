@@ -42,6 +42,18 @@ class MapView
 	public:
 		virtual void buildVertices(std::vector<VertexP3T2N3>& verts) override;
 	};
+
+	class SkyBoxMesh : public Mesh
+	{
+	public:
+		virtual void buildVertices(std::vector<VertexP3T2N3>& verts) override;
+	};
+	class SkyDomeMesh : public Mesh
+	{
+	public:
+		virtual void buildVertices(std::vector<VertexP3T2N3>& verts) override;
+	};
+
 public:
 	Map* map = nullptr;
 	int id;
@@ -56,6 +68,12 @@ public:
 	SimpleShader* simpleShader = nullptr;
 	static inline SphereMesh sphereMesh;
 	static inline CubeMesh cubeMesh;
+	static inline SkyBoxMesh skyBoxMesh;
+	static inline SkyDomeMesh skyDomeMesh;
+	static inline std::vector<gl::Texture*> skyTextures;
+	static inline gl::Texture* skyTexture;
+	bool skyboxCube = false;
+	float skyboxHeight = 0;
 	static inline gl::Texture* cubeTexture = nullptr;
 	gl::Texture* whiteTexture;
 
