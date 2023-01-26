@@ -184,6 +184,7 @@ void MapView::toolbar(BrowEdit* browEdit)
 
 			ImGui::Checkbox("Cube", &skyboxCube);
 			ImGui::DragFloat("Height", &skyboxHeight, 10, -4000, 4000);
+			ImGui::DragFloat("Rotation", &skyboxRotation, 1, 0, 360);
 
 			ImGui::End();
 		}
@@ -490,7 +491,7 @@ void MapView::render(BrowEdit* browEdit)
 		vm[3][0] = 0;	vm[3][1] = 0;	vm[3][2] = 0;	vm[3][3] = 1;
 		simpleShader->setUniform(SimpleShader::Uniforms::projectionMatrix, nodeRenderContext.projectionMatrix);
 		simpleShader->setUniform(SimpleShader::Uniforms::viewMatrix, vm);
-		simpleShader->setUniform(SimpleShader::Uniforms::modelMatrix, glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(0, skyboxHeight, 0)), glm::vec3(4500.0f)));
+		simpleShader->setUniform(SimpleShader::Uniforms::modelMatrix, glm::scale(glm::translate(glm::rotate(glm::mat4(1.0f), glm::radians(skyboxRotation), glm::vec3(0,1,0)), glm::vec3(0, skyboxHeight, 0)), glm::vec3(4500.0f)));
 		simpleShader->setUniform(SimpleShader::Uniforms::textureFac, 1.0f);
 		simpleShader->setUniform(SimpleShader::Uniforms::lightMin, 1.0f);
 		skyTexture->bind();

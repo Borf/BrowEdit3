@@ -74,6 +74,7 @@ public:
 	static inline gl::Texture* skyTexture;
 	bool skyboxCube = false;
 	float skyboxHeight = 0;
+	float skyboxRotation = 0;
 	static inline gl::Texture* cubeTexture = nullptr;
 	gl::Texture* whiteTexture;
 
