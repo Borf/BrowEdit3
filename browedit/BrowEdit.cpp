@@ -917,11 +917,16 @@ void BrowEdit::ShowNewMapPopup()
 {
 	ImVec2 center = ImGui::GetMainViewport()->GetCenter();
 	ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
-	ImGui::SetNextWindowSize(ImVec2(300, 0));
+	ImGui::SetNextWindowSize(ImVec2(500, 0));
 	if (ImGui::BeginPopupModal("NewMapPopup"))
 	{
+		ImGui::Text("This is GND size, not GAT size");
+		ImGui::Text("Your map will be twice the size in RO ingame coordinats");
 		ImGui::InputInt("Width", &windowData.newMapWidth);
 		ImGui::InputInt("Height", &windowData.newMapHeight);
+		if (windowData.newMapWidth % 2 == 1 || windowData.newMapHeight % 2 == 1)
+			ImGui::TextColored(ImVec4(1, 0, 0, 1), "Warning, maps with odd dimentions do not work well in browedit yet");
+		ImGui::Text("Your map will be twice the size in RO ingame coordinats");
 		ImGui::InputText("Name", &windowData.newMapName);
 		if (ImGui::Button("Create"))
 		{
