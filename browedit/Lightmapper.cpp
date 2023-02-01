@@ -297,7 +297,7 @@ std::pair<glm::vec3, int> Lightmapper::calculateLight(const glm::vec3& groundPos
 						continue;
 					auto rswModel = n->getComponent<RswModel>();
 					auto collider = n->getComponent<RswModelCollider>();
-					if (collider->collidesTexture(ray, rswLight->minShadowDistance, distance))
+					if (collider->collidesTexture(ray, 0, distance- rswLight->minShadowDistance))
 					{
 						collides = true;
 						shadowStrength += rswModel->shadowStrength;
