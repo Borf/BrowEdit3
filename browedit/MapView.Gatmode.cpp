@@ -81,13 +81,13 @@ void MapView::postRenderGatMode(BrowEdit* browEdit)
 		float dist = 0.002f * cameraDistance;
 		for (auto cube : browEdit->newGatCubes)
 		{
-			verts.push_back(VertexP3T2N3(glm::vec3(5 * (tileHovered.x + cube->pos.x), -cube->h3 + dist, 5 * gat->height - 5 * (tileHovered.y + cube->pos.y)), glm::vec2(0), cube->normal));
-			verts.push_back(VertexP3T2N3(glm::vec3(5 * (tileHovered.x + cube->pos.x) + 5, -cube->h2 + dist, 5 * gat->height - 5 * (tileHovered.y + cube->pos.y) + 5), glm::vec2(0), cube->normal));
-			verts.push_back(VertexP3T2N3(glm::vec3(5 * (tileHovered.x + cube->pos.x) + 5, -cube->h4 + dist, 5 * gat->height - 5 * (tileHovered.y + cube->pos.y)), glm::vec2(0), cube->normal));
+			verts.push_back(VertexP3T2N3(glm::vec3(5 * (tileHovered.x + cube->pos.x), -cube->h3 + dist, 5 * gat->height - 5 * (tileHovered.y + cube->pos.y)+5), glm::vec2(0), cube->normal));
+			verts.push_back(VertexP3T2N3(glm::vec3(5 * (tileHovered.x + cube->pos.x) + 5, -cube->h2 + dist, 5 * gat->height - 5 * (tileHovered.y + cube->pos.y) + 10), glm::vec2(0), cube->normal));
+			verts.push_back(VertexP3T2N3(glm::vec3(5 * (tileHovered.x + cube->pos.x) + 5, -cube->h4 + dist, 5 * gat->height - 5 * (tileHovered.y + cube->pos.y)+5), glm::vec2(0), cube->normal));
 
-			verts.push_back(VertexP3T2N3(glm::vec3(5 * (tileHovered.x + cube->pos.x), -cube->h1 + dist, 5 * gat->height - 5 * (tileHovered.y + cube->pos.y) + 5), glm::vec2(0), cube->normal));
-			verts.push_back(VertexP3T2N3(glm::vec3(5 * (tileHovered.x + cube->pos.x), -cube->h3 + dist, 5 * gat->height - 5 * (tileHovered.y + cube->pos.y)), glm::vec2(0), cube->normal));
-			verts.push_back(VertexP3T2N3(glm::vec3(5 * (tileHovered.x + cube->pos.x) + 5, -cube->h2 + dist, 5 * gat->height - 5 * (tileHovered.y + cube->pos.y) + 5), glm::vec2(0), cube->normal));
+			verts.push_back(VertexP3T2N3(glm::vec3(5 * (tileHovered.x + cube->pos.x), -cube->h1 + dist, 5 * gat->height - 5 * (tileHovered.y + cube->pos.y) + 10), glm::vec2(0), cube->normal));
+			verts.push_back(VertexP3T2N3(glm::vec3(5 * (tileHovered.x + cube->pos.x), -cube->h3 + dist, 5 * gat->height - 5 * (tileHovered.y + cube->pos.y)+5), glm::vec2(0), cube->normal));
+			verts.push_back(VertexP3T2N3(glm::vec3(5 * (tileHovered.x + cube->pos.x) + 5, -cube->h2 + dist, 5 * gat->height - 5 * (tileHovered.y + cube->pos.y) + 10), glm::vec2(0), cube->normal));
 		}
 		glEnableVertexAttribArray(0);
 		glEnableVertexAttribArray(1);
