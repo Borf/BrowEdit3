@@ -208,7 +208,7 @@ void MapView::toolbar(BrowEdit* browEdit)
 	{
 		ImGui::SameLine();
 		ImGui::SetNextItemWidth(50);
-		if (ImGui::DragFloat("##gridSize", (gadget.mode == Gadget::Mode::Translate || browEdit->editMode == BrowEdit::EditMode::Height) ? &gridSizeTranslate : &gridSizeRotate, 1.0f, 0.1f, 100.0f, "%.2f"))
+		if (ImGui::DragFloat("##gridSize", (gadget.mode == Gadget::Mode::Translate || browEdit->editMode == BrowEdit::EditMode::Height) ? &gridSizeTranslate : &gridSizeRotate, 1.0f, 0.1f, 100.0f, "%.3f"))
 			rebuildObjectModeGrid();
 		if (ImGui::IsItemHovered())
 			ImGui::SetTooltip("Grid size. Doubleclick or ctrl+click to type a number");
