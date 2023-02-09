@@ -13,6 +13,7 @@
 #include <browedit/components/WaterRenderer.h>
 #include <browedit/actions/CubeHeightChangeAction.h>
 #include <browedit/gl/Texture.h>
+#include <browedit/HotkeyRegistry.h>
 #include <imgui.h>
 #include <imgui_internal.h>
 #include <GLFW/glfw3.h>
@@ -34,44 +35,19 @@ void BrowEdit::showHeightWindow()
 
 	if (ImGui::TreeNodeEx("Tool", ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed))
 	{
-		if (toolBarToggleButton("Doodle", ICON_HEIGHT_DOODLE, heightDoodle, "Height Doodling", ImVec4(1, 1, 1, 1)))
-			heightDoodle = true;
+		toolBarToggleButton("Rectangle", ICON_SELECT_RECTANGLE, !heightDoodle && selectTool == BrowEdit::SelectTool::Rectangle, "Rectangle Select", HotkeyAction::HeightEdit_Rectangle, ImVec4(1, 1, 1, 1));
 		ImGui::SameLine();
-		if (toolBarToggleButton("Rectangle", ICON_SELECT_RECTANGLE, !heightDoodle && selectTool == BrowEdit::SelectTool::Rectangle, "Rectangle Select", ImVec4(1, 1, 1, 1)))
-		{
-			selectTool = BrowEdit::SelectTool::Rectangle;
-			heightDoodle = false;
-		}
+		toolBarToggleButton("Lasso", ICON_SELECT_LASSO, !heightDoodle && selectTool == BrowEdit::SelectTool::Lasso, "Lasso Select", HotkeyAction::HeightEdit_Lasso, ImVec4(1, 1, 1, 1));
 		ImGui::SameLine();
-		if (toolBarToggleButton("Lasso", ICON_SELECT_LASSO, !heightDoodle && selectTool == BrowEdit::SelectTool::Lasso, "Lasso Select", ImVec4(1, 1, 1, 1)))
-		{
-			selectTool = BrowEdit::SelectTool::Lasso;
-			heightDoodle = false;
-		}
+		toolBarToggleButton("Doodle", ICON_HEIGHT_DOODLE, heightDoodle, "Height Doodling", HotkeyAction::HeightEdit_Doodle, ImVec4(1, 1, 1, 1));
 		ImGui::SameLine();
-		if (toolBarToggleButton("WandTex", ICON_SELECT_WAND_TEX, !heightDoodle && selectTool == BrowEdit::SelectTool::WandTex, "Magic Wand (Texture)", ImVec4(1, 1, 1, 1)))
-		{
-			selectTool = BrowEdit::SelectTool::WandTex;
-			heightDoodle = false;
-		}
+		toolBarToggleButton("WandTex", ICON_SELECT_WAND_TEX, !heightDoodle && selectTool == BrowEdit::SelectTool::WandTex, "Magic Wand (Texture)", HotkeyAction::HeightEdit_MagicWandTexture, ImVec4(1, 1, 1, 1));
 		ImGui::SameLine();
-		if (toolBarToggleButton("WandHeight", ICON_SELECT_WAND_HEIGHT, !heightDoodle && selectTool == BrowEdit::SelectTool::WandHeight, "Magic Wand (Height)", ImVec4(1, 1, 1, 1)))
-		{
-			selectTool = BrowEdit::SelectTool::WandHeight;
-			heightDoodle = false;
-		}
+		toolBarToggleButton("WandHeight", ICON_SELECT_WAND_HEIGHT, !heightDoodle && selectTool == BrowEdit::SelectTool::WandHeight, "Magic Wand (Height)", HotkeyAction::HeightEdit_MagicWandHeight, ImVec4(1, 1, 1, 1));
 		ImGui::SameLine();
-		if (toolBarToggleButton("AllTex", ICON_SELECT_ALL_TEX, !heightDoodle && selectTool == BrowEdit::SelectTool::AllTex, "Select All (Texture)", ImVec4(1, 1, 1, 1)))
-		{
-			selectTool = BrowEdit::SelectTool::AllTex;
-			heightDoodle = false;
-		}
+		toolBarToggleButton("AllTex", ICON_SELECT_ALL_TEX, !heightDoodle && selectTool == BrowEdit::SelectTool::AllTex, "Select All (Texture)", HotkeyAction::HeightEdit_SelectAllTexture, ImVec4(1, 1, 1, 1));
 		ImGui::SameLine();
-		if (toolBarToggleButton("AllHeight", ICON_SELECT_ALL_HEIGHT, !heightDoodle && selectTool == BrowEdit::SelectTool::AllHeight, "Select All (Height)", ImVec4(1, 1, 1, 1)))
-		{
-			selectTool = BrowEdit::SelectTool::AllHeight;
-			heightDoodle = false;
-		}
+		toolBarToggleButton("AllHeight", ICON_SELECT_ALL_HEIGHT, !heightDoodle && selectTool == BrowEdit::SelectTool::AllHeight, "Select All (Height)", HotkeyAction::HeightEdit_SelectAllHeight, ImVec4(1, 1, 1, 1));
 		ImGui::TreePop();
 	}
 

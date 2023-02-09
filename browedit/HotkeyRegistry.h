@@ -104,6 +104,13 @@ enum class HotkeyAction
 
 	ColorEdit_Dropper,
 
+	HeightEdit_Doodle,
+	HeightEdit_Rectangle,
+	HeightEdit_Lasso,
+	HeightEdit_MagicWandTexture,
+	HeightEdit_MagicWandHeight,
+	HeightEdit_SelectAllTexture,
+	HeightEdit_SelectAllHeight,
 
 	EditMode_Height,
 	EditMode_Texture,

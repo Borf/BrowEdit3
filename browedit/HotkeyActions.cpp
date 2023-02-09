@@ -22,6 +22,7 @@ void BrowEdit::registerActions()
 	auto hasActiveMapViewTextureMode = [this]() { return activeMapView != nullptr && editMode == EditMode::Texture; };
 	auto hasActiveMapViewWallMode = [this]() { return activeMapView != nullptr && editMode == EditMode::Wall; };
 	auto hasActiveMapViewGatMode = [this]() { return activeMapView != nullptr && editMode == EditMode::Gat; };
+	auto hasActiveMapViewHeightMode = [this]() { return activeMapView != nullptr && editMode == EditMode::Height; };
 	auto hasActiveMapViewTextureWallMode = [this]() { return activeMapView != nullptr && (editMode == EditMode::Texture|| editMode == EditMode::Wall); };
 
 	HotkeyRegistry::registerAction(HotkeyAction::Global_HotkeyPopup,	[this]() { 
@@ -164,6 +165,16 @@ void BrowEdit::registerActions()
 	
 	HotkeyRegistry::registerAction(HotkeyAction::ColorEdit_Dropper,					[this]() { dropperEnabled = !dropperEnabled; cursor = dropperEnabled ? dropperCursor : nullptr; }, hasActiveMapViewGatMode);
 
+
+	HotkeyRegistry::registerAction(HotkeyAction::HeightEdit_Doodle,					[this]() { heightDoodle = true; }, hasActiveMapViewHeightMode);
+	HotkeyRegistry::registerAction(HotkeyAction::HeightEdit_Rectangle,				[this]() { selectTool = BrowEdit::SelectTool::Rectangle; heightDoodle = false; }, hasActiveMapViewHeightMode);
+	HotkeyRegistry::registerAction(HotkeyAction::HeightEdit_Lasso,					[this]() { selectTool = BrowEdit::SelectTool::Lasso; heightDoodle = false; }, hasActiveMapViewHeightMode);
+	HotkeyRegistry::registerAction(HotkeyAction::HeightEdit_MagicWandTexture,		[this]() { selectTool = BrowEdit::SelectTool::WandTex; heightDoodle = false; }, hasActiveMapViewHeightMode);
+	HotkeyRegistry::registerAction(HotkeyAction::HeightEdit_MagicWandHeight,		[this]() { selectTool = BrowEdit::SelectTool::WandHeight; heightDoodle = false; }, hasActiveMapViewHeightMode);
+	HotkeyRegistry::registerAction(HotkeyAction::HeightEdit_SelectAllTexture,		[this]() { selectTool = BrowEdit::SelectTool::AllTex; heightDoodle = false; }, hasActiveMapViewHeightMode);
+	HotkeyRegistry::registerAction(HotkeyAction::HeightEdit_SelectAllHeight,		[this]() { selectTool = BrowEdit::SelectTool::AllHeight; heightDoodle = false; }, hasActiveMapViewHeightMode);
+
+
 	HotkeyRegistry::registerAction(HotkeyAction::Texture_PrevTexture,				[this]() { activeMapView->textureSelected = (activeMapView->textureSelected + activeMapView->map->rootNode->getComponent<Gnd>()->textures.size() - 1) % (int)activeMapView->map->rootNode->getComponent<Gnd>()->textures.size(); }, hasActiveMapViewTextureWallMode);
 	HotkeyRegistry::registerAction(HotkeyAction::Texture_NextTexture,				[this]() { activeMapView->textureSelected = (activeMapView->textureSelected + 1) % activeMapView->map->rootNode->getComponent<Gnd>()->textures.size(); }, hasActiveMapViewTextureWallMode);
 	HotkeyRegistry::registerAction(HotkeyAction::Texture_SelectFull,				[this]() { activeMapView->textureEditUv1 = glm::vec2(0, 0);	activeMapView->textureEditUv2 = glm::vec2(1, 1); }, hasActiveMapViewTextureWallMode);
@@ -207,6 +218,9 @@ void BrowEdit::registerActions()
 	HotkeyRegistry::registerAction(HotkeyAction::Camera_RotateX45Negative,			[this]() { activeMapView->cameraTargetRot -= glm::vec2(45, 0); activeMapView->cameraTargetPos = activeMapView->cameraCenter; activeMapView->cameraAnimating = true; }, hasActiveMapView);
 	HotkeyRegistry::registerAction(HotkeyAction::Camera_RotateY45Positive,			[this]() { activeMapView->cameraTargetRot += glm::vec2(0, 45); activeMapView->cameraTargetPos = activeMapView->cameraCenter; activeMapView->cameraAnimating = true; }, hasActiveMapView);
 	HotkeyRegistry::registerAction(HotkeyAction::Camera_RotateY45Negative,			[this]() { activeMapView->cameraTargetRot -= glm::vec2(0, 45); activeMapView->cameraTargetPos = activeMapView->cameraCenter; activeMapView->cameraAnimating = true; }, hasActiveMapView);
+
+
+
 
 
 }
