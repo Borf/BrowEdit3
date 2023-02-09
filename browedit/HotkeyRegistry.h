@@ -111,6 +111,7 @@ enum class HotkeyAction
 	HeightEdit_MagicWandHeight,
 	HeightEdit_SelectAllTexture,
 	HeightEdit_SelectAllHeight,
+	HeightEdit_PasteSpecial,
 
 	EditMode_Height,
 	EditMode_Texture,

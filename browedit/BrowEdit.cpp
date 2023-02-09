@@ -380,6 +380,28 @@ void BrowEdit::run()
 				}
 
 			}	
+			//TODO: move to method
+			if (ImGui::BeginPopupModal("PasteSpecial"))
+			{
+				static bool pasteHeight = true;
+				static bool pasteTextures = true;
+				ImGui::Checkbox("Paste Heights", &pasteHeight);
+				ImGui::Checkbox("Paste Textures", &pasteHeight);
+				ImGui::Checkbox("Paste Colors", &pasteHeight);
+				ImGui::Checkbox("Paste Lightmaps", &pasteHeight);
+				ImGui::Checkbox("Paste Objects", &pasteHeight);
+				ImGui::Checkbox("Paste GAT", &pasteHeight);
+				if (ImGui::Button("Paste"))
+				{
+
+					ImGui::CloseCurrentPopup();
+				}
+				ImGui::SameLine();
+				if (ImGui::Button("Cancel"))
+					ImGui::CloseCurrentPopup();
+
+				ImGui::EndPopup();
+			}
 		}
 		int display_w, display_h;
 		glfwGetFramebufferSize(window, &display_w, &display_h);

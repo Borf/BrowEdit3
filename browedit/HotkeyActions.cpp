@@ -173,6 +173,7 @@ void BrowEdit::registerActions()
 	HotkeyRegistry::registerAction(HotkeyAction::HeightEdit_MagicWandHeight,		[this]() { selectTool = BrowEdit::SelectTool::WandHeight; heightDoodle = false; }, hasActiveMapViewHeightMode);
 	HotkeyRegistry::registerAction(HotkeyAction::HeightEdit_SelectAllTexture,		[this]() { selectTool = BrowEdit::SelectTool::AllTex; heightDoodle = false; }, hasActiveMapViewHeightMode);
 	HotkeyRegistry::registerAction(HotkeyAction::HeightEdit_SelectAllHeight,		[this]() { selectTool = BrowEdit::SelectTool::AllHeight; heightDoodle = false; }, hasActiveMapViewHeightMode);
+	HotkeyRegistry::registerAction(HotkeyAction::HeightEdit_PasteSpecial,			[this]() { ImGui::OpenPopup("PasteSpecial");  }, hasActiveMapViewHeightMode);
 
 
 	HotkeyRegistry::registerAction(HotkeyAction::Texture_PrevTexture,				[this]() { activeMapView->textureSelected = (activeMapView->textureSelected + activeMapView->map->rootNode->getComponent<Gnd>()->textures.size() - 1) % (int)activeMapView->map->rootNode->getComponent<Gnd>()->textures.size(); }, hasActiveMapViewTextureWallMode);
