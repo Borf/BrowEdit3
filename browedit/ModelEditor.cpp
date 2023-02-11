@@ -549,10 +549,11 @@ void ModelEditor::run(BrowEdit* browEdit)
 			}
 
 			if (ImGui::CollapsingHeader("Textures", ImGuiTreeNodeFlags_DefaultOpen))
-			{
+			{	
+				int i=0;
 				for (auto& t : rsm->textures)
 				{
-					ImGui::PushID(t.c_str());
+					ImGui::PushID(i++);
 					std::string texture = util::iso_8859_1_to_utf8(t);
 					if (ImGui::InputText("Texture", &texture))
 					{
