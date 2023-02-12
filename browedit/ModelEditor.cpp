@@ -23,6 +23,7 @@
 #include <lib/tinygltf/tiny_gltf.h>
 #include <glm/glm.hpp>
 
+
 void ModelEditor::load(const std::string& fileName)
 {
 	auto node = new Node();
@@ -37,12 +38,13 @@ void ModelEditor::load(const std::string& fileName)
 	gridTexture->setWrapMode(GL_REPEAT);
 }
 
-
 void ModelEditor::run(BrowEdit* browEdit)
 {
 	if (!opened)
 		return;
 	static bool openOpenPopup = false;
+	static bool saveModel = false;
+
 	if (ImGui::Begin("ModelEditor", &opened, ImGuiWindowFlags_MenuBar))
 	{
 		if (ImGui::BeginMenuBar())
@@ -54,8 +56,8 @@ void ModelEditor::run(BrowEdit* browEdit)
 				}
 				if (ImGui::MenuItem("Open"))
 					openOpenPopup = true;
-				if (ImGui::MenuItem("Save"))
-				{
+				if (ImGui::MenuItem("Save As")) {
+					saveModel = true;
 				}
 				ImGui::EndMenu();
 			}
@@ -131,9 +133,6 @@ void ModelEditor::run(BrowEdit* browEdit)
 	}
 	ImGui::End();
 
-
-
-
 	static float timeSelected = 0.0f;
 	static bool playing = true;
 	static ModelView* activeModelViewPtr = nullptr; // :(
@@ -147,8 +146,9 @@ void ModelEditor::run(BrowEdit* browEdit)
 		auto rsmRenderer = m.node->getComponent<RsmRenderer>();
 		if (ImGui::Begin(util::iso_8859_1_to_utf8(rsm->fileName).c_str()))
 		{
-			if (ImGui::IsWindowFocused())
+			if (ImGui::IsWindowFocused()) {
 				activeModelViewPtr = &m;
+			}
 			auto size = ImGui::GetContentRegionAvail();
 			auto rsm = m.node->getComponent<Rsm>();
 			if (!rsm->loaded)
@@ -156,7 +156,16 @@ void ModelEditor::run(BrowEdit* browEdit)
 				ImGui::End();
 				continue;
 			}
-
+			// Save current model
+			if (saveModel && activeModelViewPtr == &m ) {
+				saveModel = false;
+				std::string path = util::SaveAsDialog("", "Rsm\0*.rsm\0");
+				if (path != "") {
+					if (path.size() < 4 || path.substr(path.size() - 4) != ".rsm")
+						path += ".rsm";
+					rsm->save(path);
+				}
+			}
 			if (m.fbo->getWidth() != size.x || m.fbo->getHeight() != size.y)
 				m.fbo->resize((int)size.x, (int)size.y);
 
@@ -550,16 +559,19 @@ void ModelEditor::run(BrowEdit* browEdit)
 
 			if (ImGui::CollapsingHeader("Textures", ImGuiTreeNodeFlags_DefaultOpen))
 			{
+				int i = 0;
 				for (auto& t : rsm->textures)
 				{
-					ImGui::PushID(t.c_str());
+					ImGui::PushID( "texture" + i++);
 					std::string texture = util::iso_8859_1_to_utf8(t);
-					if (ImGui::InputText("Texture", &texture))
-					{
+					if (ImGui::InputText("Texture", &texture)) {
 						t = util::utf8_to_iso_8859_1(texture);
+					}
+					
+					if (ImGui::Button("Load")) 
+					{
 						rsmRenderer->setMeshesDirty();
 					}
-
 					ImGui::PopID();
 				}
 			}
@@ -634,12 +646,15 @@ void ModelEditor::run(BrowEdit* browEdit)
 
 			if (ImGui::Button("Import file"))
 			{
-				std::string filename = "D:\\CloudStation\\3D models\\monkey\\monkey.glb";
-				tinygltf::TinyGLTF loader;
+				bool loaded = false;
+				std::string filename = "";
+				std::string path = util::SelectFileDialog(filename, "Glb\0*.glb\0");
 				tinygltf::Model model;
 				std::string err, warn;
-				bool loaded = loader.LoadBinaryFromFile(&model, &err, &warn, filename);
-
+				if (path != "") {
+					tinygltf::TinyGLTF loader;
+					loaded = loader.LoadBinaryFromFile(&model, &err, &warn, path);
+				}
 				if(loaded)
 				{
 					std::cout << "Loaded file " << filename << warn << std::endl;
@@ -766,8 +781,5 @@ void ModelEditor::run(BrowEdit* browEdit)
 
 	}
 	ImGui::End();
-
-	
-
-
 }
+

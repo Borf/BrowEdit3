@@ -161,6 +161,8 @@ public:
 	Rsm(const std::string& fileName);
 	~Rsm();
 	void reload();
+	
+	void save(const std::string& filename);
 
 	std::string fileName;
 	bool loaded;

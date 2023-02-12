@@ -1580,7 +1580,37 @@ namespace util
 		}
 	}
 
+	std::string SelectFileDialog(std::string defaultFilename, const char* filter)
+	{
+		CoInitializeEx(0, 0);
+		char curdir[100];
+		_getcwd(curdir, 100);
 
+		HWND hWnd = nullptr;
+		char buf[256];
+		ZeroMemory(&buf, sizeof(buf));
+		strcpy_s(buf, 256, defaultFilename.c_str());
+
+		OPENFILENAME ofn;
+		ZeroMemory(&ofn, sizeof(ofn));
+		ofn.lStructSize = sizeof(ofn);
+		ofn.hwndOwner = hWnd;
+		ofn.lpstrFile = buf;
+		ofn.nMaxFile = 1024;
+		ofn.lpstrFilter = filter;
+		ofn.nFilterIndex = 2;
+		ofn.lpstrFileTitle = NULL;
+		ofn.nMaxFileTitle = 0;
+		ofn.lpstrInitialDir = NULL;
+		ofn.Flags = OFN_PATHMUSTEXIST | OFN_ENABLESIZING | OFN_OVERWRITEPROMPT;
+		if (GetOpenFileName(&ofn))
+		{
+			_chdir(curdir);
+			return buf;
+		}
+		_chdir(curdir);
+		return "";
+	}
 
 	std::string SaveAsDialog(const std::string& fileNameStr, const char* filter)
 	{

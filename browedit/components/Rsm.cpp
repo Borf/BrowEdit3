@@ -3,6 +3,7 @@
 #include <browedit/util/Util.h>
 #include <browedit/util/FileIO.h>
 #include <iostream>
+#include <fstream>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/quaternion.hpp>
 
@@ -57,7 +58,7 @@ void Rsm::reload()
 	if (version >= 0x0104)
 		alpha = rsmFile->get();
 	else
-		alpha = 0;
+		alpha = 255;
 	
 	std::string mainNodeName;
 
@@ -661,3 +662,133 @@ void Rsm::Mesh::setBoundingBox2(glm::mat4& mat, glm::vec3& bbmin_, glm::vec3& bb
 		dynamic_cast<Mesh*>(children[i])->setBoundingBox2(mat1, bbmin_, bbmax_);
 }
 
+/**
+ * Saves the current mesh
+ */
+void Rsm::Mesh::save(std::ostream* pFile)
+{
+	Mesh* t = this;
+	char zeroes[100];
+	int todo = 0;
+	int len;
+	
+	memset(&zeroes, 0x0, sizeof(zeroes));
+	
+	// Mesh name
+	len = (int)t->name.length();
+	pFile->write(t->name.c_str(), len);
+	pFile->write(zeroes, 40 - len);
+	// Parent Name
+	len = (int)t->parentName.length();
+	pFile->write(t->parentName.c_str(), len);
+	pFile->write(zeroes, 40 - len);
+	// Texture ID count
+	int textureCount = t->textures.size();
+	pFile->write((char*)&textureCount, 4);
+	// Texture ID
+	for (int i = 0; i < textureCount; i++) {
+		pFile->write((char*)&i, 4);
+	}
+	pFile->write((char*)&t->offset[0][0], sizeof(float));
+	pFile->write((char*)&t->offset[0][1], sizeof(float));
+	pFile->write((char*)&t->offset[0][2], sizeof(float));
+
+	pFile->write((char*)&t->offset[1][0], sizeof(float));
+	pFile->write((char*)&t->offset[1][1], sizeof(float));
+	pFile->write((char*)&t->offset[1][2], sizeof(float));
+
+	pFile->write((char*)&t->offset[2][0], sizeof(float));
+	pFile->write((char*)&t->offset[2][1], sizeof(float));
+	pFile->write((char*)&t->offset[2][2], sizeof(float));
+
+	pFile->write((char*)&t->pos_, sizeof(float) * 3);
+	pFile->write((char*)&t->pos, sizeof(float) * 3);
+	pFile->write((char*)&t->rotangle, sizeof(float));
+	pFile->write((char*)&t->rotaxis, sizeof(float) * 3);
+	pFile->write((char*)&t->scale, sizeof(float) * 3);
+
+	// Vertices
+	int vertexCount = t->vertices.size();
+	pFile->write((char*)&vertexCount, sizeof(int));
+
+	for (int i = 0; i < vertexCount; i++) {
+		pFile->write((char*)&t->vertices[i], sizeof(float) * 3);
+	}
+
+	// Texture Coordinates
+	int texCoordCount = t->texCoords.size();
+	pFile->write((char*)&texCoordCount, sizeof(int));
+	for (int i = 0; i < texCoordCount; i++)
+	{
+		pFile->write((char*)&todo, sizeof(int));
+		pFile->write((char*)&t->texCoords[i], sizeof(float) * 2);
+	}
+
+	// Faces
+	int faceCount = t->faces.size();
+	pFile->write((char*)&faceCount, sizeof(int));
+	for (int i = 0; i < faceCount; i++)
+	{
+		pFile->write((char*)&t->faces[i].vertexIds, sizeof(short) * 3);
+		pFile->write((char*)&t->faces[i].texCoordIds, sizeof(short) * 3);
+		pFile->write((char*)&t->faces[i].texId, sizeof(short));
+		pFile->write((char*)&t->faces[i].padding, sizeof(short));
+		pFile->write((char*)&t->faces[i].twoSided, sizeof(int));
+		// Smooth group
+		pFile->write((char*)&todo, sizeof(int));
+		//pFile->write((char*)&t->faces[i].smoothGroups[0], sizeof(int));
+	}
+	// Scale Frame
+	pFile->write((char*)&todo, sizeof(int));
+	// Rotation Frame
+	pFile->write((char*)&todo, sizeof(int));
+}
+
+void Rsm::save(const std::string& filename)
+{
+	char zeroes[100];
+	int todo = 0;
+	int len;
+	std::ofstream pFile( filename, std::ios::out | std::ios::binary);
+	memset(&zeroes, 0x0, sizeof(zeroes));
+	
+	// Header + Version
+	pFile.write("GRSM\1\4", 6);
+	// Anim Lenght
+	pFile.write((char*)&this->animLen, 4);
+	// Shade Type
+	pFile.write((char*)&this->shadeType, 4);
+	// Rsm Alpha
+	pFile.write((char*)&this->alpha, 1);
+	// Unknown
+	pFile.write((char*)zeroes, 16);
+	// Materials num (textures)
+	int materialsNum = (int)this->textures.size();
+	pFile.write((char*)&materialsNum, 4);
+	for (auto& t : this->textures)
+	{
+		std::string texture = t.c_str();
+		len = (int)t.length();
+		
+		pFile.write(t.c_str(), len);
+		pFile.write(zeroes, 40 - len);
+	}
+	
+	/**
+	 * Meshes
+	 */
+	pFile.write("root", 4);	pFile.write(zeroes, 36);	//node name
+	
+	// Mesh Count
+	pFile.write((char*)&this->meshCount, 4);
+	this->rootMesh->save(&pFile);
+	// Saves children
+	for (auto& t : this->rootMesh->children ) {
+		t->save(&pFile);	
+	}
+	
+	// Volume Box
+	pFile.write((char*)&todo, sizeof(int));
+
+	std::cout << "Saved RSM model " << filename << std::endl;
+}
