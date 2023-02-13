@@ -94,7 +94,7 @@ int main()
       ',;c:::::;;;,'                                                            
    ;llc;;:::;;;,'                                                               
   l0Okko:;;;,'                                                                  
-  :xlcOk:,'                                  Borf's Browedit  
+  :xlcOk:,'                        Borf's Ragnarok Online World Editor, v3
    ,clo:                                                                        
 
 
@@ -379,21 +379,22 @@ void BrowEdit::run()
 						activeMapView->map->shrinkTileSelection(this);
 				}
 
-			}	
+			}
 			//TODO: move to method
 			if (ImGui::BeginPopupModal("PasteSpecial"))
 			{
-				static bool pasteHeight = true;
-				static bool pasteTextures = true;
-				ImGui::Checkbox("Paste Heights", &pasteHeight);
-				ImGui::Checkbox("Paste Textures", &pasteHeight);
-				ImGui::Checkbox("Paste Colors", &pasteHeight);
-				ImGui::Checkbox("Paste Lightmaps", &pasteHeight);
-				ImGui::Checkbox("Paste Objects", &pasteHeight);
-				ImGui::Checkbox("Paste GAT", &pasteHeight);
+				static int pasteOptions = -1;
+				ImGui::CheckboxFlags("Paste Heights", &pasteOptions, PasteOptions::Height);
+				ImGui::CheckboxFlags("Paste Walls", &pasteOptions, PasteOptions::Walls);
+				ImGui::CheckboxFlags("Paste Textures", &pasteOptions, PasteOptions::Textures);
+				ImGui::CheckboxFlags("Paste Colors", &pasteOptions, PasteOptions::Colors);
+				ImGui::CheckboxFlags("Paste Lightmaps", &pasteOptions, PasteOptions::Lightmaps);
+				ImGui::CheckboxFlags("Paste Objects", &pasteOptions, PasteOptions::Objects);
+				ImGui::CheckboxFlags("Paste GAT", &pasteOptions, PasteOptions::GAT);
 				if (ImGui::Button("Paste"))
 				{
-
+					this->pasteOptions = pasteOptions;
+					pasteTiles();
 					ImGui::CloseCurrentPopup();
 				}
 				ImGui::SameLine();
@@ -838,6 +839,7 @@ void BrowEdit::pasteTiles()
 		if (cb == "")
 			return;
 		json clipboard = json::parse(cb);
+		pasteData = clipboard; //TODO: don't make a copy
 		if (clipboard.size() > 0)
 		{
 			for (auto jsonCube : clipboard["cubes"])

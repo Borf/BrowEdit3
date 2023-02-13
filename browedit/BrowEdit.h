@@ -70,6 +70,22 @@ public:
 	NLOHMANN_DEFINE_TYPE_INTRUSIVE(CopyCubeGat, h1, h2, h3, h4, gatType, pos);
 };
 
+//TODO: move this
+class PasteOptions
+{
+public:
+	enum //anonymous and not class because this is a bitmask
+	{
+		Height =	1<<0,
+		Walls =		1<<1,
+		Textures =	1<<2,
+		Colors =	1<<3,
+		Lightmaps =	1<<4,
+		Objects =	1<<5,
+		GAT =		1<<6,
+	};
+};
+
 
 class BrowEdit
 {
@@ -245,6 +261,9 @@ public:
 	bool newNodeHeight = false;
 	std::vector<CopyCube*> newCubes;
 	std::vector<CopyCubeGat*> newGatCubes;
+	int pasteOptions = -1;
+	json pasteData;
+
 	MapView* activeMapView = nullptr;
 	float statusBarHeight = 10;
 	Map* textureStampMap = nullptr;

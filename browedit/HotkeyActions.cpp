@@ -70,7 +70,10 @@ void BrowEdit::registerActions()
 		if (editMode == EditMode::Object) 
 			activeMapView->map->pasteSelection(this); 
 		else if (editMode == EditMode::Height && !heightDoodle)
+		{
+			pasteOptions = PasteOptions::Height | PasteOptions::Walls | PasteOptions::Textures | PasteOptions::Colors | PasteOptions::Lightmaps;
 			pasteTiles();
+		}
 		else if (editMode == EditMode::Gat && !heightDoodle)
 			pasteGat();
 	}, hasActiveMapView);
