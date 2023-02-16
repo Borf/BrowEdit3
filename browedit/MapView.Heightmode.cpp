@@ -11,11 +11,14 @@
 #include <browedit/shaders/SimpleShader.h>
 #include <browedit/components/Gnd.h>
 #include <browedit/components/GndRenderer.h>
+#include <browedit/components/Rsw.h>
 #include <browedit/math/Polygon.h>
 #include <browedit/actions/GroupAction.h>
 #include <browedit/actions/TileSelectAction.h>
 #include <browedit/actions/CubeHeightChangeAction.h>
 #include <browedit/actions/CubeTileChangeAction.h>
+#include <browedit/actions/NewObjectAction.h>
+#include <browedit/actions/SelectAction.h>
 #include <imgui.h>
 #include <imgui_internal.h>
 
@@ -174,58 +177,9 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 					{ //TODO: check if cube->lightmap can be null?
 						auto lm = new Gnd::Lightmap(cube->lightmap[i]);
 						newTile->lightmapIndex = (int)gnd->lightmaps.size();
-						gnd->lightmaps.push_back(lm);
-						//TODO: check if the lightmap already exists on the map.. not super important if lightmap deduplication is done at saving
+						gnd->lightmaps.push_back(lm);	//TODO: check if the lightmap already exists on the map.. not super important if lightmap deduplication is done at saving
 					}
-
-
 					gnd->tiles.push_back(newTile);
-
-
-					/*if (cube->tileIds[i] >= gnd->tiles.size()) // is this still needed? if the new Tileid is larger than the tiles, this would only trigger when copy/pasting from other maps, but is a bad check for this
-					{
-						tileId = (int)gnd->tiles.size();
-						gnd->tiles.push_back(new Gnd::Tile(cube->tile[i]));
-					}
-					else
-					{
-						const auto& mapTile = *gnd->tiles[cube->tileIds[i]];
-						if (mapTile != cube->tile[i] ||
-							(mapTile.textureIndex > -1 && !(*gnd->textures[mapTile.textureIndex] == cube->texture[i])) ||
-							(mapTile.lightmapIndex > -1 && *gnd->lightmaps[mapTile.lightmapIndex] != cube->lightmap[i]))
-						{
-							tileId = (int)gnd->tiles.size();
-							gnd->tiles.push_back(new Gnd::Tile(cube->tile[i]));
-						}
-					}						
-					if (gnd->tiles[tileId]->textureIndex > -1 && (gnd->tiles[tileId]->textureIndex >= gnd->textures.size() || !(*gnd->textures[gnd->tiles[tileId]->textureIndex] == cube->texture[i])))
-					{//the texture at textureindex does not match the pasted tile, first do a lookup and if not found, add the texture
-						int texId = -1;
-						for (auto t = 0; t < gnd->textures.size(); t++)
-							if (*gnd->textures[t] == cube->texture[i])
-								texId = t;
-						if (texId == -1)
-						{
-							texId = (int)gnd->textures.size();
-							gnd->textures.push_back(new Gnd::Texture(cube->texture[i]));
-						}
-						gnd->tiles[tileId]->textureIndex = texId;
-					}
-					if (gnd->tiles[tileId]->lightmapIndex > -1 && (gnd->tiles[tileId]->lightmapIndex >= gnd->lightmaps.size() || *gnd->lightmaps[gnd->tiles[tileId]->lightmapIndex] != cube->lightmap[i]))
-					{//the lightmap at lightmapindex does not match the pasted tile, first do a lookup and if not found, add the lightmap
-						int lightmapId = -1;
-						cube->lightmap[i].gnd = gnd;
-						for (auto t = 0; t < gnd->lightmaps.size(); t++)
-							if (*gnd->lightmaps[t] == cube->lightmap[i])
-								lightmapId = t;
-						if (lightmapId == -1)
-						{
-							lightmapId = (int)gnd->lightmaps.size();
-							gnd->lightmaps.push_back(new Gnd::Lightmap(cube->lightmap[i]));
-						}
-						gnd->tiles[tileId]->lightmapIndex = lightmapId;
-					}
-					gnd->cubes[tileHovered.x + cube->pos.x][tileHovered.y + cube->pos.y]->tileIds[i] = tileId;*/
 				}
 			}
 			action1->setNewHeights(gnd, cubeSelected);
@@ -236,6 +190,39 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 			ga->addAction(action2);
 			ga->addAction(new TileSelectAction(map, cubeSelected));
 			map->doAction(ga, browEdit);
+
+			if ((browEdit->pasteOptions & PasteOptions::Objects) != 0)
+			{
+				auto ga = new GroupAction("Pasting " + std::to_string(browEdit->newNodes.size()) + " objects");
+				bool first = false;
+				glm::ivec2 center(browEdit->pasteData["center"]);
+				glm::ivec2 offset = tileHovered - center;
+
+
+				for (auto newNode : browEdit->pasteData["objects"])
+				{
+					Node* n = new Node(newNode["name"].get<std::string>());
+					n->addComponentsFromJson(newNode["components"]);
+
+					std::string path = n->name;
+					if (path.find("\\") != std::string::npos)
+						path = path.substr(0, path.rfind("\\"));
+					else
+						path = "";
+					n->setParent(map->findAndBuildNode(path));
+					n->makeNameUnique(map->rootNode);
+					n->getComponent<RswObject>()->position += glm::vec3(10 * offset.x, 0, 10 * offset.y);
+					ga->addAction(new NewObjectAction(n));
+					auto sa = new SelectAction(map, n, first, false);
+					sa->perform(map, browEdit); // to make sure everything is selected
+					ga->addAction(sa);
+					first = true;
+				}
+				map->doAction(ga, browEdit);
+
+			}
+
+
 			for (auto c : browEdit->newCubes)
 				delete c;
 			browEdit->newCubes.clear();

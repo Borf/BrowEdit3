@@ -154,7 +154,7 @@ void BrowEdit::run()
 #ifdef _DEBUG
 	if(config.isValid() == "")
 //		loadMap("data\\aldebaran.rsw");
-//		loadMap("data\\prontera.rsw");
+		loadMap("data\\prontera.rsw");
 //		loadMap("data\\amicit01.rsw"); //RSM2
 //		loadMap("data\\grademk.rsw"); //special effects
 //		loadMap("data\\noel02.rsw");
@@ -164,7 +164,7 @@ void BrowEdit::run()
 //		loadMap("data\\guild_vs1.rsw");
 //		loadMap("data\\effects_ro.rsw");
 //		loadMap("data\\prt_in.rsw");
-		loadMap("data\\wall_colour.rsw");
+//		loadMap("data\\wall_colour.rsw");
 //		loadMap("data\\untomb_05s.rsw");
 //		loadMap("data\\easter_la.rsw");
 //		loadMap("data\\2@alice_mad.rsw");
@@ -785,6 +785,7 @@ void BrowEdit::copyTiles()
 	for (auto n : activeMapView->map->tileSelection)
 		center += n;
 	center /= activeMapView->map->tileSelection.size();
+	clipboard["center"] = center;
 	for (auto n : activeMapView->map->tileSelection)
 	{
 		auto c = gnd->cubes[n.x][n.y];
@@ -809,6 +810,25 @@ void BrowEdit::copyTiles()
 				}
 			}
 	}
+	clipboard["objects"] = json::array();
+	activeMapView->map->rootNode->traverse([&](Node* n) {
+		auto rswObject = n->getComponent<RswObject>();
+		if (rswObject)
+		{
+			glm::vec3 pos(5 * gnd->width + rswObject->position.x, -rswObject->position.y, -(-10 - 5 * gnd->height + rswObject->position.z));
+			for (auto tile : activeMapView->map->tileSelection)
+			{
+				if (pos.x >= tile.x * 10 && pos.x <= (tile.x + 1) * 10 &&
+					pos.z >= 10 * gnd->height - (tile.y + 1) * 10 + 10 && pos.z <= 10 * gnd->height - (tile.y + 0) * 10 + 10)
+				{
+					clipboard["objects"].push_back(*n);
+					break;
+				}
+			}
+		}
+	});
+
+
 	ImGui::SetClipboardText(clipboard.dump(1).c_str());
 }
 void BrowEdit::copyGat()

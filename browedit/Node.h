@@ -30,6 +30,7 @@ public:
 	void makeNameUnique(Node* rootNode);
 
 	void onRename(Map* map);
+	void addComponentsFromJson(const nlohmann::json& data);
 	
 	template<class T>
 	T* getComponent()

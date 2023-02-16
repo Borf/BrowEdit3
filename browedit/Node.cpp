@@ -6,6 +6,10 @@
 #include <browedit/util/Util.h>
 #include <browedit/util/ResourceManager.h>
 #include <browedit/Map.h>
+#include <browedit/components/Rsw.h>
+#include <browedit/components/RsmRenderer.h>
+#include <browedit/components/BillboardRenderer.h>
+
 
 Node::Node(const std::string& name, Node* parent) : name(name), parent(parent)
 {
@@ -175,6 +179,58 @@ void Node::onRename(Map* map)
 		}
 	});
 
+}
+
+void Node::addComponentsFromJson(const nlohmann::json& data)
+{
+	for (auto c : data)
+	{
+		if (c["type"] == "rswobject")
+		{
+			auto rswObject = new RswObject();
+			from_json(c, *rswObject);
+			this->addComponent(rswObject);
+		}
+		if (c["type"] == "rswmodel")
+		{
+			auto rswModel = new RswModel();
+			from_json(c, *rswModel);
+			this->addComponent(rswModel);
+			this->addComponent(util::ResourceManager<Rsm>::load("data\\model\\" + util::utf8_to_iso_8859_1(rswModel->fileName)));
+			this->addComponent(new RsmRenderer());
+			this->addComponent(new RswModelCollider());
+		}
+		if (c["type"] == "rswlight")
+		{
+			auto rswLight = new RswLight();
+			from_json(c, *rswLight);
+			this->addComponent(rswLight);
+			this->addComponent(new BillboardRenderer("data\\light.png", "data\\light_selected.png"));
+			this->addComponent(new CubeCollider(5));
+		}
+		if (c["type"] == "rsweffect")
+		{
+			auto rswEffect = new RswEffect();
+			from_json(c, *rswEffect);
+			this->addComponent(rswEffect);
+			this->addComponent(new BillboardRenderer("data\\effect.png", "data\\effect_selected.png"));
+			this->addComponent(new CubeCollider(5));
+		}
+		if (c["type"] == "lubeffect")
+		{
+			auto lubEffect = new LubEffect();
+			from_json(c, *lubEffect);
+			this->addComponent(lubEffect);
+		}
+		if (c["type"] == "rswsound")
+		{
+			auto rswSound = new RswSound();
+			from_json(c, *rswSound);
+			this->addComponent(rswSound);
+			this->addComponent(new BillboardRenderer("data\\sound.png", "data\\sound_selected.png"));
+			this->addComponent(new CubeCollider(5));
+		}
+	}
 }
 
 
