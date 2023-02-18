@@ -441,54 +441,7 @@ void Map::pasteSelection(BrowEdit* browEdit)
 			for (auto n : clipboard)
 			{
 				auto newNode = new Node(n["name"].get<std::string>());
-				for (auto c : n["components"])
-				{
-					if (c["type"] == "rswobject")
-					{
-						auto rswObject = new RswObject();
-						from_json(c, *rswObject);
-						newNode->addComponent(rswObject);
-					}
-					if (c["type"] == "rswmodel")
-					{
-						auto rswModel = new RswModel();
-						from_json(c, *rswModel);
-						newNode->addComponent(rswModel);
-						newNode->addComponent(util::ResourceManager<Rsm>::load("data\\model\\" + util::utf8_to_iso_8859_1(rswModel->fileName)));
-						newNode->addComponent(new RsmRenderer());
-						newNode->addComponent(new RswModelCollider());
-					}
-					if (c["type"] == "rswlight")
-					{
-						auto rswLight = new RswLight();
-						from_json(c, *rswLight);
-						newNode->addComponent(rswLight);
-						newNode->addComponent(new BillboardRenderer("data\\light.png", "data\\light_selected.png"));
-						newNode->addComponent(new CubeCollider(5));
-					}
-					if (c["type"] == "rsweffect")
-					{
-						auto rswEffect = new RswEffect();
-						from_json(c, *rswEffect);
-						newNode->addComponent(rswEffect);
-						newNode->addComponent(new BillboardRenderer("data\\effect.png", "data\\effect_selected.png"));
-						newNode->addComponent(new CubeCollider(5));
-					}
-					if (c["type"] == "lubeffect")
-					{
-						auto lubEffect = new LubEffect();
-						from_json(c, *lubEffect);
-						newNode->addComponent(lubEffect);
-					}
-					if (c["type"] == "rswsound")
-					{
-						auto rswSound = new RswSound();
-						from_json(c, *rswSound);
-						newNode->addComponent(rswSound);
-						newNode->addComponent(new BillboardRenderer("data\\sound.png", "data\\sound_selected.png"));
-						newNode->addComponent(new CubeCollider(5));
-					}
-				}
+				newNode->addComponentsFromJson(n["components"]);
 				glm::vec3 pos(0.0f);
 				if (newNode->getComponent<RswObject>())
 					pos = newNode->getComponent<RswObject>()->position;

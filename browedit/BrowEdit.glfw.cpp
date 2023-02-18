@@ -52,7 +52,7 @@ bool BrowEdit::glfwBegin()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
 
-    window = glfwCreateWindow(1920, 1080, "NOT BrowEdit V3." QUOTE(VERSION), NULL, NULL);
+    window = glfwCreateWindow(1920, 1080, "BrowEdit V3." QUOTE(VERSION), NULL, NULL);
 
     if (window == nullptr)
         return false;

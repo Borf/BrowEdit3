@@ -60,7 +60,7 @@ void BrowEdit::registerActions()
 	HotkeyRegistry::registerAction(HotkeyAction::Global_ModelEditor_Open,		[this]() { modelEditor.opened = !modelEditor.opened; });
 	HotkeyRegistry::registerAction(HotkeyAction::Global_Copy, [this]() {
 		if (editMode == EditMode::Object)
-		activeMapView->map->copySelection();
+			activeMapView->map->copySelection();
 		else if (editMode == EditMode::Height && !heightDoodle)
 			copyTiles();
 		else if (editMode == EditMode::Gat && !heightDoodle)
@@ -70,7 +70,10 @@ void BrowEdit::registerActions()
 		if (editMode == EditMode::Object) 
 			activeMapView->map->pasteSelection(this); 
 		else if (editMode == EditMode::Height && !heightDoodle)
+		{
+			pasteOptions = PasteOptions::Height | PasteOptions::Walls | PasteOptions::Textures | PasteOptions::Colors | PasteOptions::Lightmaps;
 			pasteTiles();
+		}
 		else if (editMode == EditMode::Gat && !heightDoodle)
 			pasteGat();
 	}, hasActiveMapView);
