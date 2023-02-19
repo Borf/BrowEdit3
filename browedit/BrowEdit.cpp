@@ -780,6 +780,7 @@ void BrowEdit::loadMap(const std::string file)
 void BrowEdit::copyTiles()
 {
 	auto gnd = activeMapView->map->rootNode->getComponent<Gnd>();
+	auto gat = activeMapView->map->rootNode->getComponent<Gat>();
 	json clipboard;
 	glm::ivec2 center(0);
 	for (auto n : activeMapView->map->tileSelection)
@@ -792,6 +793,11 @@ void BrowEdit::copyTiles()
 		json cube = *c;
 		cube["pos"] = n - center;
 		clipboard["cubes"].push_back(cube);
+		if (gat->inMap(n * 2 + glm::ivec2(0, 0)))	clipboard["gat"].push_back(*gat->cubes[n.x * 2 + 0][n.y * 2 + 0]);
+		if (gat->inMap(n * 2 + glm::ivec2(1, 0)))	clipboard["gat"].push_back(*gat->cubes[n.x * 2 + 1][n.y * 2 + 0]);
+		if (gat->inMap(n * 2 + glm::ivec2(0, 1)))	clipboard["gat"].push_back(*gat->cubes[n.x * 2 + 0][n.y * 2 + 1]);
+		if (gat->inMap(n * 2 + glm::ivec2(1, 1)))	clipboard["gat"].push_back(*gat->cubes[n.x * 2 + 1][n.y * 2 + 1]);
+
 		for(int i = 0; i < 3; i++)
 			if (c->tileIds[i] != -1)
 			{

@@ -153,8 +153,13 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 					Gnd::Tile* oldTile = nullptr;
 					if(gnd->cubes[tileHovered.x + cube->pos.x][tileHovered.y + cube->pos.y]->tileIds[i] > -1)
 						oldTile = gnd->tiles[gnd->cubes[tileHovered.x + cube->pos.x][tileHovered.y + cube->pos.y]->tileIds[i]];
+
 					gnd->cubes[tileHovered.x + cube->pos.x][tileHovered.y + cube->pos.y]->tileIds[i] = (int)gnd->tiles.size();
-					auto newTile = new Gnd::Tile(*oldTile); //base it on the old tile
+					Gnd::Tile* newTile = nullptr;
+					if (oldTile != nullptr)
+						newTile = new Gnd::Tile(*oldTile); //base it on the old tile
+					else
+						newTile = new Gnd::Tile();
 
 					if ((browEdit->pasteOptions & PasteOptions::Textures) != 0)
 					{ //find the textureId and set texcoords
