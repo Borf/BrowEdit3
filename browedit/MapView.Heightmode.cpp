@@ -194,7 +194,6 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 			ga->addAction(action1);
 			ga->addAction(action2);
 			ga->addAction(new TileSelectAction(map, cubeSelected));
-			map->doAction(ga, browEdit);
 
 			if ((browEdit->pasteOptions & PasteOptions::Objects) != 0)
 			{
@@ -223,9 +222,30 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 					ga->addAction(sa);
 					first = true;
 				}
-				map->doAction(ga, browEdit);
+			}
+
+			if ((browEdit->pasteOptions & PasteOptions::GAT) != 0)
+			{
+				auto gat = map->rootNode->getComponent<Gat>();
+				std::vector<glm::ivec2> cubeSelected;
+				for (auto c : browEdit->pasteData["gats"])
+				{
+					glm::ivec2 pos(c["pos"]);
+					if (gat->inMap(pos + 2*tileHovered))
+						cubeSelected.push_back(pos + 2*tileHovered);
+				}
+				ga->addAction(new GatTileSelectAction(map, cubeSelected));
+				auto action1 = new CubeHeightChangeAction<Gat, Gat::Cube>(gat, cubeSelected);
+				for (auto c : browEdit->pasteData["gats"])
+				{
+					glm::ivec2 pos = glm::ivec2(c["pos"]) + 2 * tileHovered;
+					if (gat->inMap(pos))
+						from_json(c, *gat->cubes[pos.x][pos.y]);
+				}
+
 
 			}
+			map->doAction(ga, browEdit);
 
 
 			for (auto c : browEdit->newCubes)
