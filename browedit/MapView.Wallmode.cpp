@@ -60,20 +60,25 @@ void MapView::postRenderWallMode(BrowEdit* browEdit)
 		side = 2;
 	}
 
-	if (gnd->inMap(tileHovered) && gnd->inMap(tileHovered + glm::ivec2(1, 0)) && gnd->inMap(tileHovered + glm::ivec2(0, 1)) && !ImGui::IsMouseDown(ImGuiMouseButton_Left))
+	if (gnd->inMap(tileHovered) && (
+		(side == 1 && gnd->inMap(tileHovered + glm::ivec2(1, 0))) ||
+		(side == 2 && gnd->inMap(tileHovered + glm::ivec2(0, 1)))) && !ImGui::IsMouseDown(ImGuiMouseButton_Left))
 	{
 		auto cube = gnd->cubes[tileHovered.x][tileHovered.y];
-		glm::vec3 v1(10 * tileHovered.x + 10, -cube->h2, 10 * gnd->height - 10 * tileHovered.y + 10);
-		glm::vec3 v2(10 * tileHovered.x + 10, -cube->h4, 10 * gnd->height - 10 * tileHovered.y);
-		glm::vec3 v3(10 * tileHovered.x + 10, -gnd->cubes[tileHovered.x + 1][tileHovered.y]->h1, 10 * gnd->height - 10 * tileHovered.y + 10);
-		glm::vec3 v4(10 * tileHovered.x + 10, -gnd->cubes[tileHovered.x + 1][tileHovered.y]->h3, 10 * gnd->height - 10 * tileHovered.y);
+		glm::vec3 v1, v2, v3, v4;
+		if (side == 1)
+		{
+			v1 = glm::vec3(10 * tileHovered.x + 10, -cube->h2, 10 * gnd->height - 10 * tileHovered.y + 10);
+			v2 = glm::vec3(10 * tileHovered.x + 10, -cube->h4, 10 * gnd->height - 10 * tileHovered.y);
+			v3 = glm::vec3(10 * tileHovered.x + 10, -gnd->cubes[tileHovered.x + 1][tileHovered.y]->h1, 10 * gnd->height - 10 * tileHovered.y + 10);
+			v4 = glm::vec3(10 * tileHovered.x + 10, -gnd->cubes[tileHovered.x + 1][tileHovered.y]->h3, 10 * gnd->height - 10 * tileHovered.y);
+		}
 		if (side == 2)
 		{
 			v1 = glm::vec3(10 * tileHovered.x, -cube->h3, 10 * gnd->height - 10 * tileHovered.y);
 			v2 = glm::vec3(10 * tileHovered.x + 10, -cube->h4, 10 * gnd->height - 10 * tileHovered.y);
 			v4 = glm::vec3(10 * tileHovered.x + 10, -gnd->cubes[tileHovered.x][tileHovered.y + 1]->h2, 10 * gnd->height - 10 * tileHovered.y);
 			v3 = glm::vec3(10 * tileHovered.x, -gnd->cubes[tileHovered.x][tileHovered.y + 1]->h1, 10 * gnd->height - 10 * tileHovered.y);
-
 		}
 
 		glDisable(GL_DEPTH_TEST);
@@ -105,13 +110,19 @@ void MapView::postRenderWallMode(BrowEdit* browEdit)
 				for (const auto& wall : selectedWalls)
 				{
 					glm::ivec2 tile = glm::ivec2(wall);
-					if (gnd->inMap(tile) && gnd->inMap(tile + glm::ivec2(1, 0)) && gnd->inMap(tile + glm::ivec2(0, 1)))
+					if (gnd->inMap(tile) && (
+						(side == 1 && gnd->inMap(tileHovered + glm::ivec2(1, 0))) ||
+						(side == 2 && gnd->inMap(tileHovered + glm::ivec2(0, 1)))))
 					{
 						auto cube = gnd->cubes[tile.x][tile.y];
-						glm::vec3 v1(10 * tile.x + 10, -cube->h4, 10 * gnd->height - 10 * tile.y);
-						glm::vec3 v2(10 * tile.x + 10, -cube->h2, 10 * gnd->height - 10 * tile.y + 10);
-						glm::vec3 v3(10 * tile.x + 10, -gnd->cubes[tile.x + 1][tile.y]->h3, 10 * gnd->height - 10 * tile.y);
-						glm::vec3 v4(10 * tile.x + 10, -gnd->cubes[tile.x + 1][tile.y]->h1, 10 * gnd->height - 10 * tile.y + 10);
+						glm::vec3 v1, v2, v3, v4;
+						if (wall.z == 1)
+						{
+							v1 = glm::vec3(10 * tile.x + 10, -cube->h4, 10 * gnd->height - 10 * tile.y);
+							v2 = glm::vec3(10 * tile.x + 10, -cube->h2, 10 * gnd->height - 10 * tile.y + 10);
+							v3 = glm::vec3(10 * tile.x + 10, -gnd->cubes[tile.x + 1][tile.y]->h3, 10 * gnd->height - 10 * tile.y);
+							v4 = glm::vec3(10 * tile.x + 10, -gnd->cubes[tile.x + 1][tile.y]->h1, 10 * gnd->height - 10 * tile.y + 10);
+						}
 						if (wall.z == 2)
 						{
 							v1 = glm::vec3(10 * tile.x, -cube->h3, 10 * gnd->height - 10 * tile.y);
@@ -169,13 +180,19 @@ void MapView::postRenderWallMode(BrowEdit* browEdit)
 				glm::ivec2 tile = selectionStart;
 				for (int i = 0; i < 100; i++)
 				{
-					if (gnd->inMap(tile) && gnd->inMap(tile + glm::ivec2(1, 0)) && gnd->inMap(tile + glm::ivec2(0, 1)))
+					if (gnd->inMap(tile) && (
+						(side == 1 && gnd->inMap(tileHovered + glm::ivec2(1, 0))) ||
+						(side == 2 && gnd->inMap(tileHovered + glm::ivec2(0, 1)))))
 					{
 						auto cube = gnd->cubes[tile.x][tile.y];
-						glm::vec3 v1(10 * tile.x + 10, -cube->h2, 10 * gnd->height - 10 * tile.y + 10);
-						glm::vec3 v2(10 * tile.x + 10, -cube->h4, 10 * gnd->height - 10 * tile.y);
-						glm::vec3 v3(10 * tile.x + 10, -gnd->cubes[tile.x + 1][tile.y]->h1, 10 * gnd->height - 10 * tile.y + 10);
-						glm::vec3 v4(10 * tile.x + 10, -gnd->cubes[tile.x + 1][tile.y]->h3, 10 * gnd->height - 10 * tile.y);
+						glm::vec3 v1, v2, v3, v4;
+						if (selectionSide == 1)
+						{
+							v1 = glm::vec3(10 * tile.x + 10, -cube->h2, 10 * gnd->height - 10 * tile.y + 10);
+							v2 = glm::vec3(10 * tile.x + 10, -cube->h4, 10 * gnd->height - 10 * tile.y);
+							v3 = glm::vec3(10 * tile.x + 10, -gnd->cubes[tile.x + 1][tile.y]->h1, 10 * gnd->height - 10 * tile.y + 10);
+							v4 = glm::vec3(10 * tile.x + 10, -gnd->cubes[tile.x + 1][tile.y]->h3, 10 * gnd->height - 10 * tile.y);
+						}
 						if (selectionSide == 2)
 						{
 							v1 = glm::vec3(10 * tile.x, -cube->h3, 10 * gnd->height - 10 * tile.y);
@@ -322,14 +339,20 @@ void MapView::postRenderWallMode(BrowEdit* browEdit)
 		{
 			glm::ivec2 tile = glm::ivec2(wall);
 
-			if (gnd->inMap(tile) && gnd->inMap(tile + glm::ivec2(1, 0)) && gnd->inMap(tile + glm::ivec2(0, 1)))
+			if (gnd->inMap(tile) && (
+				(side == 1 && gnd->inMap(tileHovered + glm::ivec2(1, 0))) ||
+				(side == 2 && gnd->inMap(tileHovered + glm::ivec2(0, 1)))))
 			{
 				auto cube = gnd->cubes[tile.x][tile.y];
-				glm::vec3 v1(10 * tile.x + 10, -cube->h4, 10 * gnd->height - 10 * tile.y);
-				glm::vec3 v2(10 * tile.x + 10, -cube->h2, 10 * gnd->height - 10 * tile.y + 10);
-				glm::vec3 v3(10 * tile.x + 10, -gnd->cubes[tile.x + 1][tile.y]->h3, 10 * gnd->height - 10 * tile.y);
-				glm::vec3 v4(10 * tile.x + 10, -gnd->cubes[tile.x + 1][tile.y]->h1, 10 * gnd->height - 10 * tile.y + 10);
-				glm::vec3 normal = glm::vec3(1, 0, 0);
+				glm::vec3 v1, v2, v3, v4, normal;
+				if (wall.z == 1)
+				{
+					v1 = glm::vec3(10 * tile.x + 10, -cube->h4, 10 * gnd->height - 10 * tile.y);
+					v2 = glm::vec3(10 * tile.x + 10, -cube->h2, 10 * gnd->height - 10 * tile.y + 10);
+					v3 = glm::vec3(10 * tile.x + 10, -gnd->cubes[tile.x + 1][tile.y]->h3, 10 * gnd->height - 10 * tile.y);
+					v4 = glm::vec3(10 * tile.x + 10, -gnd->cubes[tile.x + 1][tile.y]->h1, 10 * gnd->height - 10 * tile.y + 10);
+					normal = glm::vec3(1, 0, 0);
+				}
 				if (wall.z == 2)
 				{
 					v1 = glm::vec3(10 * tile.x, -cube->h3, 10 * gnd->height - 10 * tile.y);
