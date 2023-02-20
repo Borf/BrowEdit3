@@ -398,11 +398,29 @@ void BrowEdit::showWallWindow()
 	ImGui::InputInt("Brush Width", &activeMapView->wallWidth, 1);
 	if (activeMapView->wallWidth <= 0)
 		activeMapView->wallWidth = 1;
+
+	if (this->toolBarToggleButton("DropperTop", ICON_DROPPER, &activeMapView->wallTopDropper, "Pick up top height"))
+	{
+		activeMapView->wallBottomDropper = false;
+		if (activeMapView->wallBottomDropper || activeMapView->wallTopDropper)
+			cursor = dropperCursor;
+	}
+	ImGui::SameLine();
+	ImGui::SetNextItemWidth(200);
 	ImGui::InputFloat("Brush Top", &activeMapView->wallTop, 1.0f);
 	ImGui::SameLine();
 	ImGui::Checkbox("##auto1", &activeMapView->wallTopAuto);
 	if (ImGui::IsItemHovered())
 		ImGui::SetTooltip("Auto");
+
+	if (this->toolBarToggleButton("DropperBot", ICON_DROPPER, &activeMapView->wallBottomDropper, "Pick up bottom height"))
+	{
+		activeMapView->wallTopDropper = false;
+		if (activeMapView->wallBottomDropper || activeMapView->wallTopDropper)
+			cursor = dropperCursor;
+	}
+	ImGui::SameLine();
+	ImGui::SetNextItemWidth(200);
 	ImGui::InputFloat("Brush Bottom", &activeMapView->wallBottom, 1.0f);
 	ImGui::SameLine();
 	ImGui::Checkbox("##auto2", &activeMapView->wallBottomAuto);
