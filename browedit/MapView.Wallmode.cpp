@@ -11,6 +11,7 @@
 #include <browedit/actions/GroupAction.h>
 #include <browedit/actions/SelectWallAction.h>
 #include <browedit/actions/TilePropertyChangeAction.h>
+#include <glm/gtc/type_ptr.hpp>
 #include <imgui.h>
 
 
@@ -78,7 +79,7 @@ void MapView::postRenderWallMode(BrowEdit* browEdit)
 		glDisable(GL_DEPTH_TEST);
 		glLineWidth(2);
 		glDisable(GL_TEXTURE_2D);
-		glColor4f(1, 1, 1, 1);
+		glColor3fv(glm::value_ptr(browEdit->config.wallEditSelectionColor));
 		glBegin(GL_QUADS);
 		glVertex3f(v1.x, v1.y, v1.z);
 		glVertex3f(v2.x, v2.y, v2.z);
@@ -187,7 +188,7 @@ void MapView::postRenderWallMode(BrowEdit* browEdit)
 						glDisable(GL_DEPTH_TEST);
 						glLineWidth(2);
 						glDisable(GL_TEXTURE_2D);
-						glColor4f(1, 1, 1, 1);
+						glColor3fv(glm::value_ptr(browEdit->config.wallEditSelectionColor));
 						glBegin(GL_LINE_LOOP);
 						glVertex3f(v1.x, v1.y, v1.z);
 						glVertex3f(v2.x, v2.y, v2.z);
@@ -408,15 +409,15 @@ void MapView::postRenderWallMode(BrowEdit* browEdit)
 			if (previewWall && browEdit->activeMapView->textureSelected >= 0 && browEdit->activeMapView->textureSelected < gndRenderer->textures.size())
 			{
 				simpleShader->setUniform(SimpleShader::Uniforms::textureFac, 1.0f);
-				simpleShader->setUniform(SimpleShader::Uniforms::color, glm::vec4(1, 1, 1, 1));
-				
+				simpleShader->setUniform(SimpleShader::Uniforms::color, glm::vec4(browEdit->config.wallEditHighlightColor, 1));
+
 				gndRenderer->textures[browEdit->activeMapView->textureSelected]->bind();
 				glDrawArrays(GL_QUADS, 0, (int)verts.size());
 			}
 			else
 			{
 				simpleShader->setUniform(SimpleShader::Uniforms::textureFac, 0.0f);
-				simpleShader->setUniform(SimpleShader::Uniforms::color, glm::vec4(1, 0, 0, 1));
+				simpleShader->setUniform(SimpleShader::Uniforms::color, glm::vec4(browEdit->config.wallEditHighlightColor, 1));
 				glDrawArrays(GL_LINES, 0, (int)verts.size());
 			}
 

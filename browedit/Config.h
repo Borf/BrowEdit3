@@ -25,6 +25,8 @@ public:
 	float cameraMouseSpeed = 1.0f;
 	int style = 0;
 	glm::vec3 backgroundColor = glm::vec3(0.1f, 0.1f, 0.15f);
+	glm::vec3 wallEditSelectionColor = glm::vec3(1.0f, 1.0f, 1.0f);
+	glm::vec3 wallEditHighlightColor = glm::vec3(1.0f, 0.0f, 0.0f);
 	ImVec2 thumbnailSize = ImVec2(200, 200);
 	bool closeObjectWindowOnAdd = false;
 	float toolbarButtonSize = 32;
@@ -65,6 +67,8 @@ public:
 		cameraMouseSpeed,
 		style,
 		backgroundColor,
+		wallEditSelectionColor,
+		wallEditHighlightColor,
 		thumbnailSize,
 		closeObjectWindowOnAdd,
 		toolbarButtonSize,
