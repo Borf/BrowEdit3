@@ -694,9 +694,11 @@ bool MapView::drawCameraWidget()
 					cameraTargetPos = cameraCenter;
 					cameraAnimating = true;
 				}
-
+				if (ImGui::IsWindowHovered())
+					return true;
 			}
-			return true;
+			if (ImGui::IsWindowHovered())
+				return true;
 		}
 	}
 	return false;

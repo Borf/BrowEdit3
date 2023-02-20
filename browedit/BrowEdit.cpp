@@ -556,6 +556,7 @@ void BrowEdit::showMapWindow(MapView& mapView, float deltaTime)
 			}
 			mapView.render(this);
 			bool cameraWidgetClicked = mapView.drawCameraWidget();
+			bool clicked = ImGui::IsMouseClicked(0);
 			firstRender[mapView.map] = &mapView;
 			if (!cameraWidgetClicked)
 			{
