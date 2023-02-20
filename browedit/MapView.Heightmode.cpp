@@ -141,7 +141,7 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 				}
 				for (int i = 0; i < 3; i++)
 				{ // paste tiles
-					if (i > 0 && (browEdit->pasteOptions & PasteOptions::Walls) != 0)
+					if (i > 0 && (browEdit->pasteOptions & PasteOptions::Walls) == 0)
 						continue;
 					int tileId = cube->tileIds[i];
 					if (tileId == -1)
