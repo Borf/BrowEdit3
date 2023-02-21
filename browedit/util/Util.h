@@ -40,6 +40,7 @@ namespace util
 	}
 
 	std::string SaveAsDialog(const std::string& fileName, const char* filter = "All\0*.*\0");
+	std::string SelectFileDialog(std::string defaultFilename, const char* filter = "All\0*.*\0");
 	std::string SelectPathDialog(std::string path);
 
 	bool ColorEdit3(BrowEdit* browEdit, Map* map, Node* node, const char* label, glm::vec3* ptr, const std::string& action = "");
