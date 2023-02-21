@@ -141,7 +141,7 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 				}
 				for (int i = 0; i < 3; i++)
 				{ // paste tiles
-					if (i > 0 && (browEdit->pasteOptions & PasteOptions::Walls) != 0)
+					if (i > 0 && (browEdit->pasteOptions & PasteOptions::Walls) == 0)
 						continue;
 					int tileId = cube->tileIds[i];
 					if (tileId == -1)
@@ -153,8 +153,13 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 					Gnd::Tile* oldTile = nullptr;
 					if(gnd->cubes[tileHovered.x + cube->pos.x][tileHovered.y + cube->pos.y]->tileIds[i] > -1)
 						oldTile = gnd->tiles[gnd->cubes[tileHovered.x + cube->pos.x][tileHovered.y + cube->pos.y]->tileIds[i]];
+
 					gnd->cubes[tileHovered.x + cube->pos.x][tileHovered.y + cube->pos.y]->tileIds[i] = (int)gnd->tiles.size();
-					auto newTile = new Gnd::Tile(*oldTile); //base it on the old tile
+					Gnd::Tile* newTile = nullptr;
+					if (oldTile != nullptr)
+						newTile = new Gnd::Tile(*oldTile); //base it on the old tile
+					else
+						newTile = new Gnd::Tile();
 
 					if ((browEdit->pasteOptions & PasteOptions::Textures) != 0)
 					{ //find the textureId and set texcoords
@@ -189,7 +194,6 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 			ga->addAction(action1);
 			ga->addAction(action2);
 			ga->addAction(new TileSelectAction(map, cubeSelected));
-			map->doAction(ga, browEdit);
 
 			if ((browEdit->pasteOptions & PasteOptions::Objects) != 0)
 			{
@@ -218,9 +222,30 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 					ga->addAction(sa);
 					first = true;
 				}
-				map->doAction(ga, browEdit);
+			}
+
+			if ((browEdit->pasteOptions & PasteOptions::GAT) != 0)
+			{
+				auto gat = map->rootNode->getComponent<Gat>();
+				std::vector<glm::ivec2> cubeSelected;
+				for (auto c : browEdit->pasteData["gats"])
+				{
+					glm::ivec2 pos(c["pos"]);
+					if (gat->inMap(pos + 2*tileHovered))
+						cubeSelected.push_back(pos + 2*tileHovered);
+				}
+				ga->addAction(new GatTileSelectAction(map, cubeSelected));
+				auto action1 = new CubeHeightChangeAction<Gat, Gat::Cube>(gat, cubeSelected);
+				for (auto c : browEdit->pasteData["gats"])
+				{
+					glm::ivec2 pos = glm::ivec2(c["pos"]) + 2 * tileHovered;
+					if (gat->inMap(pos))
+						from_json(c, *gat->cubes[pos.x][pos.y]);
+				}
+
 
 			}
+			map->doAction(ga, browEdit);
 
 
 			for (auto c : browEdit->newCubes)

@@ -232,10 +232,13 @@ void RswLight::buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>& nod
 		if (!rswLights.front()->sunMatchRswDirection)
 		{
 			util::DragFloat3Multi<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Direction", [](RswLight* l) { return &l->direction; }, 0.05f, -1.0f, 1.0f);
-			if (ImGui::gizmo3D("Sunlight Rotation", rswLights.front()->direction, IMGUIZMO_DEF_SIZE, imguiGizmo::modeDirection))
+
+			glm::vec3 dir = rswLights.front()->direction * glm::vec3(-1,-1,-1);
+
+			if (ImGui::gizmo3D("Sunlight Rotation", dir, IMGUIZMO_DEF_SIZE, imguiGizmo::modeDirection))
 			{
 				for (auto& l : rswLights)
-					l->direction = glm::normalize(rswLights.front()->direction);
+					l->direction = glm::normalize(dir) * glm::vec3(-1, -1, -1);
 			}
 		}
 

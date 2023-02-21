@@ -154,7 +154,7 @@ void BrowEdit::run()
 #ifdef _DEBUG
 	if(config.isValid() == "")
 //		loadMap("data\\aldebaran.rsw");
-		loadMap("data\\prontera.rsw");
+//		loadMap("data\\prontera.rsw");
 //		loadMap("data\\amicit01.rsw"); //RSM2
 //		loadMap("data\\grademk.rsw"); //special effects
 //		loadMap("data\\noel02.rsw");
@@ -164,7 +164,7 @@ void BrowEdit::run()
 //		loadMap("data\\guild_vs1.rsw");
 //		loadMap("data\\effects_ro.rsw");
 //		loadMap("data\\prt_in.rsw");
-//		loadMap("data\\wall_colour.rsw");
+		loadMap("data\\wall_colour.rsw");
 //		loadMap("data\\untomb_05s.rsw");
 //		loadMap("data\\easter_la.rsw");
 //		loadMap("data\\2@alice_mad.rsw");
@@ -556,6 +556,7 @@ void BrowEdit::showMapWindow(MapView& mapView, float deltaTime)
 			}
 			mapView.render(this);
 			bool cameraWidgetClicked = mapView.drawCameraWidget();
+			bool clicked = ImGui::IsMouseClicked(0);
 			firstRender[mapView.map] = &mapView;
 			if (!cameraWidgetClicked)
 			{
@@ -780,6 +781,7 @@ void BrowEdit::loadMap(const std::string file)
 void BrowEdit::copyTiles()
 {
 	auto gnd = activeMapView->map->rootNode->getComponent<Gnd>();
+	auto gat = activeMapView->map->rootNode->getComponent<Gat>();
 	json clipboard;
 	glm::ivec2 center(0);
 	for (auto n : activeMapView->map->tileSelection)
@@ -792,6 +794,16 @@ void BrowEdit::copyTiles()
 		json cube = *c;
 		cube["pos"] = n - center;
 		clipboard["cubes"].push_back(cube);
+		for (int i = 0; i < 4; i++)
+		{
+			if (gat->inMap(n * 2 + glm::ivec2(i%2, i/2)))
+			{
+				json cube = *gat->cubes[n.x * 2 + (i % 2)][n.y * 2 + (i / 2)];
+				cube["pos"] = (n * 2 + glm::ivec2(i % 2, i / 2)) - 2*center;
+				clipboard["gats"].push_back(cube);
+			}
+		}		
+
 		for(int i = 0; i < 3; i++)
 			if (c->tileIds[i] != -1)
 			{

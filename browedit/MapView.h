@@ -147,6 +147,8 @@ public:
 	bool wallBottomAuto = true;
 	int wallOffset = 0;
 	bool wallAutoStraight = true;
+	bool wallTopDropper = false;
+	bool wallBottomDropper = false;
 
 
 	//height edit mode

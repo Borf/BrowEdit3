@@ -20,10 +20,10 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     - name: Add MSBuild to PATH
-      uses: microsoft/setup-msbuild@v1.0.2
+      uses: microsoft/setup-msbuild@v1.1
 
     - name: Fix version
       shell: cmd
@@ -46,6 +46,7 @@ jobs:
         xcopy /y /q lib\bugtrap\BugTrap-x64.dll dist\
         xcopy /y /q /s data dist\data\
         xcopy /y /q /s docs dist\doc\
+        xcopy /y /q x64\Release\Patcher.exe dist\
 
     - name: UploadArtifact
       uses: actions/upload-artifact@master
