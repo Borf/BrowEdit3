@@ -678,8 +678,8 @@ void BrowEdit::saveMap(Map* map)
 	{
 		fixBackup(rswName, backupRswName);
 		fixBackup(gndName, backupGndName);
-		fixBackup(gatName, backupGndName);
-		fixBackup(lubName, backupGndName);
+		fixBackup(gatName, backupGatName);
+		fixBackup(lubName, backupLubName);
 	}
 
 	map->rootNode->getComponent<Rsw>()->save(rswName, this);
