@@ -440,7 +440,7 @@ void Lightmapper::calcPos(int direction, int tileId, int x, int y)
 							normal = -normal;
 					}
 					else
-						throw "wtf";
+						std::cerr << "You have a wall on the edge of tile " << x << "," << y << " ...this won't work" << std::endl;
 					if (buildDebugPoints)
 					{
 						debugPointMutex.lock();
