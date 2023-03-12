@@ -741,6 +741,12 @@ void Gnd::buildImGui(BrowEdit* browEdit)
 			version = 0x0103;
 		if (ImGui::Selectable("0104", version == 0x0104))
 			version = 0x0104;
+		if (ImGui::Selectable("0105", version == 0x0105))
+			version = 0x0105;
+		if (ImGui::Selectable("0106", version == 0x0106))
+			version = 0x0106;
+		if (ImGui::Selectable("0107", version == 0x0107))
+			version = 0x0107;
 		if (ImGui::Selectable("0108", version == 0x0108))
 			version = 0x0108;
 		if (ImGui::Selectable("0109", version == 0x0109))
