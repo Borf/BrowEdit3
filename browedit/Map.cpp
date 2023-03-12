@@ -774,9 +774,11 @@ void Map::recalculateQuadTree(BrowEdit* browEdit)
 {
 	std::cout << "Recalculating quadtree" << std::endl;
 	auto rsw = rootNode->getComponent<Rsw>();
-	if (!rsw->quadtree)
+	//if (!rsw->quadtree)
 	{
 		auto gnd = rootNode->getComponent<Gnd>();
+		if(rsw->quadtree)
+			delete rsw->quadtree;
 		rsw->quadtree = new Rsw::QuadTreeNode(-gnd->width/2.0f, -gnd->height/2.0f, (float)gnd->width, (float)gnd->height, 0);
 	}
 
