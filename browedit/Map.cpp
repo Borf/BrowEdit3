@@ -779,7 +779,7 @@ void Map::recalculateQuadTree(BrowEdit* browEdit)
 		auto gnd = rootNode->getComponent<Gnd>();
 		if(rsw->quadtree)
 			delete rsw->quadtree;
-		rsw->quadtree = new Rsw::QuadTreeNode(-gnd->width/2.0f, -gnd->height/2.0f, (float)gnd->width, (float)gnd->height, 0);
+		rsw->quadtree = new Rsw::QuadTreeNode(10*-gnd->width/2.0f, 10 * -gnd->height/2.0f, (float)gnd->width*10, (float)gnd->height*10, 0);
 	}
 
 	rsw->recalculateQuadtree();
