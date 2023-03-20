@@ -252,11 +252,15 @@ void GndRenderer::Chunk::rebuild()
 			if (cube->tileUp != -1)
 			{
 				Gnd::Tile* tile = gnd->tiles[cube->tileUp];
-				assert(tile->lightmapIndex >= 0);
+				glm::vec2 lm1(0, 0), lm2(0, 0);
 
-				glm::vec2 lm1((tile->lightmapIndex % shadowmapRowCount) * (lmsx / shadowmapSize) + 1.0f / shadowmapSize, 
-							  (tile->lightmapIndex / shadowmapRowCount) * (lmsy / shadowmapSize) + 1.0f / shadowmapSize);
-				glm::vec2 lm2(lm1 + glm::vec2(lmsxu / shadowmapSize, lmsyu / shadowmapSize));
+				
+				if(tile->lightmapIndex >= 0)
+				{
+					lm1 = glm::vec2((tile->lightmapIndex % shadowmapRowCount) * (lmsx / shadowmapSize) + 1.0f / shadowmapSize,
+								  (tile->lightmapIndex / shadowmapRowCount) * (lmsy / shadowmapSize) + 1.0f / shadowmapSize);
+					lm2 = glm::vec2(lm1 + glm::vec2(lmsxu / shadowmapSize, lmsyu / shadowmapSize));
+				}
 
 				glm::vec4 c1(1.0);
 				if(y < gnd->height-1 && gnd->cubes[x][y + 1]->tileUp != -1)

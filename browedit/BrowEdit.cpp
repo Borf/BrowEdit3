@@ -613,8 +613,14 @@ void fixBackup(const std::string& fileName, const std::string& backupfileName)
 	{
 		std::filesystem::path path(backupfileName);
 		auto p = path.parent_path().string();
-		if(!std::filesystem::exists(p))
-			std::filesystem::create_directories(p);
+		try {
+			if (!std::filesystem::exists(p))
+				std::filesystem::create_directories(p);
+		}
+		catch (...)
+		{
+			std::cerr << "Trying to create path " << p << ", but this didn't work for some reason" << std::endl;
+		}
 
 		int c = 0;
 		for(int i = 0; i < 999; i++)
