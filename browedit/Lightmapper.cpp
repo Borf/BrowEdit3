@@ -304,7 +304,7 @@ std::pair<glm::vec3, int> Lightmapper::calculateLight(const glm::vec3& groundPos
 					}
 				}
 			}
-			if (!collides && shadowStrength < 1 && rswLight->givesShadow && collidesMap(math::Ray(groundPos, lightDirection2), distance))
+			if (!collides && shadowStrength < 1 && rswLight->shadowTerrain && rswLight->givesShadow && collidesMap(math::Ray(groundPos, lightDirection2), distance))
 			{
 				collides = true;
 				shadowStrength = 1;

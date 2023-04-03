@@ -208,6 +208,7 @@ public:
 	bool affectShadowMap = true;
 	bool affectLightmap = true;
 	bool enabled = true;
+	bool shadowTerrain = true;
 
 	bool sunMatchRswDirection = true;
 	glm::vec3 direction = glm::normalize(glm::vec3(1, -1, 1));
@@ -236,7 +237,7 @@ public:
 	void save(std::ofstream& file);
 	nlohmann::json saveExtra();
 	static void buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>&);
-	NLOHMANN_DEFINE_TYPE_INTRUSIVE(RswLight, color, enabled, lightType, spotlightWidth, sunMatchRswDirection, direction, range, givesShadow, cutOff, cutOff, intensity, affectShadowMap, affectLightmap, falloff, falloffStyle);
+	NLOHMANN_DEFINE_TYPE_INTRUSIVE(RswLight, color, enabled, lightType, spotlightWidth, sunMatchRswDirection, direction, range, givesShadow, cutOff, cutOff, intensity, affectShadowMap, affectLightmap, falloff, falloffStyle, shadowTerrain);
 };
 
 class LubEffect : public Component
