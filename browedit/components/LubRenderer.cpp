@@ -100,7 +100,7 @@ void LubRenderer::render()
 
 	glEnable(GL_BLEND);
 	int src = d3dToOpenGlBlend(lubEffect->srcmode);
-	int dst = d3dToOpenGlBlend(lubEffect->srcmode);
+	int dst = d3dToOpenGlBlend(lubEffect->destmode);
 	glBlendFuncSeparate(src, dst, GL_ONE, GL_ONE);
 	glDepthMask(0);
 
