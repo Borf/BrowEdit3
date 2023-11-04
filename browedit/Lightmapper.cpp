@@ -304,7 +304,7 @@ std::pair<glm::vec3, int> Lightmapper::calculateLight(const glm::vec3& groundPos
 					}
 				}
 			}
-			if (!collides && shadowStrength < 1 && rswLight->givesShadow && collidesMap(math::Ray(groundPos, lightDirection2), distance))
+			if (!collides && shadowStrength < 1 && rswLight->shadowTerrain && rswLight->givesShadow && collidesMap(math::Ray(groundPos, lightDirection2), distance))
 			{
 				collides = true;
 				shadowStrength = 1;
@@ -440,7 +440,7 @@ void Lightmapper::calcPos(int direction, int tileId, int x, int y)
 							normal = -normal;
 					}
 					else
-						throw "wtf";
+						std::cerr << "You have a wall on the edge of tile " << x << "," << y << " ...this won't work" << std::endl;
 					if (buildDebugPoints)
 					{
 						debugPointMutex.lock();

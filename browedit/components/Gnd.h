@@ -66,7 +66,7 @@ public:
 			nlohmann_json_t.file = util::utf8_to_iso_8859_1(nlohmann_json_j["file"].get<std::string>());
 			nlohmann_json_t.name = util::utf8_to_iso_8859_1(nlohmann_json_j["name"].get<std::string>());
 		}
-		bool operator == (const Texture& other) { return this->name == other.name && this->file == other.file; }
+		bool operator == (const Texture& other) const { return this->name == other.name && this->file == other.file; }
 	};
 
 	class Lightmap

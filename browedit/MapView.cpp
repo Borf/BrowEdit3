@@ -402,7 +402,7 @@ void MapView::render(BrowEdit* browEdit)
 		map->rootNode->getComponent<GndRenderer>()->viewEmptyTiles = viewEmptyTiles;
 		auto gnd = map->rootNode->getComponent<Gnd>();
 		for (int x = 0; x < gnd->width; x++)
-			for (int y = 0; y < gnd->height - 15; y++)
+			for (int y = 0; y < gnd->height; y++)
 				map->rootNode->getComponent<GndRenderer>()->setChunkDirty(x,y);
 	}
 	if (map->rootNode->getComponent<GndRenderer>()->smoothColors != smoothColors)

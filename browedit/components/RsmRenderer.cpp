@@ -105,11 +105,12 @@ void RsmRenderer::render()
 		if (rswModel)
 		{
 			matrixCache = glm::scale(matrixCache, glm::vec3(rswObject->scale.x, -rswObject->scale.y, rswObject->scale.z));
-			matrixCache = glm::translate(matrixCache, glm::vec3(-rsm->realbbrange.x, rsm->realbbmin.y, -rsm->realbbrange.z));
-			if (rsm->version >= 0x0202)
-			{
+
+			if (rsm->version < 0x0202) {
+				matrixCache = glm::translate(matrixCache, glm::vec3(-rsm->realbbrange.x, rsm->realbbmin.y, -rsm->realbbrange.z));
+			}
+			else {
 				matrixCache = glm::scale(matrixCache, glm::vec3(1, -1, 1));
-				matrixCache = glm::translate(matrixCache, glm::vec3(0, rsm->realbbmax.y, 0));
 			}
 
 		}
@@ -134,7 +135,6 @@ void RsmRenderer::render()
 	{
 		matrixCache = glm::mat4(1.0f);
 		matrixCache = glm::scale(matrixCache, glm::vec3(1, -1, 1));
-		matrixCache = glm::translate(matrixCache, glm::vec3(0, rsm->realbbmax.y, 0));
 	}
 	auto shader = dynamic_cast<RsmRenderContext*>(renderContext)->shader;
 	shader->setUniform(RsmShader::Uniforms::shadeType, (int)rsm->shadeType);
@@ -196,8 +196,15 @@ void RsmRenderer::initMeshInfo(Rsm::Mesh* mesh, const glm::mat4 &matrix)
 		renderInfo[mesh->index].vbo = new gl::VBO<VertexP3T2N3>();
 		renderInfo[mesh->index].vbo->setData(allVerts, GL_STATIC_DRAW);
 	}
-	renderInfo[mesh->index].matrix = matrix * mesh->matrix1 * mesh->matrix2;
-	renderInfo[mesh->index].matrixSub = matrix * mesh->matrix1;
+
+	if (mesh->model->version >= 0x202) {
+		renderInfo[mesh->index].matrix = mesh->matrix2;
+		renderInfo[mesh->index].matrixSub = glm::mat4(1.0f);
+	}
+	else {
+		renderInfo[mesh->index].matrix = matrix * mesh->matrix1 * mesh->matrix2;
+		renderInfo[mesh->index].matrixSub = matrix * mesh->matrix1;
+	}
 
 	//if (mesh->textureFiles.size() > 0) // 0x0203
 	//	for (auto& textureFilename : mesh->textureFiles)
@@ -208,7 +215,7 @@ void RsmRenderer::initMeshInfo(Rsm::Mesh* mesh, const glm::mat4 &matrix)
 	meshDirty = false;
 }
 
-void RsmRenderer::renderMesh(Rsm::Mesh* mesh, const glm::mat4& matrix, bool selectionPhase)
+void RsmRenderer::renderMesh(Rsm::Mesh* mesh, const glm::mat4& matrix, bool selectionPhase, bool calcMatrix)
 {
 	if (textures.empty())
 	{
@@ -216,15 +223,26 @@ void RsmRenderer::renderMesh(Rsm::Mesh* mesh, const glm::mat4& matrix, bool sele
 			textures.push_back(util::ResourceManager<gl::Texture>::load("data\\texture\\" + textureFilename));
 	}
 
-	if (mesh && (!mesh->rotFrames.empty() || mesh->matrixDirty))
+	if (mesh && (!mesh->rotFrames.empty() || mesh->model->version >= 0x202 || mesh->matrixDirty))
 	{
 		mesh->matrixDirty = false;
-		if(time < 0)
-			mesh->calcMatrix1((int)floor(glfwGetTime() * 1000));
-		else
-			mesh->calcMatrix1((int)floor(time * 1000));
-		renderInfo[mesh->index].matrix = matrix * mesh->matrix1 * mesh->matrix2;
-		renderInfo[mesh->index].matrixSub = matrix * mesh->matrix1;
+
+		if (calcMatrix) {
+			if(time < 0)
+				mesh->calcMatrix1((int)floor(glfwGetTime() * 1000));
+			else
+				mesh->calcMatrix1((int)floor(time * 1000));
+		}
+
+		if (mesh->model->version >= 0x202) {
+			calcMatrix = false;
+			renderInfo[mesh->index].matrix = mesh->matrix2;
+			renderInfo[mesh->index].matrixSub = glm::mat4(1.0f);
+		}
+		else {
+			renderInfo[mesh->index].matrix = matrix * mesh->matrix1 * mesh->matrix2;
+			renderInfo[mesh->index].matrixSub = matrix * mesh->matrix1;
+		}
 	}
 
 	auto shader = dynamic_cast<RsmRenderContext*>(renderContext)->shader;

@@ -79,7 +79,6 @@ void Rsm::reload()
 	}
 	else if (version >= 0x0202)
 	{
-		float fps;
 		rsmFile->read(reinterpret_cast<char*>(&fps), sizeof(float));
 
 		int textureCount;
@@ -422,7 +421,7 @@ Rsm::Mesh::Mesh(Rsm* model, std::istream* rsmFile)
 			rsmFile->read(reinterpret_cast<char*>(&scaleFrames[i].time), sizeof(int));
 			rsmFile->read(reinterpret_cast<char*>(glm::value_ptr(scaleFrames[i].scale)), sizeof(float) * 3);
 			rsmFile->read(reinterpret_cast<char*>(&scaleFrames[i].data), sizeof(float));
-			if (model->version > 0x0202)
+			if (model->version >= 0x0202)
 				scaleFrames[i].time = (int)ceil(scaleFrames[i].time * model->fps); //TODO: remove this
 		}
 	}
@@ -440,7 +439,7 @@ Rsm::Mesh::Mesh(Rsm* model, std::istream* rsmFile)
 		rsmFile->read(reinterpret_cast<char*>(&z), sizeof(float));
 		rsmFile->read(reinterpret_cast<char*>(&w), sizeof(float));
 		rotFrames[i].quaternion = glm::quat(w, x, y, z);
-		if (model->version > 0x0202)
+		if (model->version >= 0x0202)
 			rotFrames[i].time = (int)ceil(rotFrames[i].time * model->fps); //TODO: remove this
 
 	}
@@ -518,67 +517,193 @@ void Rsm::Mesh::calcMatrix1(int time)
 {
 	matrix1 = glm::mat4(1.0f);
 
-	if (parent == NULL)
-	{
-		if (children.size() > 0)
-			matrix1 = glm::translate(matrix1, glm::vec3(-model->bbrange.x, -model->bbmax.y, -model->bbrange.z));
-		else
-			matrix1 = glm::translate(matrix1, glm::vec3(0, -model->bbmax.y + model->bbrange.y, 0));
-	}
-	else
-		matrix1 = glm::translate(matrix1, pos);
-
-	if (rotFrames.size() == 0)
-	{
-		if (fabs(rotangle) > 0.01)
-			matrix1 = glm::rotate(matrix1, glm::radians(rotangle * 180.0f / 3.14159f), rotaxis); //TODO: double conversion
-	}
-	else
-	{
-		if (rotFrames[rotFrames.size() - 1].time != 0)
+	if (model->version < 0x0202) {
+		if (parent == NULL)
 		{
-			int tick = time % rotFrames[rotFrames.size() - 1].time;
-			int current = 0;
-			for (unsigned int i = 0; i < rotFrames.size(); i++)
+			if (children.size() > 0)
+				matrix1 = glm::translate(matrix1, glm::vec3(-model->bbrange.x, -model->bbmax.y, -model->bbrange.z));
+			else
+				matrix1 = glm::translate(matrix1, glm::vec3(0, -model->bbmax.y + model->bbrange.y, 0));
+		}
+		else
+			matrix1 = glm::translate(matrix1, pos);
+
+		if (rotFrames.size() == 0)
+		{
+			if (fabs(rotangle) > 0.01)
+				matrix1 = glm::rotate(matrix1, glm::radians(rotangle * 180.0f / 3.14159f), rotaxis); //TODO: double conversion
+		}
+		else
+		{
+			if (rotFrames[rotFrames.size() - 1].time != 0)
 			{
-				if (rotFrames[i].time > tick)
+				int tick = time % rotFrames[rotFrames.size() - 1].time;
+				int current = 0;
+				for (unsigned int i = 0; i < rotFrames.size(); i++)
 				{
-					current = i - 1;
-					break;
+					if (rotFrames[i].time > tick)
+					{
+						current = i - 1;
+						break;
+					}
 				}
-			}
-			if (current < 0)
-				current = 0;
+				if (current < 0)
+					current = 0;
 
-			int next = current + 1;
-			if (next >= (int)rotFrames.size())
-				next = 0;
+				int next = current + 1;
+				if (next >= (int)rotFrames.size())
+					next = 0;
 
-			float interval = ((float)(tick - rotFrames[current].time)) / ((float)(rotFrames[next].time - rotFrames[current].time));
+				float interval = ((float)(tick - rotFrames[current].time)) / ((float)(rotFrames[next].time - rotFrames[current].time));
 #if 1
-			glm::quat quat = glm::mix(rotFrames[current].quaternion, rotFrames[next].quaternion, interval);
+				glm::quat quat = glm::mix(rotFrames[current].quaternion, rotFrames[next].quaternion, interval);
 #else
-			bEngine::math::cQuaternion quat(
-				(1 - interval) * animationFrames[current].quat.x + interval * animationFrames[next].quat.x,
-				(1 - interval) * animationFrames[current].quat.y + interval * animationFrames[next].quat.y,
-				(1 - interval) * animationFrames[current].quat.z + interval * animationFrames[next].quat.z,
-				(1 - interval) * animationFrames[current].quat.w + interval * animationFrames[next].quat.w);
+				bEngine::math::cQuaternion quat(
+					(1 - interval) * animationFrames[current].quat.x + interval * animationFrames[next].quat.x,
+					(1 - interval) * animationFrames[current].quat.y + interval * animationFrames[next].quat.y,
+					(1 - interval) * animationFrames[current].quat.z + interval * animationFrames[next].quat.z,
+					(1 - interval) * animationFrames[current].quat.w + interval * animationFrames[next].quat.w);
 #endif
 
-			quat = glm::normalize(quat);
+				quat = glm::normalize(quat);
 
-			matrix1 = matrix1 * glm::toMat4(quat);
+				matrix1 = matrix1 * glm::toMat4(quat);
 
+					}
+			else
+			{
+				matrix1 *= glm::toMat4(glm::normalize(rotFrames[0].quaternion));
+			}
+		}
+
+		matrix1 = glm::scale(matrix1, scale);
+	}
+	else {
+		matrix2 = glm::mat4(1.0f);
+
+		if (scaleFrames.size() > 0) {
+			if (scaleFrames[scaleFrames.size() - 1].time != 0)
+			{
+				int tick = model->version >= 0x203 ? time % model->animLen : time % scaleFrames[scaleFrames.size() - 1].time;
+				
+				if (tick >= scaleFrames[scaleFrames.size() - 1].time) {
+					matrix1 = glm::scale(matrix1, scaleFrames[scaleFrames.size() - 1].scale);
+				}
+				else {
+					for (unsigned int i = 0; i < scaleFrames.size() - 1; i++)
+					{
+						if (tick >= scaleFrames[i].time && tick < scaleFrames[i + 1].time)
+						{
+							float interval = ((float)(tick - scaleFrames[i].time)) / ((float)(scaleFrames[i + 1].time - scaleFrames[i].time));
+							glm::vec3 scale = scaleFrames[i].scale + (scaleFrames[i + 1].scale - scaleFrames[i].scale) * interval;
+							matrix1 = glm::scale(matrix1, scale);
+							break;
+						}
+					}
+				}
+			}
+			else
+			{
+				matrix1 = glm::scale(matrix1, scaleFrames[0].scale);
+			}
+		}
+
+		if (rotFrames.size() > 0)
+		{
+			if (rotFrames[rotFrames.size() - 1].time != 0)
+			{
+				int tick = model->version >= 0x203 ? time % model->animLen : time % rotFrames[rotFrames.size() - 1].time;
+
+				if (tick >= rotFrames[rotFrames.size() - 1].time) {
+					matrix1 = matrix1 * glm::toMat4(rotFrames[rotFrames.size() - 1].quaternion);
+				}
+				else {
+					for (unsigned int i = 0; i < rotFrames.size() - 1; i++)
+					{
+						if (tick >= rotFrames[i].time && tick < rotFrames[i + 1].time)
+						{
+							float interval = ((float)(tick - rotFrames[i].time)) / ((float)(rotFrames[i + 1].time - rotFrames[i].time));
+							glm::quat quat = glm::slerp(rotFrames[i].quaternion, rotFrames[i + 1].quaternion, interval);
+							matrix1 = glm::toMat4(quat) * matrix1;
+							break;
+						}
+					}
+				}
+			}
+			else
+			{
+				matrix1 = glm::toMat4(glm::normalize(rotFrames[0].quaternion)) * matrix1;
+			}
 		}
 		else
 		{
-			matrix1 *= glm::toMat4(glm::normalize(rotFrames[0].quaternion));
+			matrix1 = offset * matrix1;
+
+			if (parent != NULL)
+			{
+				matrix1 = glm::inverse(parent->offset) * matrix1;
+			}
+		}
+
+		matrix2 = glm::mat4(matrix1);
+		glm::vec3 position;
+		
+		if (posFrames.size() > 0) {
+			if (posFrames[posFrames.size() - 1].time != 0)
+			{
+				int tick = model->version >= 0x203 ? time % model->animLen : time % posFrames[posFrames.size() - 1].time;
+
+				if (tick >= posFrames[posFrames.size() - 1].time) {
+					position = posFrames[posFrames.size() - 1].position;
+				}
+				else {
+					for (unsigned int i = 0; i < posFrames.size() - 1; i++)
+					{
+						if (tick >= posFrames[i].time && tick < posFrames[i + 1].time)
+						{
+							float interval = ((float)(tick - posFrames[i].time)) / ((float)(posFrames[i + 1].time - posFrames[i].time));
+							position = posFrames[i].position + (posFrames[i + 1].position - posFrames[i].position) * interval;
+							break;
+						}
+					}
+				}
+			}
+			else
+			{
+				position = posFrames[0].position;
+			}
+		}
+		else
+		{
+			if (parent != NULL)
+			{
+				position = pos_ - parent->pos_;
+				position = glm::inverse(parent->offset) * glm::vec4(position.x, position.y, position.z, 0);
+			}
+			else {
+				position = pos_;
+			}
+		}
+
+		matrix2[3].x = position.x;
+		matrix2[3].y = position.y;
+		matrix2[3].z = position.z;
+
+		Mesh *mesh = this;
+
+		while (mesh->parent != NULL)
+		{
+			mesh = mesh->parent;
+			matrix2 = mesh->matrix1 * matrix2;
+		}
+		
+		if (parent != NULL)
+		{
+			matrix2[3].x += parent->matrix2[3].x;
+			matrix2[3].y += parent->matrix2[3].y;
+			matrix2[3].z += parent->matrix2[3].z;
 		}
 	}
-
-	matrix1 = glm::scale(matrix1, scale);
-	//	if(nAnimationFrames == 0)
-	//		cache1 = true;
 
 	for (unsigned int i = 0; i < children.size(); i++)
 		children[i]->calcMatrix1(time);
@@ -588,16 +713,19 @@ void Rsm::Mesh::calcMatrix2()
 {
 	matrix2 = glm::mat4(1.0f);
 
-	if (parent == NULL && children.size() == 0)
-		matrix2 = glm::translate(matrix2, -1.0f * model->bbrange);
+	if (model->version < 0x202) {
+		if (parent == NULL && children.size() == 0) {
+			matrix2 = glm::translate(matrix2, -1.0f * model->bbrange);
+		}
 
-	if (parent != NULL || children.size() != 0)
-		matrix2 = glm::translate(matrix2, pos_);
+		if (parent != NULL || children.size() != 0)
+			matrix2 = glm::translate(matrix2, pos_);
 
-	matrix2 *= offset;
+		matrix2 *= offset;
 
-	for (unsigned int i = 0; i < children.size(); i++)
-		children[i]->calcMatrix2();
+		for (unsigned int i = 0; i < children.size(); i++)
+			children[i]->calcMatrix2();
+	}
 }
 
 
