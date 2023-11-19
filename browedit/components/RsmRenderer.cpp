@@ -143,9 +143,10 @@ void RsmRenderer::render()
 	glm::vec3 lightDirection(1,1,1);
 	if (rsw)
 	{
-		lightDirection[0] = -glm::cos(glm::radians((float)rsw->light.longitude)) * glm::sin(glm::radians((float)rsw->light.latitude));
-		lightDirection[1] = glm::cos(glm::radians((float)rsw->light.latitude));
-		lightDirection[2] = glm::sin(glm::radians((float)rsw->light.longitude)) * glm::sin(glm::radians((float)rsw->light.latitude));
+		glm::mat4 rot = glm::mat4(1.0f);
+		rot = glm::rotate(rot, glm::radians(-(float)rsw->light.latitude), glm::vec3(1, 0, 0));
+		rot = glm::rotate(rot, glm::radians((float)rsw->light.longitude), glm::vec3(0, 1, 0));
+		lightDirection = glm::vec3(0.0f, 1.0f, 0.0f) * glm::mat3(rot);
 		shader->setUniform(RsmShader::Uniforms::lightAmbient, rsw->light.ambient);
 		shader->setUniform(RsmShader::Uniforms::lightDiffuse, rsw->light.diffuse);
 		shader->setUniform(RsmShader::Uniforms::lightIntensity, rsw->light.intensity);

@@ -35,13 +35,11 @@ void main()
 	texture = mix(vec4(1,1,1,texColor.a), texColor, viewTextures);
 	if(texture.a < 0.1)
 		discard;
-
+	
+	texture.rgb *= max((max(0.0, dot(normal, vec3(1,-1,1)*lightDirection)) * lightDiffuse + lightIntensity * lightAmbient), lightToggle);
 	texture.rgb *= max(color, colorToggle).rgb;
 	texture.rgb *= max(texture2D(s_lighting, texCoord2).a, shadowMapToggle);
-
-
-	texture.rgb *= max((max(0.0, dot(normal, vec3(-1,-1,1)*lightDirection)) * lightDiffuse + lightIntensity * lightAmbient), lightToggle);
-	texture += clamp(vec4(texture2D(s_lighting, texCoord2).rgb,1.0), 0.0, 1.0) * lightColorToggle;
+	texture.rgb += clamp(texture2D(s_lighting, texCoord2).rgb, 0.0, 1.0) * lightColorToggle;
 
 	if(fogEnabled)
 	{
