@@ -11,10 +11,9 @@ out vec4 fragColor;
 void main()
 {
 	vec4 outColor = texture2D(s_texture, texCoord);
-	//output.a = (output.r + output.g + output.b) / 3;
 	outColor *= color;
-	outColor.rgb *= alpha;
-	if(outColor.a < 0.1)
-		discard;
+	outColor.a *= alpha;
+	//if(outColor.a < 0.1)
+	//	discard;
 	fragColor = outColor;
 }

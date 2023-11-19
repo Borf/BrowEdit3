@@ -118,7 +118,11 @@ void LubEffect::load(const json& data)
 	srcmode = data["srcmode"][0];
 	destmode = data["destmode"][0];
 	maxcount = data["maxcount"][0];
-
+	
+	if (data.find("billboard_off") != data.end())
+		billboard_off = data["billboard_off"][0];
+	if (data.find("rotate_angle") != data.end())
+		from_json(data["rotate_angle"], rotate_angle);
 }
 
 void LubEffect::buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>& nodes)
