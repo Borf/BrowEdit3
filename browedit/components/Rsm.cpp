@@ -771,19 +771,16 @@ void Rsm::Mesh::setBoundingBox2(glm::mat4& mat, glm::vec3& bbmin_, glm::vec3& bb
 {
 	glm::mat4 mat1 = mat * matrix1;
 	glm::mat4 mat2 = mat * matrix1 * matrix2;
-	for (unsigned int i = 0; i < faces.size(); i++)
+	for (unsigned int i = 0; i < vertices.size(); i++)
 	{
-		for (int ii = 0; ii < 3; ii++)
-		{
-			glm::vec4 v = mat2 * glm::vec4(vertices[faces[i].vertexIds[ii]], 1);
-			bbmin_.x = glm::min(bbmin_.x, v.x);
-			bbmin_.y = glm::min(bbmin_.y, v.y);
-			bbmin_.z = glm::min(bbmin_.z, v.z);
+		glm::vec4 v = mat2 * glm::vec4(vertices[i], 1);
+		bbmin_.x = glm::min(bbmin_.x, v.x);
+		bbmin_.y = glm::min(bbmin_.y, v.y);
+		bbmin_.z = glm::min(bbmin_.z, v.z);
 
-			bbmax_.x = glm::max(bbmax_.x, v.x);
-			bbmax_.y = glm::max(bbmax_.y, v.y);
-			bbmax_.z = glm::max(bbmax_.z, v.z);
-		}
+		bbmax_.x = glm::max(bbmax_.x, v.x);
+		bbmax_.y = glm::max(bbmax_.y, v.y);
+		bbmax_.z = glm::max(bbmax_.z, v.z);
 	}
 
 	for (unsigned int i = 0; i < children.size(); i++)
