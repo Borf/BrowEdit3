@@ -228,10 +228,12 @@ void RsmRenderer::renderMesh(Rsm::Mesh* mesh, const glm::mat4& matrix, bool sele
 		mesh->matrixDirty = false;
 
 		if (calcMatrix) {
+			float mult = this->rswModel != nullptr ? this->rswModel->animSpeed : 1.0f;
+			
 			if(time < 0)
-				mesh->calcMatrix1((int)floor(glfwGetTime() * 1000));
+				mesh->calcMatrix1((int)floor(glfwGetTime() * 1000 * mult));
 			else
-				mesh->calcMatrix1((int)floor(time * 1000));
+				mesh->calcMatrix1((int)floor(time * 1000 * mult));
 		}
 
 		if (mesh->model->version >= 0x202) {
