@@ -114,10 +114,11 @@ void GndRenderer::render()
 	shader->setUniform(GndShader::Uniforms::ModelViewMatrix, dynamic_cast<GndRenderContext*>(renderContext)->viewMatrix);
 
 
-	glm::vec3 lightDirection;
-	lightDirection[0] = -glm::cos(glm::radians((float)rsw->light.longitude)) * glm::sin(glm::radians((float)rsw->light.latitude));
-	lightDirection[1] = glm::cos(glm::radians((float)rsw->light.latitude));
-	lightDirection[2] = glm::sin(glm::radians((float)rsw->light.longitude)) * glm::sin(glm::radians((float)rsw->light.latitude));
+	glm::vec3 lightDirection(0.0f, 1.0f, 0.0f);
+	glm::mat4 rot = glm::mat4(1.0f);
+	rot = glm::rotate(rot, glm::radians(-(float)rsw->light.latitude), glm::vec3(1, 0, 0));
+	rot = glm::rotate(rot, glm::radians((float)rsw->light.longitude), glm::vec3(0, 1, 0));
+	lightDirection = lightDirection * glm::mat3(rot);
 	shader->setUniform(GndShader::Uniforms::lightAmbient, rsw->light.ambient);
 	shader->setUniform(GndShader::Uniforms::lightDiffuse, rsw->light.diffuse);
 	shader->setUniform(GndShader::Uniforms::lightDirection, lightDirection);

@@ -30,12 +30,16 @@ void main()
 	if(color.a < 0.1)
 		discard;
 
-	if(shadeType == 1 || shadeType == 2 && lightToggle)
-		color.rgb *= lightIntensity * clamp(dot(normalize(normal), lightDirection),0.0,1.0) * lightDiffuse + lightAmbient;
-
-	if(shadeType == 4 && lightToggle) // only for editor
-		color.rgb *= lightDiffuse;
-
+	if (lightToggle) {
+		// lightIntensity is ignored by the client for whatever reason
+		if (shadeType == 0)
+			color.rgb *= min(lightDiffuse, 1.0 - lightAmbient) * lightDiffuse + lightAmbient;
+		else if (shadeType == 1 || shadeType == 2)
+			color.rgb *= clamp(dot(normalize(normal), lightDirection),0.0,1.0) * lightDiffuse + lightAmbient;
+		else if (shadeType == 4) // only for editor
+			color.rgb *= lightDiffuse;
+	}
+	
 	if(fogEnabled)
 	{
 		float depth = gl_FragCoord.z / gl_FragCoord.w;
