@@ -535,7 +535,7 @@ void MapView::postRenderTextureMode(BrowEdit* browEdit)
 
 
 							t->color = glm::ivec4(255, 255, 255, 255);
-							t->lightmapIndex = -1;
+							t->lightmapIndex = 0;
 							t->textureIndex = textureSelected;
 
 							if (cube->tileUp != -1)
@@ -965,7 +965,7 @@ void MapView::postRenderTextureMode(BrowEdit* browEdit)
 				t->v4.y = 1.0f - t->v4.y;
 
 				t->color = glm::ivec4(255, 255, 255, 255);
-				t->lightmapIndex = -1;
+				t->lightmapIndex = 0;
 				t->textureIndex = textureSelected;
 
 				if (cube->tileUp != -1)
