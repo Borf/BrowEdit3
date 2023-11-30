@@ -80,7 +80,7 @@ void Rsm::reload()
 	else if (version >= 0x0202)
 	{
 		rsmFile->read(reinterpret_cast<char*>(&fps), sizeof(float));
-
+		animLen = (int)ceil(animLen * fps);
 		int textureCount;
 		rsmFile->read(reinterpret_cast<char*>(&textureCount), sizeof(int));;
 		if (textureCount > 100 || textureCount < 0)
@@ -582,58 +582,51 @@ void Rsm::Mesh::calcMatrix1(int time)
 		matrix2 = glm::mat4(1.0f);
 
 		if (scaleFrames.size() > 0) {
-			if (scaleFrames[scaleFrames.size() - 1].time != 0)
-			{
-				int tick = model->version >= 0x203 ? time % model->animLen : time % scaleFrames[scaleFrames.size() - 1].time;
-				
-				if (tick >= scaleFrames[scaleFrames.size() - 1].time) {
-					matrix1 = glm::scale(matrix1, scaleFrames[scaleFrames.size() - 1].scale);
-				}
-				else {
-					for (unsigned int i = 0; i < scaleFrames.size() - 1; i++)
-					{
-						if (tick >= scaleFrames[i].time && tick < scaleFrames[i + 1].time)
-						{
-							float interval = ((float)(tick - scaleFrames[i].time)) / ((float)(scaleFrames[i + 1].time - scaleFrames[i].time));
-							glm::vec3 scale = scaleFrames[i].scale + (scaleFrames[i + 1].scale - scaleFrames[i].scale) * interval;
-							matrix1 = glm::scale(matrix1, scale);
-							break;
-						}
-					}
-				}
+			int tick = time % glm::max(1, model->animLen);
+			int prevIndex = -1;
+			int nextIndex = -1;
+
+			while (true) {
+				nextIndex++;
+
+				if (nextIndex == scaleFrames.size() || tick < scaleFrames[nextIndex].time)
+					break;
+
+				prevIndex++;
 			}
-			else
-			{
-				matrix1 = glm::scale(matrix1, scaleFrames[0].scale);
-			}
+
+			float prevTick = prevIndex < 0 ? 0 : scaleFrames[prevIndex].time;
+			float nextTick = nextIndex == scaleFrames.size() ? model->animLen : scaleFrames[nextIndex].time;
+			glm::vec3 prev = prevIndex < 0 ? glm::vec3(1) : scaleFrames[prevIndex].scale;
+			glm::vec3 next = nextIndex == scaleFrames.size() ? scaleFrames[nextIndex - 1].scale : scaleFrames[nextIndex].scale;
+
+			float mult = (tick - prevTick) / (nextTick - prevTick);
+			matrix1 = glm::scale(matrix1, mult * (next - prev) + prev);
 		}
 
 		if (rotFrames.size() > 0)
 		{
-			if (rotFrames[rotFrames.size() - 1].time != 0)
-			{
-				int tick = model->version >= 0x203 ? time % model->animLen : time % rotFrames[rotFrames.size() - 1].time;
+			int tick = time % glm::max(1, model->animLen);
+			int prevIndex = -1;
+			int nextIndex = -1;
 
-				if (tick >= rotFrames[rotFrames.size() - 1].time) {
-					matrix1 = matrix1 * glm::toMat4(rotFrames[rotFrames.size() - 1].quaternion);
-				}
-				else {
-					for (unsigned int i = 0; i < rotFrames.size() - 1; i++)
-					{
-						if (tick >= rotFrames[i].time && tick < rotFrames[i + 1].time)
-						{
-							float interval = ((float)(tick - rotFrames[i].time)) / ((float)(rotFrames[i + 1].time - rotFrames[i].time));
-							glm::quat quat = glm::slerp(rotFrames[i].quaternion, rotFrames[i + 1].quaternion, interval);
-							matrix1 = glm::toMat4(quat) * matrix1;
-							break;
-						}
-					}
-				}
+			while (true) {
+				nextIndex++;
+
+				if (nextIndex == rotFrames.size() || tick < rotFrames[nextIndex].time)
+					break;
+
+				prevIndex++;
 			}
-			else
-			{
-				matrix1 = glm::toMat4(glm::normalize(rotFrames[0].quaternion)) * matrix1;
-			}
+
+			float prevTick = prevIndex < 0 ? 0 : rotFrames[prevIndex].time;
+			float nextTick = nextIndex == rotFrames.size() ? model->animLen : rotFrames[nextIndex].time;
+			glm::quat prev = prevIndex < 0 ? glm::quat() : rotFrames[prevIndex].quaternion;
+			glm::quat next = nextIndex == rotFrames.size() ? rotFrames[nextIndex - 1].quaternion : rotFrames[nextIndex].quaternion;
+
+			float mult = (tick - prevTick) / (nextTick - prevTick);
+			glm::quat quat = glm::slerp(prev, next, mult);
+			matrix1 = glm::toMat4(quat) * matrix1;
 		}
 		else
 		{
@@ -649,29 +642,26 @@ void Rsm::Mesh::calcMatrix1(int time)
 		glm::vec3 position;
 		
 		if (posFrames.size() > 0) {
-			if (posFrames[posFrames.size() - 1].time != 0)
-			{
-				int tick = model->version >= 0x203 ? time % model->animLen : time % posFrames[posFrames.size() - 1].time;
+			int tick = time % glm::max(1, model->animLen);
+			int prevIndex = -1;
+			int nextIndex = -1;
 
-				if (tick >= posFrames[posFrames.size() - 1].time) {
-					position = posFrames[posFrames.size() - 1].position;
-				}
-				else {
-					for (unsigned int i = 0; i < posFrames.size() - 1; i++)
-					{
-						if (tick >= posFrames[i].time && tick < posFrames[i + 1].time)
-						{
-							float interval = ((float)(tick - posFrames[i].time)) / ((float)(posFrames[i + 1].time - posFrames[i].time));
-							position = posFrames[i].position + (posFrames[i + 1].position - posFrames[i].position) * interval;
-							break;
-						}
-					}
-				}
+			while (true) {
+				nextIndex++;
+
+				if (nextIndex == posFrames.size() || tick < posFrames[nextIndex].time)
+					break;
+
+				prevIndex++;
 			}
-			else
-			{
-				position = posFrames[0].position;
-			}
+
+			float prevTick = prevIndex < 0 ? 0 : posFrames[prevIndex].time;
+			float nextTick = nextIndex == posFrames.size() ? model->animLen : posFrames[nextIndex].time;
+			glm::vec3 prev = prevIndex < 0 ? pos_ : posFrames[prevIndex].position;
+			glm::vec3 next = nextIndex == posFrames.size() ? posFrames[nextIndex - 1].position : posFrames[nextIndex].position;
+
+			float mult = (tick - prevTick) / (nextTick - prevTick);
+			position = mult * (next - prev) + prev;
 		}
 		else
 		{
