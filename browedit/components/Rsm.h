@@ -171,7 +171,7 @@ public:
 
 
 
-	VERSIONLIMIT(0x0104, 0xFFFF, char, alpha);
+	VERSIONLIMIT(0x0104, 0xFFFF, unsigned char, alpha);
 	int animLen;
 	std::vector<std::string> textures;
 

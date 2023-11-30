@@ -595,8 +595,8 @@ void Rsm::Mesh::calcMatrix1(int time)
 				prevIndex++;
 			}
 
-			float prevTick = prevIndex < 0 ? 0 : scaleFrames[prevIndex].time;
-			float nextTick = nextIndex == scaleFrames.size() ? model->animLen : scaleFrames[nextIndex].time;
+			float prevTick = (float)(prevIndex < 0 ? 0 : scaleFrames[prevIndex].time); //TODO: this part is repeated for rot,scale,pos... dedupe code
+			float nextTick = (float)(nextIndex == scaleFrames.size() ? model->animLen : scaleFrames[nextIndex].time);
 			glm::vec3 prev = prevIndex < 0 ? glm::vec3(1) : scaleFrames[prevIndex].scale;
 			glm::vec3 next = nextIndex == scaleFrames.size() ? scaleFrames[nextIndex - 1].scale : scaleFrames[nextIndex].scale;
 
@@ -619,8 +619,8 @@ void Rsm::Mesh::calcMatrix1(int time)
 				prevIndex++;
 			}
 
-			float prevTick = prevIndex < 0 ? 0 : rotFrames[prevIndex].time;
-			float nextTick = nextIndex == rotFrames.size() ? model->animLen : rotFrames[nextIndex].time;
+			float prevTick = (float)(prevIndex < 0 ? 0 : rotFrames[prevIndex].time);
+			float nextTick = (float)(nextIndex == rotFrames.size() ? model->animLen : rotFrames[nextIndex].time);
 			glm::quat prev = prevIndex < 0 ? glm::quat() : rotFrames[prevIndex].quaternion;
 			glm::quat next = nextIndex == rotFrames.size() ? rotFrames[nextIndex - 1].quaternion : rotFrames[nextIndex].quaternion;
 
@@ -655,8 +655,8 @@ void Rsm::Mesh::calcMatrix1(int time)
 				prevIndex++;
 			}
 
-			float prevTick = prevIndex < 0 ? 0 : posFrames[prevIndex].time;
-			float nextTick = nextIndex == posFrames.size() ? model->animLen : posFrames[nextIndex].time;
+			float prevTick = (float)(prevIndex < 0 ? 0 : posFrames[prevIndex].time);
+			float nextTick = (float)(nextIndex == posFrames.size() ? model->animLen : posFrames[nextIndex].time);
 			glm::vec3 prev = prevIndex < 0 ? pos_ : posFrames[prevIndex].position;
 			glm::vec3 next = nextIndex == posFrames.size() ? posFrames[nextIndex - 1].position : posFrames[nextIndex].position;
 
@@ -798,7 +798,7 @@ void Rsm::Mesh::save(std::ostream* pFile)
 	pFile->write(t->parentName.c_str(), len);
 	pFile->write(zeroes, 40 - len);
 	// Texture ID count
-	int textureCount = t->textures.size();
+	auto textureCount = t->textures.size();
 	pFile->write((char*)&textureCount, 4);
 	// Texture ID
 	for (int i = 0; i < textureCount; i++) {
@@ -823,7 +823,7 @@ void Rsm::Mesh::save(std::ostream* pFile)
 	pFile->write((char*)&t->scale, sizeof(float) * 3);
 
 	// Vertices
-	int vertexCount = t->vertices.size();
+	auto vertexCount = t->vertices.size();
 	pFile->write((char*)&vertexCount, sizeof(int));
 
 	for (int i = 0; i < vertexCount; i++) {
@@ -831,7 +831,7 @@ void Rsm::Mesh::save(std::ostream* pFile)
 	}
 
 	// Texture Coordinates
-	int texCoordCount = t->texCoords.size();
+	auto texCoordCount = t->texCoords.size();
 	pFile->write((char*)&texCoordCount, sizeof(int));
 	for (int i = 0; i < texCoordCount; i++)
 	{
@@ -840,7 +840,7 @@ void Rsm::Mesh::save(std::ostream* pFile)
 	}
 
 	// Faces
-	int faceCount = t->faces.size();
+	auto faceCount = t->faces.size();
 	pFile->write((char*)&faceCount, sizeof(int));
 	for (int i = 0; i < faceCount; i++)
 	{
