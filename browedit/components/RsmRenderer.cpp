@@ -224,7 +224,7 @@ void RsmRenderer::renderMesh(Rsm::Mesh* mesh, const glm::mat4& matrix, bool sele
 			textures.push_back(util::ResourceManager<gl::Texture>::load("data\\texture\\" + textureFilename));
 	}
 
-	if (mesh && (!mesh->rotFrames.empty() || mesh->matrixDirty || !mesh->scaleFrames.empty() || !mesh->posFrames.empty()))
+	if (mesh && (!mesh->rotFrames.empty() || mesh->matrixDirty || mesh->model->version >= 0x202))
 	{
 		mesh->matrixDirty = false;
 

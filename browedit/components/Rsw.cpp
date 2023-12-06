@@ -51,6 +51,7 @@ void Rsw::load(const std::string& fileName, Map* map, BrowEdit* browEdit, bool l
 	quadtree = nullptr;
 
 	json lubInfo = json::array();
+	std::map<int, json> lubInfoMap;
 
 	std::string mapName = fileName;
 	mapName = mapName.substr(0, mapName.size() - 4);
@@ -139,20 +140,12 @@ void Rsw::load(const std::string& fileName, Map* map, BrowEdit* browEdit, bool l
 			std::replace(data.begin(), data.end(), ']', '\"');
 			data = util::replace(data, "\"\"", "");
 			std::replace(data.begin(), data.end(), '=', ':');
-			data[0] = '[';
 			auto lines = util::split(data, "\n");
 			bool done = false;
 			for (auto i = 0; i < lines.size(); i++)
 			{
 				if (lines[i].find("--") != std::string::npos)
 					lines[i] = util::rtrim(lines[i].substr(0, lines[i].find("--")));//remove comments
-				if (lines[i].size() > 2 && lines[i][0] == '\t' && lines[i][1] == '\"')
-				{
-					if (lines[i].find("{") != std::string::npos)
-						lines[i] = lines[i].substr(lines[i].find(":") + 2);
-					else
-						lines[i] = "";
-				}
 				if (lines[i].size() > 3 && lines[i][0] == '\t' && lines[i][1] == '\t' && lines[i][2] != '\t')
 				{
 					lines[i] = "\t\t\"" + lines[i].substr(2, lines[i].find(" ") - 2) + "\"" + lines[i].substr(lines[i].find(" ") + 1);
@@ -174,11 +167,14 @@ void Rsw::load(const std::string& fileName, Map* map, BrowEdit* browEdit, bool l
 				jsondata = util::replace(jsondata, "\n\n", "\n");
 
 			jsondata = util::trim(jsondata);
-			jsondata[jsondata.length() - 1] = ']';
 
 			try
 			{
 				lubInfo = json::parse(jsondata);
+				
+				for (auto& it : lubInfo.items()) {
+					lubInfoMap[atoi(it.key().c_str())] = it.value();
+				}
 			}
 			catch (const std::exception& e)
 			{
@@ -384,8 +380,8 @@ void Rsw::load(const std::string& fileName, Map* map, BrowEdit* browEdit, bool l
 		if (rswEffect && rswEffect->id == 974)
 		{
 			auto lubEffect = new LubEffect();
-			if (lubIndex <= lubInfo.size())
-				lubEffect->load(lubInfo[lubIndex]);
+			if (lubInfoMap.find(lubIndex) != lubInfoMap.end())
+				lubEffect->load(lubInfoMap[lubIndex]);
 			object->addComponent(lubEffect);
 			object->addComponent(new LubRenderer());
 			lubIndex++;
@@ -596,7 +592,7 @@ void Rsw::save(const std::string& fileName, BrowEdit* browEdit)
 	{
 		std::cout << "Lub effects found, saving to " << browEdit->config.ropath << "data\\luafiles514\\lua files\\effecttool\\" << mapName << ".lub" << std::endl;
 		std::ofstream lubFile((browEdit->config.ropath + "data\\luafiles514\\lua files\\effecttool\\" + mapName + ".lub").c_str(), std::ios_base::out | std::ios_base::binary);
-		lubFile << "_" << luaMapName << "_emitterInfo_version = "<<lubVersion<<".0" << std::endl;
+		lubFile << "_" << luaMapName << "_effect_version = "<<lubVersion<<".0" << std::endl;
 		lubFile << "_" << luaMapName << "_emitterInfo =" << std::endl;
 		lubFile << "{" << std::endl;
 
@@ -604,7 +600,7 @@ void Rsw::save(const std::string& fileName, BrowEdit* browEdit)
 #define SAVEPROP2(x,y) lubFile<<"\t\t[\""<<x<<"\"] = { "<<y[0]<<", "<<y[1]<<" }"
 #define SAVEPROP3(x,y) lubFile<<"\t\t[\""<<x<<"\"] = { "<<y[0]<<", "<<y[1]<<", "<<y[2]<<" }"
 #define SAVEPROP4(x,y) lubFile<<"\t\t[\""<<x<<"\"] = { "<<y[0]<<", "<<y[1]<<", "<<y[2]<<", "<<y[3]<<" }"
-#define SAVEPROPS(x,y) lubFile<<"\t\t[\""<<x<<"\"] = [["<<y<<"]]"
+#define SAVEPROPS(x,y) lubFile<<"\t\t[\""<<x<<"\"] = \""<<y<<"\""
 
 		for (auto i = 0; i < lubEffects.size(); i++)
 		{
@@ -624,7 +620,8 @@ void Rsw::save(const std::string& fileName, BrowEdit* browEdit)
 			SAVEPROP0("srcmode", lubEffects[i]->srcmode) << "," << std::endl;
 			SAVEPROP0("destmode", lubEffects[i]->destmode) << "," << std::endl;
 			SAVEPROP0("maxcount", lubEffects[i]->maxcount) << "," << std::endl;
-			SAVEPROP0("zenable", lubEffects[i]->zenable) << "," <<std::endl;
+			SAVEPROP0("zenable", lubEffects[i]->zenable) << "," << std::endl;
+			SAVEPROP0("billboard_off", lubEffects[i]->billboard_off) << "," << std::endl;
 			SAVEPROP3("rotate_angle", lubEffects[i]->rotate_angle) << std::endl;
 
 

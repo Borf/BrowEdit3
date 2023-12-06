@@ -31,11 +31,12 @@ void main()
 		discard;
 
 	if (lightToggle) {
-		// lightIntensity is ignored by the client for whatever reason
 		if (shadeType == 0)
 			color.rgb *= min(lightDiffuse, 1.0 - lightAmbient) * lightDiffuse + lightAmbient;
-		else if (shadeType == 1 || shadeType == 2)
-			color.rgb *= clamp(dot(normalize(normal), lightDirection),0.0,1.0) * lightDiffuse + lightAmbient;
+		else if (shadeType == 1 || shadeType == 2) {
+			float NL = clamp(dot(normalize(normal), lightDirection),0.0,1.0);
+			color.rgb *= NL * min(lightDiffuse, 1.0 - lightAmbient) * lightDiffuse + lightAmbient;
+		}
 		else if (shadeType == 4) // only for editor
 			color.rgb *= lightDiffuse;
 	}
