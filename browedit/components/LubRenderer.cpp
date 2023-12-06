@@ -70,7 +70,7 @@ void LubRenderer::render()
 	}
 
 	shader->setUniform(LubShader::Uniforms::billboard_off, (bool)lubEffect->billboard_off);
-	shader->setUniform(LubShader::Uniforms::color, lubEffect->color);
+	shader->setUniform(LubShader::Uniforms::color, glm::vec4(lubEffect->color.r, lubEffect->color.g, lubEffect->color.b, 1.0f));
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	if (texture)
