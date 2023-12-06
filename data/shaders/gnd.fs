@@ -36,7 +36,8 @@ void main()
 	if(texture.a < 0.1)
 		discard;
 	
-	texture.rgb *= max((max(0.0, dot(normal, vec3(1,-1,1)*lightDirection)) * lightDiffuse + lightIntensity * lightAmbient), lightToggle);
+	float NL = clamp(dot(normalize(normal), vec3(1,-1,1)*lightDirection),0.0,1.0);
+	texture.rgb *= max((NL * min(lightDiffuse, 1.0 - lightAmbient) * lightDiffuse + lightAmbient), lightToggle);
 	texture.rgb *= max(color, colorToggle).rgb;
 	texture.rgb *= max(texture2D(s_lighting, texCoord2).a, shadowMapToggle);
 	texture.rgb += clamp(texture2D(s_lighting, texCoord2).rgb, 0.0, 1.0) * lightColorToggle;
