@@ -1023,9 +1023,9 @@ void Map::wallAddSelected(BrowEdit* browEdit)
 		t->v4 = calculation.g_uv4;
 
 		if (w.z == 1 && cube->tileSide == -1)
-			ga->addAction(new CubeTileChangeAction(cube, cube->tileUp, cube->tileFront, id));
+			ga->addAction(new CubeTileChangeAction(w, cube, cube->tileUp, cube->tileFront, id));
 		if (w.z == 2 && cube->tileFront == -1)
-			ga->addAction(new CubeTileChangeAction(cube, cube->tileUp, id, cube->tileSide));
+			ga->addAction(new CubeTileChangeAction(w, cube, cube->tileUp, id, cube->tileSide));
 		ga->addAction(new TileNewAction(t));
 		id++;
 	}
@@ -1062,9 +1062,9 @@ void Map::wallReApplySelected(BrowEdit* browEdit)
 		t->v4 = calculation.g_uv4;
 
 		if (w.z == 1)
-			ga->addAction(new CubeTileChangeAction(cube, cube->tileUp, cube->tileFront, id));
+			ga->addAction(new CubeTileChangeAction(w, cube, cube->tileUp, cube->tileFront, id));
 		if (w.z == 2)
-			ga->addAction(new CubeTileChangeAction(cube, cube->tileUp, id, cube->tileSide));
+			ga->addAction(new CubeTileChangeAction(w, cube, cube->tileUp, id, cube->tileSide));
 		ga->addAction(new TileNewAction(t));
 		id++;
 	}
@@ -1083,9 +1083,9 @@ void Map::wallRemoveSelected(BrowEdit* browEdit)
 	{
 		auto cube = gnd->cubes[w.x][w.y];
 		if (w.z == 1 && cube->tileSide != -1)
-			ga->addAction(new CubeTileChangeAction(cube, cube->tileUp, cube->tileFront, -1));
+			ga->addAction(new CubeTileChangeAction(w, cube, cube->tileUp, cube->tileFront, -1));
 		if (w.z == 2 && cube->tileFront != -1)
-			ga->addAction(new CubeTileChangeAction(cube, cube->tileUp, -1, cube->tileSide));
+			ga->addAction(new CubeTileChangeAction(w, cube, cube->tileUp, -1, cube->tileSide));
 
 	}
 	doAction(ga, browEdit);

@@ -9,8 +9,9 @@ class CubeHeightChangeAction : public Action
 {
 	std::map<TC*, float[4]> oldValues;
 	std::map<TC*, float[4]> newValues;
+	std::vector<glm::ivec2> selection;
 public:
-	CubeHeightChangeAction(const std::map<TC*, float[4]>& oldValues, const std::map<TC*, float[4]>& newValues);
+	CubeHeightChangeAction(const std::map<TC*, float[4]>& oldValues, const std::map<TC*, float[4]>& newValues, const std::vector<glm::ivec2>& selection);
 	CubeHeightChangeAction(T* gnd, const std::vector<glm::ivec2>& startSelection);
 	void setNewHeights(T* gnd, const std::vector<glm::ivec2>& endSelection);
 

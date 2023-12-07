@@ -122,7 +122,7 @@ void GndRenderer::render()
 	shader->setUniform(GndShader::Uniforms::lightAmbient, rsw->light.ambient);
 	shader->setUniform(GndShader::Uniforms::lightDiffuse, rsw->light.diffuse);
 	shader->setUniform(GndShader::Uniforms::lightDirection, lightDirection);
-	shader->setUniform(GndShader::Uniforms::lightIntensity, rsw->light.intensity);
+	//shader->setUniform(GndShader::Uniforms::lightIntensity, rsw->light.intensity);
 
 	shader->setUniform(GndShader::Uniforms::shadowMapToggle, viewLightmapShadow? 0.0f : 1.0f);
 	shader->setUniform(GndShader::Uniforms::lightColorToggle, viewLightmapColor ? 1.0f : 0.0f);
@@ -133,7 +133,7 @@ void GndRenderer::render()
 	shader->setUniform(GndShader::Uniforms::fogEnabled, viewFog);
 	shader->setUniform(GndShader::Uniforms::fogNear, rsw->fog.nearPlane * 240*2.5f);
 	shader->setUniform(GndShader::Uniforms::fogFar, rsw->fog.farPlane * 240*2.5f);
-	shader->setUniform(GndShader::Uniforms::fogExp, rsw->fog.factor);
+	//shader->setUniform(GndShader::Uniforms::fogExp, rsw->fog.factor);
 	shader->setUniform(GndShader::Uniforms::fogColor, rsw->fog.color);
 
 

@@ -6,8 +6,9 @@
 #include <browedit/MapView.h>
 #include <browedit/components/GndRenderer.h>
 
-CubeTileChangeAction::CubeTileChangeAction(Gnd::Cube* cube, int tileUp, int tileFront, int tileSide)
+CubeTileChangeAction::CubeTileChangeAction(glm::ivec2 tile, Gnd::Cube* cube, int tileUp, int tileFront, int tileSide)
 {
+	this->selection.push_back(tile);
 	this->oldValues[cube][0] = cube->tileUp;
 	this->oldValues[cube][1] = cube->tileFront;
 	this->oldValues[cube][2] = cube->tileSide;
@@ -17,8 +18,9 @@ CubeTileChangeAction::CubeTileChangeAction(Gnd::Cube* cube, int tileUp, int tile
 	this->newValues[cube][2] = tileSide;
 }
 
-CubeTileChangeAction::CubeTileChangeAction(const std::map<Gnd::Cube*, int[3]>& oldValues, const std::map<Gnd::Cube*, int[3]>& newValues)
+CubeTileChangeAction::CubeTileChangeAction(const std::vector<glm::ivec2>& selection, const std::map<Gnd::Cube*, int[3]>& oldValues, const std::map<Gnd::Cube*, int[3]>& newValues)
 {
+	this->selection = selection;
 	this->oldValues = oldValues;
 	this->newValues = newValues;
 }
@@ -32,6 +34,8 @@ CubeTileChangeAction::CubeTileChangeAction(Gnd* gnd, const std::vector<glm::ivec
 
 void CubeTileChangeAction::setNewTiles(Gnd* gnd, const std::vector<glm::ivec2>& endSelection)
 {
+	this->selection = endSelection;
+	this->shadowDirty = true;
 	for (auto t : endSelection)
 		for (int i = 0; i < 4; i++)
 			newValues[gnd->cubes[t.x][t.y]][i] = gnd->cubes[t.x][t.y]->tileIds[i];
@@ -45,8 +49,11 @@ void CubeTileChangeAction::perform(Map* map, BrowEdit* browEdit)
 	auto gndRenderer = map->rootNode->getComponent<GndRenderer>();
 	if (gndRenderer)
 	{
-		gndRenderer->setChunksDirty(); //TODO : only set this specific chunk dirty
-		gndRenderer->gndShadowDirty = true;
+		for (auto t : selection) {
+			gndRenderer->setChunkDirty(t.x, t.y);
+		}
+		if (this->shadowDirty)
+			gndRenderer->gndShadowDirty = true;
 		for (auto& mv : browEdit->mapViews)
 			if (mv.map == map)
 				mv.textureGridDirty = true;
@@ -61,8 +68,11 @@ void CubeTileChangeAction::undo(Map* map, BrowEdit* browEdit)
 	auto gndRenderer = map->rootNode->getComponent<GndRenderer>();
 	if (gndRenderer)
 	{
-		gndRenderer->setChunksDirty(); //TODO : only set this specific chunk dirty
-		gndRenderer->gndShadowDirty = true;
+		for (auto t : selection) {
+			gndRenderer->setChunkDirty(t.x, t.y);
+		}
+		if (this->shadowDirty)
+			gndRenderer->gndShadowDirty = true;
 		for (auto& mv : browEdit->mapViews)
 			if (mv.map == map)
 				mv.textureGridDirty = true;

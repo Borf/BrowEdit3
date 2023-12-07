@@ -144,6 +144,8 @@ void MapView::postRenderGatMode(BrowEdit* browEdit)
 	if (browEdit->heightDoodle && hovered)
 	{
 		static std::map<Gat::Cube*, float[4]> originalHeights;
+		static std::vector<glm::ivec2> tilesProcessed;
+
 		glm::vec2 tileHoveredOffset((mouse3D.x / 5) - tileHovered.x, tileHovered.y - (gat->height - mouse3D.z / 5) - 1);
 		int index = 0;
 		if (tileHoveredOffset.x < 0.5 && tileHoveredOffset.y > 0.5)
@@ -198,9 +200,11 @@ void MapView::postRenderGatMode(BrowEdit* browEdit)
 					float& snapHeight = gat->cubes[tt.x][tt.y]->heights[ti];
 					if (ImGui::IsMouseDown(ImGuiMouseButton_Left))
 					{
-						if (originalHeights.find(gat->cubes[tt.x][tt.y]) == originalHeights.end())
+						if (originalHeights.find(gat->cubes[tt.x][tt.y]) == originalHeights.end()) {
 							for (int i = 0; i < 4; i++)
 								originalHeights[gat->cubes[tt.x][tt.y]][i] = gat->cubes[tt.x][tt.y]->heights[i];
+							tilesProcessed.push_back(tt);
+						}
 
 						if (ImGui::GetIO().KeyShift)
 							snapHeight = glm::min(minMax, snapHeight + browEdit->windowData.gatEdit.doodleSpeed * (glm::mix(1.0f, glm::max(0.0f, 1.0f - glm::length(glm::vec2(x - browEdit->windowData.gatEdit.doodleSize / 2.0f, y - browEdit->windowData.gatEdit.doodleSize / 2.0f)) / browEdit->windowData.gatEdit.doodleSize), browEdit->windowData.gatEdit.doodleHardness)));
@@ -230,15 +234,17 @@ void MapView::postRenderGatMode(BrowEdit* browEdit)
 					for (int i = 0; i < 4; i++)
 						newHeights[kv.first][i] = kv.first->heights[i];
 
-				map->doAction(new CubeHeightChangeAction<Gat, Gat::Cube>(originalHeights, newHeights), browEdit);
+				map->doAction(new CubeHeightChangeAction<Gat, Gat::Cube>(originalHeights, newHeights, tilesProcessed), browEdit);
 			}
 			originalHeights.clear();
+			tilesProcessed.clear();
 		}
 
 	}
 	else if (browEdit->windowData.gatEdit.doodle && hovered)
 	{
 		static GroupAction* gatGroupAction = nullptr;
+		static std::vector<int> gatProcessed;
 		std::vector<VertexP3T2N3> verts;
 		float dist = 0.002f * cameraDistance;
 
@@ -261,13 +267,14 @@ void MapView::postRenderGatMode(BrowEdit* browEdit)
 					verts.push_back(VertexP3T2N3(glm::vec3(5 * tile.x, -cube->h3 + dist, 5 * gat->height - 5 * tile.y + 5), glm::vec2(t1.x, t1.y), cube->normal));
 					verts.push_back(VertexP3T2N3(glm::vec3(5 * tile.x + 5, -cube->h2 + dist, 5 * gat->height - 5 * tile.y + 10), glm::vec2(t2.x, t2.y), cube->normal));
 
-					if (ImGui::IsMouseDown(ImGuiMouseButton_Left))
+					if (ImGui::IsMouseDown(ImGuiMouseButton_Left) && std::find(gatProcessed.begin(), gatProcessed.end(), tile.x + tile.y * gat->width) == gatProcessed.end())
 					{
-						auto action = new GatTileChangeAction(gat->cubes[tile.x][tile.y], browEdit->windowData.gatEdit.gatIndex);
+						auto action = new GatTileChangeAction(tile, gat->cubes[tile.x][tile.y], browEdit->windowData.gatEdit.gatIndex);
 						action->perform(map, browEdit);
 						if (gatGroupAction == nullptr)
 							gatGroupAction = new GroupAction();
 						gatGroupAction->addAction(action);
+						gatProcessed.push_back(tile.x + tile.y * gat->width);
 					}
 				}
 			}
@@ -277,9 +284,8 @@ void MapView::postRenderGatMode(BrowEdit* browEdit)
 		{
 			map->doAction(gatGroupAction, browEdit);
 			gatGroupAction = nullptr;
+			gatProcessed.clear();
 		}
-
-
 
 		if(verts.size() > 0)
 		{
@@ -424,7 +430,7 @@ void MapView::postRenderGatMode(BrowEdit* browEdit)
 					for (auto& t : originalValues)
 						for (int ii = 0; ii < 4; ii++)
 							newValues[t.first][ii] = t.first->heights[ii];
-					map->doAction(new CubeHeightChangeAction<Gat, Gat::Cube>(originalValues, newValues), browEdit);
+					map->doAction(new CubeHeightChangeAction<Gat, Gat::Cube>(originalValues, newValues, map->gatSelection), browEdit);
 				}
 				else if (gadgetHeight[i].axisDragged)
 				{
@@ -906,4 +912,72 @@ void MapView::postRenderGatMode(BrowEdit* browEdit)
 
 
 	fbo->unbind();
+}
+
+void MapView::gatEdit_adjustToGround(BrowEdit* browEdit)
+{
+	std::map<Gat::Cube*, float[4]> originalValues;
+	std::map<Gat::Cube*, float[4]> newValues;
+	auto gnd = map->rootNode->getComponent<Gnd>();
+	auto gat = map->rootNode->getComponent<Gat>();
+	std::vector<glm::ivec2> selection;
+	
+	if (browEdit->windowData.gatEdit.doodle || browEdit->heightDoodle) {
+		auto mouse3D = gat->rayCast(mouseRay);
+		glm::ivec2 tileHovered((int)glm::floor(mouse3D.x / 5), gat->height - (int)glm::floor(mouse3D.z / 5) + 1);
+
+		for (int x = 0; x <= browEdit->windowData.gatEdit.doodleSize; x++)
+		{
+			for (int y = 0; y <= browEdit->windowData.gatEdit.doodleSize; y++)
+			{
+				glm::ivec2 t = tileHovered + glm::ivec2(x, y) - glm::ivec2(browEdit->windowData.gatEdit.doodleSize / 2, browEdit->windowData.gatEdit.doodleSize / 2);
+
+				if (gat->inMap(t))
+				{
+					selection.push_back(t);
+				}
+			}
+		}
+	}
+	else if (map->gatSelection.size() > 0) {
+		selection = map->gatSelection;
+	}
+
+	if (selection.size() > 0) {
+		for (auto& t : selection) {
+			for (int ii = 0; ii < 4; ii++) {
+				originalValues[gat->cubes[t.x][t.y]][ii] = gat->cubes[t.x][t.y]->heights[ii];
+			}
+
+			auto& c = gnd->cubes[t.x / 2][t.y / 2];
+			float avg = (c->heights[0] + c->heights[1] + c->heights[2] + c->heights[3]) / 4;
+
+			if (t.x % 2 == 0 && t.y % 2 == 0) {
+				newValues[gat->cubes[t.x][t.y]][0] = c->heights[0];
+				newValues[gat->cubes[t.x][t.y]][1] = (c->heights[0] + c->heights[1]) / 2.0f;
+				newValues[gat->cubes[t.x][t.y]][2] = (c->heights[0] + c->heights[2]) / 2.0f;
+				newValues[gat->cubes[t.x][t.y]][3] = avg;
+			}
+			else if (t.x % 2 == 1 && t.y % 2 == 0) {
+				newValues[gat->cubes[t.x][t.y]][0] = (c->heights[0] + c->heights[1]) / 2.0f;
+				newValues[gat->cubes[t.x][t.y]][1] = c->heights[1];
+				newValues[gat->cubes[t.x][t.y]][2] = avg;
+				newValues[gat->cubes[t.x][t.y]][3] = (c->heights[1] + c->heights[3]) / 2.0f;
+			}
+			else if (t.x % 2 == 0 && t.y % 2 == 1) {
+				newValues[gat->cubes[t.x][t.y]][0] = (c->heights[0] + c->heights[2]) / 2.0f;
+				newValues[gat->cubes[t.x][t.y]][1] = avg;
+				newValues[gat->cubes[t.x][t.y]][2] = c->heights[2];
+				newValues[gat->cubes[t.x][t.y]][3] = (c->heights[2] + c->heights[3]) / 2.0f;
+			}
+			else {
+				newValues[gat->cubes[t.x][t.y]][0] = avg;
+				newValues[gat->cubes[t.x][t.y]][1] = (c->heights[1] + c->heights[3]) / 2.0f;
+				newValues[gat->cubes[t.x][t.y]][2] = (c->heights[2] + c->heights[3]) / 2.0f;
+				newValues[gat->cubes[t.x][t.y]][3] = c->heights[3];
+			}
+		}
+
+		map->doAction(new CubeHeightChangeAction<Gat, Gat::Cube>(originalValues, newValues, selection), browEdit);
+	}
 }

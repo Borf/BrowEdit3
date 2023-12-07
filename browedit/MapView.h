@@ -185,6 +185,8 @@ public:
 	void postRenderWallMode(BrowEdit* browEdit);
 	void postRenderColorMode(BrowEdit* browEdit);
 	void postRenderCinematicMode(BrowEdit* browEdit);
+
+	void gatEdit_adjustToGround(BrowEdit* browEdit);
 	
 	bool drawCameraWidget();
 

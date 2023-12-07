@@ -149,11 +149,11 @@ void RsmRenderer::render()
 		lightDirection = glm::vec3(0.0f, 1.0f, 0.0f) * glm::mat3(rot);
 		shader->setUniform(RsmShader::Uniforms::lightAmbient, rsw->light.ambient);
 		shader->setUniform(RsmShader::Uniforms::lightDiffuse, rsw->light.diffuse);
-		shader->setUniform(RsmShader::Uniforms::lightIntensity, rsw->light.intensity);
+		//shader->setUniform(RsmShader::Uniforms::lightIntensity, rsw->light.intensity);
 		
 		shader->setUniform(RsmShader::Uniforms::fogNear, rsw->fog.nearPlane * 240*2.5f);
 		shader->setUniform(RsmShader::Uniforms::fogFar, rsw->fog.farPlane * 240*2.5f);
-		shader->setUniform(RsmShader::Uniforms::fogExp, rsw->fog.factor);
+		//shader->setUniform(RsmShader::Uniforms::fogExp, rsw->fog.factor);
 		shader->setUniform(RsmShader::Uniforms::fogColor, rsw->fog.color);
 	}
 	shader->setUniform(RsmShader::Uniforms::lightDirection, lightDirection);
