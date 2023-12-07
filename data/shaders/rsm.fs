@@ -3,7 +3,7 @@ uniform sampler2D s_texture;
 uniform vec3 lightDiffuse;
 uniform vec3 lightAmbient;
 uniform vec3 lightDirection;
-uniform float lightIntensity;
+//uniform float lightIntensity;
 
 uniform int shadeType;
 uniform float selection;
@@ -13,7 +13,7 @@ uniform bool viewTextures;
 uniform bool fogEnabled;
 uniform float fogNear;
 uniform float fogFar;
-uniform float fogExp;
+//uniform float fogExp;
 uniform vec4 fogColor;
 
 varying vec2 texCoord;
