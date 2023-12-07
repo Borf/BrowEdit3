@@ -149,7 +149,7 @@ public:
 		float maxRange;
 		void calcMatrix1(int time);
 		void calcMatrix2();
-		bool matrixDirty = true;
+		bool isAnimated = false;
 
 		void setBoundingBox(glm::vec3& bbmin, glm::vec3& bbmax);
 		void setBoundingBox2(glm::mat4& mat, glm::vec3& realbbmin, glm::vec3& realbbmax);
@@ -157,6 +157,7 @@ public:
 
 
 	void updateMatrices();
+	void setAnimated(Rsm::Mesh* mesh, bool isAnimated = false);
 public:
 	Rsm(const std::string& fileName);
 	~Rsm();

@@ -224,11 +224,10 @@ void RsmRenderer::renderMesh(Rsm::Mesh* mesh, const glm::mat4& matrix, bool sele
 			textures.push_back(util::ResourceManager<gl::Texture>::load("data\\texture\\" + textureFilename));
 	}
 
-	if (mesh && (!mesh->rotFrames.empty() || mesh->matrixDirty || mesh->model->version >= 0x202))
+	if (mesh && mesh->isAnimated)
 	{
-		mesh->matrixDirty = false;
-
 		if (calcMatrix) {
+			calcMatrix = false;
 			float mult = this->rswModel != nullptr ? this->rswModel->animSpeed : 1.0f;
 			
 			if(time < 0)
@@ -238,7 +237,6 @@ void RsmRenderer::renderMesh(Rsm::Mesh* mesh, const glm::mat4& matrix, bool sele
 		}
 
 		if (mesh->model->version >= 0x202) {
-			calcMatrix = false;
 			renderInfo[mesh->index].matrix = mesh->matrix2;
 			renderInfo[mesh->index].matrixSub = glm::mat4(1.0f);
 		}
@@ -281,7 +279,7 @@ void RsmRenderer::renderMesh(Rsm::Mesh* mesh, const glm::mat4& matrix, bool sele
 	}
 
 	for (const auto& m : mesh->children)
-		renderMesh(m, renderInfo[mesh->index].matrixSub);
+		renderMesh(m, renderInfo[mesh->index].matrixSub, selectionPhase, calcMatrix);
 }
 
 void RsmRenderer::setMeshesDirty() {

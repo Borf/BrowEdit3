@@ -174,6 +174,7 @@ void Rsm::reload()
 
 
 	updateMatrices();
+	setAnimated(rootMesh);
 
 	if (version < 0x0106)
 	{
@@ -219,6 +220,19 @@ void Rsm::updateMatrices()
 	dynamic_cast<Mesh*>(rootMesh)->setBoundingBox2(mat, realbbmin, realbbmax);
 	realbbrange = (realbbmax + realbbmin) / 2.0f;
 	maxRange = glm::max(glm::max(realbbmax.x, -realbbmin.x), glm::max(glm::max(realbbmax.y, -realbbmin.y), glm::max(realbbmax.z, -realbbmin.z)));
+}
+
+void Rsm::setAnimated(Rsm::Mesh* mesh, bool isAnimated)
+{
+	if (!isAnimated) {
+		if (!mesh->rotFrames.empty() || !mesh->scaleFrames.empty() || !mesh->posFrames.empty())
+			isAnimated = true;
+	}
+
+	mesh->isAnimated = isAnimated;
+
+	for (auto child : mesh->children)
+		setAnimated(child, isAnimated);
 }
 
 Rsm::Mesh::Mesh(Rsm* model)
