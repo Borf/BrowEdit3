@@ -15,7 +15,7 @@ public:
 			s_lighting,
 			lightAmbient,
 			lightDiffuse,
-			lightIntensity,
+			//lightIntensity,
 			lightDirection,
 			shadowMapToggle,
 			lightToggle,
@@ -26,7 +26,7 @@ public:
 			fogColor,
 			fogNear,
 			fogFar,
-			fogExp,
+			//fogExp,
 			End
 		};
 	};
@@ -38,7 +38,7 @@ public:
 		bindUniform(Uniforms::s_lighting, "s_lighting");
 		bindUniform(Uniforms::lightAmbient, "lightAmbient");
 		bindUniform(Uniforms::lightDiffuse, "lightDiffuse");
-		bindUniform(Uniforms::lightIntensity, "lightIntensity");
+		//bindUniform(Uniforms::lightIntensity, "lightIntensity");
 		bindUniform(Uniforms::lightDirection, "lightDirection");
 		bindUniform(Uniforms::shadowMapToggle, "shadowMapToggle");
 		bindUniform(Uniforms::lightToggle, "lightToggle");
@@ -49,6 +49,6 @@ public:
 		bindUniform(Uniforms::fogColor, "fogColor");
 		bindUniform(Uniforms::fogNear, "fogNear");
 		bindUniform(Uniforms::fogFar, "fogFar");
-		bindUniform(Uniforms::fogExp, "fogExp");
+		//bindUniform(Uniforms::fogExp, "fogExp");
 	}
 };

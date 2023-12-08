@@ -366,7 +366,7 @@ void MapView::postRenderTextureMode(BrowEdit* browEdit)
 								t->color = gnd->tiles[cube->tileUp]->color;
 
 							ga->addAction(new TileNewAction(t));
-							ga->addAction(new CubeTileChangeAction(cube, id, cube->tileFront, cube->tileSide));
+							ga->addAction(new CubeTileChangeAction(glm::ivec2(topleft.x + x, topleft.y + y), cube, id, cube->tileFront, cube->tileSide));
 							cube->tileUp = id;
 							id++;
 						}
@@ -421,7 +421,7 @@ void MapView::postRenderTextureMode(BrowEdit* browEdit)
 								t->textureIndex = textureStampLookup[t->textureIndex];
 							}
 							ga->addAction(new TileNewAction(t));
-							ga->addAction(new CubeTileChangeAction(cube, id, cube->tileFront, cube->tileSide));
+							ga->addAction(new CubeTileChangeAction(glm::ivec2(x, y), cube, id, cube->tileFront, cube->tileSide));
 							cube->tileUp = id;
 							id++;
 						}
@@ -549,7 +549,7 @@ void MapView::postRenderTextureMode(BrowEdit* browEdit)
 							gndRenderer->setChunkDirty(tile.x, tile.y);
 
 							ga->addAction(new TileNewAction(t));
-							ga->addAction(new CubeTileChangeAction(cube, id, cube->tileFront, cube->tileSide));
+							ga->addAction(new CubeTileChangeAction(tile, cube, id, cube->tileFront, cube->tileSide));
 							id++;
 						}
 						map->doAction(ga, browEdit);
@@ -979,7 +979,7 @@ void MapView::postRenderTextureMode(BrowEdit* browEdit)
 				gndRenderer->setChunkDirty(tile.x, tile.y);
 
 				ga->addAction(new TileNewAction(t));
-				ga->addAction(new CubeTileChangeAction(cube, id, cube->tileFront, cube->tileSide));
+				ga->addAction(new CubeTileChangeAction(tile, cube, id, cube->tileFront, cube->tileSide));
 				id++;
 			}
 			map->doAction(ga, browEdit);

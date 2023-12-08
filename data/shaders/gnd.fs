@@ -6,7 +6,7 @@ uniform sampler2D s_lighting;
 uniform vec3 lightDiffuse;
 uniform vec3 lightAmbient;
 uniform vec3 lightDirection;
-uniform float lightIntensity;
+//uniform float lightIntensity;
 uniform float lightToggle = 1.0f;
 uniform float colorToggle = 1.0f;
 uniform float lightColorToggle = 1.0f;
@@ -16,7 +16,7 @@ uniform float viewTextures = 1.0f;
 uniform bool fogEnabled;
 uniform float fogNear = 0;
 uniform float fogFar = 1;
-uniform float fogExp = 0.5;
+//uniform float fogExp = 0.5;
 uniform vec4 fogColor = vec4(1,1,1,1);
 
 in vec2 texCoord;
