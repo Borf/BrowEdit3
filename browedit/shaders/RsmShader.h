@@ -18,7 +18,7 @@ public:
 			billboard,
 			lightDiffuse,
 			lightAmbient,
-			lightIntensity,
+			//lightIntensity,
 			lightDirection,
 			selection,
 			shadeType,
@@ -28,7 +28,7 @@ public:
 			fogColor,
 			fogNear,
 			fogFar,
-			fogExp,
+			//fogExp,
 			End
 		};
 	};
@@ -41,7 +41,7 @@ public:
 		bindUniform(Uniforms::modelMatrix2, "modelMatrix2");
 		bindUniform(Uniforms::lightAmbient, "lightAmbient");
 		bindUniform(Uniforms::lightDiffuse, "lightDiffuse");
-		bindUniform(Uniforms::lightIntensity, "lightIntensity");
+		//bindUniform(Uniforms::lightIntensity, "lightIntensity");
 		bindUniform(Uniforms::lightDirection, "lightDirection");
 		bindUniform(Uniforms::selection, "selection");
 		bindUniform(Uniforms::shadeType, "shadeType");
@@ -51,6 +51,6 @@ public:
 		bindUniform(Uniforms::fogColor, "fogColor");
 		bindUniform(Uniforms::fogNear, "fogNear");
 		bindUniform(Uniforms::fogFar, "fogFar");
-		bindUniform(Uniforms::fogExp, "fogExp");
+		//bindUniform(Uniforms::fogExp, "fogExp");
 	}
 };

@@ -38,14 +38,14 @@ public:
 	}
 	virtual std::string str()
 	{
+		static const int groupDisplayLimit = 5;
 		if (title != "")
 			return title;
 		std::string ret;
-		for (auto a : actions)
-		{
-			auto s = a->str();
-			if(s != "")
-				ret += s + "\n";
+		for (int i = 0; i < actions.size() && i < groupDisplayLimit; i++) {
+			auto s = actions[i]->str();
+			if (s != "")
+				ret += s + (i == groupDisplayLimit - 1 && actions.size() >= groupDisplayLimit ? "..." : "") + "\n";
 		}
 		return ret;
 	}

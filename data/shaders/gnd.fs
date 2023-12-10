@@ -6,7 +6,7 @@ uniform sampler2D s_lighting;
 uniform vec3 lightDiffuse;
 uniform vec3 lightAmbient;
 uniform vec3 lightDirection;
-uniform float lightIntensity;
+//uniform float lightIntensity;
 uniform float lightToggle = 1.0f;
 uniform float colorToggle = 1.0f;
 uniform float lightColorToggle = 1.0f;
@@ -16,7 +16,7 @@ uniform float viewTextures = 1.0f;
 uniform bool fogEnabled;
 uniform float fogNear = 0;
 uniform float fogFar = 1;
-uniform float fogExp = 0.5;
+//uniform float fogExp = 0.5;
 uniform vec4 fogColor = vec4(1,1,1,1);
 
 in vec2 texCoord;
@@ -36,7 +36,8 @@ void main()
 	if(texture.a < 0.1)
 		discard;
 	
-	texture.rgb *= max((max(0.0, dot(normal, vec3(1,-1,1)*lightDirection)) * lightDiffuse + lightIntensity * lightAmbient), lightToggle);
+	float NL = clamp(dot(normalize(normal), vec3(1,-1,1)*lightDirection),0.0,1.0);
+	texture.rgb *= max((NL * min(lightDiffuse, 1.0 - lightAmbient) * lightDiffuse + lightAmbient), lightToggle);
 	texture.rgb *= max(color, colorToggle).rgb;
 	texture.rgb *= max(texture2D(s_lighting, texCoord2).a, shadowMapToggle);
 	texture.rgb += clamp(texture2D(s_lighting, texCoord2).rgb, 0.0, 1.0) * lightColorToggle;

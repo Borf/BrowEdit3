@@ -174,6 +174,7 @@ void Rsm::reload()
 
 
 	updateMatrices();
+	setAnimated(rootMesh);
 
 	if (version < 0x0106)
 	{
@@ -219,6 +220,19 @@ void Rsm::updateMatrices()
 	dynamic_cast<Mesh*>(rootMesh)->setBoundingBox2(mat, realbbmin, realbbmax);
 	realbbrange = (realbbmax + realbbmin) / 2.0f;
 	maxRange = glm::max(glm::max(realbbmax.x, -realbbmin.x), glm::max(glm::max(realbbmax.y, -realbbmin.y), glm::max(realbbmax.z, -realbbmin.z)));
+}
+
+void Rsm::setAnimated(Rsm::Mesh* mesh, bool isAnimated)
+{
+	if (!isAnimated) {
+		if (!mesh->rotFrames.empty() || !mesh->scaleFrames.empty() || !mesh->posFrames.empty())
+			isAnimated = true;
+	}
+
+	mesh->isAnimated = isAnimated;
+
+	for (auto child : mesh->children)
+		setAnimated(child, isAnimated);
 }
 
 Rsm::Mesh::Mesh(Rsm* model)
@@ -584,18 +598,13 @@ void Rsm::Mesh::calcMatrix1(int time)
 		if (scaleFrames.size() > 0) {
 			int tick = time % glm::max(1, model->animLen);
 			int prevIndex = -1;
-			int nextIndex = -1;
+			int nextIndex = 0;
 
-			while (true) {
-				nextIndex++;
-
-				if (nextIndex == scaleFrames.size() || tick < scaleFrames[nextIndex].time)
-					break;
-
-				prevIndex++;
+			for (; nextIndex < scaleFrames.size() && tick >= scaleFrames[nextIndex].time; nextIndex++) {
 			}
 
-			float prevTick = (float)(prevIndex < 0 ? 0 : scaleFrames[prevIndex].time); //TODO: this part is repeated for rot,scale,pos... dedupe code
+			prevIndex = nextIndex - 1;
+			float prevTick = (float)(prevIndex < 0 ? 0 : scaleFrames[prevIndex].time);
 			float nextTick = (float)(nextIndex == scaleFrames.size() ? model->animLen : scaleFrames[nextIndex].time);
 			glm::vec3 prev = prevIndex < 0 ? glm::vec3(1) : scaleFrames[prevIndex].scale;
 			glm::vec3 next = nextIndex == scaleFrames.size() ? scaleFrames[nextIndex - 1].scale : scaleFrames[nextIndex].scale;
@@ -608,22 +617,17 @@ void Rsm::Mesh::calcMatrix1(int time)
 		{
 			int tick = time % glm::max(1, model->animLen);
 			int prevIndex = -1;
-			int nextIndex = -1;
-
-			while (true) {
-				nextIndex++;
-
-				if (nextIndex == rotFrames.size() || tick < rotFrames[nextIndex].time)
-					break;
-
-				prevIndex++;
+			int nextIndex = 0;
+			
+			for (; nextIndex < rotFrames.size() && tick >= rotFrames[nextIndex].time; nextIndex++) {
 			}
-
+			
+			prevIndex = nextIndex - 1;
 			float prevTick = (float)(prevIndex < 0 ? 0 : rotFrames[prevIndex].time);
 			float nextTick = (float)(nextIndex == rotFrames.size() ? model->animLen : rotFrames[nextIndex].time);
-			glm::quat prev = prevIndex < 0 ? glm::quat() : rotFrames[prevIndex].quaternion;
+			glm::quat prev = prevIndex < 0 ? glm::quat(1, 0, 0, 0) : rotFrames[prevIndex].quaternion;
 			glm::quat next = nextIndex == rotFrames.size() ? rotFrames[nextIndex - 1].quaternion : rotFrames[nextIndex].quaternion;
-
+			
 			float mult = (tick - prevTick) / (nextTick - prevTick);
 			glm::quat quat = glm::slerp(prev, next, mult);
 			matrix1 = glm::toMat4(quat) * matrix1;
@@ -644,17 +648,12 @@ void Rsm::Mesh::calcMatrix1(int time)
 		if (posFrames.size() > 0) {
 			int tick = time % glm::max(1, model->animLen);
 			int prevIndex = -1;
-			int nextIndex = -1;
+			int nextIndex = 0;
 
-			while (true) {
-				nextIndex++;
-
-				if (nextIndex == posFrames.size() || tick < posFrames[nextIndex].time)
-					break;
-
-				prevIndex++;
+			for (; nextIndex < posFrames.size() && tick >= posFrames[nextIndex].time; nextIndex++) {
 			}
 
+			prevIndex = nextIndex - 1;
 			float prevTick = (float)(prevIndex < 0 ? 0 : posFrames[prevIndex].time);
 			float nextTick = (float)(nextIndex == posFrames.size() ? model->animLen : posFrames[nextIndex].time);
 			glm::vec3 prev = prevIndex < 0 ? pos_ : posFrames[prevIndex].position;

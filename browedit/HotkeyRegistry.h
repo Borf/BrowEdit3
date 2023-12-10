@@ -101,6 +101,7 @@ enum class HotkeyAction
 	GatEdit_Tile7,
 	GatEdit_Tile8,
 	GatEdit_Tile9,
+	GatEdit_AdjustToGround,
 
 	ColorEdit_Dropper,
 
