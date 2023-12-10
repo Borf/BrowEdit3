@@ -364,7 +364,7 @@ void MapView::postRenderWallMode(BrowEdit* browEdit)
 						if (!tile)
 							continue;
 						for (int ii = 0; ii < 4; ii++)
-							ga->addAction(new TileChangeAction<glm::vec2>(tile, &tile->texCoords[ii], originalTiles[i].texCoords[ii], "Change UV"));
+							ga->addAction(new TileChangeAction<glm::vec2>(w, tile, &tile->texCoords[ii], originalTiles[i].texCoords[ii], "Change UV"));
 						i++;
 					}
 					map->doAction(ga, browEdit);

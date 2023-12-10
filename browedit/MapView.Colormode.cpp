@@ -106,20 +106,21 @@ void MapView::postRenderColorMode(BrowEdit* browEdit)
 				glDrawArrays(GL_LINES, 0, (int)verts.size());
 			}
 
+			static std::vector<int> tilesProcessed;
+			static GroupAction* ga = nullptr;
 
-
-			static double lastTime = ImGui::GetTime();
-
-			if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) || (ImGui::IsMouseDown(ImGuiMouseButton_Left) && ImGui::GetTime() - lastTime > browEdit->colorEditDelay))
+			if (ImGui::IsMouseDown(ImGuiMouseButton_Left))
 			{
-				lastTime = ImGui::GetTime();
-				auto ga = new GroupAction();
 				for (int x = tileHovered.x - browEdit->colorEditBrushSize; x <= tileHovered.x + browEdit->colorEditBrushSize; x++)
 				{
 					for (int y = tileHovered.y - browEdit->colorEditBrushSize; y <= tileHovered.y + browEdit->colorEditBrushSize; y++)
 					{
 						if (gnd->inMap(glm::ivec2(x, y)) && gnd->cubes[x][y]->tileUp != -1)
 						{
+							if (std::find(tilesProcessed.begin(), tilesProcessed.end(), x + y * gnd->width) != tilesProcessed.end()) {
+								continue;
+							}
+
 							float strength = 1;
 							if (browEdit->colorEditBrushSize > 0)
 							{
@@ -130,11 +131,23 @@ void MapView::postRenderColorMode(BrowEdit* browEdit)
 							auto tile = gnd->tiles[gnd->cubes[x][y]->tileUp];
 							auto oldColor = tile->color;
 							tile->color = glm::mix(tile->color, glm::ivec4(glm::vec3(browEdit->colorEditBrushColor) * 255.0f, 255), browEdit->colorEditBrushColor.a * strength);
-							ga->addAction(new TileChangeAction<glm::ivec4>(tile, &tile->color, oldColor, "Change color"));
+
+							if (ga == nullptr)
+								ga = new GroupAction();
+							auto action = new TileChangeAction<glm::ivec4>(glm::ivec2(x, y), tile, &tile->color, oldColor, "Change color");
+							action->perform(map, browEdit);
+							ga->addAction(action);
+							tilesProcessed.push_back(x + y * gnd->width);
 						}
 					}
 				}
+			}
+
+			if (ImGui::IsMouseReleased(ImGuiMouseButton_Left) && ga != nullptr)
+			{
 				map->doAction(ga, browEdit);
+				ga = nullptr;
+				tilesProcessed.clear();
 			}
 		}
 	}

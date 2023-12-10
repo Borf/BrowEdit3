@@ -20,9 +20,11 @@ class TileChangeAction : public Action
 	T newValue;
 	Gnd::Tile* tile;
 	std::string action;
+	glm::ivec2 position;
 public:
-	TileChangeAction(Gnd::Tile* tile, T* ptr, T startValue, const std::string& action)
+	TileChangeAction(glm::ivec2 position, Gnd::Tile* tile, T* ptr, T startValue, const std::string& action)
 	{
+		this->position = position;
 		this->startValue = startValue;
 		this->ptr = ptr;
 		this->newValue = *ptr;
@@ -36,11 +38,13 @@ public:
 		auto gndRenderer = map->rootNode->getComponent<GndRenderer>();
 		if (gndRenderer)
 		{
-			gndRenderer->setChunksDirty(); //TODO : only set this specific chunk dirty
-			gndRenderer->gndShadowDirty = true;
-			for (auto& mv : browEdit->mapViews)
-				if (mv.map == map)
-					mv.textureGridDirty = true;
+			gndRenderer->setChunkDirty(position.x, position.y);
+
+			if (gndRenderer->gnd->inMap(glm::ivec2(position.x - 1, position.y)))
+				gndRenderer->setChunkDirty(position.x - 1, position.y);
+
+			if (gndRenderer->gnd->inMap(glm::ivec2(position.x, position.y - 1)))
+				gndRenderer->setChunkDirty(position.x, position.y - 1);
 		}
 	}
 	virtual void undo(Map* map, BrowEdit* browEdit)
@@ -49,11 +53,13 @@ public:
 		auto gndRenderer = map->rootNode->getComponent<GndRenderer>();
 		if (gndRenderer)
 		{
-			gndRenderer->setChunksDirty(); //TODO : only set this specific chunk dirty
-			gndRenderer->gndShadowDirty = true;
-			for (auto& mv : browEdit->mapViews)
-				if (mv.map == map)
-					mv.textureGridDirty = true;
+			gndRenderer->setChunkDirty(position.x, position.y);
+
+			if (gndRenderer->gnd->inMap(glm::ivec2(position.x - 1, position.y)))
+				gndRenderer->setChunkDirty(position.x - 1, position.y);
+
+			if (gndRenderer->gnd->inMap(glm::ivec2(position.x, position.y - 1)))
+				gndRenderer->setChunkDirty(position.x, position.y - 1);
 		}
 	}
 	virtual std::string str()

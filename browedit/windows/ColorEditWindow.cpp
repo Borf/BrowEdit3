@@ -19,7 +19,6 @@ void BrowEdit::showColorEditWindow()
 	ImGui::ColorPicker4("Color", glm::value_ptr(colorEditBrushColor), ImGuiColorEditFlags_AlphaBar, glm::value_ptr(refColor));
 	ImGui::SliderFloat("Brush Hardness", &colorEditBrushHardness, 0, 1);
 	ImGui::InputInt("Brush Size", &colorEditBrushSize);
-	ImGui::InputFloat("Brush Delay", &colorEditDelay, 0.05f);
 
 	if (toolBarButton("Color Picker", ICON_DROPPER, "Picks a color from the colormap", ImVec4(1, 1, 1, 1)))
 	{
