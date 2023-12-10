@@ -1112,7 +1112,7 @@ void Map::wallFlipSelectedTextureHorizontal(BrowEdit* browEdit)
 		std::swap(tile->v1.x, tile->v2.x);
 		std::swap(tile->v3.x, tile->v4.x);
 		for(int i = 0; i < 4; i++)
-			ga->addAction(new TileChangeAction<glm::vec2>(tile, &tile->texCoords[i], original.texCoords[i], "Change UV"));
+			ga->addAction(new TileChangeAction<glm::vec2>(w, tile, &tile->texCoords[i], original.texCoords[i], "Change UV"));
 	}
 	doAction(ga, browEdit);
 }
@@ -1137,7 +1137,7 @@ void Map::wallFlipSelectedTextureVertical(BrowEdit* browEdit)
 		std::swap(tile->v1.y, tile->v3.y);
 		std::swap(tile->v2.y, tile->v4.y);
 		for (int i = 0; i < 4; i++)
-			ga->addAction(new TileChangeAction<glm::vec2>(tile, &tile->texCoords[i], original.texCoords[i], "Change UV"));
+			ga->addAction(new TileChangeAction<glm::vec2>(w, tile, &tile->texCoords[i], original.texCoords[i], "Change UV"));
 	}
 	doAction(ga, browEdit);
 }

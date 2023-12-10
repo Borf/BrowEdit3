@@ -277,7 +277,6 @@ public:
 	glm::vec4	colorEditBrushColor = glm::vec4(1);
 	int			colorEditBrushSize = 1;
 	float		colorEditBrushHardness = 1.0f;
-	float		colorEditDelay = 0.25f;
 
 
 	void configBegin();
