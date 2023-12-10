@@ -287,7 +287,8 @@ void RsmRenderer::renderMesh(Rsm::Mesh* mesh, const glm::mat4& matrix, bool sele
 void RsmRenderer::setMeshesDirty() {
 	this->meshDirty = true;
 	this->matrixCached = false;
-	rsm->updateMatrices();
+	if(rsm)
+		rsm->updateMatrices();
 	for (auto t : textures)
 		util::ResourceManager<gl::Texture>::unload(t);
 	textures.clear();
