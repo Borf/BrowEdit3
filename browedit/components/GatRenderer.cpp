@@ -151,6 +151,9 @@ void GatRenderer::Chunk::rebuild()
 
 void GatRenderer::setChunkDirty(int x, int y)
 {
+	if (this->allDirty)
+		return;
+
 	chunks[y / CHUNKSIZE][x / CHUNKSIZE]->dirty = true;
 }
 
