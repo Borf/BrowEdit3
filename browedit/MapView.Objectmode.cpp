@@ -764,6 +764,7 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 
 				bool first = true;
 
+				auto ga = new GroupAction();
 				map->rootNode->traverse([&](Node* n)
 				{
 					auto rswObject = n->getComponent<RswObject>();
@@ -773,11 +774,14 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 					glm::vec2 pos(5 * gnd->width + rswObject->position.x, -(-10 - 5 * gnd->height + rswObject->position.z));
 					if (polygon.contains(pos))
 					{
-						map->doAction(new SelectAction(map, n, ImGui::GetIO().KeyShift || !first, std::find(map->selectedNodes.begin(), map->selectedNodes.end(), n) != map->selectedNodes.end() && ImGui::GetIO().KeyShift), browEdit);
+						auto action = new SelectAction(map, n, ImGui::GetIO().KeyShift || !first, std::find(map->selectedNodes.begin(), map->selectedNodes.end(), n) != map->selectedNodes.end() && ImGui::GetIO().KeyShift);
+						action->perform(map, browEdit);
+						ga->addAction(action);
 						first = false;
 					}
-
 				});
+				if (!first)
+					map->doAction(ga, browEdit);
 			}
 			objectSelectLasso.clear();
 		}
