@@ -60,6 +60,7 @@ public:
 	std::string viewName;
 
 	gl::VBO<VertexP3T2>* gridVbo = nullptr;
+	gl::VBO<VertexP3T2>* rotateGridVbo = nullptr;
 
 	NodeRenderContext nodeRenderContext;
 	Gadget gadget;
@@ -83,6 +84,7 @@ public:
 	
 	bool showViewOptions = false;
 	bool ortho = false;
+	bool lockedGizmo = false;
 	glm::vec3 cameraCenter;
 	glm::vec2 cameraRot = glm::vec2(45.0f, 0.0f);
 	float cameraDistance = 500;
@@ -192,6 +194,7 @@ public:
 
 
 	void rebuildObjectModeGrid();
+	void rebuildObjectRotateModeGrid();
 
 	//todo, move this to a struct for better organisation
 	bool viewLightmapShadow = true;

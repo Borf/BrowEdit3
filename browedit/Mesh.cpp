@@ -2,21 +2,36 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <algorithm>
 
-void Mesh::init()
+void Mesh::init(bool calculateNormals)
 {
 	std::vector<VertexP3T2N3> verts;
+	vertices.clear();
 	buildVertices(verts);
-	for (size_t i = 0; i < verts.size(); i += 3)
-	{
-		glm::vec3 normal = glm::normalize(glm::cross(glm::make_vec3(verts[i + 1].data) - glm::make_vec3(verts[i].data), glm::make_vec3(verts[i + 2].data) - glm::make_vec3(verts[i].data)));
-		for (size_t ii = i; ii < i + 3; ii++)
+
+	if (calculateNormals) {
+		for (size_t i = 0; i < verts.size(); i += 3)
 		{
-			verts[ii].data[3 + 2 + 0] = normal.x;
-			verts[ii].data[3 + 2 + 1] = normal.y;
-			verts[ii].data[3 + 2 + 2] = normal.z;
-			vertices.push_back(glm::make_vec3(verts[ii].data));
+			glm::vec3 normal = glm::normalize(glm::cross(glm::make_vec3(verts[i + 1].data) - glm::make_vec3(verts[i].data), glm::make_vec3(verts[i + 2].data) - glm::make_vec3(verts[i].data)));
+
+			for (size_t ii = i; ii < i + 3; ii++)
+			{
+				verts[ii].data[3 + 2 + 0] = normal.x;
+				verts[ii].data[3 + 2 + 1] = normal.y;
+				verts[ii].data[3 + 2 + 2] = normal.z;
+				vertices.push_back(glm::make_vec3(verts[ii].data));
+			}
 		}
 	}
+	else {
+		for (size_t i = 0; i < verts.size(); i += 3)
+		{
+			for (size_t ii = i; ii < i + 3; ii++)
+			{
+				vertices.push_back(glm::make_vec3(verts[ii].data));
+			}
+		}
+	}
+
 	if(!vbo)
 		vbo = new gl::VBO<VertexP3T2N3>();
 	vbo->setData(verts, GL_STATIC_DRAW);
@@ -40,10 +55,9 @@ void Mesh::draw()
 }
 
 
-bool Mesh::collision(const math::Ray& ray, const glm::mat4& modelMatrix)
+bool Mesh::collision(const math::Ray& ray, const glm::mat4& modelMatrix, float& t)
 {
 	math::Ray invRay(ray * glm::inverse(modelMatrix));
-	float t;
 	for (size_t i = 0; i < vertices.size(); i+=3)
 		if (invRay.LineIntersectPolygon(std::span<glm::vec3>(vertices.data() + i, 3), t))
 			return true;

@@ -40,11 +40,12 @@ private:
 
 	static inline glm::mat4 viewMatrix;
 	static inline glm::mat4 projectionMatrix;
+	static inline glm::vec3 lightDirection;
 public:
 	static inline ArrowMesh arrowMesh;
 
 	static void init();
-	static void setMatrices(const glm::mat4& projectionMatrix, const glm::mat4& viewMatrix);
+	static void setMatrices(const glm::mat4& projectionMatrix, const glm::mat4& viewMatrix, const glm::vec3& lightDirection = glm::vec3(1, 1, 1));
 	enum class Mode
 	{
 		Translate,
@@ -56,7 +57,8 @@ public:
 	{
 		X = 1,
 		Y = 2,
-		Z = 4
+		Z = 4,
+		XYZ = X | Y | Z
 	};
 	static void setMode(Mode mode);
 	static void setThickness(float newThickness);
@@ -66,6 +68,7 @@ public:
 	bool axisReleased = false;
 	bool axisDragged = false;
 	int selectedAxis = 0;
+	int hoveredAxis = 0;
 	bool isMouseJustPressed = true;
 	bool axisHovered;
 	inline static float opacity = 1.0f;
@@ -74,5 +77,5 @@ public:
 
 	int selectedAxisIndex();
 
-	void draw(const math::Ray& mouseRay, glm::mat4 modelMatrix);
+	void draw(const math::Ray& mouseRay, glm::mat4 modelMatrix, float angleX = 0);
 };

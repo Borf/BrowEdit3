@@ -13,9 +13,9 @@ class Mesh
 public:
 	gl::VBO<VertexP3T2N3>* vbo = nullptr;
 
-	void init();
+	void init(bool calculateNormals = true);
 	void draw();
-	bool collision(const math::Ray& ray, const glm::mat4& modelMatrix);
+	bool collision(const math::Ray& ray, const glm::mat4& modelMatrix, float& t);
 	glm::vec3 getCollision(const math::Ray& ray, const glm::mat4& modelMatrix);
 
 

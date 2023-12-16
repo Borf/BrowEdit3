@@ -18,6 +18,8 @@ public:
 			lightMin,
 			color,
 			colorMult,
+			lightDirection,
+			shadeType,
 			End
 		};
 	};
@@ -31,5 +33,7 @@ public:
 		bindUniform(Uniforms::lightMin, "lightMin");
 		bindUniform(Uniforms::color, "color");
 		bindUniform(Uniforms::colorMult, "colorMult");
+		bindUniform(Uniforms::lightDirection, "lightDirection");
+		bindUniform(Uniforms::shadeType, "shadeType");
 	}
 };

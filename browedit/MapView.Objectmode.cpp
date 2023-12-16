@@ -63,36 +63,40 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 	bool snap = snapToGrid;
 	if (ImGui::GetIO().KeyShift)
 		snap = !snap;
+	
 	if (map->selectedNodes.size() > 0 && snap)
 	{
 		simpleShader->use();
 		simpleShader->setUniform(SimpleShader::Uniforms::color, glm::vec4(0, 0, 0, 1));
 
-		glm::vec3 avgPos = map->getSelectionCenter();
-		avgPos.y -= 0.1f;
-		if (!gridLocal)
-		{
-			avgPos.x = glm::floor((avgPos.x-gridOffset) / gridSize) * gridSize + gridOffset;
-			avgPos.z = glm::floor((avgPos.z-gridOffset) / gridSize) * gridSize + gridOffset;
+		// The rotate grid is drawn later instead
+		if (gadget.mode != Gadget::Mode::Rotate) {
+			glm::vec3 avgPos = map->getSelectionCenter();
+			avgPos.y -= 0.1f;
+			if (!gridLocal)
+			{
+				avgPos.x = glm::floor((avgPos.x-gridOffset) / gridSize) * gridSize + gridOffset;
+				avgPos.z = glm::floor((avgPos.z-gridOffset) / gridSize) * gridSize + gridOffset;
+			}
+
+			glm::mat4 mat = glm::scale(glm::mat4(1.0f), glm::vec3(1, 1, -1));
+			mat = glm::translate(mat, glm::vec3(5 * gnd->width + avgPos.x, -avgPos.y, (-10 - 5 * gnd->height + avgPos.z)));
+
+			//glDisable(GL_DEPTH_TEST);
+			simpleShader->setUniform(SimpleShader::Uniforms::modelMatrix, mat);
+			glLineWidth(2);
+			gridVbo->bind();
+			glEnableVertexAttribArray(0);
+			glEnableVertexAttribArray(1);
+			glDisableVertexAttribArray(2);
+			glDisableVertexAttribArray(3);
+			glDisableVertexAttribArray(4); //TODO: vao
+			glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexP3T2), (void*)(0 * sizeof(float)));
+			glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexP3T2), (void*)(3 * sizeof(float)));
+			glDrawArrays(GL_LINES, 0, (int)gridVbo->size());
+			//glEnable(GL_DEPTH_TEST);
+			gridVbo->unBind();
 		}
-
-		glm::mat4 mat = glm::scale(glm::mat4(1.0f), glm::vec3(1, 1, -1));
-		mat = glm::translate(mat, glm::vec3(5 * gnd->width + avgPos.x, -avgPos.y, (-10 - 5 * gnd->height + avgPos.z)));
-
-//		glDisable(GL_DEPTH_TEST);
-		simpleShader->setUniform(SimpleShader::Uniforms::modelMatrix, mat);
-		glLineWidth(2);
-		gridVbo->bind();
-		glEnableVertexAttribArray(0);
-		glEnableVertexAttribArray(1);
-		glDisableVertexAttribArray(2);
-		glDisableVertexAttribArray(3);
-		glDisableVertexAttribArray(4); //TODO: vao
-		glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexP3T2), (void*)(0 * sizeof(float)));
-		glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexP3T2), (void*)(3 * sizeof(float)));
-		glDrawArrays(GL_LINES, 0, (int)gridVbo->size());
-//		glEnable(GL_DEPTH_TEST);
-		gridVbo->unBind();
 	}
 	if (objectSelectLasso.size() > 0)
 	{
@@ -213,19 +217,48 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 
 			avgPos /= count;
 			Gnd* gnd = map->rootNode->getComponent<Gnd>();
-			Gadget::setMatrices(nodeRenderContext.projectionMatrix, nodeRenderContext.viewMatrix);
+
+			glm::mat4 viewMatrix = glm::translate(nodeRenderContext.viewMatrix, cameraCenter);
+			Gadget::setMatrices(nodeRenderContext.projectionMatrix, nodeRenderContext.viewMatrix, -glm::normalize(viewMatrix[3]));
 			glClear(GL_DEPTH_BUFFER_BIT);
 			glDisable(GL_CULL_FACE);
 			glEnable(GL_BLEND);
 
+			glm::mat4 rotMat = glm::mat4(1.0f);
 			glm::mat4 mat = glm::scale(glm::mat4(1.0f), glm::vec3(1, 1, -1));
 			mat = glm::translate(mat, glm::vec3(5 * gnd->width + avgPos.x, -avgPos.y, (-10 - 5 * gnd->height + avgPos.z)));
-			if (map->selectedNodes.size() == 1 && gadget.mode == Gadget::Mode::Rotate)
-			{
-				mat = glm::rotate(mat, -glm::radians(map->selectedNodes[0]->getComponent<RswObject>()->rotation.z), glm::vec3(0, 0, 1));
+			
+			if (!(gadget.axisClicked || gadget.axisDragged)) {
+				lockedGizmo = !ImGui::GetIO().KeyCtrl;
 			}
 
-			gadget.draw(mouseRay, mat);
+			if (!lockedGizmo) {
+				if (map->selectedNodes.size() == 1 && gadget.mode == Gadget::Mode::Rotate) {
+					mat = glm::rotate(mat, -glm::radians(map->selectedNodes[0]->getComponent<RswObject>()->rotation.z), glm::vec3(0, 0, 1));
+					rotMat = glm::rotate(rotMat, -glm::radians(map->selectedNodes[0]->getComponent<RswObject>()->rotation.z), glm::vec3(0, 0, 1));
+				}
+			}
+
+			if (map->selectedNodes.size() == 1 && gadget.mode == Gadget::Mode::Scale) {
+				mat = glm::rotate(mat, -glm::radians(map->selectedNodes[0]->getComponent<RswObject>()->rotation.z), glm::vec3(0, 0, 1));
+				mat = glm::rotate(mat, -glm::radians(map->selectedNodes[0]->getComponent<RswObject>()->rotation.x), glm::vec3(1, 0, 0));
+				mat = glm::rotate(mat, glm::radians(map->selectedNodes[0]->getComponent<RswObject>()->rotation.y), glm::vec3(0, 1, 0));
+
+				rotMat = glm::rotate(rotMat, -glm::radians(map->selectedNodes[0]->getComponent<RswObject>()->rotation.z), glm::vec3(0, 0, 1));
+				rotMat = glm::rotate(rotMat, glm::radians(map->selectedNodes[0]->getComponent<RswObject>()->rotation.x), glm::vec3(1, 0, 0));
+				rotMat = glm::rotate(rotMat, glm::radians(map->selectedNodes[0]->getComponent<RswObject>()->rotation.y), glm::vec3(0, 1, 0));
+			}
+
+			gadget.draw(mouseRay, mat, !lockedGizmo ? -map->selectedNodes[0]->getComponent<RswObject>()->rotation.x : 0);
+
+			if (!lockedGizmo) {
+				if (map->selectedNodes.size() == 1 && gadget.mode == Gadget::Mode::Rotate) {
+					if (gadget.selectedAxis == Gadget::Axis::Y) {
+						rotMat = glm::rotate(rotMat, glm::radians(map->selectedNodes[0]->getComponent<RswObject>()->rotation.x), glm::vec3(1, 0, 0));
+					}
+				}
+			}
+
 			struct PosRotScale {
 				glm::vec3 pos;
 				glm::vec3 rot;
@@ -235,17 +268,45 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 			};
 			static std::map<Node*, PosRotScale> originalValues;
 			static glm::vec3 groupCenter;
+
+			static glm::vec3 centerGadget;
+			static glm::vec3 vectorStart;
+
 			if (hovered)
 			{
 				if (gadget.axisClicked)
 				{
 					mouseDragPlane.normal = glm::normalize(glm::vec3(nodeRenderContext.viewMatrix * glm::vec4(0, 0, 1, 1)) - glm::vec3(nodeRenderContext.viewMatrix * glm::vec4(0, 0, 0, 1))) * glm::vec3(1, 1, -1);
-					if (gadget.selectedAxis == Gadget::Axis::X)
-						mouseDragPlane.normal.x = 0;
-					if (gadget.selectedAxis == Gadget::Axis::Y)
-						mouseDragPlane.normal.y = 0;
-					if (gadget.selectedAxis == Gadget::Axis::Z)
-						mouseDragPlane.normal.z = 0;
+					
+					if (gadget.mode == Gadget::Mode::Rotate) {
+						if (gadget.selectedAxis == Gadget::Axis::X)
+							mouseDragPlane.normal = glm::vec3(1, 0, 0);
+						else if (gadget.selectedAxis == Gadget::Axis::Y)
+							mouseDragPlane.normal = glm::vec3(0, 1, 0);
+						else if (gadget.selectedAxis == Gadget::Axis::Z)
+							mouseDragPlane.normal = glm::vec3(0, 0, 1);
+
+						mouseDragPlane.normal = rotMat * glm::vec4(mouseDragPlane.normal, 1);
+					}
+					else if (gadget.mode == Gadget::Mode::Scale) {
+						if (gadget.selectedAxis == Gadget::Axis::X)
+							mouseDragPlane.normal = glm::vec3(0, 1, 0);
+						else if (gadget.selectedAxis == Gadget::Axis::Y)
+							mouseDragPlane.normal = glm::vec3(0, 0, 1);
+						else if (gadget.selectedAxis == Gadget::Axis::Z)
+							mouseDragPlane.normal = glm::vec3(0, 1, 0);
+
+						mouseDragPlane.normal = rotMat * glm::vec4(mouseDragPlane.normal, 1);
+					}
+					else {
+						if (gadget.selectedAxis == Gadget::Axis::X)
+							mouseDragPlane.normal.x = 0;
+						if (gadget.selectedAxis == Gadget::Axis::Y)
+							mouseDragPlane.normal.y = 0;
+						if (gadget.selectedAxis == Gadget::Axis::Z)
+							mouseDragPlane.normal.z = 0;
+					}
+
 					mouseDragPlane.normal = glm::normalize(mouseDragPlane.normal);
 					mouseDragPlane.D = -glm::dot(glm::vec3(5 * gnd->width + avgPos.x, -avgPos.y, -(-10 - 5 * gnd->height + avgPos.z)), mouseDragPlane.normal);
 
@@ -253,6 +314,21 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 					mouseRay.planeIntersection(mouseDragPlane, f);
 					mouseDragStart = mouseRay.origin + f * mouseRay.dir;
 					mouseDragStart2D = mouseState.position;
+
+					centerGadget = glm::vec3(5 * gnd->width + avgPos.x, -avgPos.y, -(-10 - 5 * gnd->height + avgPos.z));
+					vectorStart = (mouseRay.origin + f * mouseRay.dir) - centerGadget;
+
+					if (gadget.mode == Gadget::Mode::Rotate || gadget.mode == Gadget::Mode::Scale) {
+						if (gadget.selectedAxis == Gadget::Axis::X) {
+							vectorStart = glm::vec4(vectorStart, 1) * rotMat;
+						}
+						else if (gadget.selectedAxis == Gadget::Axis::Y) {
+							vectorStart = glm::vec4(vectorStart, 1) * rotMat;
+						}
+						else if (gadget.selectedAxis == Gadget::Axis::Z) {
+							vectorStart = glm::vec4(vectorStart, 1);
+						}
+					}
 
 					groupCenter = glm::vec3(0.0f);
 					originalValues.clear();
@@ -280,8 +356,10 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 							continue;
 						if (gadget.mode == Gadget::Mode::Translate)
 							ga->addAction(new ObjectChangeAction(n, &rswObject->position, originalValues[n].pos, "Moving"));
-						else if (gadget.mode == Gadget::Mode::Scale)
+						else if (gadget.mode == Gadget::Mode::Scale) {
 							ga->addAction(new ObjectChangeAction(n, &rswObject->scale, originalValues[n].scale, "Scaling"));
+							ga->addAction(new ObjectChangeAction(n, &rswObject->position, originalValues[n].pos, ""));
+						}
 						else if (gadget.mode == Gadget::Mode::Rotate)
 						{
 							ga->addAction(new ObjectChangeAction(n, &rswObject->rotation, originalValues[n].rot, "Rotating"));
@@ -293,20 +371,136 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 
 				if (gadget.axisDragged)
 				{
-					float f;
+					float f = 9999;
 					mouseRay.planeIntersection(mouseDragPlane, f);
-					glm::vec3 mouseOffset = (mouseRay.origin + f * mouseRay.dir) - mouseDragStart;
+					glm::vec3 mouseOffset = (mouseRay.origin + f * mouseRay.dir);
 
-					if ((gadget.selectedAxis & Gadget::X) == 0)
-						mouseOffset.x = 0;
-					if ((gadget.selectedAxis & Gadget::Y) == 0)
-						mouseOffset.y = 0;
-					if ((gadget.selectedAxis & Gadget::Z) == 0)
-						mouseOffset.z = 0;
+					float angle = 0;
+					float scale = 0;
+
+					if ((gadget.mode == Gadget::Mode::Rotate || gadget.mode == Gadget::Mode::Scale) && f < 0) {
+						// Reverse mouse position
+						mouseOffset = mouseOffset - centerGadget;
+						mouseOffset *= -1.0f;
+						mouseOffset = mouseOffset + centerGadget;
+					}
+
+					if (gadget.mode == Gadget::Mode::Rotate) {
+						glm::vec3 vectorEnd = mouseOffset - centerGadget;
+
+						if (gadget.selectedAxis == Gadget::Axis::X) {
+							vectorEnd = glm::vec4(vectorEnd, 1) * rotMat;
+							angle = atan2(vectorEnd.z * vectorStart.y - vectorEnd.y * vectorStart.z, vectorEnd.y * vectorStart.y + vectorEnd.z * vectorStart.z);
+						}
+						else if (gadget.selectedAxis == Gadget::Axis::Y) {
+							vectorEnd = glm::vec4(vectorEnd, 1) * rotMat;
+							angle = atan2(vectorEnd.z * vectorStart.x - vectorEnd.x * vectorStart.z, vectorEnd.x * vectorStart.x + vectorEnd.z * vectorStart.z);
+						}
+						else if (gadget.selectedAxis == Gadget::Axis::Z) {
+							angle = -atan2(vectorEnd.y * vectorStart.x - vectorEnd.x * vectorStart.y, vectorEnd.x * vectorStart.x + vectorEnd.y * vectorStart.y);
+						}
+					}
+					else if (gadget.mode == Gadget::Mode::Scale) {
+						glm::vec3 vectorEnd = mouseOffset - centerGadget;
+
+						if (gadget.selectedAxis == Gadget::Axis::X) {
+							vectorEnd = glm::vec4(vectorEnd, 1) * rotMat;
+							angle = atan2(vectorEnd.z * vectorStart.x - vectorEnd.x * vectorStart.z, vectorEnd.x * vectorStart.x + vectorEnd.z * vectorStart.z);
+						}
+						else if (gadget.selectedAxis == Gadget::Axis::Y) {
+							vectorEnd = glm::vec4(vectorEnd, 1) * rotMat;
+							angle = atan2(vectorEnd.y * vectorStart.x - vectorEnd.x * vectorStart.y, vectorEnd.x * vectorStart.x + vectorEnd.y * vectorStart.y);
+						}
+						else if (gadget.selectedAxis == Gadget::Axis::Z) {
+							angle = atan2(vectorEnd.z * vectorStart.x - vectorEnd.x * vectorStart.z, vectorEnd.x * vectorStart.x + vectorEnd.z * vectorStart.z);
+						}
+						else {
+							mouseOffset -= mouseDragStart;
+							angle = atan2(vectorEnd.z * vectorStart.x - vectorEnd.x * vectorStart.z, vectorEnd.x * vectorStart.x + vectorEnd.z * vectorStart.z);
+						}
+
+						scale = glm::length(vectorEnd) / glm::length(vectorStart);
+						angle += glm::pi<float>() / 2;
+
+						if (angle < 0 || angle > glm::pi<float>())
+							scale *= -1;
+					}
+					else {
+						mouseOffset -= mouseDragStart;
+
+						if ((gadget.selectedAxis & Gadget::X) == 0)
+							mouseOffset.x = 0;
+						if ((gadget.selectedAxis & Gadget::Y) == 0)
+							mouseOffset.y = 0;
+						if ((gadget.selectedAxis & Gadget::Z) == 0)
+							mouseOffset.z = 0;
+					}
 
 					bool snap = snapToGrid;
 					if (ImGui::GetIO().KeyShift)
 						snap = !snap;
+					
+					if (gadget.mode == Gadget::Mode::Rotate || (gadget.mode == Gadget::Mode::Scale && gadget.selectedAxis != Gadget::Axis::XYZ)) {
+						simpleShader->setUniform(SimpleShader::Uniforms::shadeType, 1);
+						glLineWidth(2);
+
+						if (snap && gridSize >= 1.0f && gadget.mode == Gadget::Mode::Rotate) {
+							glm::mat4 gridRotMat = rotMat;
+							
+							if (gadget.selectedAxis == Gadget::Axis::X) {
+								gridRotMat = glm::rotate(gridRotMat, glm::radians(90.0f), glm::vec3(0, 1, 0));
+							}
+							else if (gadget.selectedAxis == Gadget::Axis::Y) {
+								gridRotMat = glm::rotate(gridRotMat, glm::radians(90.0f), glm::vec3(1, 0, 0));
+							}
+							else {
+								gridRotMat = glm::mat4(1);
+							}
+							
+							glm::mat4 modelMatrix = glm::translate(glm::mat4(1), centerGadget);
+							
+							simpleShader->setUniform(SimpleShader::Uniforms::modelMatrix, modelMatrix * gridRotMat);
+							simpleShader->setUniform(SimpleShader::Uniforms::color, glm::vec4(1, 1, 1, 1));
+							rotateGridVbo->bind();
+							glEnableVertexAttribArray(0);
+							glEnableVertexAttribArray(1);
+							glDisableVertexAttribArray(2);
+							glDisableVertexAttribArray(3);
+							glDisableVertexAttribArray(4); //TODO: vao
+							glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexP3T2), (void*)(0 * sizeof(float)));
+							glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexP3T2), (void*)(3 * sizeof(float)));
+							glDrawArrays(GL_LINES, 0, (int)rotateGridVbo->size());
+							rotateGridVbo->unBind();
+						}
+
+						simpleShader->setUniform(SimpleShader::Uniforms::modelMatrix, glm::mat4(1.0f));
+						std::vector<VertexP3T2N3> verts;
+						verts.push_back(VertexP3T2N3(centerGadget, glm::vec2(0), glm::vec3(1.0f)));
+						verts.push_back(VertexP3T2N3(mouseOffset, glm::vec2(0), glm::vec3(1.0f)));
+						verts.push_back(VertexP3T2N3(centerGadget, glm::vec2(0), glm::vec3(1.0f)));
+						verts.push_back(VertexP3T2N3(mouseDragStart, glm::vec2(0), glm::vec3(1.0f)));
+						glEnableVertexAttribArray(0);
+						glEnableVertexAttribArray(1);
+						glEnableVertexAttribArray(2);
+						glDisableVertexAttribArray(3);
+						glDisableVertexAttribArray(4); //TODO: vao
+						glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexP3T2N3), verts[0].data);
+						glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexP3T2N3), verts[0].data + 3);
+						glVertexAttribPointer(2, 3, GL_FLOAT, false, sizeof(VertexP3T2N3), verts[0].data + 5);
+
+						if (gadget.selectedAxis == Gadget::Axis::X) {
+							simpleShader->setUniform(SimpleShader::Uniforms::color, glm::vec4(0.5f, 0.12f, 0.12f, 1));
+						}
+						else if (gadget.selectedAxis == Gadget::Axis::Y) {
+							simpleShader->setUniform(SimpleShader::Uniforms::color, glm::vec4(0.12f, 0.5f, 0.12f, 1));
+						}
+						else if (gadget.selectedAxis == Gadget::Axis::Z) {
+							simpleShader->setUniform(SimpleShader::Uniforms::color, glm::vec4(0.12f, 0.12f, 0.5f, 1));
+						}
+						glDrawArrays(GL_LINES, 0, (int)verts.size());
+						simpleShader->setUniform(SimpleShader::Uniforms::shadeType, 0);
+					}
+
 					if (snap && gridLocal)
 						mouseOffset = glm::round(mouseOffset / (float)gridSize) * (float)gridSize;
 
@@ -336,44 +530,130 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 						}
 						if (gadget.mode == Gadget::Mode::Scale)
 						{
-							if (gadget.selectedAxis == (Gadget::Axis::X | Gadget::Axis::Y | Gadget::Axis::Z))
+							if (gadget.selectedAxis == Gadget::Axis::XYZ)
 							{
 								n.first->getComponent<RswObject>()->scale = n.second.scale * (1 + pos * glm::length(0.01f * mouseOffset));
-								if (snap && !gridLocal)
+								if (snap)
 									n.first->getComponent<RswObject>()->scale = glm::round(n.first->getComponent<RswObject>()->scale / (float)gridSize) * (float)gridSize;
 							}
 							else
 							{
-								n.first->getComponent<RswObject>()->scale[gadget.selectedAxisIndex()] = n.second.scale[gadget.selectedAxisIndex()] * (1 + pos * glm::length(0.01f * mouseOffset));
-								if (snap && !gridLocal)
+								n.first->getComponent<RswObject>()->scale[gadget.selectedAxisIndex()] = n.second.scale[gadget.selectedAxisIndex()] * scale;
+								if (snap)
 									n.first->getComponent<RswObject>()->scale[gadget.selectedAxisIndex()] = glm::round(n.first->getComponent<RswObject>()->scale[gadget.selectedAxisIndex()] / (float)gridSize) * (float)gridSize;
 							}
 							if (pivotPoint == PivotPoint::GroupCenter)
 							{
-								float originalAngle = atan2(n.second.pos.z - groupCenter.z, n.second.pos.x - groupCenter.x);
-								float dist = glm::length(glm::vec2(n.second.pos.z - groupCenter.z, n.second.pos.x - groupCenter.x));
-								dist *= (1 + pos * glm::length(0.01f * mouseOffset));
-
-								n.first->getComponent<RswObject>()->position.x = groupCenter.x + dist * glm::cos(originalAngle);
-								n.first->getComponent<RswObject>()->position.z = groupCenter.z + dist * glm::sin(originalAngle);
+								if (gadget.selectedAxis == Gadget::Axis::XYZ) {
+									n.first->getComponent<RswObject>()->position = groupCenter + (n.second.pos - groupCenter) * (1 + pos * glm::length(0.01f * mouseOffset));
+								}
+								else {
+									int axis = gadget.selectedAxisIndex();
+									n.first->getComponent<RswObject>()->position[axis] = groupCenter[axis] + (n.second.pos[axis] - groupCenter[axis]) * scale;
+								}
 							}
 						}
 						if (gadget.mode == Gadget::Mode::Rotate)
 						{
-							n.first->getComponent<RswObject>()->rotation[gadget.selectedAxisIndex()] = n.second.rot[gadget.selectedAxisIndex()] + -pos * mouseOffset2D;
+							if (snap && pivotPoint == PivotPoint::GroupCenter && map->selectedNodes.size() > 1) {
+								angle = glm::radians(glm::round((glm::degrees(angle) - gridOffset) / (float)gridSizeRotate) * (float)gridSizeRotate + gridOffset);
+							}
+							
+							if (!lockedGizmo) {
+								n.first->getComponent<RswObject>()->rotation[gadget.selectedAxisIndex()] = n.second.rot[gadget.selectedAxisIndex()] + glm::degrees(angle);
+							}
+							else {
+								// Tokei: for my sanity, I'm reversing the rotation axis
+								glm::mat4 m = glm::mat4(1);
+								m = glm::rotate(m, -glm::radians(n.second.rot.z), glm::vec3(0, 0, -1));
+								m = glm::rotate(m, glm::radians(n.second.rot.x), glm::vec3(-1, 0, 0));
+								m = glm::rotate(m, glm::radians(n.second.rot.y), glm::vec3(0, -1, 0));
+
+								glm::mat4 newRot = glm::mat4(1);
+
+								if (snap && !(pivotPoint == PivotPoint::GroupCenter && map->selectedNodes.size() > 1)) {
+									angle = glm::radians(glm::round((glm::degrees(angle) - gridOffset) / (float)gridSizeRotate) * (float)gridSizeRotate + gridOffset);
+								}
+
+								if (gadget.selectedAxis == Gadget::Axis::X) {
+									newRot = glm::rotate(newRot, angle, glm::vec3(-1, 0, 0));
+								}
+								else if (gadget.selectedAxis == Gadget::Axis::Y) {
+									newRot = glm::rotate(newRot, angle, glm::vec3(0, -1, 0));
+								}
+								else {
+									newRot = glm::rotate(newRot, -angle, glm::vec3(0, 0, -1));
+								}
+
+								m = newRot * m;
+
+								glm::vec3 angles;
+
+								if (m[1][2] < 1) {
+									if (m[1][2] > -1) {
+										angles = glm::vec3(asin(-m[1][2]), atan2(m[0][2], m[2][2]), -atan2(m[1][0], m[1][1]));
+									}
+									else {
+										angles = glm::vec3(glm::pi<float>() / 2.0f, -atan2(-m[0][1], m[0][0]), 0);
+									}
+								}
+								else {
+									angles = glm::vec3(-glm::pi<float>() / 2.0f, atan2(-m[0][1], m[0][0]), 0);
+								}
+
+								angles = glm::degrees(angles);
+
+								// Cleanup angles
+								if (glm::abs(angles.x) < 0.001f)
+									angles.x = 0;
+								if (glm::abs(angles.y) < 0.001f)
+									angles.y = 0;
+								if (glm::abs(angles.z) < 0.001f)
+									angles.z = 0;
+
+								n.first->getComponent<RswObject>()->rotation = angles;
+							}
+
+							if (!lockedGizmo) {
+								if (snap && !(pivotPoint == PivotPoint::GroupCenter && map->selectedNodes.size() > 1)) {
+									n.first->getComponent<RswObject>()->rotation[gadget.selectedAxisIndex()] = glm::round((n.first->getComponent<RswObject>()->rotation[gadget.selectedAxisIndex()] - gridOffset) / (float)gridSizeRotate) * (float)gridSizeRotate + gridOffset;
+								}
+							}
+							
 							if (pivotPoint == PivotPoint::GroupCenter)
 							{
-								float originalAngle = atan2(n.second.pos.z - groupCenter.z, n.second.pos.x - groupCenter.x);
-								float dist = glm::length(glm::vec2(n.second.pos.z - groupCenter.z, n.second.pos.x - groupCenter.x));
-								originalAngle -= glm::radians(-pos * mouseOffset2D);
-								if (snap && !gridLocal)
-									originalAngle = glm::radians(glm::round(glm::degrees(originalAngle) / (float)gridSizeRotate) * (float)gridSizeRotate);
+								float originalAngle = 0;
+								float dist = 0;
 
-								n.first->getComponent<RswObject>()->position.x = groupCenter.x + dist * glm::cos(originalAngle);
-								n.first->getComponent<RswObject>()->position.z = groupCenter.z + dist * glm::sin(originalAngle);
+								if (gadget.selectedAxis == Gadget::Axis::X) {
+									originalAngle = atan2(n.second.pos.z - groupCenter.z, n.second.pos.y - groupCenter.y);
+									dist = glm::length(glm::vec2(n.second.pos.z - groupCenter.z, n.second.pos.y - groupCenter.y));
+									originalAngle += angle;
+								}
+								else if (gadget.selectedAxis == Gadget::Axis::Y) {
+									originalAngle = atan2(n.second.pos.z - groupCenter.z, n.second.pos.x - groupCenter.x);
+									dist = glm::length(glm::vec2(n.second.pos.z - groupCenter.z, n.second.pos.x - groupCenter.x));
+									originalAngle -= angle;
+								}
+								else if (gadget.selectedAxis == Gadget::Axis::Z) {
+									originalAngle = atan2(n.second.pos.y - groupCenter.y, n.second.pos.x - groupCenter.x);
+									dist = glm::length(glm::vec2(n.second.pos.y - groupCenter.y, n.second.pos.x - groupCenter.x));
+									originalAngle += angle;
+								}
+
+								if (gadget.selectedAxis == Gadget::Axis::X) {
+									n.first->getComponent<RswObject>()->position.y = groupCenter.y + dist * glm::cos(originalAngle);
+									n.first->getComponent<RswObject>()->position.z = groupCenter.z + dist * glm::sin(originalAngle);
+								}
+								else if (gadget.selectedAxis == Gadget::Axis::Y) {
+									n.first->getComponent<RswObject>()->position.x = groupCenter.x + dist * glm::cos(originalAngle);
+									n.first->getComponent<RswObject>()->position.z = groupCenter.z + dist * glm::sin(originalAngle);
+								}
+								else if (gadget.selectedAxis == Gadget::Axis::Z) {
+									n.first->getComponent<RswObject>()->position.x = groupCenter.x + dist * glm::cos(originalAngle);
+									n.first->getComponent<RswObject>()->position.y = groupCenter.y + dist * glm::sin(originalAngle);
+								}
 							}
-							if (snap && !gridLocal)
-								n.first->getComponent<RswObject>()->rotation[gadget.selectedAxisIndex()] = glm::round((n.first->getComponent<RswObject>()->rotation[gadget.selectedAxisIndex()]-gridOffset) / (float)gridSizeRotate) * (float)gridSizeRotate + gridOffset;
 						}
 						if (n.first->getComponent<RsmRenderer>())
 							n.first->getComponent<RsmRenderer>()->setDirty();
@@ -523,4 +803,32 @@ void MapView::rebuildObjectModeGrid()
 		}
 	}
 	gridVbo->setData(verts, GL_STATIC_DRAW);
+}
+
+void MapView::rebuildObjectRotateModeGrid()
+{
+	std::vector<VertexP3T2> verts;
+	if (glm::abs(gridSizeRotate) >= 1.0f)
+	{
+		float size = 25 * gadget.scale;
+		float gridAngle = 0;
+
+		glm::vec3 v1;
+		glm::vec3 v2;
+
+		while (gridAngle <= 360.0f) {
+			v1 = glm::vec3(glm::cos(glm::radians(-gridAngle - gridOffsetRotate)), glm::sin(glm::radians(-gridAngle - gridOffsetRotate)), 0);
+			v2 = v1 * (size + 6.0f);
+			v1 = v1 * (size + 2.0f);
+
+			v1 = glm::vec4(v1, 1);
+			v2 = glm::vec4(v2, 1);
+
+			verts.push_back(VertexP3T2(v1, glm::vec2(0)));
+			verts.push_back(VertexP3T2(v2, glm::vec2(0)));
+
+			gridAngle += gridSizeRotate;
+		}
+	}
+	rotateGridVbo->setData(verts, GL_STATIC_DRAW);
 }

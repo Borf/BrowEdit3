@@ -44,9 +44,16 @@ void LubRenderer::render()
 		rswObject = node->getComponent<RswObject>();
 	if (!gnd)
 		gnd = node->root->getComponent<Gnd>();
-	if (!lubEffect)
+	if (!lubEffect || dirty)
 	{
 		lubEffect = node->getComponent<LubEffect>();
+		dirty = false;
+
+		if (texture != nullptr) {
+			util::ResourceManager<gl::Texture>::unload(texture);
+			texture = nullptr;
+		}
+
 		if (lubEffect && lubEffect->texture != "")
 		{
 			texture = util::ResourceManager<gl::Texture>::load("data\\texture\\" + lubEffect->texture);
