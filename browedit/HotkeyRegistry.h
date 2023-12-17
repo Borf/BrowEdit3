@@ -139,6 +139,7 @@ enum class HotkeyAction
 	View_Sounds,
 	View_Lights,
 	View_Water,
+	View_EffectIcons,
 
 	Camera_OrthoPerspective,
 	Camera_MoveXPositive,

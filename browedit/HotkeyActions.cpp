@@ -207,6 +207,7 @@ void BrowEdit::registerActions()
 	HotkeyRegistry::registerAction(HotkeyAction::View_GatTiles,						[this]() { if (editMode == BrowEdit::EditMode::Gat) { activeMapView->viewGatGat = !activeMapView->viewGatGat; } else { activeMapView->viewGat = !activeMapView->viewGat; } }, hasActiveMapView);
 	HotkeyRegistry::registerAction(HotkeyAction::View_Models,						[this]() { activeMapView->viewModels = !activeMapView->viewModels; }, hasActiveMapView);
 	HotkeyRegistry::registerAction(HotkeyAction::View_Effects,						[this]() { activeMapView->viewEffects = !activeMapView->viewEffects; }, hasActiveMapView);
+	HotkeyRegistry::registerAction(HotkeyAction::View_EffectIcons,					[this]() { activeMapView->viewEffectIcons = !activeMapView->viewEffectIcons; }, hasActiveMapView);
 	HotkeyRegistry::registerAction(HotkeyAction::View_Sounds,						[this]() { activeMapView->viewSounds = !activeMapView->viewSounds; }, hasActiveMapView);
 	HotkeyRegistry::registerAction(HotkeyAction::View_Lights,						[this]() { activeMapView->viewLights= !activeMapView->viewLights; }, hasActiveMapView);
 	HotkeyRegistry::registerAction(HotkeyAction::View_Water,						[this]() { activeMapView->viewWater = !activeMapView->viewWater; }, hasActiveMapView);

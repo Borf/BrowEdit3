@@ -11,6 +11,7 @@
 #include "components/GndRenderer.h"
 #include "components/RsmRenderer.h"
 #include "components/GatRenderer.h"
+#include "components/LubRenderer.h"
 #include "components/WaterRenderer.h"
 #include "components/BillboardRenderer.h"
 
@@ -126,6 +127,8 @@ void MapView::toolbar(BrowEdit* browEdit)
 			browEdit->toolBarToggleButton("viewLights", viewLights ? ICON_VIEW_LIGHT_ON : ICON_VIEW_LIGHT_OFF, viewLights, "View Lights", HotkeyAction::View_Lights, browEdit->config.toolbarButtonsViewOptions);
 			ImGui::SameLine();
 			browEdit->toolBarToggleButton("viewWater", viewWater ? ICON_VIEW_WATER_ON : ICON_VIEW_WATER_OFF, viewWater, "View Water", HotkeyAction::View_Water, browEdit->config.toolbarButtonsViewOptions);
+			ImGui::SameLine();
+			browEdit->toolBarToggleButton("viewEffectIcons", viewEffectIcons ? ICON_VIEW_EFFECT_ON : ICON_VIEW_EFFECT_ON, viewEffectIcons, "View Effect Icons", HotkeyAction::View_EffectIcons, browEdit->config.toolbarButtonsViewOptions);
 
 			if (browEdit->editMode == BrowEdit::EditMode::Object)
 			{
@@ -439,6 +442,8 @@ void MapView::render(BrowEdit* browEdit)
 				r->enabled = viewModels;
 			if (r->node->getComponent<RswEffect>())
 				r->enabled = viewEffects;
+			if (r->node->getComponent<LubEffect>())
+				r->node->getComponent<BillboardRenderer>()->enabled = viewEffectIcons;
 			if (r->node->getComponent<RswSound>())
 				r->enabled = viewSounds;
 			if (r->node->getComponent<RswLight>())
