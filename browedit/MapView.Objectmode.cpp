@@ -31,6 +31,11 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 		gridSize = gridSizeRotate;
 		gridOffset = gridOffsetRotate;
 	}
+	else if (gadget.mode == Gadget::Mode::Scale)
+	{
+		gridSize = gridSizeScale;
+		gridOffset = gridOffsetScale;
+	}
 	simpleShader->use();
 	simpleShader->setUniform(SimpleShader::Uniforms::projectionMatrix, nodeRenderContext.projectionMatrix);
 	simpleShader->setUniform(SimpleShader::Uniforms::viewMatrix, nodeRenderContext.viewMatrix);
@@ -545,7 +550,10 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 							if (pivotPoint == PivotPoint::GroupCenter)
 							{
 								if (gadget.selectedAxis == Gadget::Axis::XYZ) {
-									n.first->getComponent<RswObject>()->position = groupCenter + (n.second.pos - groupCenter) * (1 + pos * glm::length(0.01f * mouseOffset));
+									float scale = 1 + pos * glm::length(0.01f * mouseOffset);
+									if (snap)
+										scale = glm::round(scale / (float)gridSize) * (float)gridSize;
+									n.first->getComponent<RswObject>()->position = groupCenter + (n.second.pos - groupCenter) * scale;
 								}
 								else {
 									int axis = gadget.selectedAxisIndex();
@@ -556,7 +564,7 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 						if (gadget.mode == Gadget::Mode::Rotate)
 						{
 							if (snap && pivotPoint == PivotPoint::GroupCenter && map->selectedNodes.size() > 1) {
-								angle = glm::radians(glm::round((glm::degrees(angle) - gridOffset) / (float)gridSizeRotate) * (float)gridSizeRotate + gridOffset);
+								angle = glm::radians(glm::round((glm::degrees(angle) - gridOffset) / (float)gridSize) * (float)gridSize + gridOffset);
 							}
 							
 							if (!lockedGizmo) {
@@ -572,7 +580,7 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 								glm::mat4 newRot = glm::mat4(1);
 
 								if (snap && !(pivotPoint == PivotPoint::GroupCenter && map->selectedNodes.size() > 1)) {
-									angle = glm::radians(glm::round((glm::degrees(angle) - gridOffset) / (float)gridSizeRotate) * (float)gridSizeRotate + gridOffset);
+									angle = glm::radians(glm::round((glm::degrees(angle) - gridOffset) / (float)gridSize) * (float)gridSize + gridOffset);
 								}
 
 								if (gadget.selectedAxis == Gadget::Axis::X) {
@@ -616,7 +624,7 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 
 							if (!lockedGizmo) {
 								if (snap && !(pivotPoint == PivotPoint::GroupCenter && map->selectedNodes.size() > 1)) {
-									n.first->getComponent<RswObject>()->rotation[gadget.selectedAxisIndex()] = glm::round((n.first->getComponent<RswObject>()->rotation[gadget.selectedAxisIndex()] - gridOffset) / (float)gridSizeRotate) * (float)gridSizeRotate + gridOffset;
+									n.first->getComponent<RswObject>()->rotation[gadget.selectedAxisIndex()] = glm::round((n.first->getComponent<RswObject>()->rotation[gadget.selectedAxisIndex()] - gridOffset) / (float)gridSize) * (float)gridSize + gridOffset;
 								}
 							}
 							

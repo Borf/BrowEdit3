@@ -99,8 +99,10 @@ public:
 	bool gridLocal = true;
 	float gridSizeTranslate = 5;
 	float gridSizeRotate = 45;
+	float gridSizeScale = 0.5f;
 	float gridOffsetTranslate = 0;
 	float gridOffsetRotate = 0;
+	float gridOffsetScale = 0;
 
 	bool showAllLights = false;
 	bool showLightSphere = false;
