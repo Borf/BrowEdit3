@@ -453,9 +453,18 @@ void MapView::render(BrowEdit* browEdit)
 			if (r->node->getComponent<RswModel>())
 				r->enabled = viewModels;
 			if (r->node->getComponent<RswEffect>())
-				r->enabled = viewEffects;
+			{
+				if (dynamic_cast<BillboardRenderer*>(r))
+				{
+					r->enabled = viewEffects;
+					r->node->getComponent<BillboardRenderer>()->enabled = viewEffectIcons && viewEffects;
+					auto lubRenderer = r->node->getComponent<LubRenderer>();
+					if (lubRenderer)
+						lubRenderer->enabled = viewEffects;
+				}
+			}
 			if (r->node->getComponent<LubEffect>())
-				r->node->getComponent<BillboardRenderer>()->enabled = viewEffectIcons;
+				r->node->getComponent<BillboardRenderer>()->enabled = viewEffectIcons && viewEffects;
 			if (r->node->getComponent<RswSound>())
 				r->enabled = viewSounds;
 			if (r->node->getComponent<RswLight>())
