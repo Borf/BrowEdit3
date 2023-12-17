@@ -40,6 +40,7 @@ public:
 		}
 	};
 private:
+	bool dirty = true;
 	RswObject* rswObject = nullptr;
 	LubEffect* lubEffect = nullptr;
 
@@ -76,4 +77,5 @@ public:
 	~LubRenderer();
 	virtual void render();
 	bool selected = false;
+	void setDirty() { this->dirty = true; }
 };

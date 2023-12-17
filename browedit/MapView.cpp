@@ -74,9 +74,10 @@ MapView::MapView(Map* map, const std::string &viewName) : map(map), viewName(vie
 		gadgetHeight[i].mode = Gadget::Mode::TranslateY;
 
 	gridVbo = new gl::VBO<VertexP3T2>();
+	rotateGridVbo = new gl::VBO<VertexP3T2>();
 	textureGridVbo = new gl::VBO<VertexP3T2>();
 	rebuildObjectModeGrid();
-
+	rebuildObjectRotateModeGrid();
 }
 
 void MapView::toolbar(BrowEdit* browEdit)
@@ -208,8 +209,12 @@ void MapView::toolbar(BrowEdit* browEdit)
 	{
 		ImGui::SameLine();
 		ImGui::SetNextItemWidth(50);
-		if (ImGui::DragFloat("##gridSize", (gadget.mode == Gadget::Mode::Translate || browEdit->editMode == BrowEdit::EditMode::Height) ? &gridSizeTranslate : &gridSizeRotate, 1.0f, 0.1f, 100.0f, "%.3f"))
-			rebuildObjectModeGrid();
+		if (ImGui::DragFloat("##gridSize", (gadget.mode == Gadget::Mode::Translate || gadget.mode == Gadget::Mode::Scale || browEdit->editMode == BrowEdit::EditMode::Height) ? &gridSizeTranslate : &gridSizeRotate, 1.0f, 0.1f, 100.0f, "%.3f")) {
+			if (gadget.mode == Gadget::Mode::Rotate)
+				rebuildObjectRotateModeGrid();
+			else
+				rebuildObjectModeGrid();
+		}
 		if (ImGui::IsItemHovered())
 			ImGui::SetTooltip("Grid size. Doubleclick or ctrl+click to type a number");
 		if (ImGui::BeginPopupContextItem("GridSize"))
@@ -238,10 +243,11 @@ void MapView::toolbar(BrowEdit* browEdit)
 		{
 			ImGui::SameLine();
 			ImGui::SetNextItemWidth(50);
-			if (gadget.mode == Gadget::Mode::Translate)
+			if (gadget.mode == Gadget::Mode::Translate || gadget.mode == Gadget::Mode::Scale)
 				ImGui::DragFloat("##gridOffset", &gridOffsetTranslate, 1.0f, 0, gridSizeTranslate, "%.2f");
 			else
-				ImGui::DragFloat("##gridOffset", &gridOffsetRotate, 1.0f, 0, gridSizeRotate, "%.2f");
+				if (ImGui::DragFloat("##gridOffset", &gridOffsetRotate, 1.0f, 0, gridSizeRotate, "%.2f"))
+					rebuildObjectRotateModeGrid();
 			if (ImGui::IsItemHovered())
 				ImGui::SetTooltip("Grid Offset");
 		}
@@ -291,7 +297,10 @@ void MapView::toolbar(BrowEdit* browEdit)
 		ImGui::SetTooltip("Gadget Opacity");
 	ImGui::SameLine();
 	ImGui::SetNextItemWidth(50);
-	ImGui::SliderFloat("##gadgetScale", &gadgetScale, 0, 2);
+	if (ImGui::SliderFloat("##gadgetScale", &gadgetScale, 0, 2)) {
+		Gadget::scale = gadgetScale;
+		rebuildObjectRotateModeGrid();
+	}
 	if (ImGui::IsItemHovered())
 		ImGui::SetTooltip("Gadget scale");
 	ImGui::SetNextItemWidth(50);
@@ -662,7 +671,8 @@ bool MapView::drawCameraWidget()
 		glm::vec3 retFar = glm::unProject(glm::vec3(mousePosScreenSpace, 1.0f), viewMatrix, projectionMatrix, glm::vec4(viewPort[0], viewPort[1], viewPort[2], viewPort[3]));
 		
 		math::Ray ray(retNear, glm::normalize(retFar-retNear));
-		if (cubeMesh.collision(ray, glm::mat4(1.0f)))
+		float t;
+		if (cubeMesh.collision(ray, glm::mat4(1.0f), t))
 		{
 			if (ImGui::IsMouseClicked(0))
 			{
