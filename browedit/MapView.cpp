@@ -212,11 +212,19 @@ void MapView::toolbar(BrowEdit* browEdit)
 	{
 		ImGui::SameLine();
 		ImGui::SetNextItemWidth(50);
-		if (ImGui::DragFloat("##gridSize", (gadget.mode == Gadget::Mode::Translate || gadget.mode == Gadget::Mode::Scale || browEdit->editMode == BrowEdit::EditMode::Height) ? &gridSizeTranslate : &gridSizeRotate, 1.0f, 0.1f, 100.0f, "%.3f")) {
-			if (gadget.mode == Gadget::Mode::Rotate)
-				rebuildObjectRotateModeGrid();
-			else
-				rebuildObjectModeGrid();
+		switch (gadget.mode) {
+			case Gadget::Mode::Scale:
+				if (ImGui::DragFloat("##gridSize", &gridSizeScale, 1.0f, 0.1f, 100.0f, "%.3f"))
+					rebuildObjectModeGrid();
+				break;
+			case Gadget::Mode::Rotate:
+				if (ImGui::DragFloat("##gridSize", &gridSizeRotate, 1.0f, 0.1f, 100.0f, "%.3f"))
+					rebuildObjectRotateModeGrid();
+				break;
+			default:
+				if (ImGui::DragFloat("##gridSize", &gridSizeTranslate, 1.0f, 0.1f, 100.0f, "%.3f"))
+					rebuildObjectModeGrid();
+				break;
 		}
 		if (ImGui::IsItemHovered())
 			ImGui::SetTooltip("Grid size. Doubleclick or ctrl+click to type a number");
@@ -231,6 +239,8 @@ void MapView::toolbar(BrowEdit* browEdit)
 				{
 					if (gadget.mode == Gadget::Mode::Translate)
 						gridSizeTranslate = f;
+					else if (gadget.mode == Gadget::Mode::Scale)
+						gridSizeScale = f;
 					else
 						gridSizeRotate = f;
 					ImGui::CloseCurrentPopup();
@@ -246,7 +256,9 @@ void MapView::toolbar(BrowEdit* browEdit)
 		{
 			ImGui::SameLine();
 			ImGui::SetNextItemWidth(50);
-			if (gadget.mode == Gadget::Mode::Translate || gadget.mode == Gadget::Mode::Scale)
+			if (gadget.mode == Gadget::Mode::Scale)
+				ImGui::DragFloat("##gridOffset", &gridOffsetScale, 1.0f, 0, gridSizeScale, "%.2f");
+			else if (gadget.mode == Gadget::Mode::Translate)
 				ImGui::DragFloat("##gridOffset", &gridOffsetTranslate, 1.0f, 0, gridSizeTranslate, "%.2f");
 			else
 				if (ImGui::DragFloat("##gridOffset", &gridOffsetRotate, 1.0f, 0, gridSizeRotate, "%.2f"))
