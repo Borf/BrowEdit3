@@ -321,7 +321,8 @@ void updateEffects(HWND hwnd)
             SendMessage(hwndDialogBar, PBM_SETRANGE, 0, MAKELPARAM(0, 100));
             SendMessage(hwndDialogBar, PBM_SETSTEP, (WPARAM)1, 0);
 
-            std::string url = "https://api.github.com/repos/borf/roeffects/zipball/main";
+            //std::string url = "https://api.github.com/repos/borf/roeffects/zipball/main";
+            std::string url = "https://codeload.github.com/Borf/roeffects/zip/refs/heads/main";
             for (int i = 0; i < 4; i++)
             {
                 try {
@@ -334,6 +335,10 @@ void updateEffects(HWND hwnd)
                     //std::copy(data.begin(), data.end(), std::ostream_iterator<char>(outStream));
                     outStream.close();
                     break;
+                }
+                catch (net::error e)
+                {
+                    MessageBox(hwnd, "Error downloading effects", "Error", MB_OK);
                 }
                 catch (...) {}
             }

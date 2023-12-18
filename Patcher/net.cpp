@@ -323,11 +323,12 @@ request make_request(connection &http_connection, const std::wstring &verb, cons
 
 void send_request(request &http_request)
 {
+    std::wstring headers = L"Accept-Encoding: None\r\n";
+
     if (!WinHttpSendRequest(http_request,
-                            WINHTTP_NO_ADDITIONAL_HEADERS,
-                            0,
-                            WINHTTP_NO_REQUEST_DATA,
-                            0,
+                            headers.c_str(), headers.size(),
+    //                        WINHTTP_NO_ADDITIONAL_HEADERS, 0,
+                            WINHTTP_NO_REQUEST_DATA, 0,
                             0,
                             0))
     {
@@ -423,6 +424,29 @@ DWORD query_headers_content_length(request& http_request)
     }
 
     return status_code;
+}
+
+PWCHAR query_headers(request& http_request)
+{
+    DWORD dwSize = sizeof(DWORD);
+    WinHttpQueryHeaders(http_request, WINHTTP_QUERY_RAW_HEADERS_CRLF,
+        WINHTTP_HEADER_NAME_BY_INDEX, NULL,
+        &dwSize, WINHTTP_NO_HEADER_INDEX);
+
+    // Allocate memory for the buffer.
+    if (GetLastError() == ERROR_INSUFFICIENT_BUFFER)
+    {
+        PWCHAR lpOutBuffer = new WCHAR[dwSize / sizeof(WCHAR)];
+
+        // Now, use WinHttpQueryHeaders to retrieve the header.
+        bool bResults = WinHttpQueryHeaders(http_request,
+            WINHTTP_QUERY_RAW_HEADERS_CRLF,
+            WINHTTP_HEADER_NAME_BY_INDEX,
+            lpOutBuffer, &dwSize,
+            WINHTTP_NO_HEADER_INDEX);
+        return lpOutBuffer;
+    }
+    return nullptr;
 }
 
 
@@ -531,7 +555,17 @@ buffer_t fetch_request(const url &dest_url, const std::wstring &username, const 
         last_status = status_code;
     }
 
-    int length = query_headers_content_length(http_request);
+    PWCHAR headers = query_headers(http_request);
+
+    int length = -1;
+    try
+    {
+        length = query_headers_content_length(http_request);
+    }
+    catch (net::error e)
+    {
+        length = 100000000000;
+    }
 
     buffer_t buffer;
     while (size_t size = query_data_avaliable(http_request) != 0)
