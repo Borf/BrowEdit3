@@ -185,6 +185,7 @@ void BrowEdit::registerActions()
 	HotkeyRegistry::registerAction(HotkeyAction::Texture_PrevTexture,				[this]() { activeMapView->textureSelected = (activeMapView->textureSelected + activeMapView->map->rootNode->getComponent<Gnd>()->textures.size() - 1) % (int)activeMapView->map->rootNode->getComponent<Gnd>()->textures.size(); }, hasActiveMapViewTextureWallMode);
 	HotkeyRegistry::registerAction(HotkeyAction::Texture_NextTexture,				[this]() { activeMapView->textureSelected = (activeMapView->textureSelected + 1) % activeMapView->map->rootNode->getComponent<Gnd>()->textures.size(); }, hasActiveMapViewTextureWallMode);
 	HotkeyRegistry::registerAction(HotkeyAction::Texture_SelectFull,				[this]() { activeMapView->textureEditUv1 = glm::vec2(0, 0);	activeMapView->textureEditUv2 = glm::vec2(1, 1); }, hasActiveMapViewTextureWallMode);
+	HotkeyRegistry::registerAction(HotkeyAction::Texture_Delete,					[this]() { activeMapView->deleteTiles = true; }, hasActiveMapViewTextureMode);
 	
 
 	HotkeyRegistry::registerAction(HotkeyAction::EditMode_Height,					[this]() { editMode = EditMode::Height; });

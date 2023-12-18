@@ -144,6 +144,7 @@ public:
 		textureBrushFlipV = (mask & 1) != 0;
 	}
 
+	bool deleteTiles = false;
 	int wallWidth = 4;
 	float wallTop = 0;
 	bool wallTopAuto = true;
