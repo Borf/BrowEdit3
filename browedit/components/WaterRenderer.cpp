@@ -41,6 +41,11 @@ void WaterRenderer::render()
 		if (!vbo || dirty)
 		{
 			auto gnd = node->getComponent<Gnd>();
+			float waveHeight = -9999;
+
+			if (rsw)
+				waveHeight = rsw->water.height - rsw->water.amplitude;
+
 			if(!vbo)
 				vbo = new gl::VBO<VertexP3T2>();
 			std::vector<VertexP3T2> verts;
@@ -48,6 +53,16 @@ void WaterRenderer::render()
 			{
 				for (int y = 0; y < gnd->height; y++)
 				{
+					auto c = gnd->cubes[x][gnd->height - y - 1];
+
+					if (!this->renderFullWater) {
+						if (c->tileUp == -1)
+							continue;
+
+						if (c->heights[0] <= waveHeight && c->heights[1] <= waveHeight && c->heights[2] <= waveHeight && c->heights[3] <= waveHeight)
+							continue;
+					}
+					
 					verts.push_back(VertexP3T2(glm::vec3(10 * x,		0, 10 * (y+1)),	glm::vec2((x % 4) * 0.25f + 0.00f, (y % 4) * 0.25f + 0.00f)));
 					verts.push_back(VertexP3T2(glm::vec3(10 * (x+1),	0, 10 * (y+1)),	glm::vec2((x % 4) * 0.25f + 0.25f, (y % 4) * 0.25f + 0.00f)));
 					verts.push_back(VertexP3T2(glm::vec3(10 * (x+1),	0, 10 * (y+2)), glm::vec2((x % 4) * 0.25f + 0.25f, (y % 4) * 0.25f + 0.25f)));
