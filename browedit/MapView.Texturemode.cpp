@@ -245,11 +245,30 @@ void MapView::postRenderTextureMode(BrowEdit* browEdit)
 			simpleShader->setUniform(SimpleShader::Uniforms::lightMin, 0.5f);
 		}
 
-
-
-
 		if (hovered && mouse3D != glm::vec3(std::numeric_limits<float>::max()))
 		{
+			if (deleteTiles && browEdit->textureStamp.size() == 0)
+			{
+				auto ga = new GroupAction();
+				deleteTiles = false;
+
+				glm::ivec2 tileHovered((int)glm::floor(mouse3D.x / 10), (gnd->height - (int)glm::floor(mouse3D.z) / 10));
+				glm::ivec2 topleft = tileHovered - glm::ivec2(textureBrushWidth / 2, textureBrushHeight / 2);
+				
+				for (int x = 0; x < textureBrushWidth; x++)
+				{
+					for (int y = 0; y < textureBrushHeight; y++)
+					{
+						if (topleft.x + x >= gnd->width || topleft.x + x < 0 || topleft.y + y >= gnd->height || topleft.y + y < 0)
+							continue;
+						auto cube = gnd->cubes[topleft.x + x][topleft.y + y];
+						ga->addAction(new CubeTileChangeAction(glm::ivec2(topleft.x + x, topleft.y + y), cube, -1, cube->tileFront, cube->tileSide));
+						cube->tileUp = -1;
+					}
+				}
+
+				map->doAction(ga, browEdit);
+			}
 			if (ImGui::IsMouseDown(0) && ImGui::GetIO().KeyShift)
 			{//dragging mouse to show preview
 				if (!mouseDown)
@@ -1003,8 +1022,7 @@ void MapView::postRenderTextureMode(BrowEdit* browEdit)
 		}
 	}
 
-
-
+	deleteTiles = false;
 	fbo->unbind();
 
 }
