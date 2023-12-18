@@ -4,6 +4,7 @@
 #include <browedit/Node.h>
 #include <browedit/components/RsmRenderer.h>
 #include <browedit/components/GndRenderer.h>
+#include <browedit/components/WaterRenderer.h>
 
 template<class T>
 class ObjectChangeAction : public Action
@@ -32,7 +33,11 @@ public:
 		auto gndRenderer = node->getComponent<GndRenderer>();
 		if (gndRenderer)
 			gndRenderer->setChunksDirty(); //TODO : only set this specific chunk dirty
-
+		auto waterRenderer = node->getComponent<WaterRenderer>();
+		if (waterRenderer) {
+			waterRenderer->renderFullWater = false;
+			waterRenderer->setDirty();
+		}
 		if ((std::string*)ptr == &(node->name))
 			node->onRename(map);
 	}
@@ -45,6 +50,11 @@ public:
 		auto gndRenderer = node->getComponent<GndRenderer>();
 		if (gndRenderer)
 			gndRenderer->setChunksDirty(); //TODO : only set this specific chunk dirty
+		auto waterRenderer = node->getComponent<WaterRenderer>();
+		if (waterRenderer) {
+			waterRenderer->renderFullWater = false;
+			waterRenderer->setDirty();
+		}
 		if ((std::string*)ptr == &(node->name))
 			node->onRename(map);
 	}

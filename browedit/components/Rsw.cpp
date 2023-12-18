@@ -781,7 +781,14 @@ void Rsw::buildImGui(BrowEdit* browEdit)
 			auto waterRenderer = node->getComponent<WaterRenderer>();
 			waterRenderer->reloadTextures();
 		}
-		util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Height", &water.height, 0.1f, -100, 100);
+		if (util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Height", &water.height, 0.1f, -100, 100)) {
+			auto waterRenderer = node->getComponent<WaterRenderer>();
+
+			if (!waterRenderer->renderFullWater) {
+				waterRenderer->renderFullWater = true;
+				waterRenderer->setDirty();
+			}
+		}
 		util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Wave Height", &water.amplitude, 0.1f, -100, 100);
 		util::DragInt(browEdit, browEdit->activeMapView->map, node, "Texture Animation Speed", &water.textureAnimSpeed, 1, 0, 1000);
 		util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Wave Speed", &water.waveSpeed, 0.1f, -100, 100);

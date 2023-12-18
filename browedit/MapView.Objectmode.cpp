@@ -237,30 +237,30 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 				lockedGizmo = !ImGui::GetIO().KeyCtrl;
 			}
 
-			if (!lockedGizmo) {
-				if (map->selectedNodes.size() == 1 && gadget.mode == Gadget::Mode::Rotate) {
+			if (map->selectedNodes[0]->getComponent<RswObject>()) {
+				if (!lockedGizmo) {
+					if (map->selectedNodes.size() == 1 && gadget.mode == Gadget::Mode::Rotate) {
+						mat = glm::rotate(mat, -glm::radians(map->selectedNodes[0]->getComponent<RswObject>()->rotation.z), glm::vec3(0, 0, 1));
+						rotMat = glm::rotate(rotMat, -glm::radians(map->selectedNodes[0]->getComponent<RswObject>()->rotation.z), glm::vec3(0, 0, 1));
+					}
+				}
+
+				if (map->selectedNodes.size() == 1 && gadget.mode == Gadget::Mode::Scale) {
 					mat = glm::rotate(mat, -glm::radians(map->selectedNodes[0]->getComponent<RswObject>()->rotation.z), glm::vec3(0, 0, 1));
+					mat = glm::rotate(mat, -glm::radians(map->selectedNodes[0]->getComponent<RswObject>()->rotation.x), glm::vec3(1, 0, 0));
+					mat = glm::rotate(mat, glm::radians(map->selectedNodes[0]->getComponent<RswObject>()->rotation.y), glm::vec3(0, 1, 0));
+
 					rotMat = glm::rotate(rotMat, -glm::radians(map->selectedNodes[0]->getComponent<RswObject>()->rotation.z), glm::vec3(0, 0, 1));
+					rotMat = glm::rotate(rotMat, glm::radians(map->selectedNodes[0]->getComponent<RswObject>()->rotation.x), glm::vec3(1, 0, 0));
+					rotMat = glm::rotate(rotMat, glm::radians(map->selectedNodes[0]->getComponent<RswObject>()->rotation.y), glm::vec3(0, 1, 0));
 				}
 			}
 
-			if (map->selectedNodes.size() == 1 && gadget.mode == Gadget::Mode::Scale) {
-				mat = glm::rotate(mat, -glm::radians(map->selectedNodes[0]->getComponent<RswObject>()->rotation.z), glm::vec3(0, 0, 1));
-				mat = glm::rotate(mat, -glm::radians(map->selectedNodes[0]->getComponent<RswObject>()->rotation.x), glm::vec3(1, 0, 0));
-				mat = glm::rotate(mat, glm::radians(map->selectedNodes[0]->getComponent<RswObject>()->rotation.y), glm::vec3(0, 1, 0));
+			gadget.draw(mouseRay, mat, !lockedGizmo && map->selectedNodes[0]->getComponent<RswObject>() ? -map->selectedNodes[0]->getComponent<RswObject>()->rotation.x : 0);
 
-				rotMat = glm::rotate(rotMat, -glm::radians(map->selectedNodes[0]->getComponent<RswObject>()->rotation.z), glm::vec3(0, 0, 1));
-				rotMat = glm::rotate(rotMat, glm::radians(map->selectedNodes[0]->getComponent<RswObject>()->rotation.x), glm::vec3(1, 0, 0));
-				rotMat = glm::rotate(rotMat, glm::radians(map->selectedNodes[0]->getComponent<RswObject>()->rotation.y), glm::vec3(0, 1, 0));
-			}
-
-			gadget.draw(mouseRay, mat, !lockedGizmo ? -map->selectedNodes[0]->getComponent<RswObject>()->rotation.x : 0);
-
-			if (!lockedGizmo) {
-				if (map->selectedNodes.size() == 1 && gadget.mode == Gadget::Mode::Rotate) {
-					if (gadget.selectedAxis == Gadget::Axis::Y) {
-						rotMat = glm::rotate(rotMat, glm::radians(map->selectedNodes[0]->getComponent<RswObject>()->rotation.x), glm::vec3(1, 0, 0));
-					}
+			if (!lockedGizmo && map->selectedNodes[0]->getComponent<RswObject>() && map->selectedNodes.size() == 1 && gadget.mode == Gadget::Mode::Rotate) {
+				if (gadget.selectedAxis == Gadget::Axis::Y) {
+					rotMat = glm::rotate(rotMat, glm::radians(map->selectedNodes[0]->getComponent<RswObject>()->rotation.x), glm::vec3(1, 0, 0));
 				}
 			}
 

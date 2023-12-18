@@ -32,6 +32,7 @@ public:
 	gl::VBO<VertexP3T2>* vbo = nullptr;
 	bool dirty = true;
 	bool viewFog = false;
+	bool renderFullWater = false;
 
 	WaterRenderer();
 	~WaterRenderer();
