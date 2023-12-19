@@ -415,6 +415,9 @@
     <ClCompile Include="browedit\actions\WaterSplitChangeAction.cpp">
       <Filter>browedit\actions</Filter>
     </ClCompile>
+    <ClCompile Include="browedit\actions\GndVersionChangeAction.cpp">
+      <Filter>browedit\actions</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="lib\imgui\imgui.h">
@@ -715,6 +718,9 @@
       <Filter>lib\tinygltf</Filter>
     </ClInclude>
     <ClInclude Include="browedit\actions\WaterSplitChangeAction.h">
+      <Filter>browedit\actions</Filter>
+    </ClInclude>
+    <ClInclude Include="browedit\actions\GndVersionChangeAction.h">
       <Filter>browedit\actions</Filter>
     </ClInclude>
   </ItemGroup>

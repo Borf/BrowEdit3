@@ -16,6 +16,7 @@
     <ClCompile Include="browedit\actions\DeleteObjectAction.cpp" />
     <ClCompile Include="browedit\actions\GatTileChangeAction.cpp" />
     <ClCompile Include="browedit\actions\GndTextureActions.cpp" />
+    <ClCompile Include="browedit\actions\GndVersionChangeAction.cpp" />
     <ClCompile Include="browedit\actions\GroupAction.cpp" />
     <ClCompile Include="browedit\actions\ModelChangeAction.cpp" />
     <ClCompile Include="browedit\actions\NewObjectAction.cpp" />
@@ -137,6 +138,7 @@
     <ClInclude Include="browedit\actions\DeleteObjectAction.h" />
     <ClInclude Include="browedit\actions\GatTileChangeAction.h" />
     <ClInclude Include="browedit\actions\GndTextureActions.h" />
+    <ClInclude Include="browedit\actions\GndVersionChangeAction.h" />
     <ClInclude Include="browedit\actions\GroupAction.h" />
     <ClInclude Include="browedit\actions\ModelChangeAction.h" />
     <ClInclude Include="browedit\actions\NewObjectAction.h" />

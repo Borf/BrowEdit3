@@ -9,6 +9,9 @@
 #include <browedit/components/GndRenderer.h>
 #include <browedit/actions/CubeHeightChangeAction.h>
 #include <browedit/actions/CubeTileChangeAction.h>
+#include <browedit/actions/WaterSplitChangeAction.h>
+#include <browedit/actions/GndVersionChangeAction.h>
+#include <browedit/actions/GroupAction.h>
 #include <iostream>
 #include <fstream>
 #include <FastNoiseLite.h>
@@ -799,6 +802,7 @@ void Gnd::buildImGui(BrowEdit* browEdit)
 	sprintf_s(versionStr, 10, "%04x", version);
 	if (ImGui::BeginCombo("Version##gnd", versionStr))
 	{
+		int prevVersion = version;
 		if (ImGui::Selectable("0103", version == 0x0103))
 			version = 0x0103;
 		if (ImGui::Selectable("0104", version == 0x0104))
@@ -821,6 +825,27 @@ void Gnd::buildImGui(BrowEdit* browEdit)
 			version = 0x0203;
 		if (ImGui::Selectable("0204", version == 0x0204))
 			version = 0x0204;
+		if (prevVersion != version) {
+			auto ga = new GroupAction();
+
+			auto action1 = new GndVersionChangeAction(prevVersion, version);
+			ga->addAction(action1);
+
+			if (version < 0x108) {
+				auto rsw = browEdit->activeMapView->map->rootNode->getComponent<Rsw>();
+
+				if (rsw && (rsw->water.splitHeight != 1 || rsw->water.splitWidth != 1)) {
+					int oldSplitHeight = rsw->water.splitHeight;
+					int oldSplitWidth = rsw->water.splitWidth;
+					rsw->water.splitHeight = 1;
+					rsw->water.splitWidth = 1;
+					auto action2 = new WaterSplitChangeAction(rsw->water, oldSplitWidth, oldSplitHeight);
+					ga->addAction(action2);
+				}
+			}
+
+			browEdit->activeMapView->map->doAction(ga, browEdit);
+		}
 		ImGui::EndCombo();
 	}
 	ImGui::InputFloat("Tile Scale", &tileScale);
