@@ -31,14 +31,17 @@ void main()
 		discard;
 
 	if (lightToggle) {
-		if (shadeType == 0)
-			color.rgb *= min(lightDiffuse, 1.0 - lightAmbient) * lightDiffuse + lightAmbient;
-		else if (shadeType == 1 || shadeType == 2) {
-			float NL = clamp(dot(normalize(normal), lightDirection),0.0,1.0);
-			color.rgb *= NL * min(lightDiffuse, 1.0 - lightAmbient) * lightDiffuse + lightAmbient;
-		}
-		else if (shadeType == 4) // only for editor
+		if (shadeType == 4) { // only for editor
 			color.rgb *= lightDiffuse;
+		}
+		else {
+			float NL = shadeType == 0 ? 1.0 : clamp(dot(normalize(normal), lightDirection),0.0,1.0);
+			vec3 ambientFactor = (1.0 - lightAmbient) * lightAmbient;
+			vec3 ambient = lightAmbient - ambientFactor + ambientFactor * lightDiffuse;
+			vec3 diffuseFactor = (1.0 - lightDiffuse) * lightDiffuse;
+			vec3 diffuse = lightDiffuse - diffuseFactor + diffuseFactor * lightAmbient;
+			color.rgb *= min((NL * diffuse + ambient), 1.0);
+		}
 	}
 	
 	if(fogEnabled)

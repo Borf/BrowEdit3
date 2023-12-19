@@ -37,7 +37,11 @@ void main()
 		discard;
 	
 	float NL = clamp(dot(normalize(normal), vec3(1,-1,1)*lightDirection),0.0,1.0);
-	texture.rgb *= max((NL * min(lightDiffuse, 1.0 - lightAmbient) * lightDiffuse + lightAmbient), lightToggle);
+	vec3 ambientFactor = (1.0 - lightAmbient) * lightAmbient;
+	vec3 ambient = lightAmbient - ambientFactor + ambientFactor * lightDiffuse;
+	vec3 diffuseFactor = (1.0 - lightDiffuse) * lightDiffuse;
+	vec3 diffuse = lightDiffuse - diffuseFactor + diffuseFactor * lightAmbient;
+	texture.rgb *= min((NL * diffuse + ambient), 1.0);
 	texture.rgb *= max(color, colorToggle).rgb;
 	texture.rgb *= max(texture2D(s_lighting, texCoord2).a, shadowMapToggle);
 	texture.rgb += clamp(texture2D(s_lighting, texCoord2).rgb, 0.0, 1.0) * lightColorToggle;
