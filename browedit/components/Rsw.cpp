@@ -1377,18 +1377,12 @@ void Rsw::WaterData::resize(int width, int height) {
 	for (int y = 0; y < zones.size(); y++) {
 		if (zones[y].size() < height) {
 			for (int x = (int)zones[y].size(); x < height; x++) {
-				zones[y].push_back(Rsw::Water());
+				zones[y].push_back(zones[y][zones[y].size() - 1]);
 			}
 		}
 	}
 
 	for (int y = (int)zones.size(); y < width; y++) {
-		zones.push_back(std::vector<Rsw::Water>(splitHeight));
-
-		if (zones[y].size() < height) {
-			for (int x = (int)zones[y].size(); x < height; x++) {
-				zones[y].push_back(Rsw::Water());
-			}
-		}
+		zones.push_back(zones[zones.size() - 1]);
 	}
 }
