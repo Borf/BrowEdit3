@@ -28,6 +28,7 @@
     <ClCompile Include="browedit\actions\TileNewAction.cpp" />
     <ClCompile Include="browedit\actions\TilePropertyChangeAction.cpp" />
     <ClCompile Include="browedit\actions\TileSelectAction.cpp" />
+    <ClCompile Include="browedit\actions\WaterSplitChangeAction.cpp" />
     <ClCompile Include="browedit\BrowEdit.cpp" />
     <ClCompile Include="browedit\BrowEdit.glfw.cpp" />
     <ClCompile Include="browedit\BrowEdit.imgui.cpp" />
@@ -148,6 +149,7 @@
     <ClInclude Include="browedit\actions\TileNewAction.h" />
     <ClInclude Include="browedit\actions\TilePropertyChangeAction.h" />
     <ClInclude Include="browedit\actions\TileSelectAction.h" />
+    <ClInclude Include="browedit\actions\WaterSplitChangeAction.h" />
     <ClInclude Include="browedit\BrowEdit.h" />
     <ClInclude Include="browedit\components\BillboardRenderer.h" />
     <ClInclude Include="browedit\components\Collider.h" />

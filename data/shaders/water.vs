@@ -20,13 +20,11 @@ out vec2 texCoord;
 
 void main()
 {
-	mat3 normalMatrix = mat3(viewMatrix * modelMatrix);
-	normalMatrix = transpose(inverse(normalMatrix));
 	texCoord = a_texcoord;
-//	normal = normalMatrix * a_normal;
 
 	float height = waterHeight;
-	height += amplitude*cos(radians((waveSpeed*16.6667*time)+(a_position.x-a_position.z)*.1*wavePitch));
+	//height += amplitude*cos(radians((waveSpeed*16.6667*time)+(a_position.x-a_position.z)*.1*wavePitch));
+	height += amplitude*cos(radians((waveSpeed*50*time)+(a_position.x-a_position.z)*.1*wavePitch));
 
 
 	gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(vec3(a_position.x, height, a_position.z),1);

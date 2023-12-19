@@ -325,9 +325,12 @@ void BrowEdit::showGatWindow()
 							if (blockUnderWater)
 							{
 								bool underWater = false;
-								for (int i = 0; i < 4; i++)
-									if (gat->cubes[x][y]->heights[i] > rsw->water.height)
+								for (int i = 0; i < 4; i++) {
+									auto water = rsw->water.getFromGat(x, y, gnd);
+
+									if (gat->cubes[x][y]->heights[i] > water->height)
 										underWater = true;
+								}
 								if (underWater)
 									gat->cubes[x][y]->gatType = 1;
 							}
@@ -394,8 +397,10 @@ void BrowEdit::showGatWindow()
 											height.y = glm::max(height.y, c.y);
 									}
 									});
-								gat->cubes[x][y]->heights[i] = rsw->water.height;
-								underWater |= height.y < -rsw->water.height;
+
+								auto water = rsw->water.getFromGat(x, y, gnd);
+								gat->cubes[x][y]->heights[i] = water->height;
+								underWater |= height.y < -water->height;
 							}
 							gat->cubes[x][y]->gatType = underWater ? 0 : 1;
 						}

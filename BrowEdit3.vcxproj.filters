@@ -412,6 +412,9 @@
     <ClCompile Include="lib\tinygltf\tiny_gltf.cc">
       <Filter>lib\tinygltf</Filter>
     </ClCompile>
+    <ClCompile Include="browedit\actions\WaterSplitChangeAction.cpp">
+      <Filter>browedit\actions</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="lib\imgui\imgui.h">
@@ -710,6 +713,9 @@
     </ClInclude>
     <ClInclude Include="lib\tinygltf\tiny_gltf.h">
       <Filter>lib\tinygltf</Filter>
+    </ClInclude>
+    <ClInclude Include="browedit\actions\WaterSplitChangeAction.h">
+      <Filter>browedit\actions</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

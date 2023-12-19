@@ -27,7 +27,7 @@ void RswModel::load(std::istream* is, int version, unsigned char buildNumber, bo
 		is->read(reinterpret_cast<char*>(&animSpeed), sizeof(float));
 		is->read(reinterpret_cast<char*>(&blockType), sizeof(int));
 	}
-	if (version >= 0x0206 && buildNumber > 161)
+	if (version >= 0x0206 && buildNumber >= 186)
 	{
 		unsigned char c = is->get(); // unknown, 0?
 	}
@@ -64,7 +64,7 @@ void RswModel::loadExtra(nlohmann::json data)
 
 
 
-void RswModel::save(std::ofstream& file, int version)
+void RswModel::save(std::ofstream& file, int version, int buildNumber)
 {
 	auto rswObject = node->getComponent<RswObject>();
 	if (version >= 0x103)
@@ -73,6 +73,10 @@ void RswModel::save(std::ofstream& file, int version)
 		file.write(reinterpret_cast<char*>(&animType), sizeof(int));
 		file.write(reinterpret_cast<char*>(&animSpeed), sizeof(float));
 		file.write(reinterpret_cast<char*>(&blockType), sizeof(int));
+
+		if (version >= 0x206 && buildNumber >= 186) {
+			file.put(0); // ??
+		}
 	}
 	util::FileIO::writeString(file, util::utf8_to_iso_8859_1(fileName), 80);
 	util::FileIO::writeString(file, util::utf8_to_iso_8859_1(objectName), 80); //unknown

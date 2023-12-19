@@ -45,7 +45,7 @@ namespace util
 
 	bool ColorEdit3(BrowEdit* browEdit, Map* map, Node* node, const char* label, glm::vec3* ptr, const std::string& action = "");
 	bool ColorEdit4(BrowEdit* browEdit, Map* map, Node* node, const char* label, glm::vec4* ptr, const std::string& action = "");
-	bool DragInt(BrowEdit* browEdit, Map* map, Node* node, const char* label, int* ptr, float v_speed = 1, int v_min = 0.0f, int v_max = 0.0f, const std::string& action = "");
+	bool DragInt(BrowEdit* browEdit, Map* map, Node* node, const char* label, int* ptr, float v_speed = 1, int v_min = 0.0f, int v_max = 0.0f, const std::string& action = "", const std::function<void(int*, int)>& editAction = nullptr);
 	bool DragFloat(BrowEdit* browEdit, Map* map, Node* node, const char* label, float* ptr, float v_speed = 1.0f, float v_min = 0.0f, float v_max = 0.0f, const std::string& action = "");
 	bool DragFloat2(BrowEdit* browEdit, Map* map, Node* node, const char* label, glm::vec2* ptr, float v_speed = 1.0f, float v_min = 0.0f, float v_max = 0.0f, const std::string& action = "");
 	bool DragFloat3(BrowEdit* browEdit, Map* map, Node* node, const char* label, glm::vec3* ptr, float v_speed = 1.0f, float v_min = 0.0f, float v_max = 0.0f, const std::string& action = "", bool moveTogether = false);

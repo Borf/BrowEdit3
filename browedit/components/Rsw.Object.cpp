@@ -66,7 +66,7 @@ void RswObject::load(std::istream* is, int version, unsigned char buildNumber, b
 
 
 
-void RswObject::save(std::ofstream& file, int version)
+void RswObject::save(std::ofstream& file, Rsw* rsw)
 {
 	RswModel* rswModel = nullptr;
 	RswEffect* rswEffect = nullptr;
@@ -82,10 +82,10 @@ void RswObject::save(std::ofstream& file, int version)
 	if (rswEffect = node->getComponent<RswEffect>())
 		type = 4;
 	file.write(reinterpret_cast<char*>(&type), sizeof(int));
-	if (rswModel)		rswModel->save(file, version); //meh don't like this if...maybe make this an interface savable
+	if (rswModel)		rswModel->save(file, rsw->version, rsw->buildNumber); //meh don't like this if...maybe make this an interface savable
 	if (rswEffect)		rswEffect->save(file);
 	if (rswLight)		rswLight->save(file);
-	if (rswSound)		rswSound->save(file, version);
+	if (rswSound)		rswSound->save(file, rsw->version);
 }
 
 

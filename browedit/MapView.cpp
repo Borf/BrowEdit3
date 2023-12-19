@@ -349,8 +349,15 @@ void MapView::render(BrowEdit* browEdit)
 
 	if (ortho)
 		nodeRenderContext.projectionMatrix = glm::ortho(-cameraDistance/2*ratio, cameraDistance/2 * ratio, -cameraDistance/2, cameraDistance/2, -5000.0f, 5000.0f);
-	else
-		nodeRenderContext.projectionMatrix = glm::perspective(glm::radians(browEdit->config.fov), ratio, 0.1f, 5000.0f);
+	else {
+		float nearPlane = 0.1f;
+
+		if (cameraDistance > 500)
+			nearPlane = 10.0f;
+		else if (cameraDistance > 25)
+			nearPlane = 1.0f;
+		nodeRenderContext.projectionMatrix = glm::perspective(glm::radians(browEdit->config.fov), ratio, nearPlane, 5000.0f);
+	}
 	if (cinematicPlay && rsw->cinematicTracks.size() > 0)
 	{
 		auto beforePos = (Rsw::KeyFrameData<std::pair<glm::vec3, glm::vec3>>*)rsw->cinematicTracks[0].getBeforeFrame(timeSelected);
