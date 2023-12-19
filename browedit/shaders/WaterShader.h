@@ -19,7 +19,6 @@ public:
 			amplitude,
 			waveSpeed,
 			wavePitch,
-			frameTime,
 			fogEnabled,
 			fogColor,
 			fogNear,
@@ -40,7 +39,6 @@ public:
 		bindUniform(Uniforms::amplitude, "amplitude");
 		bindUniform(Uniforms::waveSpeed, "waveSpeed");
 		bindUniform(Uniforms::wavePitch, "wavePitch");
-		bindUniform(Uniforms::frameTime, "frameTime");
 		bindUniform(Uniforms::fogEnabled, "fogEnabled");
 		bindUniform(Uniforms::fogColor, "fogColor");
 		bindUniform(Uniforms::fogNear, "fogNear");

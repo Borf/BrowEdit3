@@ -45,13 +45,8 @@ void CubeHeightChangeAction<T, TC>::perform(Map* map, BrowEdit* browEdit)
 		if (gndRenderer) {
 			for (auto t : selection) {
 				gndRenderer->setChunkDirty(t.x, t.y);
-				
-				// For walls on the chunk's edge
-				if (gnd->inMap(glm::ivec2(t.x, t.y - 1)))
-					gndRenderer->setChunkDirty(t.x, t.y - 1);
-
-				if (gnd->inMap(glm::ivec2(t.x - 1, t.y)))
-					gndRenderer->setChunkDirty(t.x - 1, t.y);
+				gndRenderer->setChunkDirty(t.x - 1, t.y);
+				gndRenderer->setChunkDirty(t.x, t.y - 1);
 			}
 		}
 	}
@@ -80,13 +75,8 @@ void CubeHeightChangeAction<T, TC>::undo(Map* map, BrowEdit* browEdit)
 		if (gndRenderer) {
 			for (auto t : selection) {
 				gndRenderer->setChunkDirty(t.x, t.y);
-
-				// For walls on the chunk's edge
-				if (gnd->inMap(glm::ivec2(t.x, t.y - 1)))
-					gndRenderer->setChunkDirty(t.x, t.y - 1);
-
-				if (gnd->inMap(glm::ivec2(t.x - 1, t.y)))
-					gndRenderer->setChunkDirty(t.x - 1, t.y);
+				gndRenderer->setChunkDirty(t.x - 1, t.y);
+				gndRenderer->setChunkDirty(t.x, t.y - 1);
 			}
 		}
 	}

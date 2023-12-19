@@ -21,7 +21,7 @@ class Rsw : public Component, public ImguiProps
 {
 public:
 	short version = 0x201;
-	unsigned char buildNumber = 0;
+	int buildNumber = 0;
 	std::string iniFile;
 	std::string gndFile;
 	std::string gatFile;
@@ -40,7 +40,7 @@ public:
 		void draw(int);
 	};
 
-	struct
+	struct Water
 	{
 		float	height = 0;
 		int		type = 0;
@@ -48,7 +48,20 @@ public:
 		float	waveSpeed = 2.0f;
 		float	wavePitch = 50.0f;
 		int		textureAnimSpeed = 3;
-	} water;
+	};
+
+	class WaterData
+	{
+	public:
+		int splitWidth = 0;
+		int splitHeight = 0;
+
+		std::vector<std::vector<Water>> zones;
+
+		Water* getFromGat(int x, int y, Gnd* gnd);
+		Water* getFromGnd(int x, int y, Gnd* gnd);
+		void resize(int width, int height);
+	};
 
 	struct
 	{
@@ -133,7 +146,7 @@ public:
 	std::vector<glm::vec3> quadtreeFloats;
 	QuadTreeNode* quadtree = nullptr;
 	std::map<std::string, std::map<std::string, glm::vec4>> colorPresets;
-
+	WaterData water;
 
 	Rsw();
 	~Rsw();
@@ -157,7 +170,7 @@ public:
 	RswObject() {}
 	RswObject(RswObject* other);
 	void load(std::istream* is, int version, unsigned char buildNumber, bool loadModel);
-	void save(std::ofstream& file, int version);
+	void save(std::ofstream& file, Rsw *rsw);
 	static void buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>&);
 	NLOHMANN_DEFINE_TYPE_INTRUSIVE(RswObject, position, rotation, scale);
 };
@@ -183,7 +196,7 @@ public:
 	RswModel(RswModel* other);
 	void load(std::istream* is, int version, unsigned char buildNumber, bool loadModel);
 	void loadExtra(nlohmann::json data);
-	void save(std::ofstream &file, int version);
+	void save(std::ofstream &file, int version, int buildNumber);
 	nlohmann::json saveExtra();
 	static void buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>&);
 

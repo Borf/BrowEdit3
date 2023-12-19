@@ -264,15 +264,24 @@ void GndRenderer::Chunk::rebuild()
 				}
 
 				glm::vec4 c1(1.0);
-				if(y < gnd->height-1 && gnd->cubes[x][y + 1]->tileUp != -1)
-					c1 = glm::vec4(gnd->tiles[gnd->cubes[x][y + 1]->tileUp]->color) / 255.0f;
+				if(y < gnd->height-1)
+					if (gnd->cubes[x][y + 1]->tileUp == -1)
+						c1 = glm::vec4(0);
+					else
+						c1 = glm::vec4(gnd->tiles[gnd->cubes[x][y + 1]->tileUp]->color) / 255.0f;
 				glm::vec4 c2(1.0f);
-				if (x < gnd->width - 1 && y < gnd->height - 1 && gnd->cubes[x + 1][y + 1]->tileUp != -1)
-					c2 = glm::vec4(gnd->tiles[gnd->cubes[x + 1][y + 1]->tileUp]->color) / 255.0f;
+				if (x < gnd->width - 1 && y < gnd->height - 1)
+					if (gnd->cubes[x + 1][y + 1]->tileUp == -1)
+						c2 = glm::vec4(0);
+					else
+						c2 = glm::vec4(gnd->tiles[gnd->cubes[x + 1][y + 1]->tileUp]->color) / 255.0f;
 				glm::vec4 c3 = glm::vec4(tile->color) / 255.0f;
 				glm::vec4 c4(1.0f);
-				if (x < gnd->width - 1 && gnd->cubes[x + 1][y]->tileUp != -1)
-					c4 = glm::vec4(gnd->tiles[gnd->cubes[x+1][y]->tileUp]->color) / 255.0f;
+				if (x < gnd->width - 1)
+					if (gnd->cubes[x + 1][y]->tileUp == -1)
+						c4 = glm::vec4(0);
+					else
+						c4 = glm::vec4(gnd->tiles[gnd->cubes[x+1][y]->tileUp]->color) / 255.0f;
 
 				VertexP3T2T2C4N3 v1(glm::vec3(10 * x, -cube->h3, 10 * gnd->height - 10 * y),			tile->v3, glm::vec2(lm1.x, lm2.y), c1,		cube->normals[2]);
 				VertexP3T2T2C4N3 v2(glm::vec3(10 * x + 10, -cube->h4, 10 * gnd->height - 10 * y),		tile->v4, glm::vec2(lm2.x, lm2.y), c2,		cube->normals[3]);
@@ -360,7 +369,9 @@ void GndRenderer::Chunk::rebuild()
 
 void GndRenderer::setChunkDirty(int x, int y)
 {
-	chunks[y / CHUNKSIZE][x / CHUNKSIZE]->dirty = true;
+	if (y >= 0 && y / CHUNKSIZE < chunks.size() &&
+		x >= 0 && x / CHUNKSIZE < chunks[y / CHUNKSIZE].size())
+		chunks[y / CHUNKSIZE][x / CHUNKSIZE]->dirty = true;
 }
 
 void GndRenderer::setChunksDirty()

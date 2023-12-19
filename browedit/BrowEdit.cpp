@@ -689,7 +689,7 @@ void BrowEdit::saveMap(Map* map)
 	}
 
 	map->rootNode->getComponent<Rsw>()->save(rswName, this);
-	map->rootNode->getComponent<Gnd>()->save(gndName);
+	map->rootNode->getComponent<Gnd>()->save(gndName, map->rootNode->getComponent<Rsw>());
 	map->rootNode->getComponent<Gat>()->save(gatName);
 
 	map->changed = false;
@@ -751,7 +751,7 @@ void BrowEdit::saveAsMap(Map* map)
 	map->rootNode->getComponent<Rsw>()->gatFile = mapName + ".gat";
 	map->rootNode->getComponent<Rsw>()->gndFile = mapName + ".gnd";
 	map->rootNode->getComponent<Rsw>()->save(rswName, this);
-	map->rootNode->getComponent<Gnd>()->save(gndName);
+	map->rootNode->getComponent<Gnd>()->save(gndName, map->rootNode->getComponent<Rsw>());
 	map->rootNode->getComponent<Gat>()->save(gatName);
 }
 
