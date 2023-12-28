@@ -25,6 +25,8 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <browedit/Node.h>
 #include <imGuIZMOquat.h>
+#include <browedit/actions/GroupAction.h>
+#include <browedit/actions/WaterSplitChangeAction.h>
 
 
 Rsw::Rsw()
@@ -216,16 +218,15 @@ void Rsw::load(const std::string& fileName, Map* map, BrowEdit* browEdit, bool l
 	version = util::swapShort(version);
 	std::cout << std::hex<<"RSW: Version 0x" << version << std::endl <<std::dec;
 
-	if (version >= 0x0202)
-	{
-		buildNumber = file->get();
-		std::cout << "Build number " << (int)buildNumber << std::endl;
-	}
 	if (version >= 0x0205)
 	{
-		int u;
-		file->read(reinterpret_cast<char*>(&u), sizeof(int));
-		std::cout << "205 unknown value: " << u << std::endl;
+		file->read(reinterpret_cast<char*>(&buildNumber), sizeof(int));
+		std::cout << "Build number " << buildNumber << std::endl;
+	}
+	if (version >= 0x0202)
+	{
+		unsigned char u = file->get();
+		std::cout << "202 unknown value: " << (int)u << std::endl;
 	}
 
 	iniFile = util::FileIO::readString(file, 40);
@@ -236,25 +237,30 @@ void Rsw::load(const std::string& fileName, Map* map, BrowEdit* browEdit, bool l
 		gatFile = gndFile; //TODO: convert
 
 	iniFile = util::FileIO::readString(file, 40); // ehh...read inifile twice?
-
-	//version 0x0206
-	if (version < 0x0206)
+	
+	//version 0x206
+	if (version < 0x206)
 	{
+		water.splitWidth = 1;
+		water.splitHeight = 1;
+		water.zones.clear();
+		water.zones.resize(water.splitWidth, std::vector<Rsw::Water>(water.splitHeight));
+
 		//TODO: default values
 		if (version >= 0x103)
-			file->read(reinterpret_cast<char*>(&water.height), sizeof(float));
+			file->read(reinterpret_cast<char*>(&water.zones[0][0].height), sizeof(float));
 		if (version >= 0x108)
 		{
-			file->read(reinterpret_cast<char*>(&water.type), sizeof(int));
-			file->read(reinterpret_cast<char*>(&water.amplitude), sizeof(float));
-			file->read(reinterpret_cast<char*>(&water.waveSpeed), sizeof(float));
-			file->read(reinterpret_cast<char*>(&water.wavePitch), sizeof(float));
+			file->read(reinterpret_cast<char*>(&water.zones[0][0].type), sizeof(int));
+			file->read(reinterpret_cast<char*>(&water.zones[0][0].amplitude), sizeof(float));
+			file->read(reinterpret_cast<char*>(&water.zones[0][0].waveSpeed), sizeof(float));
+			file->read(reinterpret_cast<char*>(&water.zones[0][0].wavePitch), sizeof(float));
 		}
 		if (version >= 0x109)
-			file->read(reinterpret_cast<char*>(&water.textureAnimSpeed), sizeof(int));
+			file->read(reinterpret_cast<char*>(&water.zones[0][0].textureAnimSpeed), sizeof(int));
 		else
 		{
-			water.textureAnimSpeed = 100;
+			water.zones[0][0].textureAnimSpeed = 100;
 	//		throw "todo";
 		}
 	}
@@ -264,7 +270,7 @@ void Rsw::load(const std::string& fileName, Map* map, BrowEdit* browEdit, bool l
 		std::string path = fileName;
 		if (path.find("\\") != std::string::npos)
 			path = path.substr(0, path.rfind("\\")+1);
-		node->addComponent(new Gnd(path + gndFile));
+		node->addComponent(new Gnd(path + gndFile, this));
 		node->addComponent(new GndRenderer());
 		node->addComponent(new WaterRenderer());
 		//TODO: read GND & GAT here
@@ -454,8 +460,10 @@ void Rsw::save(const std::string& fileName, BrowEdit* browEdit)
 	short versionFlipped = util::swapShort(version);
 	file.write(reinterpret_cast<char*>(&versionFlipped), sizeof(short));
 
-	if (version == 0x0202)
-		file.put(0); // ???
+	if (version >= 0x0205)
+		file.write(reinterpret_cast<char*>(&buildNumber), sizeof(int));
+	if (version >= 0x0202)
+		file.put(1); // ???
 	util::FileIO::writeString(file, iniFile, 40);
 
 	util::FileIO::writeString(file, gndFile, 40);
@@ -466,21 +474,23 @@ void Rsw::save(const std::string& fileName, BrowEdit* browEdit)
 	}
 	util::FileIO::writeString(file, iniFile, 40);
 
-	if (version >= 0x103)
-		file.write(reinterpret_cast<char*>(&water.height), sizeof(float));
-	if (version >= 0x108)
-	{
-		file.write(reinterpret_cast<char*>(&water.type), sizeof(int));
-		file.write(reinterpret_cast<char*>(&water.amplitude), sizeof(float));
-		file.write(reinterpret_cast<char*>(&water.waveSpeed), sizeof(float));
-		file.write(reinterpret_cast<char*>(&water.wavePitch), sizeof(float));
-	}
-	if (version >= 0x109)
-		file.write(reinterpret_cast<char*>(&water.textureAnimSpeed), sizeof(int));
-	else
-	{
-		water.textureAnimSpeed = 100;
-		throw "todo";
+	if (version < 0x206) {
+		if (version >= 0x103)
+			file.write(reinterpret_cast<char*>(&water.zones[0][0].height), sizeof(float));
+		if (version >= 0x108)
+		{
+			file.write(reinterpret_cast<char*>(&water.zones[0][0].type), sizeof(int));
+			file.write(reinterpret_cast<char*>(&water.zones[0][0].amplitude), sizeof(float));
+			file.write(reinterpret_cast<char*>(&water.zones[0][0].waveSpeed), sizeof(float));
+			file.write(reinterpret_cast<char*>(&water.zones[0][0].wavePitch), sizeof(float));
+		}
+		if (version >= 0x109)
+			file.write(reinterpret_cast<char*>(&water.zones[0][0].textureAnimSpeed), sizeof(int));
+		else
+		{
+			water.zones[0][0].textureAnimSpeed = 100;
+			throw "todo";
+		}
 	}
 
 	if (version >= 0x105)
@@ -550,7 +560,7 @@ void Rsw::save(const std::string& fileName, BrowEdit* browEdit)
 	std::vector<LubEffect*> lubEffects;
 	for (auto i = 0; i < objects.size(); i++)
 	{
-		objects[i]->getComponent<RswObject>()->save(file, version);
+		objects[i]->getComponent<RswObject>()->save(file, this);
 		auto light = objects[i]->getComponent<RswLight>();
 		if (light)
 		{
@@ -645,7 +655,9 @@ void Rsw::newMap(const std::string& fileName, int width, int height, Map* map, B
 	light.diffuse = glm::vec3(1, 1, 1);
 	light.ambient = glm::vec3(0.8f, 0.8f, 0.8f);
 	light.intensity = 0.5f;
-	water.height = 10;
+	water.splitWidth = 1;
+	water.splitHeight = 1;
+	water.zones.resize(water.splitWidth, std::vector<Rsw::Water>(water.splitHeight));
 	gndFile = fileName;
 	if (gndFile.find("\\"))
 		gndFile = gndFile.substr(gndFile.rfind("\\") + 1);
@@ -776,23 +788,106 @@ void Rsw::buildImGui(BrowEdit* browEdit)
 	}
 	if (ImGui::CollapsingHeader("Water", ImGuiTreeNodeFlags_DefaultOpen))
 	{
-		if (util::DragInt(browEdit, browEdit->activeMapView->map, node, "Type", &water.type, 1, 0, 1000))
-		{
-			auto waterRenderer = node->getComponent<WaterRenderer>();
-			waterRenderer->reloadTextures();
-		}
-		if (util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Height", &water.height, 0.1f, -100, 100)) {
-			auto waterRenderer = node->getComponent<WaterRenderer>();
+		auto gnd = browEdit->activeMapView->map->rootNode->getComponent<Gnd>();
 
-			if (!waterRenderer->renderFullWater) {
-				waterRenderer->renderFullWater = true;
+		if (gnd && gnd->version >= 0x108) {
+			if (util::DragInt(browEdit, browEdit->activeMapView->map, node, "Split width", &water.splitWidth, 1, 1, 10, "", [&](int* ptr, int startValue) {
+				water.splitWidth = glm::max(1, water.splitWidth);
+				water.splitHeight = glm::max(1, water.splitHeight);
+				auto action = new WaterSplitChangeAction(water, startValue, water.splitHeight);
+				browEdit->activeMapView->map->doAction(action, browEdit);
+				})) {
+				water.resize(water.splitWidth, water.splitHeight);
+				auto waterRenderer = node->getComponent<WaterRenderer>();
 				waterRenderer->setDirty();
 			}
+
+			if (util::DragInt(browEdit, browEdit->activeMapView->map, node, "Split height", &water.splitHeight, 1, 1, 10, "", [&](int* ptr, int startValue) {
+				water.splitWidth = glm::max(1, water.splitWidth);
+				water.splitHeight = glm::max(1, water.splitHeight);
+				auto action = new WaterSplitChangeAction(water, glm::max(1, water.splitWidth), startValue);
+				browEdit->activeMapView->map->doAction(action, browEdit);
+				})) {
+				water.resize(water.splitWidth, water.splitHeight);
+				auto waterRenderer = node->getComponent<WaterRenderer>();
+				waterRenderer->setDirty();
+			}
+
+			if (gnd->version >= 0x109) {
+				for (int y = 0; y < water.splitHeight; y++) {
+					for (int x = 0; x < water.splitWidth; x++) {
+						ImGui::LabelText("", "Water zone: x:%d - y:%d", x, y);
+
+						std::string uid = std::to_string(x) + "_" + std::to_string(y);
+
+						if (util::DragInt(browEdit, browEdit->activeMapView->map, node, ("Type##" + uid).c_str(), &water.zones[x][y].type, 1, 0, 1000))
+						{
+							auto waterRenderer = node->getComponent<WaterRenderer>();
+							waterRenderer->reloadTextures();
+						}
+						if (util::DragFloat(browEdit, browEdit->activeMapView->map, node, ("Height##" + uid).c_str(), &water.zones[x][y].height, 0.1f, -100, 100)) {
+							auto waterRenderer = node->getComponent<WaterRenderer>();
+
+							if (!waterRenderer->renderFullWater) {
+								waterRenderer->renderFullWater = true;
+								waterRenderer->setDirty();
+							}
+						}
+						util::DragFloat(browEdit, browEdit->activeMapView->map, node, ("Wave Height##" + uid).c_str(), &water.zones[x][y].amplitude, 0.1f, -100, 100);
+						util::DragInt(browEdit, browEdit->activeMapView->map, node, ("Texture Animation Speed##" + uid).c_str(), &water.zones[x][y].textureAnimSpeed, 1, 0, 1000);
+						util::DragFloat(browEdit, browEdit->activeMapView->map, node, ("Wave Speed##" + uid).c_str(), &water.zones[x][y].waveSpeed, 0.1f, -100, 100);
+						util::DragFloat(browEdit, browEdit->activeMapView->map, node, ("Wave Pitch##" + uid).c_str(), &water.zones[x][y].wavePitch, 0.1f, -100, 100);
+					}
+				}
+			}
+			else {	// 0x108
+				if (util::DragInt(browEdit, browEdit->activeMapView->map, node, "Type", &water.zones[0][0].type, 1, 0, 1000))
+				{
+					auto waterRenderer = node->getComponent<WaterRenderer>();
+					waterRenderer->reloadTextures();
+				}
+				util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Wave Height", &water.zones[0][0].amplitude, 0.1f, -100, 100);
+				util::DragInt(browEdit, browEdit->activeMapView->map, node, "Texture Animation Speed", &water.zones[0][0].textureAnimSpeed, 1, 0, 1000);
+				util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Wave Speed", &water.zones[0][0].waveSpeed, 0.1f, -100, 100);
+				util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Wave Pitch", &water.zones[0][0].wavePitch, 0.1f, -100, 100);
+				
+				for (int y = 0; y < water.splitHeight; y++) {
+					for (int x = 0; x < water.splitWidth; x++) {
+						ImGui::LabelText("", "Water zone: x:%d - y:%d", x, y);
+
+						std::string uid = std::to_string(x) + "_" + std::to_string(y);
+
+						if (util::DragFloat(browEdit, browEdit->activeMapView->map, node, ("Height##" + uid).c_str(), &water.zones[x][y].height, 0.1f, -100, 100)) {
+							auto waterRenderer = node->getComponent<WaterRenderer>();
+
+							if (!waterRenderer->renderFullWater) {
+								waterRenderer->renderFullWater = true;
+								waterRenderer->setDirty();
+							}
+						}
+					}
+				}
+			}
 		}
-		util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Wave Height", &water.amplitude, 0.1f, -100, 100);
-		util::DragInt(browEdit, browEdit->activeMapView->map, node, "Texture Animation Speed", &water.textureAnimSpeed, 1, 0, 1000);
-		util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Wave Speed", &water.waveSpeed, 0.1f, -100, 100);
-		util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Wave Pitch", &water.wavePitch, 0.1f, -100, 100);
+		else {
+			if (util::DragInt(browEdit, browEdit->activeMapView->map, node, "Type", &water.zones[0][0].type, 1, 0, 1000))
+			{
+				auto waterRenderer = node->getComponent<WaterRenderer>();
+				waterRenderer->reloadTextures();
+			}
+			if (util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Height", &water.zones[0][0].height, 0.1f, -100, 100)) {
+				auto waterRenderer = node->getComponent<WaterRenderer>();
+
+				if (!waterRenderer->renderFullWater) {
+					waterRenderer->renderFullWater = true;
+					waterRenderer->setDirty();
+				}
+			}
+			util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Wave Height", &water.zones[0][0].amplitude, 0.1f, -100, 100);
+			util::DragInt(browEdit, browEdit->activeMapView->map, node, "Texture Animation Speed", &water.zones[0][0].textureAnimSpeed, 1, 0, 1000);
+			util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Wave Speed", &water.zones[0][0].waveSpeed, 0.1f, -100, 100);
+			util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Wave Pitch", &water.zones[0][0].wavePitch, 0.1f, -100, 100);
+		}
 	}
 
 	if (ImGui::CollapsingHeader("Fog", ImGuiTreeNodeFlags_DefaultOpen))
@@ -822,8 +917,21 @@ void Rsw::recalculateQuadtree(QuadTreeNode* node)
 
 		heights.clear();
 		heights.resize(gnd->width);
-		for (int i = 0; i < gnd->width; i++)
-			heights[i].resize(gnd->height, glm::vec2(rsw->water.height, rsw->water.height));
+
+		if (rsw->water.splitHeight == 1 && rsw->water.splitWidth == 1) {
+			for (int i = 0; i < gnd->width; i++) {
+				heights[i].resize(gnd->height, glm::vec2(-rsw->water.zones[0][0].height, -rsw->water.zones[0][0].height));
+			}
+		}
+		else {
+			// This could use an improvement...
+			for (int x = 0; x < gnd->width; x++) {
+				for (int y = 0; y < gnd->height; y++) {
+					auto water = rsw->water.getFromGnd(x, gnd->height - y - 1, gnd);
+					heights[x].push_back(glm::vec2(-water->height, -water->height));
+				}
+			}
+		}
 
 		debugPoints.clear();
 		debugPoints.resize(2);
@@ -1255,4 +1363,26 @@ void Rsw::KeyFrameData<Rsw::CameraTarget>::buildEditor()
 	}
 	ImGui::DragFloat("Rotation Speed", &data.turnSpeed, 0.01f, 0.0, 1.0f);
 
+}
+
+Rsw::Water* Rsw::WaterData::getFromGat(int x, int y, Gnd* gnd) {
+	return &zones[glm::min(splitWidth - 1, (x / 2) / (gnd->width / splitWidth))][glm::min(splitHeight - 1, (y / 2) / (gnd->height / splitHeight))];
+}
+
+Rsw::Water* Rsw::WaterData::getFromGnd(int x, int y, Gnd* gnd) {
+	return &zones[glm::min(splitWidth - 1, x / (gnd->width / splitWidth))][glm::min(splitHeight - 1, y / (gnd->height / splitHeight))];
+}
+
+void Rsw::WaterData::resize(int width, int height) {
+	for (int y = 0; y < zones.size(); y++) {
+		if (zones[y].size() < height) {
+			for (int x = (int)zones[y].size(); x < height; x++) {
+				zones[y].push_back(zones[y][zones[y].size() - 1]);
+			}
+		}
+	}
+
+	for (int y = (int)zones.size(); y < width; y++) {
+		zones.push_back(zones[zones.size() - 1]);
+	}
 }

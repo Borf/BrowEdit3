@@ -39,12 +39,9 @@ public:
 		if (gndRenderer)
 		{
 			gndRenderer->setChunkDirty(position.x, position.y);
-
-			if (gndRenderer->gnd->inMap(glm::ivec2(position.x - 1, position.y)))
-				gndRenderer->setChunkDirty(position.x - 1, position.y);
-
-			if (gndRenderer->gnd->inMap(glm::ivec2(position.x, position.y - 1)))
-				gndRenderer->setChunkDirty(position.x, position.y - 1);
+			gndRenderer->setChunkDirty(position.x - 1, position.y);
+			gndRenderer->setChunkDirty(position.x, position.y - 1);
+			gndRenderer->setChunkDirty(position.x - 1, position.y - 1);
 		}
 	}
 	virtual void undo(Map* map, BrowEdit* browEdit)
@@ -54,12 +51,9 @@ public:
 		if (gndRenderer)
 		{
 			gndRenderer->setChunkDirty(position.x, position.y);
-
-			if (gndRenderer->gnd->inMap(glm::ivec2(position.x - 1, position.y)))
-				gndRenderer->setChunkDirty(position.x - 1, position.y);
-
-			if (gndRenderer->gnd->inMap(glm::ivec2(position.x, position.y - 1)))
-				gndRenderer->setChunkDirty(position.x, position.y - 1);
+			gndRenderer->setChunkDirty(position.x - 1, position.y);
+			gndRenderer->setChunkDirty(position.x, position.y - 1);
+			gndRenderer->setChunkDirty(position.x - 1, position.y - 1);
 		}
 	}
 	virtual std::string str()

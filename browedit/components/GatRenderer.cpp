@@ -129,7 +129,13 @@ void GatRenderer::Chunk::rebuild()
 		for (int y = this->y; y < glm::min(this->y + CHUNKSIZE, (int)gat->cubes[x].size()); y++)
 		{
 			Gat::Cube* cube = gat->cubes[x][y];
-			glm::vec2 t1(.25f * (cube->gatType%4), .25f * (cube->gatType/4));
+			int gatType = cube->gatType;
+
+			if (gatType < 0) {
+				gatType &= ~0x80000000;
+			}
+
+			glm::vec2 t1(.25f * (gatType%4), .25f * (gatType/4));
 			glm::vec2 t2 = t1 + glm::vec2(.25f);
 
 			VertexP3T2N3 v1(glm::vec3(5 * x,	-cube->h3, 5 * gat->height - 5 * y + 5),	glm::vec2(t1.x, t1.y), cube->normal);
@@ -154,7 +160,9 @@ void GatRenderer::setChunkDirty(int x, int y)
 	if (this->allDirty)
 		return;
 
-	chunks[y / CHUNKSIZE][x / CHUNKSIZE]->dirty = true;
+	if (y >= 0 && y / CHUNKSIZE < chunks.size() &&
+		x >= 0 && x / CHUNKSIZE < chunks[y / CHUNKSIZE].size())
+		chunks[y / CHUNKSIZE][x / CHUNKSIZE]->dirty = true;
 }
 
 void GatRenderer::setChunksDirty()

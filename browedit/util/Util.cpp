@@ -208,15 +208,19 @@ namespace util
 		return ret;
 	}
 
-	bool DragInt(BrowEdit* browEdit, Map* map, Node* node, const char* label, int* ptr, float v_speed, int v_min, int v_max, const std::string& action)
+	bool DragInt(BrowEdit* browEdit, Map* map, Node* node, const char* label, int* ptr, float v_speed, int v_min, int v_max, const std::string& action, const std::function<void(int*, int)>& editAction)
 	{
 		static int startValue;
 		bool ret = ImGui::DragInt(label, ptr, v_speed, v_min, v_max);
 
 		if (ImGui::IsItemActivated())
 			startValue = *ptr;
-		if (ImGui::IsItemDeactivatedAfterEdit())
-			map->doAction(new ObjectChangeAction(node, ptr, startValue, action == "" ? label : action), browEdit);
+		if (ImGui::IsItemDeactivatedAfterEdit()) {
+			if (editAction != nullptr)
+				editAction(ptr, startValue);
+			else
+				map->doAction(new ObjectChangeAction(node, ptr, startValue, action == "" ? label : action), browEdit);
+		}
 		ImGui::PushID(label);
 		if (ImGui::BeginPopupContextItem("CopyPaste"))
 		{
@@ -232,7 +236,10 @@ namespace util
 					{
 						startValue = *ptr;
 						*ptr = std::stoi(cb);
-						map->doAction(new ObjectChangeAction(node, ptr, startValue, action == "" ? label : action), browEdit);
+						if (editAction != nullptr)
+							editAction(ptr, startValue);
+						else
+							map->doAction(new ObjectChangeAction(node, ptr, startValue, action == "" ? label : action), browEdit);
 						ret = true;
 					}
 				}

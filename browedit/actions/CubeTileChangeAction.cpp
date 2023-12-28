@@ -51,6 +51,9 @@ void CubeTileChangeAction::perform(Map* map, BrowEdit* browEdit)
 	{
 		for (auto t : selection) {
 			gndRenderer->setChunkDirty(t.x, t.y);
+			gndRenderer->setChunkDirty(t.x - 1, t.y);
+			gndRenderer->setChunkDirty(t.x, t.y - 1);
+			gndRenderer->setChunkDirty(t.x - 1, t.y - 1);
 		}
 		if (this->shadowDirty)
 			gndRenderer->gndShadowDirty = true;
@@ -70,6 +73,9 @@ void CubeTileChangeAction::undo(Map* map, BrowEdit* browEdit)
 	{
 		for (auto t : selection) {
 			gndRenderer->setChunkDirty(t.x, t.y);
+			gndRenderer->setChunkDirty(t.x - 1, t.y);
+			gndRenderer->setChunkDirty(t.x, t.y - 1);
+			gndRenderer->setChunkDirty(t.x - 1, t.y - 1);
 		}
 		if (this->shadowDirty)
 			gndRenderer->gndShadowDirty = true;

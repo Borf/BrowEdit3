@@ -5,15 +5,19 @@
 #include <browedit/math/AABB.h>
 #include <browedit/Node.h>
 #include <browedit/Map.h>
+#include <browedit/components/Rsw.h>
 #include <browedit/components/GndRenderer.h>
 #include <browedit/actions/CubeHeightChangeAction.h>
 #include <browedit/actions/CubeTileChangeAction.h>
+#include <browedit/actions/WaterSplitChangeAction.h>
+#include <browedit/actions/GndVersionChangeAction.h>
+#include <browedit/actions/GroupAction.h>
 #include <iostream>
 #include <fstream>
 #include <FastNoiseLite.h>
 #include <glm/gtc/type_ptr.hpp>
 
-Gnd::Gnd(const std::string& fileName)
+Gnd::Gnd(const std::string& fileName, Rsw* rsw)
 {
 	auto file = util::FileIO::open(fileName);
 	if (!file)
@@ -248,6 +252,39 @@ Gnd::Gnd(const std::string& fileName)
 			}
 		}
 	}
+	if (version >= 0x108 && rsw) {
+		auto water = Rsw::Water();
+		rsw->water.zones.clear();	// Gnd water takes over whatever RSW says
+
+		file->read(reinterpret_cast<char*>(&water.height), sizeof(float));
+		file->read(reinterpret_cast<char*>(&water.type), sizeof(int));
+		file->read(reinterpret_cast<char*>(&water.amplitude), sizeof(float));
+		file->read(reinterpret_cast<char*>(&water.waveSpeed), sizeof(float));
+		file->read(reinterpret_cast<char*>(&water.wavePitch), sizeof(float));
+		file->read(reinterpret_cast<char*>(&water.textureAnimSpeed), sizeof(int));
+
+		file->read(reinterpret_cast<char*>(&rsw->water.splitWidth), sizeof(int));
+		file->read(reinterpret_cast<char*>(&rsw->water.splitHeight), sizeof(int));
+
+		rsw->water.zones.resize(rsw->water.splitWidth, std::vector<Rsw::Water>(rsw->water.splitHeight));
+
+		for (int y = 0; y < rsw->water.splitHeight; y++) {
+			for (int x = 0; x < rsw->water.splitWidth; x++) {
+				file->read(reinterpret_cast<char*>(&water.height), sizeof(float));
+
+				if (version >= 0x109) {
+					file->read(reinterpret_cast<char*>(&water.type), sizeof(int));
+					file->read(reinterpret_cast<char*>(&water.amplitude), sizeof(float));
+					file->read(reinterpret_cast<char*>(&water.waveSpeed), sizeof(float));
+					file->read(reinterpret_cast<char*>(&water.wavePitch), sizeof(float));
+					file->read(reinterpret_cast<char*>(&water.textureAnimSpeed), sizeof(int));
+				}
+
+				rsw->water.zones[x][y] = water;
+			}
+		}
+	}
+
 	delete file;
 	std::cout << "GND: Done reading gnd file" << std::endl;
 
@@ -303,7 +340,7 @@ Gnd::~Gnd()
 			delete c;
 }
 
-void Gnd::save(const std::string& fileName)
+void Gnd::save(const std::string& fileName, Rsw *rsw)
 {
 	std::ofstream file(fileName.c_str(), std::ios_base::binary | std::ios_base::out);
 	if (!file.is_open())
@@ -413,6 +450,34 @@ void Gnd::save(const std::string& fileName)
 					file.write(reinterpret_cast<char*>(&front), sizeof(unsigned short));
 					file.write(reinterpret_cast<char*>(&side), sizeof(unsigned short));
 
+				}
+			}
+		}
+		if (version >= 0x108 && rsw) {
+			auto water = rsw->water.zones.size() == 0 ? Rsw::Water() : rsw->water.zones[0][0];
+
+			file.write(reinterpret_cast<char*>(&water.height), sizeof(float));
+			file.write(reinterpret_cast<char*>(&water.type), sizeof(int));
+			file.write(reinterpret_cast<char*>(&water.amplitude), sizeof(float));
+			file.write(reinterpret_cast<char*>(&water.waveSpeed), sizeof(float));
+			file.write(reinterpret_cast<char*>(&water.wavePitch), sizeof(float));
+			file.write(reinterpret_cast<char*>(&water.textureAnimSpeed), sizeof(int));
+			file.write(reinterpret_cast<char*>(&rsw->water.splitWidth), sizeof(int));
+			file.write(reinterpret_cast<char*>(&rsw->water.splitHeight), sizeof(int));
+
+			for (int y = 0; y < rsw->water.splitHeight; y++) {
+				for (int x = 0; x < rsw->water.splitWidth; x++) {
+					water = rsw->water.zones[x][y];
+
+					file.write(reinterpret_cast<char*>(&water.height), sizeof(float));
+
+					if (version >= 0x109) {
+						file.write(reinterpret_cast<char*>(&water.type), sizeof(int));
+						file.write(reinterpret_cast<char*>(&water.amplitude), sizeof(float));
+						file.write(reinterpret_cast<char*>(&water.waveSpeed), sizeof(float));
+						file.write(reinterpret_cast<char*>(&water.wavePitch), sizeof(float));
+						file.write(reinterpret_cast<char*>(&water.textureAnimSpeed), sizeof(int));
+					}
 				}
 			}
 		}
@@ -737,6 +802,7 @@ void Gnd::buildImGui(BrowEdit* browEdit)
 	sprintf_s(versionStr, 10, "%04x", version);
 	if (ImGui::BeginCombo("Version##gnd", versionStr))
 	{
+		int prevVersion = version;
 		if (ImGui::Selectable("0103", version == 0x0103))
 			version = 0x0103;
 		if (ImGui::Selectable("0104", version == 0x0104))
@@ -759,6 +825,27 @@ void Gnd::buildImGui(BrowEdit* browEdit)
 			version = 0x0203;
 		if (ImGui::Selectable("0204", version == 0x0204))
 			version = 0x0204;
+		if (prevVersion != version) {
+			auto ga = new GroupAction();
+
+			auto action1 = new GndVersionChangeAction(prevVersion, version);
+			ga->addAction(action1);
+
+			if (version < 0x108) {
+				auto rsw = browEdit->activeMapView->map->rootNode->getComponent<Rsw>();
+
+				if (rsw && (rsw->water.splitHeight != 1 || rsw->water.splitWidth != 1)) {
+					int oldSplitHeight = rsw->water.splitHeight;
+					int oldSplitWidth = rsw->water.splitWidth;
+					rsw->water.splitHeight = 1;
+					rsw->water.splitWidth = 1;
+					auto action2 = new WaterSplitChangeAction(rsw->water, oldSplitWidth, oldSplitHeight);
+					ga->addAction(action2);
+				}
+			}
+
+			browEdit->activeMapView->map->doAction(ga, browEdit);
+		}
 		ImGui::EndCombo();
 	}
 	ImGui::InputFloat("Tile Scale", &tileScale);
