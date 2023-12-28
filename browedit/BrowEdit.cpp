@@ -623,7 +623,7 @@ void fixBackup(const std::string& fileName, const std::string& backupfileName)
 		}
 
 		int c = 0;
-		for(int i = 0; i < 999; i++)
+		for(int i = 0; i < 99999; i++)
 			if (!std::filesystem::exists(backupfileName + "." + std::to_string(i)))
 			{
 				c = i;
