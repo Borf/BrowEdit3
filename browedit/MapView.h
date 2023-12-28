@@ -189,6 +189,7 @@ public:
 	void postRenderGatMode(BrowEdit* browEdit);
 	void postRenderWallMode(BrowEdit* browEdit);
 	void postRenderColorMode(BrowEdit* browEdit);
+	void postRenderShadowMode(BrowEdit* browEdit);
 	void postRenderCinematicMode(BrowEdit* browEdit);
 
 	void gatEdit_adjustToGround(BrowEdit* browEdit);

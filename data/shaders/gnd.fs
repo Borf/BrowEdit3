@@ -41,7 +41,10 @@ void main()
 	vec3 ambient = lightAmbient - ambientFactor + ambientFactor * lightDiffuse;
 	vec3 diffuseFactor = (1.0 - lightDiffuse) * lightDiffuse;
 	vec3 diffuse = lightDiffuse - diffuseFactor + diffuseFactor * lightAmbient;
-	texture.rgb *= min((NL * diffuse + ambient), 1.0);
+	vec3 mult1 = min(NL * diffuse + ambient, 1.0);
+	// The formula quite literally changes when the combined value of lightAmbient + lightDiffuse is greater than 1.0
+	vec3 mult2 = min(max(lightDiffuse, lightAmbient) + (1.0 - max(lightDiffuse, lightAmbient)) * min(lightDiffuse, lightAmbient), 1.0);
+	texture.rgb *= min(mult1, mult2);
 	texture.rgb *= max(color, colorToggle).rgb;
 	texture.rgb *= max(texture2D(s_lighting, texCoord2).a, shadowMapToggle);
 	texture.rgb += clamp(texture2D(s_lighting, texCoord2).rgb, 0.0, 1.0) * lightColorToggle;

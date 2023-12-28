@@ -418,6 +418,15 @@
     <ClCompile Include="browedit\actions\GndVersionChangeAction.cpp">
       <Filter>browedit\actions</Filter>
     </ClCompile>
+    <ClCompile Include="browedit\windows\ShadowEditWindow.cpp">
+      <Filter>browedit\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="browedit\MapView.Shadowmode.cpp">
+      <Filter>browedit</Filter>
+    </ClCompile>
+    <ClCompile Include="browedit\actions\LightmapNewAction.cpp">
+      <Filter>browedit\actions</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="lib\imgui\imgui.h">
@@ -721,6 +730,9 @@
       <Filter>browedit\actions</Filter>
     </ClInclude>
     <ClInclude Include="browedit\actions\GndVersionChangeAction.h">
+      <Filter>browedit\actions</Filter>
+    </ClInclude>
+    <ClInclude Include="browedit\actions\LightmapNewAction.h">
       <Filter>browedit\actions</Filter>
     </ClInclude>
   </ItemGroup>

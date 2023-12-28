@@ -5,6 +5,7 @@
 #include <browedit/BrowEdit.h>
 #include <browedit/MapView.h>
 #include <browedit/components/GndRenderer.h>
+#include <browedit/components/WaterRenderer.h>
 
 CubeTileChangeAction::CubeTileChangeAction(glm::ivec2 tile, Gnd::Cube* cube, int tileUp, int tileFront, int tileSide)
 {
@@ -61,6 +62,9 @@ void CubeTileChangeAction::perform(Map* map, BrowEdit* browEdit)
 			if (mv.map == map)
 				mv.textureGridDirty = true;
 	}
+	auto waterRenderer = map->rootNode->getComponent<WaterRenderer>();
+	if (waterRenderer)
+		waterRenderer->setDirty();
 }
 
 void CubeTileChangeAction::undo(Map* map, BrowEdit* browEdit)
@@ -83,6 +87,9 @@ void CubeTileChangeAction::undo(Map* map, BrowEdit* browEdit)
 			if (mv.map == map)
 				mv.textureGridDirty = true;
 	}
+	auto waterRenderer = map->rootNode->getComponent<WaterRenderer>();
+	if (waterRenderer)
+		waterRenderer->setDirty();
 }
 
 std::string CubeTileChangeAction::str()

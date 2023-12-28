@@ -17,7 +17,6 @@ GndRenderer::GndRenderer()
 	renderContext = GndRenderContext::getInstance();
 
 	white = util::ResourceManager<gl::Texture>::load("data\\texture\\white.png");
-	gndShadow = new gl::Texture(shadowmapSize, shadowmapSize);
 	gndShadowDirty = true;
 }
 
@@ -61,6 +60,11 @@ void GndRenderer::render()
 
 	if (gndShadowDirty)
 	{
+		if (gndShadow == nullptr) {
+			shadowmapSize = glm::max(gnd->width * gnd->lightmapWidth, gnd->height * gnd->lightmapHeight);
+			gndShadow = new gl::Texture(shadowmapSize, shadowmapSize);
+		}
+
 		char* data = new char[shadowmapSize * shadowmapSize * 4];
 		int x = 0; int y = 0;
 		for (size_t i = 0; i < gnd->lightmaps.size(); i++)
@@ -242,7 +246,7 @@ void GndRenderer::Chunk::rebuild()
 	const float lmsxu = lmsx - 2.0f;
 	const float lmsyu = lmsy - 2.0f;
 	
-	const int shadowmapRowCount = shadowmapSize / gnd->lightmapWidth;
+	const int shadowmapRowCount = renderer->shadowmapSize / gnd->lightmapWidth;
 
 	for (int x = this->x; x < glm::min(this->x + CHUNKSIZE, (int)gnd->cubes.size()); x++)
 	{
@@ -258,9 +262,9 @@ void GndRenderer::Chunk::rebuild()
 				
 				if(tile->lightmapIndex >= 0)
 				{
-					lm1 = glm::vec2((tile->lightmapIndex % shadowmapRowCount) * (lmsx / shadowmapSize) + 1.0f / shadowmapSize,
-								  (tile->lightmapIndex / shadowmapRowCount) * (lmsy / shadowmapSize) + 1.0f / shadowmapSize);
-					lm2 = glm::vec2(lm1 + glm::vec2(lmsxu / shadowmapSize, lmsyu / shadowmapSize));
+					lm1 = glm::vec2((tile->lightmapIndex % shadowmapRowCount) * (lmsx / renderer->shadowmapSize) + 1.0f / renderer->shadowmapSize,
+								  (tile->lightmapIndex / shadowmapRowCount) * (lmsy / renderer->shadowmapSize) + 1.0f / renderer->shadowmapSize);
+					lm2 = glm::vec2(lm1 + glm::vec2(lmsxu / renderer->shadowmapSize, lmsyu / renderer->shadowmapSize));
 				}
 
 				glm::vec4 c1(1.0);
@@ -306,8 +310,8 @@ void GndRenderer::Chunk::rebuild()
 				Gnd::Tile* tile = gnd->tiles[cube->tileSide];
 				assert(tile->lightmapIndex >= 0);
 
-				glm::vec2 lm1((tile->lightmapIndex % shadowmapRowCount) * (lmsx / shadowmapSize) + 1.0f / shadowmapSize, (tile->lightmapIndex / shadowmapRowCount) * (lmsy / shadowmapSize) + 1.0f / shadowmapSize);
-				glm::vec2 lm2(lm1 + glm::vec2(lmsxu / shadowmapSize, lmsyu / shadowmapSize));
+				glm::vec2 lm1((tile->lightmapIndex % shadowmapRowCount) * (lmsx / renderer->shadowmapSize) + 1.0f / renderer->shadowmapSize, (tile->lightmapIndex / shadowmapRowCount) * (lmsy / renderer->shadowmapSize) + 1.0f / renderer->shadowmapSize);
+				glm::vec2 lm2(lm1 + glm::vec2(lmsxu / renderer->shadowmapSize, lmsyu / renderer->shadowmapSize));
 
 
 				glm::vec4 c1(1.0f);
@@ -335,8 +339,8 @@ void GndRenderer::Chunk::rebuild()
 				Gnd::Tile* tile = gnd->tiles[cube->tileFront];
 				assert(tile->lightmapIndex >= 0);
 
-				glm::vec2 lm1((tile->lightmapIndex % shadowmapRowCount) * (lmsx / shadowmapSize) + 1.0f / shadowmapSize, (tile->lightmapIndex / shadowmapRowCount) * (lmsy / shadowmapSize) + 1.0f / shadowmapSize);
-				glm::vec2 lm2(lm1 + glm::vec2(lmsxu / shadowmapSize, lmsyu / shadowmapSize));
+				glm::vec2 lm1((tile->lightmapIndex % shadowmapRowCount) * (lmsx / renderer->shadowmapSize) + 1.0f / renderer->shadowmapSize, (tile->lightmapIndex / shadowmapRowCount) * (lmsy / renderer->shadowmapSize) + 1.0f / renderer->shadowmapSize);
+				glm::vec2 lm2(lm1 + glm::vec2(lmsxu / renderer->shadowmapSize, lmsyu / renderer->shadowmapSize));
 
 				glm::vec4 c1(1.0f);
 				if (y < gnd->height - 1 && gnd->cubes[x][y + 1]->tileUp != -1)
