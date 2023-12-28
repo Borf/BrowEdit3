@@ -1,8 +1,10 @@
 #include "CubeHeightChangeAction.h"
 #include <browedit/Map.h>
 #include <browedit/Node.h>
+#include <browedit/BrowEdit.h>
 #include <browedit/components/GndRenderer.h>
 #include <browedit/components/GatRenderer.h>
+#include <browedit/components/WaterRenderer.h>
 #include <browedit/components/Gat.h>
 
 template<class T, class TC>
@@ -49,6 +51,12 @@ void CubeHeightChangeAction<T, TC>::perform(Map* map, BrowEdit* browEdit)
 				gndRenderer->setChunkDirty(t.x, t.y - 1);
 			}
 		}
+		auto waterRenderer = map->rootNode->getComponent<WaterRenderer>();
+		if (waterRenderer)
+			waterRenderer->setDirty();
+		for (auto& mv : browEdit->mapViews)
+			if (mv.map == map)
+				mv.textureGridDirty = true;
 	}
 	if (std::is_same<T, Gat>::value)
 	{
@@ -79,6 +87,12 @@ void CubeHeightChangeAction<T, TC>::undo(Map* map, BrowEdit* browEdit)
 				gndRenderer->setChunkDirty(t.x, t.y - 1);
 			}
 		}
+		auto waterRenderer = map->rootNode->getComponent<WaterRenderer>();
+		if (waterRenderer)
+			waterRenderer->setDirty();
+		for (auto& mv : browEdit->mapViews)
+			if (mv.map == map)
+				mv.textureGridDirty = true;
 	}
 	if (std::is_same<T, Gat>::value)
 	{

@@ -21,7 +21,7 @@ class GndShader;
 class GndRenderer : public Renderer
 {
 public:
-	inline static const int shadowmapSize = 4096;
+	int shadowmapSize;
 
 	class GndRenderContext : public Renderer::RenderContext, public util::Singleton<GndRenderContext>
 	{
@@ -71,7 +71,7 @@ public:
 	Gnd* gnd;
 	Rsw* rsw; //for lighting
 
-	gl::Texture* gndShadow;
+	gl::Texture* gndShadow = nullptr;
 
 	void setChunkDirty(int x, int y);
 	void setChunksDirty();

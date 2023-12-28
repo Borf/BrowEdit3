@@ -278,6 +278,9 @@ public:
 	int			colorEditBrushSize = 1;
 	float		colorEditBrushHardness = 1.0f;
 
+	int		shadowEditBrushAlpha = 128;
+	int		shadowEditBrushSize = 1;
+	bool	shadowSmoothEdges = true;
 
 	void configBegin();
 
@@ -327,6 +330,7 @@ public:
 	void showTextureManageWindow();
 	void showHotkeyEditorWindow();
 	void showColorEditWindow();
+	void showShadowEditWindow();
 	void showCinematicModeWindow();
 
 	void copyTiles();

@@ -267,6 +267,8 @@ void BrowEdit::run()
 		}
 		if (editMode == EditMode::Color)
 			showColorEditWindow();
+		if (editMode == EditMode::Shadow)
+			showShadowEditWindow();
 		if (editMode == EditMode::Cinematic)
 			showCinematicModeWindow();
 
@@ -572,6 +574,8 @@ void BrowEdit::showMapWindow(MapView& mapView, float deltaTime)
 					mapView.postRenderWallMode(this);
 				else if (editMode == EditMode::Color)
 					mapView.postRenderColorMode(this);
+				else if (editMode == EditMode::Shadow)
+					mapView.postRenderShadowMode(this);
 				else if (editMode == EditMode::Cinematic)
 					mapView.postRenderCinematicMode(this);
 			}
