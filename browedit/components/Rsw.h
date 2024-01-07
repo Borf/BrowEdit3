@@ -206,7 +206,6 @@ public:
 class RswLight : public Component
 {
 public:
-	float todo[10];
 	glm::vec3		color;
 	float			range;
 	// custom properties!!!!!!!!!

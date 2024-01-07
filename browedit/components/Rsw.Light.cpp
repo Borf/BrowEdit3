@@ -19,11 +19,8 @@
 void RswLight::load(std::istream* is)
 {
 	auto rswObject = node->getComponent<RswObject>();
-	node->name = util::iso_8859_1_to_utf8(util::FileIO::readString(is, 40));
+	node->name = util::iso_8859_1_to_utf8(util::FileIO::readString(is, 80));
 	is->read(reinterpret_cast<char*>(glm::value_ptr(rswObject->position)), sizeof(float) * 3);
-	rswObject->position *= glm::vec3(1, -1, 1);
-	is->read(reinterpret_cast<char*>(todo), sizeof(float) * 10);
-
 	is->read(reinterpret_cast<char*>(glm::value_ptr(color)), sizeof(float) * 3);
 	is->read(reinterpret_cast<char*>(&range), sizeof(float));
 
@@ -73,11 +70,9 @@ void RswLight::loadExtra(nlohmann::json data)
 void RswLight::save(std::ofstream& file)
 {
 	auto rswObject = node->getComponent<RswObject>();
-	util::FileIO::writeString(file, util::utf8_to_iso_8859_1(node->name), 40);
+	util::FileIO::writeString(file, util::utf8_to_iso_8859_1(node->name), 80);
 
-	file.write(reinterpret_cast<const char*>(glm::value_ptr(rswObject->position * glm::vec3(1, -1, 1))), sizeof(float) * 3);
-	file.write(reinterpret_cast<char*>(todo), sizeof(float) * 10);
-
+	file.write(reinterpret_cast<const char*>(glm::value_ptr(rswObject->position)), sizeof(float) * 3);
 	file.write(reinterpret_cast<char*>(glm::value_ptr(color)), sizeof(float) * 3);
 	file.write(reinterpret_cast<char*>(&range), sizeof(float));
 	//todo: custom light properties
