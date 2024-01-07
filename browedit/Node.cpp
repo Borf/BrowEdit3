@@ -2,6 +2,7 @@
 #include "components/Component.h"
 #include "components/Renderer.h"
 #include "components/Collider.h"
+#include "components/LubRenderer.h"
 #include "components/Rsm.h"
 #include <browedit/util/Util.h>
 #include <browedit/util/ResourceManager.h>
@@ -221,6 +222,7 @@ void Node::addComponentsFromJson(const nlohmann::json& data)
 			auto lubEffect = new LubEffect();
 			from_json(c, *lubEffect);
 			this->addComponent(lubEffect);
+			this->addComponent(new LubRenderer());
 		}
 		if (c["type"] == "rswsound")
 		{

@@ -61,7 +61,7 @@ void LubRenderer::render()
 		else
 			texture = nullptr;
 	}
-	if (!rswObject || !lubEffect)
+	if (!rswObject || !lubEffect || !gnd)
 		return;
 
 	auto shader = dynamic_cast<LubRenderContext*>(renderContext)->shader;//TODO: don't cast
