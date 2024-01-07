@@ -197,17 +197,17 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 
 			if ((browEdit->pasteOptions & PasteOptions::Objects) != 0)
 			{
-				auto ga = new GroupAction("Pasting " + std::to_string(browEdit->newNodes.size()) + " objects");
 				bool first = false;
 				glm::ivec2 center(browEdit->pasteData["center"]);
 				glm::ivec2 offset = tileHovered - center;
-
+				glm::vec3 centerObjects(center.x * 10 - 5 * gnd->width, 0, center.y * 10 - 5 * gnd->height);
 
 				for (auto newNode : browEdit->pasteData["objects"])
 				{
 					Node* n = new Node(newNode["name"].get<std::string>());
 					n->addComponentsFromJson(newNode["components"]);
-
+					glm::vec3 relative_position;
+					from_json(newNode["relative_position"], relative_position);
 					std::string path = n->name;
 					if (path.find("\\") != std::string::npos)
 						path = path.substr(0, path.rfind("\\"));
@@ -215,7 +215,7 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 						path = "";
 					n->setParent(map->findAndBuildNode(path));
 					n->makeNameUnique(map->rootNode);
-					n->getComponent<RswObject>()->position += glm::vec3(10 * offset.x, 0, 10 * offset.y);
+					n->getComponent<RswObject>()->position = relative_position + glm::vec3(10 * offset.x, 0, 10 * offset.y) + centerObjects;
 					ga->addAction(new NewObjectAction(n));
 					auto sa = new SelectAction(map, n, first, false);
 					sa->perform(map, browEdit); // to make sure everything is selected
