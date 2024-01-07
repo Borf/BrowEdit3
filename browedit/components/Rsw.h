@@ -308,11 +308,6 @@ public:
 	float	range = 100.0f;
 	float	cycle = 4.0f;
 
-	uint8_t unknown6[8];
-	float unknown7 = -45.0f;
-	float unknown8 = 0.0f;
-
-
 	RswSound() {}
 	RswSound(const std::string &fileName) : fileName(fileName) {}
 	void play();
@@ -320,7 +315,7 @@ public:
 	void save(std::ofstream& file, int version);
 	static void buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>&);
 	
-	NLOHMANN_DEFINE_TYPE_INTRUSIVE(RswSound, fileName, vol, width, height, range, cycle, unknown6, unknown7, unknown8);
+	NLOHMANN_DEFINE_TYPE_INTRUSIVE(RswSound, fileName, vol, width, height, range, cycle);
 };
 
 class RswModelCollider : public Collider
