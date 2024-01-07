@@ -17,17 +17,9 @@ void RswSound::load(std::istream* is, int version)
 
 	node->name = util::iso_8859_1_to_utf8(util::FileIO::readString(is, 80));
 
-	fileName = util::iso_8859_1_to_utf8(util::FileIO::readString(is, 40));
-
-	is->read(reinterpret_cast<char*>(&unknown7), sizeof(float));
-	is->read(reinterpret_cast<char*>(&unknown8), sizeof(float));
-	is->read(reinterpret_cast<char*>(glm::value_ptr(rswObject->rotation)), sizeof(float) * 3);
-	is->read(reinterpret_cast<char*>(glm::value_ptr(rswObject->scale)), sizeof(float) * 3);
-
-	is->read(reinterpret_cast<char*>(unknown6), 8);
+	fileName = util::iso_8859_1_to_utf8(util::FileIO::readString(is, 80));
 
 	is->read(reinterpret_cast<char*>(glm::value_ptr(rswObject->position)), sizeof(float) * 3);
-
 	is->read(reinterpret_cast<char*>(&vol), sizeof(float));
 	is->read(reinterpret_cast<char*>(&width), sizeof(int));
 	is->read(reinterpret_cast<char*>(&height), sizeof(int));
@@ -44,17 +36,9 @@ void RswSound::save(std::ofstream& file, int version)
 	auto rswObject = node->getComponent<RswObject>();
 
 	util::FileIO::writeString(file, util::utf8_to_iso_8859_1(node->name), 80);
-	util::FileIO::writeString(file, util::utf8_to_iso_8859_1(fileName), 40); //TODO: CHECK IF 80/40 or 40/80
-
-	file.write(reinterpret_cast<char*>(&unknown7), sizeof(float));
-	file.write(reinterpret_cast<char*>(&unknown8), sizeof(float));
-	file.write(reinterpret_cast<char*>(glm::value_ptr(rswObject->rotation)), sizeof(float) * 3);
-	file.write(reinterpret_cast<char*>(glm::value_ptr(rswObject->scale)), sizeof(float) * 3);
-
-	file.write(reinterpret_cast<char*>(unknown6), 8);
+	util::FileIO::writeString(file, util::utf8_to_iso_8859_1(fileName), 80);
 
 	file.write(reinterpret_cast<char*>(glm::value_ptr(rswObject->position)), sizeof(float) * 3);
-
 	file.write(reinterpret_cast<char*>(&vol), sizeof(float));
 	file.write(reinterpret_cast<char*>(&width), sizeof(int));
 	file.write(reinterpret_cast<char*>(&height), sizeof(int));
@@ -117,12 +101,6 @@ void RswSound::buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>& nod
 	util::DragIntMulti<RswSound>(browEdit, browEdit->activeMapView->map, rswSounds, "Height", [](RswSound* s) { return (int*)&s->height; }, 1, 0, 10000); //TODO: remove cast
 	util::DragFloatMulti<RswSound>(browEdit, browEdit->activeMapView->map, rswSounds, "Range", [](RswSound* s) { return &s->range; }, 0.01f, 0.0f, 100.0f);
 	util::DragFloatMulti<RswSound>(browEdit, browEdit->activeMapView->map, rswSounds, "Cycle", [](RswSound* s) { return &s->cycle; }, 0.01f, 0.0f, 100.0f);
-	//no undo for this
-	for(int i = 0; i < 8; i++)
-		util::DragCharMulti<RswSound>(browEdit, browEdit->activeMapView->map, rswSounds, ("Unknown6["+std::to_string(i) + "]").c_str(), [i](RswSound* s) { return (char*)&s->unknown6[i]; }, 1, 0, 255);
-
-	util::DragFloatMulti<RswSound>(browEdit, browEdit->activeMapView->map, rswSounds, "Unknown7", [](RswSound* s) { return &s->unknown7; }, 0.01f, 0.0f, 100.0f);
-	util::DragFloatMulti<RswSound>(browEdit, browEdit->activeMapView->map, rswSounds, "Unknown8", [](RswSound* s) { return &s->unknown8; }, 0.01f, 0.0f, 100.0f);
 }
 
 

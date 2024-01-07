@@ -832,6 +832,8 @@ void BrowEdit::copyTiles()
 				}
 			}
 	}
+
+	glm::vec3 centerObjects(center.x * 10 - 5 * gnd->width, 0, center.y * 10 - 5 * gnd->height);
 	clipboard["objects"] = json::array();
 	activeMapView->map->rootNode->traverse([&](Node* n) {
 		auto rswObject = n->getComponent<RswObject>();
@@ -844,6 +846,7 @@ void BrowEdit::copyTiles()
 					pos.z >= 10 * gnd->height - (tile.y + 1) * 10 + 10 && pos.z <= 10 * gnd->height - (tile.y + 0) * 10 + 10)
 				{
 					clipboard["objects"].push_back(*n);
+					clipboard["objects"][clipboard["objects"].size() - 1]["relative_position"] = rswObject->position - centerObjects;
 					break;
 				}
 			}
