@@ -276,8 +276,8 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 
 			static glm::vec3 centerGadget;
 			static glm::vec3 vectorStart;
-
-			if (hovered)
+			
+			if (hovered || gadget.axisHovered)
 			{
 				if (gadget.axisClicked)
 				{
