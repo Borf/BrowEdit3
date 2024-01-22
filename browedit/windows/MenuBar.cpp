@@ -15,6 +15,7 @@
 #include <browedit/components/BillboardRenderer.h>
 #include <browedit/util/ResourceManager.h>
 #include <browedit/HotkeyRegistry.h>
+#include <browedit/actions/SelectAction.h>
 #include <GLFW/glfw3.h>
 #include <imgui_internal.h>
 #include <fstream>
@@ -187,6 +188,10 @@ void BrowEdit::menuBar()
 		hotkeyMenuItem("Remove zero height walls", HotkeyAction::Global_ClearZeroHeightWalls);
 		if (ImGui::MenuItem("Clean Tiles"))
 			activeMapView->map->rootNode->getComponent<Gnd>()->cleanTiles();
+		if (ImGui::MenuItem("Edit lighting/water/fog")) {
+			editMode = EditMode::Object;
+			activeMapView->map->doAction(new SelectAction(activeMapView->map, activeMapView->map->rootNode, false, false), this);
+		}
 		if (ImGui::MenuItem("Fix lightmap borders"))
 			activeMapView->map->rootNode->getComponent<Gnd>()->makeLightmapBorders(this);
 		if (ImGui::MenuItem("Clear lightmaps"))
