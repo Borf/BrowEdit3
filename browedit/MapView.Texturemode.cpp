@@ -937,6 +937,8 @@ void MapView::postRenderTextureMode(BrowEdit* browEdit)
 		}
 		if (verts.size() > 0)
 		{
+			glBindBuffer(GL_ARRAY_BUFFER, 0);
+
 			glEnableVertexAttribArray(0);
 			glEnableVertexAttribArray(1);
 			glEnableVertexAttribArray(2);
@@ -946,11 +948,12 @@ void MapView::postRenderTextureMode(BrowEdit* browEdit)
 			glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexP3T2N3), verts[0].data + 3);
 			glVertexAttribPointer(2, 3, GL_FLOAT, false, sizeof(VertexP3T2N3), verts[0].data + 5);
 
-
 			gndRenderer->textures[textureSelected]->bind();
+			simpleShader->use();
 			simpleShader->setUniform(SimpleShader::Uniforms::textureFac, 1.0f);
 			simpleShader->setUniform(SimpleShader::Uniforms::color, glm::vec4(1, 1.0f, 1.0f, 0.5f));
 			simpleShader->setUniform(SimpleShader::Uniforms::lightMin, 1.0f);
+			simpleShader->setUniform(SimpleShader::Uniforms::shadeType, 1);
 			glDepthMask(0);
 			glDrawArrays(GL_TRIANGLES, 0, (int)verts.size());
 
@@ -958,6 +961,7 @@ void MapView::postRenderTextureMode(BrowEdit* browEdit)
 			simpleShader->setUniform(SimpleShader::Uniforms::textureFac, 0.0f);
 			simpleShader->setUniform(SimpleShader::Uniforms::color, glm::vec4(1, 0.0f, 0.0f, 0.5f));
 			simpleShader->setUniform(SimpleShader::Uniforms::lightMin, 1.0f);
+			simpleShader->setUniform(SimpleShader::Uniforms::shadeType, 1);
 			glDepthMask(1);
 			glDrawArrays(GL_TRIANGLES, 0, (int)verts.size());
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);

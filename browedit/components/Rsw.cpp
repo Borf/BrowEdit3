@@ -670,13 +670,13 @@ void Rsw::newMap(const std::string& fileName, int width, int height, Map* map, B
 	std::string path = fileName;
 	if (path.find("\\") != std::string::npos)
 		path = path.substr(0, path.rfind("\\") + 1);
-	node->addComponent(new Gnd(width/2, height/2));
+	node->addComponent(new Gnd(width, height));
 	node->addComponent(new GndRenderer());
 	node->addComponent(new WaterRenderer());
-	node->addComponent(new Gat(width, height));
+	node->addComponent(new Gat(width * 2, height * 2));
 	node->addComponent(new GatRenderer(browEdit->gatTexture));
 
-	quadtree = new QuadTreeNode(-(width/2)*5.0f,-(height/2)*5.0f, width * 5.0f, height * 5.0f, 0);
+	quadtree = new QuadTreeNode(-width * 5.0f, -height * 5.0f, width * 10 - 1.0f, height * 10 - 1.0f, 0);
 }
 
 

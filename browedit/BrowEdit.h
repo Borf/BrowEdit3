@@ -109,8 +109,8 @@ public:
 		bool configVisible = false;
 
 		bool showNewMapPopup = false;
-		int newMapWidth = 100;
-		int newMapHeight = 100;
+		int newMapWidth = 50;
+		int newMapHeight = 50;
 		std::string newMapName = "borftopia";
 		enum class NewMapTemplate
 		{
