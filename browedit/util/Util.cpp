@@ -452,6 +452,73 @@ namespace util
 	
 
 	template<class T>
+	bool InputTextMulti(BrowEdit* browEdit, Map* map, const std::vector<T*>& data, const char* label, const std::function<std::string* (T*)>& getProp, const std::function<void(Node* node, std::string* ptr, std::string* startValue, const std::string& action)>& editAction)
+	{
+		static std::vector<std::string> startValues;
+		bool differentValues = !std::all_of(data.begin(), data.end(), [&](T* o) { return *getProp(o) == *getProp(data.front()); });
+		std::string f = *getProp(data.front());
+		if (differentValues)
+			f = "multiple";
+		bool ret = ImGui::InputText(label, &f);
+		if (ret)
+			for (auto o : data)
+				*getProp(o) = f;
+		if (ImGui::IsItemActivated())
+		{
+			startValues.clear();
+			for (auto o : data)
+				startValues.push_back(*getProp(o));
+		}
+		if (ImGui::IsItemDeactivatedAfterEdit())
+		{
+			auto ga = new GroupAction();
+			for (auto i = 0; i < data.size(); i++)
+				editAction(data[i]->node, getProp(data[i]), &startValues[i], label);
+			map->doAction(ga, browEdit);
+		}
+		if (!differentValues)
+		{
+			ImGui::PushID(label);
+			if (ImGui::BeginPopupContextItem("CopyPaste"))
+			{
+				try {
+					if (ImGui::MenuItem("Copy"))
+					{
+						ImGui::SetClipboardText(getProp(data[0])->c_str());
+					}
+					if (ImGui::MenuItem("Paste"))
+					{
+						auto cb = ImGui::GetClipboardText();
+						if (cb)
+						{
+							startValues.clear();
+							for (auto o : data)
+							{
+								startValues.push_back(*getProp(o));
+								*getProp(o) = cb;
+							}
+							auto ga = new GroupAction();
+							for (auto i = 0; i < data.size(); i++)
+								editAction(data[i]->node, getProp(data[i]), &startValues[i], label);
+							ret = true;
+						}
+					}
+				}
+				catch (...) {}
+				ImGui::EndPopup();
+			}
+			ImGui::PopID();
+		}
+		return ret;
+	}
+	template bool InputTextMulti<RswObject>(BrowEdit* browEdit, Map* map, const std::vector<RswObject*>& data, const char* label, const std::function<std::string* (RswObject*)>& getProp, const std::function<void(Node* node, std::string* ptr, std::string* startValue, const std::string& action)>& editAction);
+	template bool InputTextMulti<RswLight>(BrowEdit* browEdit, Map* map, const std::vector<RswLight*>& data, const char* label, const std::function<std::string* (RswLight*)>& getProp, const std::function<void(Node* node, std::string* ptr, std::string* startValue, const std::string& action)>& editAction);
+	template bool InputTextMulti<RswEffect>(BrowEdit* browEdit, Map* map, const std::vector<RswEffect*>& data, const char* label, const std::function<std::string* (RswEffect*)>& getProp, const std::function<void(Node* node, std::string* ptr, std::string* startValue, const std::string& action)>& editAction);
+	template bool InputTextMulti<LubEffect>(BrowEdit* browEdit, Map* map, const std::vector<LubEffect*>& data, const char* label, const std::function<std::string* (LubEffect*)>& getProp, const std::function<void(Node* node, std::string* ptr, std::string* startValue, const std::string& action)>& editAction);
+	template bool InputTextMulti<RswSound>(BrowEdit* browEdit, Map* map, const std::vector<RswSound*>& data, const char* label, const std::function<std::string* (RswSound*)>& getProp, const std::function<void(Node* node, std::string* ptr, std::string* startValue, const std::string& action)>& editAction);
+	template bool InputTextMulti<RswModel>(BrowEdit* browEdit, Map* map, const std::vector<RswModel*>& data, const char* label, const std::function<std::string* (RswModel*)>& getProp, const std::function<void(Node* node, std::string* ptr, std::string* startValue, const std::string& action)>& editAction);
+
+	template<class T>
 	bool InputTextMulti(BrowEdit* browEdit, Map* map, const std::vector<T*>& data, const char* label, const std::function<std::string* (T*)>& getProp)
 	{
 		static std::vector<std::string> startValues;
@@ -774,12 +841,6 @@ namespace util
 			else if ((*f)[0] == (*f)[2])
 				(*f)[2] = (*f)[0] = (*f)[1];
 		}
-		if (ImGui::IsItemActivated())
-		{
-			startValues.clear();
-			for (auto o : data)
-				startValues.push_back(*getProp(o));
-		}
 		if (ret)
 		{
 			for (auto o : data)
@@ -798,6 +859,12 @@ namespace util
 			for (auto i = 0; i < data.size(); i++)
 				ga->addAction(new ObjectChangeAction(data[i]->node, getProp(data[i]), startValues[i], label));
 			map->doAction(ga, browEdit);
+		}
+		if (ImGui::IsItemActivated())
+		{
+			startValues.clear();
+			for (auto o : data)
+				startValues.push_back(*getProp(o));
 		}
 		if (!differentValues)
 		{

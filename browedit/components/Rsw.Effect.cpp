@@ -11,6 +11,7 @@
 #include <browedit/components/BillboardRenderer.h>
 #include <browedit/actions/AddComponentAction.h>
 #include <browedit/actions/RemoveComponentAction.h>
+#include <browedit/actions/LubChangeTextureAction.h>
 
 #include <iostream>
 #include <fstream>
@@ -180,10 +181,9 @@ void LubEffect::buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>& no
 		util::DragFloat2Multi<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "rate", [](LubEffect* e) {return &e->rate; }, 0.1f, 0, 0);
 		util::DragFloat2Multi<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "size", [](LubEffect* e) {return &e->size; }, 0.1f, 0, 0);
 		util::DragFloat2Multi<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "life", [](LubEffect* e) {return &e->life; }, 0.1f, 0, 0);
-		if (util::InputTextMulti<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "texture", [](LubEffect* e) {return &e->texture; }))
-		{
-
-		}
+		util::InputTextMulti<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "texture", [](LubEffect* e) {return &e->texture;}, [&](Node* node, std::string* ptr, std::string* startValue, const std::string& action) {
+			browEdit->activeMapView->map->doAction(new LubChangeTextureAction(node->getComponent<LubEffect>(), *startValue, *ptr), browEdit);
+		});
 		util::DragFloatMulti<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "speed", [](LubEffect* e) {return &e->speed; }, 0.1f, 0, 0);
 		util::DragIntMulti<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "srcmode", [](LubEffect* e) {return &e->srcmode; }, 1, 0, 0);
 		util::DragIntMulti<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "destmode", [](LubEffect* e) {return &e->destmode; }, 1, 0, 20);

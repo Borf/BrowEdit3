@@ -3,6 +3,7 @@
 #include <browedit/Node.h>
 #include <browedit/components/Rsw.h>
 #include <browedit/components/Gnd.h>
+#include <browedit/components/BillboardRenderer.h>
 #include <browedit/gl/Texture.h>
 #include <browedit/gl/Vertex.h>
 
@@ -44,7 +45,9 @@ void LubRenderer::render()
 		rswObject = node->getComponent<RswObject>();
 	if (!gnd)
 		gnd = node->root->getComponent<Gnd>();
-	if (!lubEffect || dirty)
+	if (!billboardRenderer)
+		billboardRenderer = node->getComponent<BillboardRenderer>();
+	if (!lubEffect || dirty || lubEffect->dirty)
 	{
 		lubEffect = node->getComponent<LubEffect>();
 		dirty = false;
@@ -60,6 +63,9 @@ void LubRenderer::render()
 		}
 		else
 			texture = nullptr;
+
+		if (lubEffect)
+			lubEffect->dirty = false;
 	}
 	if (!rswObject || !lubEffect || !gnd)
 		return;
@@ -164,10 +170,28 @@ void LubRenderer::render()
 		shader->setUniform(LubShader::Uniforms::modelMatrix, modelMatrixSub);
 		glDrawArrays(GL_QUADS, 4 * i, 4);
 	}
-	
+
 	glDepthMask(1);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_DEPTH_TEST);
+
+	if (ImGui::GetIO().KeyShift && billboardRenderer != nullptr && billboardRenderer->selected) {
+		glLineWidth(2.0f);
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		shader->setUniform(LubShader::Uniforms::selection, true);
+
+		for (int i = 0; i < particles.size(); i++)
+		{
+			Particle p = particles[i];
+			glm::mat4 modelMatrixSub = modelMatrix;
+			modelMatrixSub[3] += glm::vec4(p.position.x, p.position.y, -p.position.z, 0.0f);
+			shader->setUniform(LubShader::Uniforms::modelMatrix, modelMatrixSub);
+			glDrawArrays(GL_QUADS, 4 * i, 4);
+		}
+
+		shader->setUniform(LubShader::Uniforms::selection, false);
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	}
 }
 
 

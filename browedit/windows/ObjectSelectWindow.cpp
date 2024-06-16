@@ -7,6 +7,7 @@
 #include <browedit/components/BillboardRenderer.h>
 #include <browedit/components/Rsm.h>
 #include <browedit/components/Rsw.h>
+#include <browedit/components/LubRenderer.h>
 #include <browedit/gl/FBO.h>
 #include <browedit/gl/Texture.h>
 #include <browedit/util/Util.h>
@@ -356,6 +357,29 @@ void BrowEdit::showObjectWindow()
 							newNode->addComponent(e);
 							newNode->addComponent(new BillboardRenderer("data\\effect.png", "data\\effect_selected.png"));
 							newNode->addComponent(new CubeCollider(5));
+							
+							// Tokei: Effect 974 needs to have an LubEffect component attached
+							// This could be made in the json directly, but it will break if the lub effect
+							// properties are changed (which is somewhat often), so it's done in the source instead.
+							if (e->id == 974) {
+								auto lubEffect = new LubEffect();
+								newNode->addComponent(lubEffect);
+								// Add dummy data to show something
+								lubEffect->texture = "smoke2.bmp";
+								lubEffect->gravity = glm::vec3(0, -5, 0);
+								lubEffect->color = glm::vec4(1);
+								lubEffect->rate = glm::vec2(5, 15);
+								lubEffect->size = glm::vec2(3, 8);
+								lubEffect->life = glm::vec2(1, 5);
+								lubEffect->speed = 0.5f;
+								lubEffect->srcmode = 10;
+								lubEffect->destmode = 2;
+								lubEffect->maxcount = 30;
+								lubEffect->zenable = 1;
+
+								newNode->addComponent(new LubRenderer());
+							}
+
 							newNodes.push_back(std::pair<Node*, glm::vec3>(newNode, glm::vec3(0, 0, 0)));
 							newNodesCenter = glm::vec3(0, 0, 0);
 							newNodeHeight = false;

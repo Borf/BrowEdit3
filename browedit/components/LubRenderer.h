@@ -8,6 +8,7 @@ namespace gl { class Texture; }
 class RswObject;
 class Gnd;
 class LubEffect;
+class BillboardRenderer;
 
 class LubRenderer : public Renderer
 {
@@ -26,6 +27,7 @@ public:
 				s_texture,
 				color,
 				billboard_off,
+				selection,
 				End
 			};
 		};
@@ -37,12 +39,14 @@ public:
 			bindUniform(Uniforms::modelMatrix, "modelMatrix");
 			bindUniform(Uniforms::color, "color");
 			bindUniform(Uniforms::billboard_off, "billboard_off");
+			bindUniform(Uniforms::selection, "selection");
 		}
 	};
 private:
 	bool dirty = true;
 	RswObject* rswObject = nullptr;
 	LubEffect* lubEffect = nullptr;
+	BillboardRenderer* billboardRenderer = nullptr;
 
 	gl::Texture* texture = nullptr;
 
