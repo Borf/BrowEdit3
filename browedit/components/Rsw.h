@@ -272,6 +272,7 @@ public:
 	int zenable;
 	int billboard_off;
 	glm::vec3 rotate_angle; // v3
+	bool dirty;
 
 	void load(const nlohmann::json& data);
 	static void buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>&);

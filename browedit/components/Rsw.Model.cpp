@@ -27,9 +27,16 @@ void RswModel::load(std::istream* is, int version, unsigned char buildNumber, bo
 		is->read(reinterpret_cast<char*>(&animSpeed), sizeof(float));
 		is->read(reinterpret_cast<char*>(&blockType), sizeof(int));
 	}
-	if (version >= 0x0206 && buildNumber >= 186)
+	if (version >= 0x206 && buildNumber >= 186)
 	{
 		unsigned char c = is->get(); // unknown, 0?
+	}
+
+	if (version >= 0x207)
+	{
+		// Tokei: No idea what this is for
+		int unknown;
+		is->read(reinterpret_cast<char*>(&unknown), sizeof(int));
 	}
 
 	std::string fileNameRaw = util::FileIO::readString(is, 80);
@@ -76,6 +83,13 @@ void RswModel::save(std::ofstream& file, int version, int buildNumber)
 
 		if (version >= 0x206 && buildNumber >= 186) {
 			file.put(0); // ??
+		}
+
+		if (version >= 0x207)
+		{
+			// Tokei: No idea what this is for
+			int unknown = -1;
+			file.write(reinterpret_cast<char*>(&unknown), sizeof(int));
 		}
 	}
 	util::FileIO::writeString(file, util::utf8_to_iso_8859_1(fileName), 80);

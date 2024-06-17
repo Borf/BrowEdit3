@@ -348,6 +348,18 @@ void Rsw::load(const std::string& fileName, Map* map, BrowEdit* browEdit, bool l
 		unknown[1] = unknown[3] = 500;
 	}
 
+	// Tokei: Not sure what this is meant for
+	if (version >= 0x207)
+	{
+		int unknownCount;
+		file->read(reinterpret_cast<char*>(&unknownCount), sizeof(int));
+
+		for (int i = 0; i < unknownCount; i++) {
+			int unknownValue;
+			file->read(reinterpret_cast<char*>(&unknownValue), sizeof(int));
+		}
+	}
+
 	int objectCount;
 	file->read(reinterpret_cast<char*>(&objectCount), sizeof(int));
 	std::cout << "RSW: Loading " << objectCount << " objects" << std::endl;
@@ -547,6 +559,13 @@ void Rsw::save(const std::string& fileName, BrowEdit* browEdit)
 		file.write(reinterpret_cast<char*>(&unknown[1]), sizeof(int));
 		file.write(reinterpret_cast<char*>(&unknown[2]), sizeof(int));
 		file.write(reinterpret_cast<char*>(&unknown[3]), sizeof(int));
+	}
+
+	// Tokei: Not sure what this is meant for; fill it with 0 for now
+	if (version >= 0x207)
+	{
+		int unknownCount = 0;
+		file.write(reinterpret_cast<char*>(&unknownCount), sizeof(int));
 	}
 
 	std::vector<Node*> objects;
@@ -756,6 +775,12 @@ void Rsw::buildImGui(BrowEdit* browEdit)
 			version = 0x0203;
 		if (ImGui::Selectable("0204", version == 0x0204))
 			version = 0x0204;
+		if (ImGui::Selectable("0205", version == 0x0205))
+			version = 0x0205;
+		if (ImGui::Selectable("0206", version == 0x0206))
+			version = 0x0206;
+		if (ImGui::Selectable("0207", version == 0x0207))
+			version = 0x0207;
 		ImGui::EndCombo();
 	}
 	
