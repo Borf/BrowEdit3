@@ -20,7 +20,21 @@ void RswLight::load(std::istream* is)
 {
 	auto rswObject = node->getComponent<RswObject>();
 	node->name = util::iso_8859_1_to_utf8(util::FileIO::readString(is, 80));
+
+	// Tokei: Read the position of the light from an older file format of BrowEdit.
+	// The newer version of BrowEdit will fill these bytes with 0, which will mean that the
+	// new position should be used instead.
+	glm::vec3 tempPosition;
+	is->seekg(-40, std::ios_base::cur);
+	is->read(reinterpret_cast<char*>(glm::value_ptr(tempPosition)), sizeof(float) * 3);
+	is->seekg(28, std::ios_base::cur);
+
 	is->read(reinterpret_cast<char*>(glm::value_ptr(rswObject->position)), sizeof(float) * 3);
+
+	if (glm::length(rswObject->position) == 0) {
+		rswObject->position = tempPosition * glm::vec3(1, -1, 1);
+	}
+
 	is->read(reinterpret_cast<char*>(glm::value_ptr(color)), sizeof(float) * 3);
 	is->read(reinterpret_cast<char*>(&range), sizeof(float));
 
