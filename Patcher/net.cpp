@@ -246,7 +246,7 @@ void detect_proxy(session &http_session, const url &dest_url)
             }
             catch (error &e)
             {
-                if (e.get_error_code() != ERROR_WINHTTP_AUTODETECTION_FAILED)
+                if (e.get_error_code() != ERROR_WINHTTP_AUTODETECTION_FAILED && e.get_error_code() != ERROR_WINHTTP_UNABLE_TO_DOWNLOAD_SCRIPT)
                 {
                     auto str = e.format_message(e.get_error_code());
                     LOG(str);
