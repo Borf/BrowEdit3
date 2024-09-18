@@ -180,7 +180,7 @@ bool Config::showWindow(BrowEdit* browEdit)
 		ImGui::DragFloat("Field of View", &fov, 0.1f, 1.0f, 180.0f);
 		ImGui::DragFloat("Camera Mouse Speed", &cameraMouseSpeed, 0.05f, 0.01f, 3.0f);
 
-		if (ImGui::Combo("Skin", &style, "Dark\0Light\0Classic\0Tarq\0Mina's Hot Fudge 1.1\0"))
+		if (ImGui::Combo("Skin", &style, "Dark\0Light\0Classic\0Tarq\0Mina's Hot Fudge 1.2\0"))
 		{
 			setStyle(style);
 		}
@@ -503,6 +503,15 @@ void Config::setStyle(int style)
 		colors[ImGuiCol_NavWindowingHighlight] = ImVec4(1.00f, 1.00f, 1.00f, 0.70f);
 		colors[ImGuiCol_NavWindowingDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.20f);
 		colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.35f);
+		{
+			ImGuiStyle& style = ImGui::GetStyle();
+			style.FrameRounding = 4;
+			style.GrabRounding = style.FrameRounding; // Make GrabRounding always the same value as FrameRounding
+			style.WindowBorderSize = 1.0f;
+			style.FrameBorderSize = 0.0f;
+			style.PopupBorderSize = 1.0f;
+		}
+
 		break;
 	}
 }
