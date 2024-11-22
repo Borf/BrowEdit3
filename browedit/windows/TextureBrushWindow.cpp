@@ -449,6 +449,9 @@ void BrowEdit::showTextureBrushWindow()
 
 			ImGui::SetCursorScreenPos(cursorPos);
 		}
+		
+
+
 		if (ImGui::InputInt("Brush Width", &activeMapView->textureBrushWidth, 1))
 			if (activeMapView->textureBrushWidth < 1)
 				activeMapView->textureBrushWidth = 1;
@@ -456,14 +459,19 @@ void BrowEdit::showTextureBrushWindow()
 			if (activeMapView->textureBrushHeight < 1)
 				activeMapView->textureBrushHeight = 1;
 
-
 		glm::vec2 uvSize = activeMapView->textureEditUv2 - activeMapView->textureEditUv1;
+		// Updates brush size based on selection
+		if (activeMapView->textureBrushUpdateBySelection) {
+			activeMapView->textureBrushWidth = (int)(uvSize.x * 4);
+			activeMapView->textureBrushHeight = (int)(uvSize.y * 4);
+		}
+				
 		float textureBrushHeight = activeMapView->textureBrushWidth * (uvSize.y / uvSize.x);
 		if(glm::abs(activeMapView->textureBrushHeight - textureBrushHeight) < 0.01)
 			ImGui::Text("For proper aspect ratio, height should be %f", textureBrushHeight);
 		else
 			ImGui::TextColored(ImVec4(1,0,0,1), "For proper aspect ratio, height should be %f", textureBrushHeight);
-
+		
 		glm::vec2 uv1 = activeMapView->textureEditUv1;
 		glm::vec2 uv2 = activeMapView->textureEditUv2;
 		activeMapView->textureEditUv1 = glm::min(uv1, uv2);
@@ -475,7 +483,7 @@ void BrowEdit::showTextureBrushWindow()
 		ImGui::Checkbox("Automatically flip brush size", &activeMapView->textureBrushAutoFlipSize);
 		ImGui::Checkbox("Keep Shadows", &activeMapView->textureBrushKeepShadow);
 		ImGui::Checkbox("Keep Colors", &activeMapView->textureBrushKeepColor);
-
+		ImGui::Checkbox("Lock brush size by selection", &activeMapView->textureBrushUpdateBySelection);
 		if (textureBrushMode == TextureBrushMode::Select)
 		{
 			ImGui::InputInt2("Brush Offset", glm::value_ptr(textureFillOffset), 1);

@@ -136,6 +136,7 @@ public:
 	bool textureBrushKeepShadow = true;
 	bool textureBrushKeepColor = true;
 	bool textureBrushAutoFlipSize = true;
+	bool textureBrushUpdateBySelection = true;
 	int textureBrushMask() { return (textureBrushFlipD ? 4 : 0) | (textureBrushFlipH ? 2 : 0) | (textureBrushFlipV ? 1 : 0); }
 	void textureBrushMask(int mask)
 	{
