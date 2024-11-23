@@ -562,16 +562,46 @@ void ModelEditor::run(BrowEdit* browEdit)
 				int i=0;
 				for (auto& t : rsm->textures)
 				{
-					ImGui::PushID(i++);
+					ImGui::PushID(i);
 					std::string texture = util::iso_8859_1_to_utf8(t);
 					if (ImGui::InputText("Texture", &texture)) {
 						t = util::utf8_to_iso_8859_1(texture);
 					}
 					
-					if (ImGui::Button("Load")) 
-					{
+					if (ImGui::Button("Load")) 	{
 						rsmRenderer->setMeshesDirty();
 					}
+					
+					// Cannot delete last texture
+					if (rsm->textures.size() > 1) {
+						ImGui::SameLine();
+						if (ImGui::Button("Delete")) {
+							rsm->textures.erase(rsm->textures.begin() + i);
+							
+							// Updates all the textures...
+							for (auto& textureIndex : rsm->rootMesh->textures) {
+								if (textureIndex == i) {
+									textureIndex = 0;
+								}
+								else if (textureIndex > i) {
+									textureIndex--;
+								}
+							}
+							for (auto& child : rsm->rootMesh->children) {
+								for (auto& textureIndex : child->textures) {
+									if (textureIndex == i) {
+										textureIndex = 0;
+									} else if (textureIndex > i) {
+										textureIndex--;
+									}
+								}
+							}
+							rsmRenderer->setMeshesDirty();
+							ImGui::PopID();
+							continue;
+						}
+					}
+					i++;
 					ImGui::PopID();
 				}
 			}
