@@ -802,7 +802,7 @@ void Rsm::Mesh::save(std::ostream* pFile)
 	pFile->write((char*)&textureCount, 4);
 	// Texture ID
 	for (int i = 0; i < textureCount; i++) {
-		pFile->write((char*)&i, 4);
+		pFile->write((char*)&t->textures[i], 4);
 	}
 	pFile->write((char*)&t->offset[0][0], sizeof(float));
 	pFile->write((char*)&t->offset[0][1], sizeof(float));
