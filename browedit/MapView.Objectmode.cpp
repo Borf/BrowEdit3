@@ -237,30 +237,32 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 				lockedGizmo = !ImGui::GetIO().KeyCtrl;
 			}
 
-			if (map->selectedNodes[0]->getComponent<RswObject>()) {
+			auto rotVector = map->selectedNodes[0]->getComponent<RswObject>() ? &map->selectedNodes[0]->getComponent<RswObject>()->rotation : nullptr;
+
+			if (rotVector) {
 				if (!lockedGizmo) {
 					if (map->selectedNodes.size() == 1 && gadget.mode == Gadget::Mode::Rotate) {
-						mat = glm::rotate(mat, -glm::radians(map->selectedNodes[0]->getComponent<RswObject>()->rotation.z), glm::vec3(0, 0, 1));
-						rotMat = glm::rotate(rotMat, -glm::radians(map->selectedNodes[0]->getComponent<RswObject>()->rotation.z), glm::vec3(0, 0, 1));
+						mat = glm::rotate(mat, -glm::radians(rotVector->z), glm::vec3(0, 0, 1));
+						rotMat = glm::rotate(rotMat, -glm::radians(rotVector->z), glm::vec3(0, 0, 1));
 					}
 				}
 
 				if (map->selectedNodes.size() == 1 && gadget.mode == Gadget::Mode::Scale) {
-					mat = glm::rotate(mat, -glm::radians(map->selectedNodes[0]->getComponent<RswObject>()->rotation.z), glm::vec3(0, 0, 1));
-					mat = glm::rotate(mat, -glm::radians(map->selectedNodes[0]->getComponent<RswObject>()->rotation.x), glm::vec3(1, 0, 0));
-					mat = glm::rotate(mat, glm::radians(map->selectedNodes[0]->getComponent<RswObject>()->rotation.y), glm::vec3(0, 1, 0));
+					mat = glm::rotate(mat, -glm::radians(rotVector->z), glm::vec3(0, 0, 1));
+					mat = glm::rotate(mat, -glm::radians(rotVector->x), glm::vec3(1, 0, 0));
+					mat = glm::rotate(mat, glm::radians(rotVector->y), glm::vec3(0, 1, 0));
 
-					rotMat = glm::rotate(rotMat, -glm::radians(map->selectedNodes[0]->getComponent<RswObject>()->rotation.z), glm::vec3(0, 0, 1));
-					rotMat = glm::rotate(rotMat, glm::radians(map->selectedNodes[0]->getComponent<RswObject>()->rotation.x), glm::vec3(1, 0, 0));
-					rotMat = glm::rotate(rotMat, glm::radians(map->selectedNodes[0]->getComponent<RswObject>()->rotation.y), glm::vec3(0, 1, 0));
+					rotMat = glm::rotate(rotMat, -glm::radians(rotVector->z), glm::vec3(0, 0, 1));
+					rotMat = glm::rotate(rotMat, glm::radians(rotVector->x), glm::vec3(1, 0, 0));
+					rotMat = glm::rotate(rotMat, glm::radians(rotVector->y), glm::vec3(0, 1, 0));
 				}
 			}
 
-			gadget.draw(mouseRay, mat, !lockedGizmo && map->selectedNodes[0]->getComponent<RswObject>() ? -map->selectedNodes[0]->getComponent<RswObject>()->rotation.x : 0);
+			gadget.draw(mouseRay, mat, !lockedGizmo && map->selectedNodes[0]->getComponent<RswObject>() ? -rotVector->x : 0);
 
 			if (!lockedGizmo && map->selectedNodes[0]->getComponent<RswObject>() && map->selectedNodes.size() == 1 && gadget.mode == Gadget::Mode::Rotate) {
 				if (gadget.selectedAxis == Gadget::Axis::Y) {
-					rotMat = glm::rotate(rotMat, glm::radians(map->selectedNodes[0]->getComponent<RswObject>()->rotation.x), glm::vec3(1, 0, 0));
+					rotMat = glm::rotate(rotMat, glm::radians(rotVector->x), glm::vec3(1, 0, 0));
 				}
 			}
 
@@ -676,6 +678,7 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 	{
 		static bool justPressed = false;
 		static glm::vec3 originalPosition;
+		static float originalHeightFromGround;
 		if (ImGui::IsMouseClicked(0))
 		{
 			auto collisions = map->rootNode->getCollisions(mouseRay);
@@ -709,6 +712,20 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 					{
 						originalPosition = map->selectedNodes[0]->getComponent<RswObject>()->position;
 						justPressed = true;
+
+						if (map->selectedNodes[0]->getComponent<RswLight>()) {
+							glm::vec3 wPosition(gnd->width * 5.0f + originalPosition.x, -originalPosition.y, gnd->height * 5.0f - originalPosition.z + 10.0f);
+							
+							math::Ray ray(wPosition, glm::vec3(0, -1, 0));
+							auto rayCast = gnd->rayCast(ray, viewEmptyTiles);
+
+							if (rayCast != glm::vec3(std::numeric_limits<float>().max())) {
+								originalHeightFromGround = rayCast.y - wPosition.y;
+							}
+							else {
+								originalHeightFromGround = 0;
+							}
+						}
 					}
 				}
 
@@ -726,7 +743,11 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 					auto rswObject = map->selectedNodes[0]->getComponent<RswObject>(); 
 					if (rswObject)
 					{
-						rswObject->position = glm::vec3(rayCast.x - 5 * gnd->width, -rayCast.y, -(rayCast.z + (-10 - 5 * gnd->height)));
+						if (map->selectedNodes.size() == 1 && map->selectedNodes[0]->getComponent<RswLight>())
+							rswObject->position = glm::vec3(rayCast.x - 5 * gnd->width, -rayCast.y + originalHeightFromGround, -(rayCast.z + (-10 - 5 * gnd->height)));
+						else
+							rswObject->position = glm::vec3(rayCast.x - 5 * gnd->width, -rayCast.y, -(rayCast.z + (-10 - 5 * gnd->height)));
+
 						bool snap = snapToGrid;
 						if (ImGui::GetIO().KeyShift)
 							snap = !snap;

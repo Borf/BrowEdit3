@@ -503,9 +503,14 @@ void MapView::render(BrowEdit* browEdit)
 				}
 
 				rswObject->position = glm::vec3(rayCast.x - 5 * gnd->width, -rayCast.y, -(rayCast.z + (-10 - 5 * gnd->height))) + newNode.second;
-				if (browEdit->newNodeHeight)
-				{
-					rswObject->position.y = newNode.second.y + browEdit->newNodesCenter.y;
+
+				switch (browEdit->newNodePlacement) {
+					case BrowEdit::Relative:
+						rswObject->position.y += newNode.second.y + browEdit->newNodesCenter.y;
+						break;
+					case BrowEdit::Absolute:
+						rswObject->position.y = newNode.second.y + browEdit->newNodesCenter.y;
+						break;
 				}
 
 				if (newNode.first->getComponent<RsmRenderer>())
@@ -919,7 +924,7 @@ void MapView::drawLight(Node* n)
 		simpleShader->setUniform(SimpleShader::Uniforms::viewMatrix, nodeRenderContext.viewMatrix);
 		simpleShader->setUniform(SimpleShader::Uniforms::modelMatrix, mm);
 		simpleShader->setUniform(SimpleShader::Uniforms::textureFac, 0.0f);
-		simpleShader->setUniform(SimpleShader::Uniforms::color, glm::vec4(rswLight->color, 0.05f));
+		simpleShader->setUniform(SimpleShader::Uniforms::color, glm::vec4(rswLight->color, 0.10f));
 		glDepthMask(0);
 		glEnable(GL_BLEND);
 		
@@ -929,13 +934,22 @@ void MapView::drawLight(Node* n)
 		float height = rswLight->range;
 		float width = rswLight->range * tan(glm::acos(1-rswLight->spotlightWidth));
 
-
 		for (float f = 0; f < 2 * glm::pi<float>(); f += inc)
 		{
 			verts.push_back(VertexP3T2N3(glm::vec3(0, 0, 0), glm::vec2(0), glm::vec3(1.0f)));
 			verts.push_back(VertexP3T2N3(glm::vec3(height, width * glm::sin(f), width * glm::cos(f)), glm::vec2(0), glm::vec3(1.0f)));
 			verts.push_back(VertexP3T2N3(glm::vec3(height, width * glm::sin(f+inc), width * glm::cos(f+inc)), glm::vec2(0), glm::vec3(1.0f)));
 		}
+
+		if (showLightSphere) {
+			for (float f = 0; f < 2 * glm::pi<float>(); f += inc)
+			{
+				verts.push_back(VertexP3T2N3(glm::vec3(height, 0, 0), glm::vec2(0), glm::vec3(1.0f)));
+				verts.push_back(VertexP3T2N3(glm::vec3(height, width * glm::sin(f), width * glm::cos(f)), glm::vec2(0), glm::vec3(1.0f)));
+				verts.push_back(VertexP3T2N3(glm::vec3(height, width * glm::sin(f + inc), width * glm::cos(f + inc)), glm::vec2(0), glm::vec3(1.0f)));
+			}
+		}
+
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glEnableVertexAttribArray(0);
 		glEnableVertexAttribArray(1);
@@ -948,7 +962,30 @@ void MapView::drawLight(Node* n)
 
 		glDrawArrays(GL_TRIANGLES, 0, (int)verts.size());
 
+		if (!showLightSphere) {
+			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+			glLineWidth(1);
+			simpleShader->setUniform(SimpleShader::Uniforms::color, glm::vec4(rswLight->color, 0.8f));
+			glDrawArrays(GL_TRIANGLES, 0, (int)verts.size());
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		}
+
 		glDepthMask(1);
+
+		if (!showLightSphere) {
+			simpleShader->setUniform(SimpleShader::Uniforms::color, glm::vec4(rswLight->color, 1.0f));
+			verts.clear();
+		
+			for (float f = 0; f < 2 * glm::pi<float>(); f += inc)
+			{
+				verts.push_back(VertexP3T2N3(glm::vec3(height, width * glm::sin(f), width * glm::cos(f)), glm::vec2(0), glm::vec3(1.0f)));
+				verts.push_back(VertexP3T2N3(glm::vec3(height, width * glm::sin(f + inc), width * glm::cos(f + inc)), glm::vec2(0), glm::vec3(1.0f)));
+			}
+
+			glLineWidth(2);
+			glDrawArrays(GL_LINES, 0, (int)verts.size());
+		}
+
 		glUseProgram(0);
 	}
 }

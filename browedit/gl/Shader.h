@@ -9,9 +9,10 @@ namespace gl
 	class Shader
 	{
 		std::string file;
-		GLuint programId;
 		int* uniforms;
 	public:
+		GLuint programId;
+
 		Shader(const std::string& file, int end);
 		~Shader();
 		void setUniform(int name, bool value);

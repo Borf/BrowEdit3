@@ -39,35 +39,38 @@ namespace math
 
 	bool Ray::LineIntersectPolygon(const std::span<glm::vec3> &vertices, float &t) const
 	{
-		Plane plane;
-		plane.normal = glm::cross(vertices[1] - vertices[0], vertices[2] - vertices[0]);
-		if (glm::length(plane.normal) < 0.000001f)
+		// Möller–Trumbore intersection algorithm
+		constexpr float epsilon = 0.001f;
+
+		glm::vec3 edge1 = vertices[1] - vertices[0];
+		glm::vec3 edge2 = vertices[2] - vertices[0];
+		glm::vec3 ray_cross_e2 = glm::cross(dir, edge2);
+		float det = glm::dot(edge1, ray_cross_e2);
+
+		if (det > -epsilon && det < epsilon)
 			return false;
-		plane.normal = glm::normalize(plane.normal);
-		plane.D = -glm::dot(plane.normal, vertices[0]);
-		float tt;
 
-		if (!planeIntersection(plane, tt))
+		float inv_det = 1.0f / det;
+		glm::vec3 s = origin - vertices[0];
+		float u = inv_det * glm::dot(s, ray_cross_e2);
+
+		if ((u < 0 && abs(u) > epsilon) || (u > 1 && abs(u - 1) > epsilon))
 			return false;
 
-		glm::vec3 intersection = origin + dir * tt;
+		glm::vec3 s_cross_e1 = glm::cross(s, edge1);
+		float v = inv_det * glm::dot(dir, s_cross_e1);
 
-		/*	if (Intersection == EndLine)
-		return false;*/
-		for (size_t vertex = 0; vertex < vertices.size(); vertex++)
-		{
-			Plane edgePlane;
-			int NextVertex = (vertex + 1) % (int)vertices.size();
-			glm::vec3 EdgeVector = vertices[NextVertex] - vertices[vertex];
-			edgePlane.normal = glm::normalize(glm::cross(EdgeVector, plane.normal));
-			edgePlane.D = -glm::dot(edgePlane.normal, vertices[vertex]);
+		if ((v < 0 && abs(v) > epsilon) || (u + v > 1 && abs(u + v - 1) > epsilon))
+			return false;
 
-			if (glm::dot(edgePlane.normal, intersection) + edgePlane.D > 0.001f)
-				return false;
+		float tt = inv_det * glm::dot(edge2, s_cross_e1);
+
+		if (tt > epsilon) {
+			t = tt;
+			return true;
 		}
 
-		t = tt;
-		return true;
+		return false;
 	}
 
 

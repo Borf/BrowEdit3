@@ -1114,6 +1114,9 @@ std::vector<glm::vec3> RswModelCollider::getCollisions(Rsm::Mesh* mesh, const ma
 	return ret;
 }
 
+double debug5_start[20];
+double debug5_stop[20];
+
 bool RswModelCollider::collidesTexture(const math::Ray& ray, float minDistance, float maxDistance)
 {
 	std::vector<glm::vec3> ret;
@@ -1124,33 +1127,91 @@ bool RswModelCollider::collidesTexture(const math::Ray& ray, float minDistance, 
 		rsm = node->getComponent<Rsm>();
 	if (!rsmRenderer)
 		rsmRenderer = node->getComponent<RsmRenderer>();
+
 	if (!rswModel || !rsm || !rsmRenderer)
 		return false;
 
 	if (!rswModel->aabb.hasRayCollision(ray, 0, 10000000))
 		return false;
-	return collidesTexture(rsm->rootMesh, ray, rsmRenderer->matrixCache, minDistance, maxDistance);
+
+	auto res = collidesTexture(rsm->rootMesh, ray, rsmRenderer->matrixCache, minDistance, maxDistance);
+	return res;
 }
 
+// Buffers all the face coordinates to their rendered position
+void RswModelCollider::calculateWorldFaces()
+{
+	buffered_faces.clear();
+	
+	if (!rswModel)
+		rswModel = node->getComponent<RswModel>();
+	if (!rsm)
+		rsm = node->getComponent<Rsm>();
+	if (!rsmRenderer)
+		rsmRenderer = node->getComponent<RsmRenderer>();
+
+	if (!rswModel || !rsm || !rsmRenderer)
+		return;
+
+	calculateWorldFaces(rsm->rootMesh, rsmRenderer->matrixCache);
+}
+
+void RswModelCollider::calculateWorldFaces(Rsm::Mesh* mesh, const glm::mat4& matrix) {
+	if (!mesh || mesh->index >= rsmRenderer->renderInfo.size())
+		return;
+
+	glm::mat4 newMatrix = matrix * rsmRenderer->renderInfo[mesh->index].matrix;
+
+	if (buffered_faces.size() < rsmRenderer->renderInfo.size())
+		buffered_faces.resize(rsmRenderer->renderInfo.size());
+
+	std::vector<std::vector<glm::vec3>>* faces = &buffered_faces[mesh->index];
+
+	if (buffered_faces[mesh->index].size() == 0 && mesh->faces.size() > 0) {
+		(*faces).resize(mesh->faces.size());
+
+		for (size_t i = 0; i < mesh->faces.size(); i++)
+		{
+			for (size_t ii = 0; ii < 3; ii++)
+				(*faces)[i].push_back(newMatrix * glm::vec4(mesh->vertices[mesh->faces[i].vertexIds[ii]], 1.0f));
+		}
+	}
+
+	for (size_t i = 0; i < mesh->children.size(); i++)
+		calculateWorldFaces(mesh->children[i], matrix);
+}
 
 bool RswModelCollider::collidesTexture(Rsm::Mesh* mesh, const math::Ray& ray, const glm::mat4& matrix, float minDistance, float maxDistance)
 {
 	if (!mesh || mesh->index >= rsmRenderer->renderInfo.size())
 		return false;
-	std::vector<glm::vec3> ret;
 
 	glm::mat4 newMatrix = matrix * rsmRenderer->renderInfo[mesh->index].matrix;
-	//math::Ray newRay(ray * glm::inverse(newMatrix)); //would rather work with the inversed ray here, but that doesn't work for scaled models
 
-	std::vector<glm::vec3> verts;
-	verts.resize(3);
+	if (buffered_faces.size() < rsmRenderer->renderInfo.size())
+		buffered_faces.resize(rsmRenderer->renderInfo.size());
+
+	std::vector<std::vector<glm::vec3>> *faces = &buffered_faces[mesh->index];
+
+	if (buffered_faces[mesh->index].size() == 0 && mesh->faces.size() > 0) {
+		(*faces).resize(mesh->faces.size());
+
+		for (size_t i = 0; i < mesh->faces.size(); i++)
+		{
+			for (size_t ii = 0; ii < 3; ii++)
+				(*faces)[i].push_back(newMatrix * glm::vec4(mesh->vertices[mesh->faces[i].vertexIds[ii]], 1.0f));
+		}
+	}
+
 	float t;
+
+	std::vector<glm::vec3>* verts;
+
 	for (size_t i = 0; i < mesh->faces.size(); i++)
 	{
-		for (size_t ii = 0; ii < 3; ii++)
-			verts[ii] = newMatrix * glm::vec4(mesh->vertices[mesh->faces[i].vertexIds[ii]],1.0f);
-
-		if (ray.LineIntersectPolygon(verts, t) && t > 0)
+		verts = &(*faces)[i];
+		
+		if (ray.LineIntersectPolygon(*verts, t) && t > 0)
 		{
 			Image* img = nullptr;
 			auto rsmMesh = dynamic_cast<Rsm::Mesh*>(mesh);
@@ -1165,11 +1226,11 @@ bool RswModelCollider::collidesTexture(Rsm::Mesh* mesh, const math::Ray& ray, co
 			{
 				if (glm::distance(hitPoint, ray.origin) >= minDistance && maxDistance - t > 0)
 				{
-					auto f1 = verts[0] - hitPoint;
-					auto f2 = verts[1] - hitPoint;
-					auto f3 = verts[2] - hitPoint;
+					auto f1 = (*verts)[0] - hitPoint;
+					auto f2 = (*verts)[1] - hitPoint;
+					auto f3 = (*verts)[2] - hitPoint;
 
-					float a = glm::length(glm::cross(verts[0] - verts[1], verts[0] - verts[2]));
+					float a = glm::length(glm::cross((*verts)[0] - (*verts)[1], (*verts)[0] - (*verts)[2]));
 					float a1 = glm::length(glm::cross(f2, f3)) / a;
 					float a2 = glm::length(glm::cross(f3, f1)) / a;
 					float a3 = glm::length(glm::cross(f1, f2)) / a;
@@ -1195,9 +1256,8 @@ bool RswModelCollider::collidesTexture(Rsm::Mesh* mesh, const math::Ray& ray, co
 						return true;
 				}
 			}
-			else if(glm::distance(hitPoint, ray.origin) >= minDistance && maxDistance - t > 0) //remove the if condition here????
+			else if (glm::distance(hitPoint, ray.origin) >= minDistance && maxDistance - t > 0) //remove the if condition here????
 				return true;
-
 		}
 	}
 
