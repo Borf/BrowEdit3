@@ -222,6 +222,7 @@ public:
 	bool viewEffectIcons = true;
 
 	bool enableLightQuickPreview = false;
+	bool hideOtherLightmaps = false;
 
 	void focusSelection();
 	void drawLight(Node* n);

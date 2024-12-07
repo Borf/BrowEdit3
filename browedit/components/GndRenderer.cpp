@@ -144,6 +144,7 @@ void GndRenderer::render()
 		auto rswLight = quickRenderLightNode->getComponent<RswLight>();
 		auto rswObject = quickRenderLightNode->getComponent<RswObject>();
 
+		shader->setUniform(GndShader::Uniforms::hideOtherLights, quickRenderLight_hideOthers);
 		shader->setUniform(GndShader::Uniforms::light_position, glm::vec3(gnd->width * 5.0f + rswObject->position.x, -rswObject->position.y, gnd->height * 5.0f + 10.0f - rswObject->position.z));
 		shader->setUniform(GndShader::Uniforms::light_color, rswLight->color);
 		shader->setUniform(GndShader::Uniforms::lightCount, 1);

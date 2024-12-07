@@ -183,7 +183,6 @@ void RswLight::buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>& nod
 	}
 	util::CheckboxMulti<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Enabled", [](RswLight* l) { return &l->enabled; });
 
-	//if (ImGui::Button("Save as template")) {
 	if (ImGui::Checkbox("Quick preview", &browEdit->activeMapView->enableLightQuickPreview)) {
 		if (!browEdit->activeMapView->enableLightQuickPreview) {
 			auto gndRenderer = browEdit->activeMapView->map->rootNode->getComponent<GndRenderer>();
@@ -197,10 +196,15 @@ void RswLight::buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>& nod
 		auto gndRenderer = browEdit->activeMapView->map->rootNode->getComponent<GndRenderer>();
 
 		if (gndRenderer) {
-			if (browEdit->activeMapView->enableLightQuickPreview)
+			if (browEdit->activeMapView->enableLightQuickPreview) {
 				gndRenderer->quickRenderLightNode = rswLights[0]->node;
+				gndRenderer->quickRenderLight_hideOthers = browEdit->activeMapView->hideOtherLightmaps;
+			}
 		}
 	}
+
+	ImGui::SameLine();
+	ImGui::Checkbox("Hide other lightmaps", &browEdit->activeMapView->hideOtherLightmaps);
 
 	util::ColorEdit3Multi<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Color", [](RswLight* l) { return &l->color; });
 	if(rswLights.front()->lightType != RswLight::Type::Sun)

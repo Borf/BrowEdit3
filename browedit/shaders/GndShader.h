@@ -49,6 +49,7 @@ public:
 			light_falloff_8,
 			light_falloff_9,
 			light_falloff_count,
+			hideOtherLights,
 			End
 		};
 	};
@@ -94,5 +95,6 @@ public:
 		bindUniform(Uniforms::light_falloff_8, "lights[0].falloff[8]");
 		bindUniform(Uniforms::light_falloff_9, "lights[0].falloff[9]");
 		bindUniform(Uniforms::light_falloff_count, "lights[0].falloff_count");
+		bindUniform(Uniforms::hideOtherLights, "hideOtherLights");
 	}
 };
