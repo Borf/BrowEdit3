@@ -247,7 +247,7 @@ public:
 	} textureBrushMode = TextureBrushMode::Stamp;
 	TextureBrushMode brushModeBeforeDropper;
 
-	bool heightDoodle = true;
+	bool heightDoodle = false;
 
 	std::map<std::string, std::vector<std::string>> tagList; // tag -> [ file ], utf8
 	std::map<std::string, std::vector<std::string>> tagListReverse; // file -> [ tag ], kr
@@ -258,7 +258,11 @@ public:
 	Config config;
 	std::vector<std::pair<Node*, glm::vec3>> newNodes;
 	glm::vec3 newNodesCenter;
-	bool newNodeHeight = false;
+	enum {
+		Ground,		// The new node will be relative to the ground
+		Absolute,	// The new node position will be determined by newNodesCenter
+		Relative	// The new node will be relative to the ground + newNodesCenter
+	} newNodePlacement = Ground;
 	std::vector<CopyCube*> newCubes;
 	std::vector<CopyCubeGat*> newGatCubes;
 	int pasteOptions = -1;

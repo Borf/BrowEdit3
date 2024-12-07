@@ -140,6 +140,31 @@ void GndRenderer::render()
 	//shader->setUniform(GndShader::Uniforms::fogExp, rsw->fog.factor);
 	shader->setUniform(GndShader::Uniforms::fogColor, rsw->fog.color);
 
+	if (quickRenderLightNode != nullptr) {
+		auto rswLight = quickRenderLightNode->getComponent<RswLight>();
+		auto rswObject = quickRenderLightNode->getComponent<RswObject>();
+
+		shader->setUniform(GndShader::Uniforms::hideOtherLights, quickRenderLight_hideOthers);
+		shader->setUniform(GndShader::Uniforms::light_position, glm::vec3(gnd->width * 5.0f + rswObject->position.x, -rswObject->position.y, gnd->height * 5.0f + 10.0f - rswObject->position.z));
+		shader->setUniform(GndShader::Uniforms::light_color, rswLight->color);
+		shader->setUniform(GndShader::Uniforms::lightCount, 1);
+		shader->setUniform(GndShader::Uniforms::light_type, (int)rswLight->lightType);
+		shader->setUniform(GndShader::Uniforms::light_falloff_style, (int)rswLight->falloffStyle);
+		shader->setUniform(GndShader::Uniforms::light_range, rswLight->range);
+		shader->setUniform(GndShader::Uniforms::light_intensity, rswLight->intensity);
+		shader->setUniform(GndShader::Uniforms::light_cutoff, rswLight->cutOff);
+		shader->setUniform(GndShader::Uniforms::light_diffuseLighting, rswLight->diffuseLighting);
+		shader->setUniform(GndShader::Uniforms::light_direction, rswLight->direction);
+		shader->setUniform(GndShader::Uniforms::light_width, rswLight->spotlightWidth);
+		shader->setUniform(GndShader::Uniforms::light_falloff_count, glm::min(10, (int)rswLight->falloff.size()));
+
+		for (int i = 0; i < rswLight->falloff.size() && i < 10; i++) {
+			shader->setUniform(GndShader::Uniforms::light_falloff_0 + i, rswLight->falloff[i]);
+		}
+	}
+	else {
+		shader->setUniform(GndShader::Uniforms::lightCount, 0);
+	}
 
 
 	for (auto r : chunks)

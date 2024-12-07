@@ -77,7 +77,7 @@ void BrowEdit::registerActions()
 		else if (editMode == EditMode::Gat && !heightDoodle)
 			pasteGat();
 	}, hasActiveMapView);
-	HotkeyRegistry::registerAction(HotkeyAction::Global_PasteChangeHeight,		[this]() { if (editMode == EditMode::Object) { newNodeHeight = !newNodeHeight; } }, hasActiveMapView);
+	HotkeyRegistry::registerAction(HotkeyAction::Global_PasteChangeHeight,		[this]() { if (editMode == EditMode::Object) { newNodePlacement = newNodePlacement == BrowEdit::Absolute ? BrowEdit::Ground : BrowEdit::Absolute; } }, hasActiveMapView);
 
 	HotkeyRegistry::registerAction(HotkeyAction::Global_ClearZeroHeightWalls,	[this]() { activeMapView->map->rootNode->getComponent<Gnd>()->removeZeroHeightWalls(); }, hasActiveMapView);
 	HotkeyRegistry::registerAction(HotkeyAction::Global_CalculateQuadtree,		[this]() { activeMapView->map->recalculateQuadTree(this); }, hasActiveMapView);

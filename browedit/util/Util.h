@@ -92,6 +92,7 @@ namespace util
 	float interpolateLagrange(const std::vector<glm::vec2>& f, float x);
 	float interpolateSpline(const std::vector<glm::vec2>& f, float x);
 	float interpolateLinear(const std::vector<glm::vec2>& f, float x);
+	float interpolateSCurve(float x);
 	bool EditableGraph(const char* label, std::vector<glm::vec2>* points, std::function<float(const std::vector<glm::vec2>&, float)> interpolationStyle, bool& activated);
 	void Graph(const char* label, std::function<float(float)> func);
 

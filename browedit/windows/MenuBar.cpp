@@ -16,6 +16,7 @@
 #include <browedit/util/ResourceManager.h>
 #include <browedit/HotkeyRegistry.h>
 #include <browedit/actions/SelectAction.h>
+#include <browedit/actions/GroupAction.h>
 #include <GLFW/glfw3.h>
 #include <imgui_internal.h>
 #include <fstream>
@@ -146,6 +147,61 @@ void BrowEdit::menuBar()
 		hotkeyMenuItem("Focus on selection", HotkeyAction::ObjectEdit_FocusOnSelection);
 		if (ImGui::MenuItem("Set to floor height") && activeMapView)
 			activeMapView->map->setSelectedItemsToFloorHeight(this);
+
+		ImGui::EndMenu();
+	}
+	if (editMode == EditMode::Object && activeMapView && ImGui::BeginMenu("Light Edit"))
+	{
+		if (ImGui::MenuItem("Add new light")) {
+			auto l = new RswLight();
+			l->range = 60.0f;
+			l->color = glm::vec3(0.8f, 0.8f, 0.8f);
+			Node* newNode = new Node("light");
+			newNode->addComponent(new RswObject());
+			newNode->addComponent(l);
+			newNode->addComponent(new BillboardRenderer("data\\light.png", "data\\light_selected.png"));
+			newNode->addComponent(new CubeCollider(5));
+			newNodes.push_back(std::pair<Node*, glm::vec3>(newNode, glm::vec3(0, 0, 0)));
+			newNodesCenter = glm::vec3(0, -35, 0);
+			newNodePlacement = BrowEdit::Relative;
+		}
+
+		if (ImGui::MenuItem("Add new sun")) {
+			auto l = new RswLight();
+			l->range = 0.0f;
+			l->intensity = 0.5f;
+			l->givesShadow = true;
+			l->affectShadowMap = true;
+			l->sunMatchRswDirection = true;
+			l->diffuseLighting = false;
+			l->lightType = RswLight::Type::Sun;
+			Node* newNode = new Node("sun");
+			newNode->addComponent(new RswObject());
+			newNode->addComponent(l);
+			newNode->addComponent(new BillboardRenderer("data\\light.png", "data\\light_selected.png"));
+			newNode->addComponent(new CubeCollider(5));
+			newNodes.push_back(std::pair<Node*, glm::vec3>(newNode, glm::vec3(0, 0, 0)));
+			newNodesCenter = glm::vec3(0, 0, 0);
+			newNodePlacement = BrowEdit::Ground;
+		}
+
+		if (ImGui::MenuItem("Select all lights")) {
+			auto ga = new GroupAction();
+
+			activeMapView->map->rootNode->traverse([&](Node* n)
+				{
+					auto lightObject = n->getComponent<RswLight>();
+					if (!lightObject)
+						return;
+
+					auto action = new SelectAction(activeMapView->map, n, true, false);
+					action->perform(activeMapView->map, this);
+					ga->addAction(action);
+				});
+
+			if (!ga->isEmpty())
+				activeMapView->map->doAction(ga, this);
+		}
 
 		ImGui::EndMenu();
 	}

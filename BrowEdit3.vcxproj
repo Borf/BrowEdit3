@@ -18,6 +18,7 @@
     <ClCompile Include="browedit\actions\GndTextureActions.cpp" />
     <ClCompile Include="browedit\actions\GndVersionChangeAction.cpp" />
     <ClCompile Include="browedit\actions\GroupAction.cpp" />
+    <ClCompile Include="browedit\actions\LightmapChangeAction.cpp" />
     <ClCompile Include="browedit\actions\LightmapNewAction.cpp" />
     <ClCompile Include="browedit\actions\LubChangeTextureAction.cpp" />
     <ClCompile Include="browedit\actions\ModelChangeAction.cpp" />
@@ -144,6 +145,7 @@
     <ClInclude Include="browedit\actions\GndTextureActions.h" />
     <ClInclude Include="browedit\actions\GndVersionChangeAction.h" />
     <ClInclude Include="browedit\actions\GroupAction.h" />
+    <ClInclude Include="browedit\actions\LightmapChangeAction.h" />
     <ClInclude Include="browedit\actions\LightmapNewAction.h" />
     <ClInclude Include="browedit\actions\LubChangeTextureAction.h" />
     <ClInclude Include="browedit\actions\ModelChangeAction.h" />

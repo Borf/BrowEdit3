@@ -89,6 +89,8 @@ public:
 	bool smoothColors = false;
 	bool viewTextures = true;
 	bool viewFog = true;
+	bool quickRenderLight_hideOthers = false;
+	Node* quickRenderLightNode = nullptr;
 
 	bool viewEmptyTiles = true;
 };

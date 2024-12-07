@@ -430,6 +430,9 @@
     <ClCompile Include="browedit\actions\LubChangeTextureAction.cpp">
       <Filter>browedit\actions</Filter>
     </ClCompile>
+    <ClCompile Include="browedit\actions\LightmapChangeAction.cpp">
+      <Filter>browedit\actions</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="lib\imgui\imgui.h">
@@ -739,6 +742,9 @@
       <Filter>browedit\actions</Filter>
     </ClInclude>
     <ClInclude Include="browedit\actions\LubChangeTextureAction.h">
+      <Filter>browedit\actions</Filter>
+    </ClInclude>
+    <ClInclude Include="browedit\actions\LightmapChangeAction.h">
       <Filter>browedit\actions</Filter>
     </ClInclude>
   </ItemGroup>

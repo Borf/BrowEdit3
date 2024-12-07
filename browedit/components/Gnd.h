@@ -25,6 +25,7 @@ public:
 	~Gnd();
 	void save(const std::string &fileName, Rsw* rsw);
 	glm::vec3 rayCast(const math::Ray& ray, bool emptyTiles = false, int xMin = 0, int yMin = 0, int xMax = -1, int yMax = -1, float offset = 0.0f);
+	glm::vec3 rayCastLightmap(const math::Ray& ray, int cx, int cy, int xMin = 0, int yMin = 0, int xMax = -1, int yMax = -1, float offset = 0.0f);
 	void makeLightmapsUnique();
 	void makeLightmapsClear();
 	void makeLightmapBorders(BrowEdit* browEdit);
@@ -128,7 +129,7 @@ public:
 		unsigned char* data;
 		Gnd* gnd;
 		void expandBorders();
-		const unsigned char hash() const;
+		const unsigned int hash() const;
 		bool operator == (const Lightmap& other) const;
 		LightmapRow operator [] (int x) { return LightmapRow{ this, x }; }
 		friend void to_json(nlohmann::json& nlohmann_json_j, const Lightmap& nlohmann_json_t) {

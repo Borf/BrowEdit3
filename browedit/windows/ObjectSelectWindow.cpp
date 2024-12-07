@@ -325,7 +325,7 @@ void BrowEdit::showObjectWindow()
 							newNode->addComponent(new RswModelCollider());
 							newNodes.push_back(std::pair<Node*, glm::vec3>(newNode, glm::vec3(0, 0, 0)));
 							newNodesCenter = glm::vec3(0, 0, 0);
-							newNodeHeight = false;
+							newNodePlacement = BrowEdit::Ground;
 						}
 						else if (file.substr(file.size() - 5) == ".json" &&
 							path.find("data\\lights") != std::string::npos)
@@ -342,7 +342,7 @@ void BrowEdit::showObjectWindow()
 							newNode->addComponent(new CubeCollider(5));
 							newNodes.push_back(std::pair<Node*, glm::vec3>(newNode, glm::vec3(0, 0, 0)));
 							newNodesCenter = glm::vec3(0, 0, 0);
-							newNodeHeight = false;
+							newNodePlacement = BrowEdit::Ground;
 						}
 						else if (file.substr(file.size() - 5) == ".json" &&
 							path.find("data\\effects") != std::string::npos)
@@ -382,7 +382,7 @@ void BrowEdit::showObjectWindow()
 
 							newNodes.push_back(std::pair<Node*, glm::vec3>(newNode, glm::vec3(0, 0, 0)));
 							newNodesCenter = glm::vec3(0, 0, 0);
-							newNodeHeight = false;
+							newNodePlacement = BrowEdit::Ground;
 						}
 						else if (file.substr(file.size() - 5) == ".json" &&
 							path.find("data\\prefabs") != std::string::npos)
@@ -455,7 +455,7 @@ void BrowEdit::showObjectWindow()
 								newNodesCenter = center;
 								for (auto& n : newNodes)
 									n.second = n.second - center;
-								newNodeHeight = false;
+								newNodePlacement = BrowEdit::Ground;
 							}
 						}
 						else if (file.substr(file.size() - 4) == ".wav")
@@ -468,7 +468,7 @@ void BrowEdit::showObjectWindow()
 							newNode->addComponent(new CubeCollider(5));
 							newNodes.push_back(std::pair<Node*, glm::vec3>(newNode, glm::vec3(0, 0, 0)));
 							newNodesCenter = glm::vec3(0, 0, 0);
-							newNodeHeight = false;
+							newNodePlacement = BrowEdit::Ground;
 						}
 					}
 					std::cout << "Click on " << file << std::endl;

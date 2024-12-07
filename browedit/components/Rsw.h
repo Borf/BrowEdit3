@@ -133,6 +133,7 @@ public:
 		int quality = 1;
 		bool shadows = true;
 		bool heightSelectionOnly = false;
+		bool additiveShadow = true;
 		glm::ivec2 rangeX;
 		glm::ivec2 rangeY;
 
@@ -216,8 +217,8 @@ public:
 		Spot,
 		Sun
 	} lightType = Type::Point;
-	bool givesShadow = true;
-	bool affectShadowMap = true;
+	bool givesShadow = false;
+	bool affectShadowMap = false;
 	bool affectLightmap = true;
 	bool enabled = true;
 	bool shadowTerrain = true;
@@ -233,8 +234,9 @@ public:
 		LagrangeTweak = 2,
 		LinearTweak = 3,
 		Magic = 4,
+		S_Curve = 5,
 	};
-	FalloffStyle falloffStyle = FalloffStyle::Exponential;
+	FalloffStyle falloffStyle = FalloffStyle::S_Curve;
 
 	float cutOff = 0.5f;
 	float intensity = 1;
@@ -249,7 +251,7 @@ public:
 	void save(std::ofstream& file);
 	nlohmann::json saveExtra();
 	static void buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>&);
-	NLOHMANN_DEFINE_TYPE_INTRUSIVE(RswLight, color, enabled, lightType, spotlightWidth, sunMatchRswDirection, direction, range, givesShadow, cutOff, cutOff, intensity, affectShadowMap, affectLightmap, falloff, falloffStyle, shadowTerrain);
+	NLOHMANN_DEFINE_TYPE_INTRUSIVE(RswLight, color, enabled, lightType, spotlightWidth, sunMatchRswDirection, direction, range, givesShadow, cutOff, cutOff, intensity, minShadowDistance, affectShadowMap, affectLightmap, falloff, falloffStyle, shadowTerrain, diffuseLighting);
 };
 
 class LubEffect : public Component
@@ -321,6 +323,7 @@ public:
 
 class RswModelCollider : public Collider
 {
+	std::vector<std::vector<std::vector<glm::vec3>>> buffered_faces;
 	RswModel* rswModel = nullptr;
 	Rsm* rsm = nullptr;
 	RsmRenderer* rsmRenderer = nullptr;
@@ -328,6 +331,8 @@ public:
 	void begin();
 	bool collidesTexture(const math::Ray& ray, float minDistance = 0.0f, float maxDistance = 9999999.0f);
 	bool collidesTexture(Rsm::Mesh* mesh, const math::Ray& ray, const glm::mat4& matrix, float minDistance, float maxDistance);
+	void calculateWorldFaces(Rsm::Mesh* mesh, const glm::mat4& matrix);
+	void calculateWorldFaces();
 
 	std::vector<glm::vec3> getVerticesWorldSpace(Rsm::Mesh* mesh = nullptr, const glm::mat4& matrix = glm::mat4(1.0f));
 	std::vector<glm::vec3> getAllVerticesWorldSpace(Rsm::Mesh* mesh = nullptr, const glm::mat4& matrix = glm::mat4(1.0f));

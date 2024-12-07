@@ -1434,6 +1434,21 @@ namespace util
 		float diff = (x - before.x) / (after.x - before.x);
 		return before.y + diff * (after.y - before.y);
 	}
+	float interpolateSCurve(float x) {
+		// Alright, this isn't an S Curve formula anymore, but your typical light attenuation formula... but with the shape of an S Curve.
+		x = 2 * x - 1;
+		const float a = 1.5f;
+		const float b = 1.5f;
+
+		if (x <= -1)
+			return 2;
+		if (x >= 1)
+			return 0;
+		if (x <= 0)
+			return -1.0f / (1.0f + a * -x + b * x * x) * (1.0f + x) + 2;
+
+		return 1.0f / (1.0f + a * x + b * x * x) * (1.0f - x);
+	}
 
 	bool EditableGraph(const char* label, std::vector<glm::vec2>* points, std::function<float(const std::vector<glm::vec2>&, float)> interpolationStyle, bool& activated)
 	{

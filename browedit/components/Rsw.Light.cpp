@@ -2,6 +2,8 @@
 #include "Rsw.h"
 #include <browedit/BrowEdit.h>
 #include <browedit/Node.h>
+#include <browedit/components/GndRenderer.h>
+#include <browedit/Map.h>
 #include <browedit/util/FileIO.h>
 #include <browedit/util/Util.h>
 
@@ -181,6 +183,29 @@ void RswLight::buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>& nod
 	}
 	util::CheckboxMulti<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Enabled", [](RswLight* l) { return &l->enabled; });
 
+	if (ImGui::Checkbox("Quick preview", &browEdit->activeMapView->enableLightQuickPreview)) {
+		if (!browEdit->activeMapView->enableLightQuickPreview) {
+			auto gndRenderer = browEdit->activeMapView->map->rootNode->getComponent<GndRenderer>();
+			
+			if (gndRenderer)
+				gndRenderer->quickRenderLightNode = nullptr;
+		}
+	}
+
+	if (browEdit->activeMapView->enableLightQuickPreview) {
+		auto gndRenderer = browEdit->activeMapView->map->rootNode->getComponent<GndRenderer>();
+
+		if (gndRenderer) {
+			if (browEdit->activeMapView->enableLightQuickPreview) {
+				gndRenderer->quickRenderLightNode = rswLights[0]->node;
+				gndRenderer->quickRenderLight_hideOthers = browEdit->activeMapView->hideOtherLightmaps;
+			}
+		}
+	}
+
+	ImGui::SameLine();
+	ImGui::Checkbox("Hide other lightmaps", &browEdit->activeMapView->hideOtherLightmaps);
+
 	util::ColorEdit3Multi<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Color", [](RswLight* l) { return &l->color; });
 	if(rswLights.front()->lightType != RswLight::Type::Sun)
 		util::DragFloatMulti<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Range", [](RswLight* l) { return &l->range; }, 1.0f, 0.0f, 1000.0f);
@@ -208,7 +233,7 @@ void RswLight::buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>& nod
 	}
 	if (rswLights.front()->lightType != RswLight::Type::Sun)
 	{
-		util::ComboBoxMulti<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Falloff style", "exponential\0spline tweak\0lagrange tweak\0linear tweak\0magic\0", [](RswLight* l) { return (int*) & l->falloffStyle; });
+		util::ComboBoxMulti<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Falloff style", "exponential\0spline tweak\0lagrange tweak\0linear tweak\0magic\0s curve\0", [](RswLight* l) { return (int*) & l->falloffStyle; });
 
 		differentValues = !std::all_of(rswLights.begin(), rswLights.end(), [&](RswLight* o) { return o->falloffStyle == rswLights.front()->falloffStyle; });
 		if (!differentValues)
@@ -226,6 +251,8 @@ void RswLight::buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>& nod
 				util::EditableGraphMulti<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Light Falloff", [](RswLight* l) {return &l->falloff; }, util::interpolateLagrange);
 			else if (falloffStyle == FalloffStyle::LinearTweak)
 				util::EditableGraphMulti<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Light Falloff", [](RswLight* l) {return &l->falloff; }, util::interpolateLinear);
+			else if (falloffStyle == FalloffStyle::S_Curve)
+				util::Graph("Light Falloff", [&](float x) { return util::interpolateSCurve(x) / 2.0f; });
 			else if (falloffStyle == FalloffStyle::Exponential)
 			{
 				bool differentFalloff = !std::all_of(rswLights.begin(), rswLights.end(), [&](RswLight* o) { return o->falloffStyle == rswLights.front()->falloffStyle; });

@@ -109,7 +109,7 @@ public:
 
 	float gadgetOpacity = 0.5f;
 	float gadgetScale = 1.0f;
-	float gadgetThickness = 1.0f;
+	float gadgetThickness = 2.0f;
 
 	int quadTreeMaxLevel = 0;
 
@@ -206,7 +206,7 @@ public:
 	bool viewLightmapColor = true;
 	bool viewColors = true;
 	bool viewLighting = true;
-	bool smoothColors = false;
+	bool smoothColors = true;
 	bool viewTextures = true;
 	bool viewEmptyTiles = true;
 	bool viewGat = false;
@@ -220,6 +220,9 @@ public:
 	bool viewLights = true;
 	bool viewWater = true;
 	bool viewEffectIcons = true;
+
+	bool enableLightQuickPreview = false;
+	bool hideOtherLightmaps = false;
 
 	void focusSelection();
 	void drawLight(Node* n);

@@ -455,7 +455,7 @@ void Map::pasteSelection(BrowEdit* browEdit)
 			browEdit->newNodesCenter = center;
 			for (auto& n : browEdit->newNodes)
 				n.second = n.second - center;
-			browEdit->newNodeHeight = false;
+			browEdit->newNodePlacement = BrowEdit::Ground;
 		}
 	}
 	catch (...) {

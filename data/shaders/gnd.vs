@@ -13,6 +13,7 @@ out vec2 texCoord;
 out vec2 texCoord2;
 out vec3 normal;
 out vec4 color;
+out vec3 fragPos;
 
 void main()
 {
@@ -20,5 +21,6 @@ void main()
 	texCoord2 = a_texture2;
 	normal = a_normal;
 	color = a_color;
+	fragPos = a_position;
 	gl_Position = projectionMatrix * modelViewMatrix * vec4(a_position,1);
 }

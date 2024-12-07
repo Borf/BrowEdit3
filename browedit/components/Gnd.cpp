@@ -489,7 +489,181 @@ void Gnd::save(const std::string& fileName, Rsw *rsw)
 	std::cout << "GND: Done saving GND" << std::endl;
 }
 
+glm::vec3 Gnd::rayCastLightmap(const math::Ray& ray, int cx, int cy, int xMin, int yMin, int xMax, int yMax, float rayOffset)
+{
+	if (cubes.size() == 0)
+		return glm::vec3(std::numeric_limits<float>::max());
 
+	if (xMax == -1)
+		xMax = (int)cubes.size();
+	if (yMax == -1)
+		yMax = (int)cubes[0].size();
+
+	xMin = glm::max(0, xMin);
+	yMin = glm::max(0, yMin);
+	xMax = glm::min(xMax, (int)cubes.size());
+	yMax = glm::min(yMax, (int)cubes[0].size());
+
+	float f = 0;
+	
+	// Tokei:
+	// Some explanation for this...
+	// Instead of testing the collision from the ray against every gnd cube, the algorithm below
+	// draws a "2d" line, on the xz coordinate system. The line is the ray we're testing, and we simply 
+	// move along the line until we reach the next gnd cube.
+	// 
+	// For additional optimization, we also check for the Y position every time we hit a new cube.
+	// If the Y position is greater than any of the vertex of the cube (+ walls), then we skip the cube.
+	// The Y position is kept for the next cube check to avoid recalculating the values. This only works
+	// if the Y position goes up on the axis, which is (theoretically) always the case. It is very useful
+	// since maps tend to have many flat cubes and we can skip the majority of them.
+	
+	// line function: y = xz_a * x + xz_b;
+	float xz_a = ray.dir.x == 0 ? 1 : ray.dir.z / ray.dir.x;
+	float xz_b = ray.origin.z - xz_a * ray.origin.x;
+	float xz_ray_length = glm::length(glm::vec2(ray.dir.x, ray.dir.z));
+	float y = 9999999999.0f;
+
+	glm::ivec2 dir(ray.dir.x < 0 ? -1 : (ray.dir.x > 0 ? 1 : 0), ray.dir.z < 0 ? 1 : (ray.dir.z > 0 ? -1 : 0));
+
+	// Cannot collide with another cube directly above itself.
+	if (dir[0] == 0 && dir[1] == 0)
+		return glm::vec3(std::numeric_limits<float>::max());
+
+	// To test collision against the original cube; a tad annoying to handle
+	bool first = true;
+	int cxx, cyy, next_cx = 0;
+
+	while (cx >= xMin && cx < xMax && cy >= yMin && cy < yMax) {
+		if (first) {
+			cxx = cx;
+			cyy = cy;
+		}
+		else {
+			// Z axis only
+			if (ray.dir.x == 0) {
+				next_cx = cx;
+			}
+			else {
+				float next_x;
+
+				if (ray.dir.z > 0)
+					next_x = ((height - cy + 1) * 10.0f - xz_b) / xz_a;
+				else
+					next_x = ((height - cy) * 10.0f - xz_b) / xz_a;
+			
+				next_cx = (int)(next_x / 10);
+			}
+
+			// If we don't move along the X axis, then move along the Z axis.
+			// cxx/cyy is the next cube to check for a collision.
+			cxx = cx + (next_cx != cx ? dir[0] : 0);
+			cyy = cy + (next_cx == cx ? dir[1] : 0);
+
+			if ((cxx == cx && cyy == cy) || cxx < xMin || cxx >= xMax || cyy < yMin || cyy >= yMax)
+				break;
+		}
+
+		Gnd::Cube* cube = cubes[cxx][cyy];
+
+		if ((cube->tileUp != -1 && (ray.dir.y <= 0 || (y >= glm::min(cube->h1, glm::min(cube->h2, glm::min(cube->h3, cube->h4))))))
+			|| (cube->tileSide != -1 && cxx < width - 1 && (ray.dir.y <= 0 || (y >= glm::min(cube->h2, glm::min(cube->h4, glm::min(cubes[cxx + 1][cyy]->h1, cubes[cxx + 1][cyy]->h3))))))
+			|| (cube->tileFront != -1 && cyy < height - 1 && (ray.dir.y <= 0 || (y >= glm::min(cube->h3, glm::min(cube->h4, glm::min(cubes[cxx][cyy + 1]->h2, cubes[cxx][cyy + 1]->h1))))))
+			) {
+			float xx, zz;
+
+			if (!first) {
+				if (next_cx == cx) {
+					zz = (height - cy + 1 + ((dir[1] + 1) >> 1)) * 10.0f;
+					xx = (zz - xz_b) / xz_a;
+				}
+				else {
+					xx = (cx + ((dir[0] + 1) >> 1)) * 10.0f;
+					zz = xz_a * xx + xz_b;
+				}
+
+				y = -ray.dir.y * (glm::length(glm::vec2(xx, zz) - glm::vec2(ray.origin.x, ray.origin.z)) / xz_ray_length) - ray.origin.y;
+			}
+			else {
+				y = -ray.origin.y;
+			}
+		}
+		else {
+			// y value went above the next cube vertices, skip
+			cx = cxx;
+			cy = cyy;
+			first = false;
+			continue;
+		}
+
+		cx = cxx;
+		cy = cyy;
+		first = false;
+
+		if (cube->tileUp != -1 && (ray.dir.y <= 0 || (y >= glm::min(cube->h1, glm::min(cube->h2, glm::min(cube->h3, cube->h4))))))
+		{
+			glm::vec3 v1(10 * cx, -cube->h3, 10 * height - 10 * cy);
+			glm::vec3 v2(10 * cx + 10, -cube->h4, 10 * height - 10 * cy);
+			glm::vec3 v3(10 * cx, -cube->h1, 10 * height - 10 * cy + 10);
+			glm::vec3 v4(10 * cx + 10, -cube->h2, 10 * height - 10 * cy + 10);
+
+			{
+				std::vector<glm::vec3> v{ v4, v2, v1 };
+				if (ray.LineIntersectPolygon(v, f))
+					if (f >= rayOffset)
+						return ray.origin + f * ray.dir;
+			}
+			{
+				std::vector<glm::vec3> v{ v4, v1, v3 };
+				if (ray.LineIntersectPolygon(v, f))
+					if (f >= rayOffset)
+						return ray.origin + f * ray.dir;
+			}
+		}
+		if (cube->tileSide != -1 && cx < width - 1 && (ray.dir.y <= 0 || (y >= glm::min(cube->h2, glm::min(cube->h4, glm::min(cubes[cx + 1][cy]->h1, cubes[cx + 1][cy]->h3))))))
+		{
+			glm::vec3 v1(10 * cx + 10, -cube->h2, 10 * height - 10 * cy + 10);
+			glm::vec3 v2(10 * cx + 10, -cube->h4, 10 * height - 10 * cy);
+			glm::vec3 v3(10 * cx + 10, -cubes[cx + 1][cy]->h1, 10 * height - 10 * cy + 10);
+			glm::vec3 v4(10 * cx + 10, -cubes[cx + 1][cy]->h3, 10 * height - 10 * cy);
+
+			{
+				std::vector<glm::vec3> v{ v4, v2, v1 };
+				if (ray.LineIntersectPolygon(v, f))
+					if (f >= rayOffset)
+						return ray.origin + f * ray.dir;
+			}
+			{
+				std::vector<glm::vec3> v{ v4, v1, v3 };
+				if (ray.LineIntersectPolygon(v, f))
+					if (f >= rayOffset)
+						return ray.origin + f * ray.dir;
+			}
+		}
+		if (cube->tileFront != -1 && cy < height - 1 && (ray.dir.y <= 0 || (y >= glm::min(cube->h3, glm::min(cube->h4, glm::min(cubes[cx][cy + 1]->h2, cubes[cx][cy + 1]->h1))))))
+		{
+			glm::vec3 v1(10 * cx, -cube->h3, 10 * height - 10 * cy);
+			glm::vec3 v2(10 * cx + 10, -cube->h4, 10 * height - 10 * cy);
+			glm::vec3 v4(10 * cx + 10, -cubes[cx][cy + 1]->h2, 10 * height - 10 * cy);
+			glm::vec3 v3(10 * cx, -cubes[cx][cy + 1]->h1, 10 * height - 10 * cy);
+
+			{
+				std::vector<glm::vec3> v{ v4, v2, v1 };
+				if (ray.LineIntersectPolygon(v, f))
+					if (f >= rayOffset)
+						return ray.origin + f * ray.dir;
+			}
+			{
+				std::vector<glm::vec3> v{ v4, v1, v3 };
+				if (ray.LineIntersectPolygon(v, f))
+					if (f >= rayOffset)
+						return ray.origin + f * ray.dir;
+			}
+		}
+	}
+
+	return glm::vec3(std::numeric_limits<float>::max());
+}
 
 glm::vec3 Gnd::rayCast(const math::Ray& ray, bool emptyTiles, int xMin, int yMin, int xMax, int yMax, float rayOffset)
 {
@@ -603,7 +777,7 @@ glm::vec3 Gnd::rayCast(const math::Ray& ray, bool emptyTiles, int xMin, int yMin
 void Gnd::makeLightmapsUnique()
 {
 	makeTilesUnique();
-	cleanLightmaps(); 
+	cleanLightmaps();
 	std::set<int> taken;
 	for (Tile* t : tiles)
 	{
@@ -927,49 +1101,52 @@ void Gnd::makeLightmapBorders(BrowEdit* browEdit)
 	node->getComponent<GndRenderer>()->gndShadowDirty = true;
 }
 
-
 void Gnd::cleanLightmaps()
 {
-	std::cout<< "Lightmap cleanup, starting with " << lightmaps.size() << " lightmaps" <<std::endl;
-	std::map<unsigned char, std::vector<std::size_t>> lookup;
-
+	std::cout << "Lightmap cleanup, starting with " << lightmaps.size() << " lightmaps" << std::endl;
+	
+	std::map<unsigned int, std::vector<int>> light2lightmapIndex;
+	std::map<int, unsigned short> oldIndex2newIndex;
+	std::vector<Lightmap*> newLightmaps;
+	
 	for (int i = 0; i < (int)lightmaps.size(); i++)
 	{
-		unsigned char hash = lightmaps[i]->hash();
+		unsigned int hash = lightmaps[i]->hash();
 		bool found = false;
-		if (lookup.find(hash) != lookup.end())
-		{
-			for (const auto ii : lookup[hash])
-			{
-				if ((*lightmaps[i]) == (*lightmaps[ii]))
-				{// if it is found
-					assert(i > (int)ii);
-					//change all tiles with lightmap i to ii
-					for (auto tile : tiles)
-						if (tile->lightmapIndex == i)
-							tile->lightmapIndex = (unsigned short)ii;
-						else if (tile->lightmapIndex > i)
-							tile->lightmapIndex--;
-					//remove lightmap i
-					delete lightmaps[i];
-					lightmaps.erase(lightmaps.begin() + i);
-					i--;
+	
+		if (light2lightmapIndex.find(hash) != light2lightmapIndex.end()) {
+			for (const auto ii : light2lightmapIndex[hash]) {
+				if ((*lightmaps[i]) == (*lightmaps[ii])) {
+					oldIndex2newIndex[i] = oldIndex2newIndex[ii];
 					found = true;
 					break;
 				}
 			}
 		}
-		if (!found)
-		{
-			lookup[hash].push_back(i);
+	
+		if (!found) {
+			light2lightmapIndex[hash].push_back(i);
+			oldIndex2newIndex[i] = (unsigned short)newLightmaps.size();
+			newLightmaps.push_back(new Lightmap(*lightmaps[i]));
 		}
-
+	}
+	
+	for (int i = 0; i < (int)lightmaps.size(); i++)
+		delete lightmaps[i];
+	
+	lightmaps.clear();
+	
+	for (int i = 0; i < (int)newLightmaps.size(); i++) {
+		lightmaps.push_back(newLightmaps[i]);
+	}
+	
+	for (auto tile : tiles) {
+		tile->lightmapIndex = oldIndex2newIndex[tile->lightmapIndex];
 	}
 
 	std::cout<< "Lightmap cleanup, ending with " << lightmaps.size() << " lightmaps" << std::endl;
 	node->getComponent<GndRenderer>()->setChunksDirty();
 	node->getComponent<GndRenderer>()->gndShadowDirty = true;
-
 }
 
 
@@ -1367,14 +1544,17 @@ std::vector<glm::vec3> Gnd::getMapQuads()
 	return quads;
 }
 
-const unsigned char Gnd::Lightmap::hash() const //actually a crc, but will work
+const unsigned int Gnd::Lightmap::hash() const
 {
 #define POLY 0x82f63b78
-	unsigned char crc = ~0;
-	for (int i = 0; i < gnd->lightmapWidth*gnd->lightmapHeight*4; i++) {
+	const int precision = 8;
+	unsigned int crc = ~0;
+	int size = gnd->lightmapWidth * gnd->lightmapHeight * 4;
+	if (size < 4)
+		return 0;
+	for (int i = 0; i < size; i++) {
 		crc ^= data[i];
-		for (int k = 0; k < 8; k++)
-			crc = crc & 1 ? (crc >> 1) ^ POLY : crc >> 1;
+		crc = crc & 1 ? (crc >> 1) ^ POLY : crc >> 1;
 	}
 	return ~crc;
 }

@@ -9,6 +9,7 @@
 #include <browedit/components/Rsw.h>
 #include <browedit/math/Ray.h>
 #include <browedit/util/ResourceManager.h>
+#include <browedit/actions/LightmapChangeAction.h>
 
 #include <glm/glm.hpp>
 #include <iostream>
@@ -18,6 +19,7 @@ extern std::mutex debugPointMutex;
 extern std::vector<std::vector<glm::vec3>> debugPoints;
 double startTime;
 
+LightmapChangeAction* lightmapChangeAction;
 
 Lightmapper::Lightmapper(Map* map, BrowEdit* browEdit) : map(map), browEdit(browEdit)
 {
@@ -48,6 +50,10 @@ void Lightmapper::begin()
 	std::cout << "Before:\t" << gnd->tiles.size() << " tiles, " << gnd->lightmaps.size() << " lightmaps" << std::endl;
 	gnd->makeLightmapsUnique();
 	std::cout << "After:\t" << gnd->tiles.size() << " tiles, " << gnd->lightmaps.size() << " lightmaps" << std::endl;
+
+	lightmapChangeAction = new LightmapChangeAction();
+	lightmapChangeAction->setPreviousData(gnd->lightmaps, gnd->tiles);
+
 	map->rootNode->getComponent<GndRenderer>()->setChunksDirty();
 
 	map->rootNode->getComponent<GndRenderer>()->gndShadowDirty = true;
@@ -92,24 +98,61 @@ void Lightmapper::run()
 	setProgressText("Gathering Lights");
 	lights.clear();
 	models.clear();
-	map->rootNode->traverse([&](Node* n) {
-		if (n->getComponent<RswLight>())
-		lights.push_back(n);
-		if (RswModel* m = n->getComponent<RswModel>())
-			if(m->shadowStrength > 0)
-				models.push_back(n);
-	});
+	quadtree.clear();
+
 	auto rsw = map->rootNode->getComponent<Rsw>();
 	auto gnd = map->rootNode->getComponent<Gnd>();
+
+	quadtree.resize(gnd->width, std::vector<struct light_quad_node>(gnd->height + 1));
+
+	for (int x = 0; x < quadtree.size(); x++) {
+		for (int y = 0; y < quadtree[0].size(); y++) {
+			quadtree[x][y].range[0].x = 10.0f * x;
+			quadtree[x][y].range[0].y = 10.0f * y;
+			quadtree[x][y].range[1].x = 10.0f * (x + 1);
+			quadtree[x][y].range[1].y = 10.0f * (y + 1);
+		}
+	}
+
+	map->rootNode->traverse([&](Node* n) {
+		if (n->getComponent<RswLight>()) {
+			struct Lightmapper::light_data l;
+			l.light = n;
+			l.rswLight = n->getComponent<RswLight>();
+			l.rswObject = n->getComponent<RswObject>();
+			lights.push_back(l);
+		}
+		if (RswModel* m = n->getComponent<RswModel>())
+			if (m->shadowStrength > 0) {
+				struct Lightmapper::light_model nmodel = {};
+				nmodel.node = n;
+				nmodel.rswModel = m;
+				nmodel.collider = n->getComponent<RswModelCollider>();
+				models.push_back(nmodel);
+				nmodel.collider->calculateWorldFaces();
+
+				// Adds the model to all zones where it collides in the quadtree, on the XZ plane (the Y axis is not used)
+				int xMin = glm::max(0, (int)(m->aabb.bounds[0].x / 10.0f));
+				int yMin = glm::max(0, (int)(m->aabb.bounds[0].z / 10.0f));
+				int xMax = glm::min((int)glm::ceil(m->aabb.bounds[1].x / 10.0f), (int)quadtree.size() - 1);
+				int yMax = glm::min((int)glm::ceil(m->aabb.bounds[1].z / 10.0f), (int)quadtree[0].size() - 1);
+
+				for (int x = xMin; x <= xMax; x++) {
+					for (int y = yMin; y <= yMax; y++) {
+						quadtree[x][y].models.push_back(nmodel);
+					}
+				}
+			}
+	});
 
 	std::cout << "Lightmapper: Complexity " << rsw->lightmapSettings.quality << "*"<< rsw->lightmapSettings.quality<<"*" << gnd->width << "*" << gnd->height << "*" << lights.size() << "*" << models.size() << "=" << rsw->lightmapSettings.quality * rsw->lightmapSettings.quality * gnd->width * gnd->height * lights.size() * models.size() << std::endl;
 
 	auto& settings = rsw->lightmapSettings;
 
-
-	lightDirection[0] = -glm::cos(glm::radians((float)rsw->light.longitude)) * glm::sin(glm::radians((float)rsw->light.latitude));
-	lightDirection[1] = glm::cos(glm::radians((float)rsw->light.latitude));
-	lightDirection[2] = glm::sin(glm::radians((float)rsw->light.longitude)) * glm::sin(glm::radians((float)rsw->light.latitude));
+	glm::mat4 rot = glm::mat4(1.0f);
+	rot = glm::rotate(rot, glm::radians(-(float)rsw->light.latitude), glm::vec3(1, 0, 0));
+	rot = glm::rotate(rot, glm::radians((float)rsw->light.longitude), glm::vec3(0, 1, 0));
+	lightDirection = glm::vec3(0.0f, 1.0f, 0.0f) * glm::mat3(rot);
 
 	//setProgressText("Calculating map quads");
 	//mapQuads = gnd->getMapQuads();
@@ -196,48 +239,82 @@ void Lightmapper::run()
 			}));
 	}
 
-
-
-
-
 	for (auto& t : threads)
 		t.join();
-
 }
 
-bool Lightmapper::collidesMap(const math::Ray& ray, float maxDistance)
+bool Lightmapper::collidesMap(const math::Ray& ray, int cx, int cy, float maxDistance)
 {
-	auto point = gnd->rayCast(ray, false, 0, 0, -1, -1, 0.05f);
+	auto point = gnd->rayCastLightmap(ray, cx, cy, 0, 0, -1, -1, 0.05f);
 	return point != glm::vec3(std::numeric_limits<float>().max()) && glm::distance(point, ray.origin) < maxDistance;
 };
 
-
-std::pair<glm::vec3, int> Lightmapper::calculateLight(const glm::vec3& groundPos, const glm::vec3& normal)
+float inverse_rsqrt(float number)
 {
-	int intensity = 0;
+	const float threehalfs = 1.5F;
+
+	float x2 = number * 0.5F;
+	float y = number;
+
+	long i = *(long*)&y;
+
+	i = 0x5f3759df - (i >> 1);
+	y = *(float*)&i;
+
+	// 1st iteration 
+	y = y * (threehalfs - (x2 * y * y));
+	return y;
+}
+
+glm::vec3 normalize_fast(glm::vec3 v) {
+	float s = inverse_rsqrt(v.x * v.x + v.y * v.y + v.z * v.z);
+	v.x *= s;
+	v.y *= s;
+	v.z *= s;
+	return v;
+}
+
+std::pair<glm::vec3, int> Lightmapper::calculateLight(const glm::vec3& groundPos, const glm::vec3& normal, int cx, int cy)
+{
+	// By default, a light has 255 intensity and 0,0,0 color.
+	// An intensity of 255 means no shadow.
+	// A shadowStrength of 1 means the shadow is has an intensity of the lightmapAmbient.
+	// The strength of a shadow cannot be above the lightmapAmbient value.
+	int intensity = 255;
 	glm::vec3 colorInc(0.0f);
 	auto rsw = map->rootNode->getComponent<Rsw>();
 	auto& settings = rsw->lightmapSettings;
 
-	if (rsw->light.lightmapAmbient > 0)
-		intensity = (int)(rsw->light.lightmapAmbient * 255);
+	if (settings.additiveShadow) {
+		intensity = 0;
+
+		if (rsw->light.lightmapAmbient > 0)
+			intensity = (int)(rsw->light.lightmapAmbient * 255);
+	}
 
 	for (auto light : lights)
 	{
-		auto rswObject = light->getComponent<RswObject>();
-		auto rswLight = light->getComponent<RswLight>();
+		auto rswObject = light.rswObject;
+		auto rswLight = light.rswLight;
 		if (!rswLight->enabled)
 			continue;
 		glm::vec3 lightPosition(5 * gnd->width + rswObject->position.x, -rswObject->position.y, 5 * gnd->height - rswObject->position.z+10);
-		glm::vec3 lightDirection2 = glm::normalize(lightPosition - groundPos);
+		//glm::vec3 lightDirection2 = glm::normalize(lightPosition - groundPos);
+		glm::vec3 lightDirection2 = normalize_fast(lightPosition - groundPos);
 		if (rswLight->lightType == RswLight::Type::Sun && !rswLight->sunMatchRswDirection)
 			lightDirection2 = rswLight->direction; //TODO: should this be -direction?
 		else if (rswLight->lightType == RswLight::Type::Sun && rswLight->sunMatchRswDirection)
 			lightDirection2 = lightDirection;
 		auto dotproduct = glm::dot(normal, lightDirection2);
 
-		if (dotproduct <= 0)
+		if (dotproduct <= 0) {
+			if (rswLight->lightType == RswLight::Type::Sun) {
+				if (!settings.additiveShadow && rswLight->affectShadowMap)
+					intensity -= (int)(255.0f * rswLight->intensity);
+			}
+
 			continue;
+		}
 
 		float distance = glm::distance(lightPosition, groundPos);
 		float attenuation = 0;
@@ -253,20 +330,32 @@ std::pair<glm::vec3, int> Lightmapper::calculateLight(const glm::vec3& groundPos
 				attenuation = rswLight->intensity / (denom * denom);
 				if (rswLight->cutOff > 0)
 					attenuation = glm::max(0.0f, (attenuation - rswLight->cutOff) / (1 - rswLight->cutOff));
+				attenuation *= 255.0f;
 			}
 			else
 			{
 				if (distance > rswLight->range)
 					continue;
+
 				float d = distance / rswLight->range;
-				if (rswLight->falloffStyle == RswLight::FalloffStyle::SplineTweak)
-					attenuation = glm::clamp(util::interpolateSpline(rswLight->falloff, d), 0.0f, 1.0f) * 255.0f;
-				else if (rswLight->falloffStyle == RswLight::FalloffStyle::LagrangeTweak)
-					attenuation = glm::clamp(util::interpolateLagrange(rswLight->falloff, d), 0.0f, 1.0f) * 255.0f;
-				else if (rswLight->falloffStyle == RswLight::FalloffStyle::LinearTweak)
-					attenuation = glm::clamp(util::interpolateLinear(rswLight->falloff, d), 0.0f, 1.0f) * 255.0f;
-				else if (rswLight->falloffStyle == RswLight::FalloffStyle::Exponential)
-					attenuation = glm::clamp((1 - glm::pow(d, rswLight->cutOff)), 0.0f, 1.0f) * 255.0f;
+
+				switch (rswLight->falloffStyle) {
+					case RswLight::FalloffStyle::SplineTweak:
+						attenuation = glm::clamp(util::interpolateSpline(rswLight->falloff, d), 0.0f, 1.0f) * 255.0f;
+						break;
+					case RswLight::FalloffStyle::LagrangeTweak:
+						attenuation = glm::clamp(util::interpolateLagrange(rswLight->falloff, d), 0.0f, 1.0f) * 255.0f;
+						break;
+					case RswLight::FalloffStyle::LinearTweak:
+						attenuation = glm::clamp(util::interpolateLinear(rswLight->falloff, d), 0.0f, 1.0f) * 255.0f;
+						break;
+					case RswLight::FalloffStyle::S_Curve:
+						attenuation = glm::clamp(util::interpolateSCurve(d), 0.0f, 2.0f) * 255.0f;
+						break;
+					case RswLight::FalloffStyle::Exponential:
+						attenuation = glm::clamp((1 - glm::pow(d, rswLight->cutOff)), 0.0f, 1.0f) * 255.0f;
+						break;
+				}
 			}
 			if (rswLight->lightType == RswLight::Type::Spot)
 			{
@@ -287,24 +376,62 @@ std::pair<glm::vec3, int> Lightmapper::calculateLight(const glm::vec3& groundPos
 
 		bool collides = false;
 		float shadowStrength = 0.0f;
+
 		if (settings.shadows)
 		{
 			math::Ray ray(groundPos, lightDirection2);
 			if (rswLight->givesShadow && attenuation > 0)
 			{
-				for(auto& n : models) {
+				// Find all models that are on the path of the ray, using the quadtree
+				int qx = (int)(ray.origin.x / 10.0f);
+				int qy = (int)(ray.origin.z / 10.0f);
+				
+				glm::ivec2 dir(ray.dir.x < 0 ? -1 : (ray.dir.x > 0 ? 1 : 0), ray.dir.z < 0 ? -1 : (ray.dir.z > 0 ? 1 : 0));
+				glm::ivec2 dirs[3] = { glm::ivec2(dir.x, 0), glm::ivec2(0, dir.y), glm::ivec2(dir.x, dir.y) };
+				
+				std::set<struct light_model*> quadtree_models;
+				
+				while (qx >= 0 && qx < quadtree.size() && qy >= 0 && qy < quadtree[0].size()) {
+					for (int i = 0; i < quadtree[qx][qy].models.size(); i++)
+						quadtree_models.insert(&quadtree[qx][qy].models[i]);
+
+					int j = 0;
+				
+					for (; j < 3; j++) {
+						int qqx = qx + dirs[j].x;
+						int qqy = qy + dirs[j].y;
+				
+						if ((qqx == qx && qqy == qy) || qqx < 0 || qqx >= quadtree.size() || qqy < 0 || qqy >= quadtree[0].size())
+							continue;
+
+						math::AABB box(glm::vec3(quadtree[qqx][qqy].range[0].x, -999999, quadtree[qqx][qqy].range[0].y), glm::vec3(quadtree[qqx][qqy].range[1].x, 999999, quadtree[qqx][qqy].range[1].y));
+				
+						if (!box.hasRayCollision(ray, -999999, 9999999))
+							continue;
+
+						qx = qqx;
+						qy = qqy;
+						break;
+					}
+				
+					if (j == 3)
+						break;
+				}
+
+				// Check if the ray collides with the model
+				for(auto n : quadtree_models) {
 					if (collides && shadowStrength >= 1)
 						continue;
-					auto rswModel = n->getComponent<RswModel>();
-					auto collider = n->getComponent<RswModelCollider>();
-					if (collider->collidesTexture(ray, 0, distance- rswLight->minShadowDistance))
+
+					if (n->collider->collidesTexture(ray, 0, distance - rswLight->minShadowDistance))
 					{
 						collides = true;
-						shadowStrength += rswModel->shadowStrength;
+						shadowStrength += n->rswModel->shadowStrength;
 					}
 				}
 			}
-			if (!collides && shadowStrength < 1 && rswLight->shadowTerrain && rswLight->givesShadow && collidesMap(math::Ray(groundPos, lightDirection2), distance))
+			// Check if the ray collides with the ground
+			if (!collides && shadowStrength < 1 && rswLight->shadowTerrain && rswLight->givesShadow && collidesMap(math::Ray(groundPos, lightDirection2), cx, cy, distance))
 			{
 				collides = true;
 				shadowStrength = 1;
@@ -312,16 +439,16 @@ std::pair<glm::vec3, int> Lightmapper::calculateLight(const glm::vec3& groundPos
 		}
 		if (shadowStrength > 1)
 			shadowStrength = 1;
-		if (shadowStrength <= 1)
-		{
-			if (rswLight->diffuseLighting)
-				attenuation *= dotproduct;
-
-			if (rswLight->affectShadowMap)
-				intensity += (int)((1-shadowStrength) * attenuation * rswLight->intensity);
-			if (rswLight->affectLightmap)
-				colorInc += (1-shadowStrength) * (attenuation / 255.0f) * rswLight->color * rswLight->intensity;
+		if (rswLight->diffuseLighting)
+			attenuation *= dotproduct;
+		if (rswLight->affectShadowMap) {
+			if (settings.additiveShadow)
+				intensity += (int)((1 - shadowStrength) * attenuation * rswLight->intensity);
+			else
+				intensity -= (int)(shadowStrength * attenuation * rswLight->intensity);
 		}
+		if (rswLight->affectLightmap)
+			colorInc += (1-shadowStrength) * (attenuation / 255.0f) * rswLight->color * rswLight->intensity;
 	}
 	return std::pair<glm::vec3, int>(colorInc, intensity);
 };
@@ -448,7 +575,7 @@ void Lightmapper::calcPos(int direction, int tileId, int x, int y)
 						debugPointMutex.unlock();
 					}
 
-					auto light = calculateLight(groundPos, normal);
+					auto light = calculateLight(groundPos, normal, x, y);
 					totalIntensity += glm::min(255, light.second);
 					totalColor += glm::min(glm::vec3(1.0f, 1.0f, 1.0f), light.first);
 					count++;
@@ -479,6 +606,8 @@ void Lightmapper::onDone()
 	gnd->makeLightmapBorders(browEdit);
 	gnd->cleanLightmaps();
 	gnd->cleanTiles();
+	lightmapChangeAction->setCurrentData(gnd->lightmaps, gnd->tiles);
+	map->doAction(lightmapChangeAction, browEdit);
 	map->rootNode->getComponent<GndRenderer>()->gndShadowDirty = true;
 	map->rootNode->getComponent<GndRenderer>()->setChunksDirty();
 	util::ResourceManager<Image>::clear();
