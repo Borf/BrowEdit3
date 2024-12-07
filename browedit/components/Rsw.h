@@ -221,7 +221,6 @@ public:
 	bool affectShadowMap = false;
 	bool affectLightmap = true;
 	bool enabled = true;
-	bool quickPreview = true;
 	bool shadowTerrain = true;
 
 	bool sunMatchRswDirection = true;

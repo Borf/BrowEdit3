@@ -1555,19 +1555,8 @@ const unsigned int Gnd::Lightmap::hash() const
 	for (int i = 0; i < size; i++) {
 		crc ^= data[i];
 		crc = crc & 1 ? (crc >> 1) ^ POLY : crc >> 1;
-		//crc += (data[i] ^ POLY) & 0xff;
 	}
 	return ~crc;
-
-	//const int precision = 8;
-	//unsigned long crc = 0;
-	//int size = gnd->lightmapWidth * gnd->lightmapHeight * 4;
-	//if (size < 4)
-	//	return 0;
-	//for (int i = 0; i < precision; i++) {
-	//	crc |= (data[i * size / precision] & 0xf) << (i * precision);
-	//}
-	//return crc;
 }
 
 
