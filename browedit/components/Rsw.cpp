@@ -979,6 +979,9 @@ void Rsw::recalculateQuadtree(QuadTreeNode* node)
 				{
 					auto vertices = collider->getAllVerticesWorldSpace();
 
+					if (vertices.size() == 0)
+						return;
+
 					// Translate coords with gnd coords instead, it makes comparisons much easier later
 					for (auto& v : vertices) {
 						v.x = v.x - gnd->width * 5.0f;
