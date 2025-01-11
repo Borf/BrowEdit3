@@ -1,4 +1,6 @@
-#include <windows.h> // for warning
+#ifdef _WIN32
+	#include <windows.h> // for warning
+#endif
 #include "Config.h"
 #include <filesystem>
 #include <fstream>
@@ -43,18 +45,6 @@ std::string Config::isValid() const
 	return "";
 }
 
-
-int CALLBACK BrowseCallBackProc(HWND hwnd, UINT uMsg, LPARAM lParam, LPARAM lpData)
-{
-	switch (uMsg)
-	{
-	case BFFM_INITIALIZED:
-		::SendMessage(hwnd, BFFM_SETSELECTION, TRUE, lpData);
-		break;
-	}
-	return 0;
-}
-
 bool Config::showWindow(BrowEdit* browEdit)
 {
 	bool close = false;
@@ -74,32 +64,8 @@ bool Config::showWindow(BrowEdit* browEdit)
 		ImGui::SameLine();
 		if (ImGui::Button("Browse##rodir"))
 		{
-			CoInitializeEx(0, 0);
-			CHAR szDir[MAX_PATH];
-			BROWSEINFO bInfo;
-			bInfo.hwndOwner = glfwGetWin32Window(browEdit->window);
-			bInfo.pidlRoot = NULL;
-			bInfo.pszDisplayName = szDir;
-			bInfo.lpszTitle = "Select your RO directory (not data)";
-			bInfo.ulFlags = 0;
-			bInfo.lpfn = BrowseCallBackProc;
-			std::string path = util::utf8_to_iso_8859_1(ropath);
-			if (path.find(":") == std::string::npos)
-				path = std::filesystem::current_path().string() + "\\" + path; //TODO: fix this
-
-			bInfo.lParam = (LPARAM)path.c_str();
-			bInfo.iImage = -1;
-
-			LPITEMIDLIST lpItem = SHBrowseForFolder(&bInfo);
-			if (lpItem != NULL)
-			{
-				SHGetPathFromIDList(lpItem, szDir);
-				ropath = szDir;
-				if (ropath[ropath.size() - 1] != '\\')
-					ropath += "\\";
-				ropath = util::iso_8859_1_to_utf8(ropath);
-			}
-
+			auto path = util::SelectPathDialog(util::utf8_to_iso_8859_1(ropath));
+			if (!path.empty()) ropath = util::iso_8859_1_to_utf8(path);
 		}
 		ImGui::Text("GRF Files");
 		if(ImGui::BeginListBox("##GRFs"))
@@ -111,41 +77,15 @@ bool Config::showWindow(BrowEdit* browEdit)
 				ImGui::SameLine();
 				if (ImGui::Button("Browse##grf"))
 				{
-					CoInitializeEx(0, 0);
-
-					std::string curdir = std::filesystem::current_path().string();
-
-					HWND hWnd = glfwGetWin32Window(browEdit->window);
-					OPENFILENAME ofn;
-					ZeroMemory(&ofn, sizeof(ofn));
-					ofn.lStructSize = sizeof(ofn);
-					ofn.hwndOwner = hWnd;
-
 					std::string initial = util::utf8_to_iso_8859_1(grfs[i]);
 					if (initial.find(":") == std::string::npos)
-						initial = curdir + "\\" + initial;
+						initial = std::filesystem::current_path().string() + "\\" + initial;
 
 					if (!std::filesystem::is_regular_file(initial))
 						initial = "";
 
-					char buf[MAX_PATH];
-					ZeroMemory(buf, MAX_PATH);
-					strcpy_s(buf, MAX_PATH, initial.c_str());
-					ofn.lpstrFile = buf;
-					ofn.nMaxFile = MAX_PATH;
-					ofn.lpstrFilter = "All\0*.*\0GRF files\0*.grf\0";
-					ofn.nFilterIndex = 2;
-					ofn.lpstrFileTitle = NULL;
-					ofn.nMaxFileTitle = 0;
-					ofn.lpstrInitialDir = NULL;
-					ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_ENABLESIZING;
-					if (GetOpenFileName(&ofn))
-					{
-						std::filesystem::current_path(curdir);
-						grfs[i] = buf;
-						grfs[i] = util::iso_8859_1_to_utf8(grfs[i]);
-					}
-					std::filesystem::current_path(curdir);
+					auto path = util::SelectFileDialog(initial, "All\0*.*\0GRF files\0*.grf\0");
+					if (!path.empty()) grfs[i] = util::iso_8859_1_to_utf8(path);
 				}
 				ImGui::SameLine();
 				if (ImGui::Button("Remove"))
@@ -174,7 +114,7 @@ bool Config::showWindow(BrowEdit* browEdit)
 		ImGui::SameLine();
 		if (ImGui::Button("Add"))
 		{
-			grfs.push_back("c:\\");
+			grfs.push_back(ropath + "data.grf");
 		}
 
 		ImGui::DragFloat("Field of View", &fov, 0.1f, 1.0f, 180.0f);
@@ -263,73 +203,27 @@ bool Config::showWindow(BrowEdit* browEdit)
 		ImGui::SameLine();
 		if (ImGui::Button("Browse##grfeditor"))
 		{
-			CoInitializeEx(0, 0);
-			CHAR szDir[MAX_PATH];
-			BROWSEINFO bInfo;
-			bInfo.hwndOwner = glfwGetWin32Window(browEdit->window);
-			bInfo.pidlRoot = NULL;
-			bInfo.pszDisplayName = szDir;
-			bInfo.lpszTitle = "Select your GRF editor path (not data)";
-			bInfo.ulFlags = 0;
-			bInfo.lpfn = BrowseCallBackProc;
-			std::string path = util::utf8_to_iso_8859_1(grfEditorPath);
-			if(path == "")
-				path = "c:\\Program Files (x86)\\GRF Editor\\";
-			if (path.find(":") == std::string::npos)
-				path = std::filesystem::current_path().string() + "\\" + path; //TODO: fix this
+			std::string initial = util::utf8_to_iso_8859_1(grfEditorPath);
+			if (initial == "")
+				initial = "c:\\Program Files (x86)\\GRF Editor\\";
 
-			bInfo.lParam = (LPARAM)path.c_str();
-			bInfo.iImage = -1;
-
-			LPITEMIDLIST lpItem = SHBrowseForFolder(&bInfo);
-			if (lpItem != NULL)
-			{
-				SHGetPathFromIDList(lpItem, szDir);
-				grfEditorPath = szDir;
-				if (grfEditorPath[grfEditorPath.size() - 1] != '\\')
-					grfEditorPath += "\\";
-				grfEditorPath = util::iso_8859_1_to_utf8(grfEditorPath);
-			}
+			auto path = util::SelectPathDialog(initial, "Select your GRF editor path (not data)");
+			if (!path.empty()) grfEditorPath = util::iso_8859_1_to_utf8(path);
 		}
 
 		ImGui::InputText("ffmpeg path", &ffmpegPath);
 		ImGui::SameLine();
 		if (ImGui::Button("Browse##ffmpegPath"))
 		{
-			CoInitializeEx(0, 0);
-
-			std::string curdir = std::filesystem::current_path().string();
-
-			HWND hWnd = glfwGetWin32Window(browEdit->window);
-			OPENFILENAME ofn;
-			ZeroMemory(&ofn, sizeof(ofn));
-			ofn.lStructSize = sizeof(ofn);
-			ofn.hwndOwner = hWnd;
-
 			std::string initial = util::utf8_to_iso_8859_1(ffmpegPath);
 			if (initial.find(":") == std::string::npos)
-				initial = curdir + "\\" + initial;
+				initial = std::filesystem::current_path().string() + "\\" + initial;
 
 			if (!std::filesystem::is_regular_file(initial))
 				initial = "";
 
-			char buf[MAX_PATH];
-			ZeroMemory(buf, MAX_PATH);
-			strcpy_s(buf, MAX_PATH, initial.c_str());
-			ofn.lpstrFile = buf;
-			ofn.nMaxFile = MAX_PATH;
-			ofn.lpstrFilter = "ffmpeg\0ffmpeg.exe\0All Files\0*.*\0";
-			ofn.nFilterIndex = 0;
-			ofn.lpstrFileTitle = NULL;
-			ofn.nMaxFileTitle = 0;
-			ofn.lpstrInitialDir = NULL;
-			ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_ENABLESIZING;
-			if (GetOpenFileName(&ofn))
-			{
-				std::filesystem::current_path(curdir);
-				ffmpegPath = buf;
-			}
-			std::filesystem::current_path(curdir);
+			auto path = util::SelectFileDialog(initial, "ffmpeg\0ffmpeg.exe\0All Files\0*.*\0");
+			if (!path.empty()) ffmpegPath = util::iso_8859_1_to_utf8(path);
 		}
 
 		if (ImGui::Button("Save"))

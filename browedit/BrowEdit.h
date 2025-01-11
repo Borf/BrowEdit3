@@ -1,5 +1,4 @@
 #pragma once
-#include <Windows.h>
 #include "Config.h"
 #include "MapView.h"
 #include <json.hpp>

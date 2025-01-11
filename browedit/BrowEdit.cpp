@@ -1,4 +1,3 @@
-#include <Windows.h> //to remove ugly warning :(
 #include "BrowEdit.h"
 #include "Version.h"
 #include <GLFW/glfw3.h>
@@ -36,8 +35,10 @@
 
 
 #ifdef _WIN32
-extern "C" __declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;
-extern "C" __declspec(dllexport) DWORD AmdPowerXpressRequestHighPerformance = 0x00000001;
+	#include <Windows.h> //to remove ugly warning :(
+
+	extern "C" __declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;
+	extern "C" __declspec(dllexport) DWORD AmdPowerXpressRequestHighPerformance = 0x00000001;
 #endif
 
 #ifndef _DEBUG
@@ -54,7 +55,6 @@ static void SetupExceptionHandler()
 	BT_SetFlags(BTF_DETAILEDMODE | BTF_SCREENCAPTURE);
 	BT_SetSupportURL("https://discord.gg/bQaj5dKtbV");
 }
-
 
 int main()
 {
@@ -99,6 +99,7 @@ int main()
 
 
 )V0G0N" << std::endl;
+
 	BrowEdit().run();
 }
 

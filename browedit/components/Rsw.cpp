@@ -1,5 +1,6 @@
-#include <Windows.h>
-#include <glad/glad.h>
+#ifdef _WIN32
+	#include <Windows.h>
+#endif
 #include "Rsw.h"
 #include "Gnd.h"
 #include "Gat.h"
