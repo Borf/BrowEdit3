@@ -294,10 +294,12 @@ namespace util
 
 	void FileIO::DirSource::listFiles(const std::string& dir, std::vector<std::string>& files)
 	{
-		try {
+		try
+		{
 			if (!std::filesystem::exists(directory + dir))
 				return;
-			for (const auto& entry : std::filesystem::directory_iterator(directory + dir))
+
+			for (const auto& entry : std::filesystem::directory_iterator(directory + dir, std::filesystem::directory_options::follow_directory_symlink | std::filesystem::directory_options::skip_permission_denied))
 			{
 				auto f = entry.path().string();
 				if (f.size() > directory.size() && directory.size() > 0 && f.find(directory) == 0)
@@ -310,9 +312,9 @@ namespace util
 					files.push_back(f);
 			}
 		}
-		catch (...)
+		catch (const std::system_error& exception)
 		{
-			std::cerr << "Something went wrong with listing files" << std::endl;
+			std::cerr << directory + dir << ": " << exception.what() << " (" << exception.code() << ")" << std::endl;
 		}
 	}
 
