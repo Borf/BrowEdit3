@@ -1,11 +1,8 @@
-#define IMGUI_DEFINE_MATH_OPERATORS
-#include <Windows.h>
-#include <direct.h>
-#include <commdlg.h>
 #include "Util.h"
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/quaternion.hpp>
 #include <glm/gtx/norm.hpp>
+#define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui.h>
 #include <misc/cpp/imgui_stdlib.h>
 #include <imgui_internal.h>
@@ -21,10 +18,20 @@
 #include <browedit/gl/Texture.h>
 
 #ifdef WIN32
-#include <DbgHelp.h>
-#pragma comment(lib,"dbghelp.lib")
-#endif
+	#include <Windows.h>
+	#include <direct.h>
+	#include <commdlg.h>
 
+	#include <DbgHelp.h>
+	#pragma comment(lib,"dbghelp.lib")
+
+	#define GLFW_EXPOSE_NATIVE_WIN32
+	#define GLFW_NATIVE_INCLUDE_NONE
+#endif
+#include <GLFW/glfw3native.h>
+
+// The hacks are continuing
+extern BrowEdit* browEdit;
 
 namespace util
 {
@@ -1675,7 +1682,6 @@ namespace util
 		char curdir[100];
 		_getcwd(curdir, 100);
 
-		HWND hWnd = nullptr;
 		char buf[256];
 		ZeroMemory(&buf, sizeof(buf));
 		strcpy_s(buf, 256, defaultFilename.c_str());
@@ -1683,7 +1689,7 @@ namespace util
 		OPENFILENAME ofn;
 		ZeroMemory(&ofn, sizeof(ofn));
 		ofn.lStructSize = sizeof(ofn);
-		ofn.hwndOwner = hWnd;
+		ofn.hwndOwner = glfwGetWin32Window(browEdit->window);
 		ofn.lpstrFile = buf;
 		ofn.nMaxFile = 1024;
 		ofn.lpstrFilter = filter;
@@ -1710,11 +1716,11 @@ namespace util
 		
 		char curdir[100];
 		_getcwd(curdir, 100);
-		HWND hWnd = nullptr;
+
 		OPENFILENAME ofn;
 		ZeroMemory(&ofn, sizeof(ofn));
 		ofn.lStructSize = sizeof(ofn);
-		ofn.hwndOwner = hWnd;
+		ofn.hwndOwner = glfwGetWin32Window(browEdit->window);
 		ofn.lpstrFile = fileName;
 		ofn.nMaxFile = 1024;
 		ofn.lpstrFilter = filter;
@@ -1745,15 +1751,15 @@ namespace util
 		}
 		return 0;
 	}
-	std::string SelectPathDialog(std::string path)
+	std::string SelectPathDialog(std::string path, std::string title)
 	{
 		CoInitializeEx(0, 0);
 		CHAR szDir[MAX_PATH];
 		BROWSEINFO bInfo;
-		bInfo.hwndOwner = nullptr;// glfwGetWin32Window(browEdit->window);
+		bInfo.hwndOwner = glfwGetWin32Window(browEdit->window);
 		bInfo.pidlRoot = NULL;
 		bInfo.pszDisplayName = szDir;
-		bInfo.lpszTitle = "Select your RO directory (not data)";
+		bInfo.lpszTitle = title.c_str();
 		bInfo.ulFlags = 0;
 		bInfo.lpfn = BrowseCallBackProc;
 		if (path.find(":") == std::string::npos)

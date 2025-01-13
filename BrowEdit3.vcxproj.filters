@@ -433,6 +433,9 @@
     <ClCompile Include="browedit\actions\LightmapChangeAction.cpp">
       <Filter>browedit\actions</Filter>
     </ClCompile>
+    <ClCompile Include="browedit\util\Console.cpp">
+      <Filter>browedit\util</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="lib\imgui\imgui.h">
@@ -747,6 +750,9 @@
     <ClInclude Include="browedit\actions\LightmapChangeAction.h">
       <Filter>browedit\actions</Filter>
     </ClInclude>
+    <ClInclude Include="browedit\util\Console.h">
+      <Filter>browedit\util</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="BrowEdit3.rc">
@@ -820,5 +826,10 @@
     <None Include="docs\formats\Gnd.md">
       <Filter>docs\formats</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Manifest Include="BrowEdit3.manifest">
+      <Filter>Resource Files</Filter>
+    </Manifest>
   </ItemGroup>
 </Project>

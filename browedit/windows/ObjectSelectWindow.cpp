@@ -1,4 +1,7 @@
-#include <windows.h>
+#ifdef _WIN32
+	#include <windows.h>
+	#include <mmsystem.h>
+#endif
 #include <browedit/BrowEdit.h>
 #include <browedit/Node.h>
 #include <browedit/MapView.h>

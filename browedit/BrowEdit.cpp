@@ -1,4 +1,3 @@
-#include <Windows.h> //to remove ugly warning :(
 #include "BrowEdit.h"
 #include "Version.h"
 #include <GLFW/glfw3.h>
@@ -28,6 +27,7 @@
 #include <browedit/components/RsmRenderer.h>
 #include <browedit/util/FileIO.h>
 #include <browedit/util/Util.h>
+#include <browedit/util/Console.h>
 #include <browedit/util/ResourceManager.h>
 #include <browedit/util/glfw_keycodes_to_string.h>
 
@@ -36,8 +36,10 @@
 
 
 #ifdef _WIN32
-extern "C" __declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;
-extern "C" __declspec(dllexport) DWORD AmdPowerXpressRequestHighPerformance = 0x00000001;
+	#include <Windows.h> //to remove ugly warning :(
+
+	extern "C" __declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;
+	extern "C" __declspec(dllexport) DWORD AmdPowerXpressRequestHighPerformance = 0x00000001;
 #endif
 
 #ifndef _DEBUG
@@ -55,12 +57,13 @@ static void SetupExceptionHandler()
 	BT_SetSupportURL("https://discord.gg/bQaj5dKtbV");
 }
 
-
 int main()
 {
 #ifndef _DEBUG
 	SetupExceptionHandler();
 #endif
+
+	ConsoleInject consoleInjector;
 
 	std::cout << R"V0G0N(                                  ';cllllllc:,                                  
                                 ,lodddddddddddoc,                               
@@ -99,6 +102,7 @@ int main()
 
 
 )V0G0N" << std::endl;
+
 	BrowEdit().run();
 }
 
@@ -1018,65 +1022,71 @@ void BrowEdit::ShowNewMapPopup()
 
 void fixEffectPreviews()
 {
-	for (auto entry : std::filesystem::directory_iterator("data\\texture\\effect"))
+	try
 	{
-		if (entry.path().string().find(".png") != std::string::npos)
-			continue;
-		if (entry.path().string().find(".gif") == std::string::npos)
-			continue;
-		std::istream* is = util::FileIO::open(entry.path().string());
-		std::cout << entry.path().string() << std::endl;
-		if (!is)
+		for (auto entry : std::filesystem::directory_iterator("data\\texture\\effect", std::filesystem::directory_options::follow_directory_symlink | std::filesystem::directory_options::skip_permission_denied))
 		{
-			std::cerr << "Texture: Could not open " <<entry.path().string() << std::endl;
-			return;
-		}
-		is->seekg(0, std::ios_base::end);
-		std::size_t len = is->tellg();
-		if (len <= 0 || len > 100 * 1024 * 1024)
-		{
-			std::cerr << "Texture: Error opening texture " << entry.path().string() << ", file is either empty or too large" << std::endl;
-			delete is;
-			return;
-		}
-		char* buffer = new char[len];
-		is->seekg(0, std::ios_base::beg);
-		is->read(buffer, len);
-		delete is;
-
-		int width, height, frameCount, comp;
-		int* delays;
-		auto data = stbi_load_gif_from_memory((stbi_uc*)buffer, (int)len, &delays, &width, &height, &frameCount, &comp, 4);
-		if (!data)
-			continue;
-		int bestFrame = 0;
-		int bestFrameCount = 0;
-		for (int f = 0; f < frameCount; f++)
-		{
-			auto d = data + (width * height * 4) * f;
-			int frameIntensity = 0;
-			for (int x = 0; x < width; x++)
+			if (entry.path().string().find(".png") != std::string::npos)
+				continue;
+			if (entry.path().string().find(".gif") == std::string::npos)
+				continue;
+			std::istream* is = util::FileIO::open(entry.path().string());
+			std::cout << entry.path().string() << std::endl;
+			if (!is)
 			{
-				for (int y = 0; y < height; y++)
+				std::cerr << "Texture: Could not open " <<entry.path().string() << std::endl;
+				return;
+			}
+			is->seekg(0, std::ios_base::end);
+			std::size_t len = is->tellg();
+			if (len <= 0 || len > 100 * 1024 * 1024)
+			{
+				std::cerr << "Texture: Error opening texture " << entry.path().string() << ", file is either empty or too large" << std::endl;
+				delete is;
+				return;
+			}
+			char* buffer = new char[len];
+			is->seekg(0, std::ios_base::beg);
+			is->read(buffer, len);
+			delete is;
+
+			int width, height, frameCount, comp;
+			int* delays;
+			auto data = stbi_load_gif_from_memory((stbi_uc*)buffer, (int)len, &delays, &width, &height, &frameCount, &comp, 4);
+			if (!data)
+				continue;
+			int bestFrame = 0;
+			int bestFrameCount = 0;
+			for (int f = 0; f < frameCount; f++)
+			{
+				auto d = data + (width * height * 4) * f;
+				int frameIntensity = 0;
+				for (int x = 0; x < width; x++)
 				{
-					frameIntensity += d[(x + width * y) * 4 + 0];
-					frameIntensity += d[(x + width * y) * 4 + 1];
-					frameIntensity += d[(x + width * y) * 4 + 2];
+					for (int y = 0; y < height; y++)
+					{
+						frameIntensity += d[(x + width * y) * 4 + 0];
+						frameIntensity += d[(x + width * y) * 4 + 1];
+						frameIntensity += d[(x + width * y) * 4 + 2];
+					}
+				}
+				if (frameIntensity > bestFrameCount)
+				{
+					bestFrameCount = frameIntensity;
+					bestFrame = f;
 				}
 			}
-			if (frameIntensity > bestFrameCount)
-			{
-				bestFrameCount = frameIntensity;
-				bestFrame = f;
-			}
+			stbi_write_png((entry.path().string() + ".png").c_str(), width, height, 4, data + bestFrame * width * height*4, 0);
+
+			std::cout << "Best frame is " << bestFrame << std::endl;
+
+
+			stbi_image_free(data);
 		}
-		stbi_write_png((entry.path().string() + ".png").c_str(), width, height, 4, data + bestFrame * width * height*4, 0);
-
-		std::cout << "Best frame is " << bestFrame << std::endl;
-
-
-		stbi_image_free(data);
+		std::cout << "Done" << std::endl;
 	}
-	std::cout << "Done" << std::endl;
-
+	catch (const std::system_error& exception)
+	{
+		std::cerr << "data\\texture\\effect: " << exception.what() << " (" << exception.code() << ")" << std::endl;
+	}
 }

@@ -1,4 +1,7 @@
-#include <Windows.h>
+#ifdef _WIN32
+    #include <Windows.h>
+    #include <shellapi.h>
+#endif
 #include <browedit/BrowEdit.h>
 #include <browedit/util/FileIO.h>
 #include <browedit/util/ResourceManager.h>

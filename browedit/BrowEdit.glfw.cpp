@@ -1,7 +1,6 @@
 #include "BrowEdit.h"
 
 #include <iostream>
-#include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <Version.h>
 #include <browedit/Image.h>
