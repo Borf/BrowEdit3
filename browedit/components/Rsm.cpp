@@ -704,9 +704,8 @@ void Rsm::Mesh::calcMatrix2()
 	if (model->version < 0x202) {
 		matrix2 = glm::mat4(1.0f);
 
-		if (parent == NULL && children.size() == 0) {
-			matrix2 = glm::translate(matrix2, -1.0f * model->bbrange);
-		}
+		if (parent == NULL && children.size() == 0)
+			matrix2 = glm::translate(matrix2, pos_);
 
 		if (parent != NULL || children.size() != 0)
 			matrix2 = glm::translate(matrix2, pos_);
