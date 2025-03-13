@@ -412,11 +412,47 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 			posGadget[1] = pos[1] = gnd->getPos(maxValues.x, minValues.y, 1);
 			posGadget[2] = pos[2] = gnd->getPos(minValues.x, maxValues.y, 2);
 			posGadget[3] = pos[3] = gnd->getPos(maxValues.x, maxValues.y, 3);
-			posGadget[4] = pos[4] = (pos[0] + pos[1] + pos[2] + pos[3]) / 4.0f;
-			posGadget[5] = pos[5] = (pos[0] + pos[1]) / 2.0f;
-			posGadget[6] = pos[6] = (pos[2] + pos[3]) / 2.0f;
-			posGadget[7] = pos[7] = (pos[0] + pos[2]) / 2.0f;
-			posGadget[8] = pos[8] = (pos[1] + pos[3]) / 2.0f;
+			glm::vec3 center = (pos[0] + pos[1] + pos[2] + pos[3]) / 4.0f;
+			
+			float minY = center.y;
+
+			int cx = (maxValues.x - minValues.x) / 2 + minValues.x;
+			int cy = (maxValues.y - minValues.y) / 2 + minValues.y;
+			auto cube = gnd->cubes[cx][cy];
+
+			center.y = (cube->h3 - cube->h2) * 0.5f + cube->h2;
+			
+			bool xSelectionEven = (maxValues.x - minValues.x + 1) % 2 == 0;
+			bool ySelectionEven = (maxValues.y - minValues.y + 1) % 2 == 0;
+
+			if (map->tileSelection.size() > 1) {
+				if (xSelectionEven && ySelectionEven)
+					center.y = glm::min(glm::min(glm::min(cube->h4, gnd->cubes[cx + 1][cy]->h3), gnd->cubes[cx][cy + 1]->h2), gnd->cubes[cx + 1][cy + 1]->h1);
+				else if (xSelectionEven && cx + 1 < gnd->width)
+					center.y = glm::min((cube->h4 - cube->h2) * 0.5f + cube->h2, (gnd->cubes[cx + 1][cy]->h3 - gnd->cubes[cx + 1][cy]->h1) * 0.5f + gnd->cubes[cx + 1][cy]->h1);
+				else if (ySelectionEven && cy + 1 < gnd->height)
+					center.y = glm::min((cube->h3 - cube->h4) * 0.5f + cube->h4, (gnd->cubes[cx][cy + 1]->h1 - gnd->cubes[cx][cy + 1]->h2) * 0.5f + gnd->cubes[cx][cy + 1]->h2);
+			}
+
+			center.y = -center.y;
+			
+			posGadget[4] = pos[4] = center;
+
+			glm::vec3 edge = (pos[0] + pos[1]) / 2.0f;
+			edge.y = -(xSelectionEven ? glm::min(gnd->cubes[cx][minValues.y]->h2, gnd->cubes[cx + 1][minValues.y]->h1) : (gnd->cubes[cx][minValues.y]->h2 - gnd->cubes[cx][minValues.y]->h1) * 0.5f + gnd->cubes[cx][minValues.y]->h1);
+			posGadget[5] = pos[5] = edge;
+
+			edge = (pos[2] + pos[3]) / 2.0f;
+			edge.y = -(xSelectionEven ? glm::min(gnd->cubes[cx][maxValues.y]->h4, gnd->cubes[cx + 1][maxValues.y]->h3) : (gnd->cubes[cx][maxValues.y]->h4 - gnd->cubes[cx][maxValues.y]->h3) * 0.5f + gnd->cubes[cx][maxValues.y]->h3);
+			posGadget[6] = pos[6] = edge;
+
+			edge = (pos[0] + pos[2]) / 2.0f;
+			edge.y = -(ySelectionEven ? glm::min(gnd->cubes[minValues.x][cy]->h3, gnd->cubes[minValues.x][cy + 1]->h1) : (gnd->cubes[minValues.x][cy]->h3 - gnd->cubes[minValues.x][cy]->h1) * 0.5f + gnd->cubes[minValues.x][cy]->h1);
+			posGadget[7] = pos[7] = edge;
+
+			edge = (pos[1] + pos[3]) / 2.0f;
+			edge.y = -(ySelectionEven ? glm::min(gnd->cubes[maxValues.x][cy]->h4, gnd->cubes[maxValues.x][cy + 1]->h2) : (gnd->cubes[maxValues.x][cy]->h4 - gnd->cubes[maxValues.x][cy]->h2) * 0.5f + gnd->cubes[maxValues.x][cy]->h2);
+			posGadget[8] = pos[8] = edge;
 
 			ImGui::Begin("Height Edit");
 			if (ImGui::CollapsingHeader("Selection Details", ImGuiTreeNodeFlags_DefaultOpen))
