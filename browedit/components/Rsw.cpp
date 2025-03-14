@@ -227,7 +227,6 @@ void Rsw::load(const std::string& fileName, Map* map, BrowEdit* browEdit, bool l
 	if (version >= 0x0202)
 	{
 		unsigned char u = file->get();
-		std::cout << "202 unknown value: " << (int)u << std::endl;
 	}
 
 	iniFile = util::FileIO::readString(file, 40);

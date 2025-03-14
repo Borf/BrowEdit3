@@ -30,7 +30,7 @@ public:
 		glm::mat4 viewMatrix = glm::mat4(1.0f);
 
 		GndRenderContext();
-		virtual void preFrame(const glm::mat4& projectionMatrix, const glm::mat4& viewMatrix) override;
+		virtual void preFrame(Node* rootNode, const glm::mat4& projectionMatrix, const glm::mat4& viewMatrix) override;
 	};
 
 	class VboIndex
@@ -92,5 +92,5 @@ public:
 	bool quickRenderLight_hideOthers = false;
 	Node* quickRenderLightNode = nullptr;
 
-	bool viewEmptyTiles = true;
+	bool viewEmptyTiles = false;
 };

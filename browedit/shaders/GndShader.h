@@ -18,7 +18,7 @@ public:
 			//lightIntensity,
 			lightDirection,
 			shadowMapToggle,
-			lightToggle,
+			//lightToggle,
 			colorToggle,
 			lightColorToggle,
 			viewTextures,
@@ -64,7 +64,7 @@ public:
 		//bindUniform(Uniforms::lightIntensity, "lightIntensity");
 		bindUniform(Uniforms::lightDirection, "lightDirection");
 		bindUniform(Uniforms::shadowMapToggle, "shadowMapToggle");
-		bindUniform(Uniforms::lightToggle, "lightToggle");
+		//bindUniform(Uniforms::lightToggle, "lightToggle");
 		bindUniform(Uniforms::colorToggle, "colorToggle");
 		bindUniform(Uniforms::lightColorToggle, "lightColorToggle");
 		bindUniform(Uniforms::viewTextures, "viewTextures");

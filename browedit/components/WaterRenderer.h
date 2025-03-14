@@ -25,7 +25,7 @@ public:
 		WaterShader* shader = nullptr;
 
 		WaterRenderContext();
-		virtual void preFrame(const glm::mat4& projectionMatrix, const glm::mat4& viewMatrix) override;
+		virtual void preFrame(Node* rootNode, const glm::mat4& projectionMatrix, const glm::mat4& viewMatrix) override;
 	};
 
 	class VboIndex

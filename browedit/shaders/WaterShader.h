@@ -13,7 +13,6 @@ public:
 			ViewMatrix,
 			ModelMatrix,
 			s_texture,
-			s_textureNext,
 			time,
 			waterHeight,
 			amplitude,
@@ -23,7 +22,7 @@ public:
 			fogColor,
 			fogNear,
 			fogFar,
-			fogExp,
+			//fogExp,
 			End
 		};
 	};
@@ -33,7 +32,6 @@ public:
 		bindUniform(Uniforms::ModelMatrix, "modelMatrix");
 		bindUniform(Uniforms::ViewMatrix, "viewMatrix");
 		bindUniform(Uniforms::s_texture, "s_texture");
-		bindUniform(Uniforms::s_textureNext, "s_textureNext");
 		bindUniform(Uniforms::time, "time");
 		bindUniform(Uniforms::waterHeight, "waterHeight");
 		bindUniform(Uniforms::amplitude, "amplitude");
@@ -43,7 +41,7 @@ public:
 		bindUniform(Uniforms::fogColor, "fogColor");
 		bindUniform(Uniforms::fogNear, "fogNear");
 		bindUniform(Uniforms::fogFar, "fogFar");
-		bindUniform(Uniforms::fogExp, "fogExp");
+		//bindUniform(Uniforms::fogExp, "fogExp");
 		
 	}
 };

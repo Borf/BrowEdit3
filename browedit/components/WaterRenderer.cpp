@@ -116,7 +116,7 @@ void WaterRenderer::render()
 	shader->setUniform(WaterShader::Uniforms::fogEnabled, viewFog);
 	shader->setUniform(WaterShader::Uniforms::fogNear, rsw->fog.nearPlane * 240 * 2.5f);
 	shader->setUniform(WaterShader::Uniforms::fogFar, rsw->fog.farPlane * 240 * 2.5f);
-	shader->setUniform(WaterShader::Uniforms::fogExp, rsw->fog.factor);
+	//shader->setUniform(WaterShader::Uniforms::fogExp, rsw->fog.factor);
 	shader->setUniform(WaterShader::Uniforms::fogColor, rsw->fog.color);
 
 	glDepthMask(0);
@@ -185,18 +185,15 @@ WaterRenderer::WaterRenderContext::WaterRenderContext() : shader(util::ResourceM
 	order = 2;
 	shader->use();
 	shader->setUniform(WaterShader::Uniforms::s_texture, 0);
-	shader->setUniform(WaterShader::Uniforms::s_textureNext, 1);
 }
 
 
-void WaterRenderer::WaterRenderContext::preFrame(const glm::mat4& projectionMatrix, const glm::mat4& viewMatrix)
+void WaterRenderer::WaterRenderContext::preFrame(Node* rootNode, const glm::mat4& projectionMatrix, const glm::mat4& viewMatrix)
 {
 	shader->use();
 	shader->setUniform(WaterShader::Uniforms::ProjectionMatrix, projectionMatrix);
 	shader->setUniform(WaterShader::Uniforms::ViewMatrix, viewMatrix);
 	shader->setUniform(WaterShader::Uniforms::ModelMatrix, glm::mat4(1.0f));
-
-	
 
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);

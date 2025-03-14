@@ -130,7 +130,7 @@ void GndRenderer::render()
 
 	shader->setUniform(GndShader::Uniforms::shadowMapToggle, viewLightmapShadow? 0.0f : 1.0f);
 	shader->setUniform(GndShader::Uniforms::lightColorToggle, viewLightmapColor ? 1.0f : 0.0f);
-	shader->setUniform(GndShader::Uniforms::lightToggle, viewLighting ? 0.0f : 1.0f);
+	//shader->setUniform(GndShader::Uniforms::lightToggle, viewLighting ? 0.0f : 1.0f);
 	shader->setUniform(GndShader::Uniforms::colorToggle, viewColors ? 0.0f : 1.0f);
 	shader->setUniform(GndShader::Uniforms::viewTextures, viewTextures ? 1.0f : 0.0f);
 
@@ -188,7 +188,7 @@ GndRenderer::GndRenderContext::GndRenderContext() : shader(util::ResourceManager
 }
 
 
-void GndRenderer::GndRenderContext::preFrame(const glm::mat4& projectionMatrix, const glm::mat4& viewMatrix)
+void GndRenderer::GndRenderContext::preFrame(Node* rootNode, const glm::mat4& projectionMatrix, const glm::mat4& viewMatrix)
 {
 	shader->use();
 	shader->setUniform(GndShader::Uniforms::ProjectionMatrix, projectionMatrix);
