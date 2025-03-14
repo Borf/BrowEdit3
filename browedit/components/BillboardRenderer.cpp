@@ -81,7 +81,7 @@ BillboardRenderer::BillboardRenderContext::BillboardRenderContext() : shader(uti
 	order = 3;
 }
 
-void BillboardRenderer::BillboardRenderContext::preFrame(const glm::mat4& projectionMatrix, const glm::mat4& viewMatrix)
+void BillboardRenderer::BillboardRenderContext::preFrame(Node* rootNode, const glm::mat4& projectionMatrix, const glm::mat4& viewMatrix)
 {
 	glEnable(GL_BLEND);
 	glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA,GL_ONE,GL_ONE_MINUS_SRC_ALPHA);

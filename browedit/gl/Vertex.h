@@ -142,6 +142,19 @@
 		}
 	};
 
+	class VertexP3T2N3C1 : public Vert<3 + 2 + 3 + 1>
+	{
+	public:
+		VertexP3T2N3C1(const glm::vec3& pos, const glm::vec2& t, const glm::vec3& n, float twoSide)
+		{
+			int index = 0;
+			set(pos, index);
+			set(t, index);
+			set(n, index);
+			set(twoSide, index);
+		}
+	};
+
 
 	class VertexP3T2 : public Vert<3 + 2>
 	{

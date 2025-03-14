@@ -22,8 +22,10 @@ public:
 			lightDirection,
 			selection,
 			shadeType,
+			discardAlphaValue,
 			lightToggle,
 			viewTextures,
+			enableCullFace,
 			fogEnabled,
 			fogColor,
 			fogNear,
@@ -47,8 +49,10 @@ public:
 		bindUniform(Uniforms::lightDirection, "lightDirection");
 		bindUniform(Uniforms::selection, "selection");
 		bindUniform(Uniforms::shadeType, "shadeType");
+		bindUniform(Uniforms::discardAlphaValue, "discardAlphaValue");
 		bindUniform(Uniforms::lightToggle, "lightToggle");
 		bindUniform(Uniforms::viewTextures, "viewTextures");
+		bindUniform(Uniforms::enableCullFace, "enableCullFace");
 		bindUniform(Uniforms::fogEnabled, "fogEnabled");
 		bindUniform(Uniforms::fogColor, "fogColor");
 		bindUniform(Uniforms::fogNear, "fogNear");
