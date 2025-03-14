@@ -19,12 +19,19 @@ uniform vec4 fogColor;
 varying vec2 texCoord;
 varying vec3 normal;
 
-
-
+//texture animation
+uniform bool textureAnimToggle;
+uniform mat4 texMat = mat4(1.0f);
 
 void main()
 {
-	vec4 color = texture2D(s_texture, texCoord);
+	vec2 texCoord2 = texCoord;
+	
+	if (textureAnimToggle) {
+		texCoord2 = vec2(texMat * vec4(texCoord2.x, texCoord2.y, 0, 1));
+	}
+	
+	vec4 color = texture2D(s_texture, texCoord2);
 	if(!viewTextures)
 		color.rgb = vec3(1,1,1);
 	if(color.a < 0.1)

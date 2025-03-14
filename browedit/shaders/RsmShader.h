@@ -29,6 +29,8 @@ public:
 			fogNear,
 			fogFar,
 			//fogExp,
+			textureAnimToggle,
+			texMat,
 			End
 		};
 	};
@@ -52,5 +54,7 @@ public:
 		bindUniform(Uniforms::fogNear, "fogNear");
 		bindUniform(Uniforms::fogFar, "fogFar");
 		//bindUniform(Uniforms::fogExp, "fogExp");
+		bindUniform(Uniforms::textureAnimToggle, "textureAnimToggle");
+		bindUniform(Uniforms::texMat, "texMat");
 	}
 };

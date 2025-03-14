@@ -139,6 +139,7 @@ void RsmRenderer::render()
 	auto shader = dynamic_cast<RsmRenderContext*>(renderContext)->shader;
 	shader->setUniform(RsmShader::Uniforms::shadeType, (int)rsm->shadeType);
 	shader->setUniform(RsmShader::Uniforms::modelMatrix2, matrixCache);
+	shader->setUniform(RsmShader::Uniforms::textureAnimToggle, false);
 	//move to preframe
 	glm::vec3 lightDirection(1,1,1);
 	if (rsw)
@@ -268,11 +269,52 @@ void RsmRenderer::renderMesh(Rsm::Mesh* mesh, const glm::mat4& matrix, bool sele
 
 		for (const VboIndex& it : ri.indices)
 		{
+			bool isTextureAnimated = false;
+			bool isRepeat = false;
+
+			if (mesh->model->version >= 2.3) {
+				glm::vec2 texTranslate(0.0f);
+				glm::vec3 texScale(1.0f);
+				glm::mat4 texMat(1.0f);
+				glm::vec3 centerOffset(0.5f, 0.5f, 0.0f);
+				float texRot = 0.0f;
+				float mult = this->rswModel != nullptr ? this->rswModel->animSpeed : 1.0f;
+				int tick = time < 0 ? (int)floor(glfwGetTime() * 1000 * mult) : (int)floor(time * 1000 * mult);
+				texMat = glm::translate(texMat, centerOffset);
+
+				if (mesh->getTextureAnimation(it.texture, tick, texTranslate, texScale, texRot)) {
+					isTextureAnimated = true;
+					isRepeat = true;
+					texMat = glm::scale(texMat, texScale);
+					texMat = glm::rotate(texMat, texRot, glm::vec3(0, 0, 1));
+					texMat[3][0] += texTranslate.x;
+					texMat[3][1] += texTranslate.y;
+					texMat = glm::translate(texMat, -centerOffset);
+					shader->setUniform(RsmShader::Uniforms::textureAnimToggle, true);
+					shader->setUniform(RsmShader::Uniforms::texMat, texMat);
+				}
+			}
+
 			if(ri.textures.size() > 0)
 				ri.textures[mesh->textures[it.texture]]->bind();
 			else
 				textures[mesh->textures[it.texture]]->bind();
+
+			if (isRepeat) {
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+			}
+
 			glDrawArrays(GL_TRIANGLES, (int)it.begin, (int)it.count);
+
+			if (isRepeat) {
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+			}
+
+			if (isTextureAnimated) {
+				shader->setUniform(RsmShader::Uniforms::textureAnimToggle, false);
+			}
 		}
 		if (ri.selected)
 			glEnable(GL_DEPTH_TEST);
