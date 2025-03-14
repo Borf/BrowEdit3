@@ -105,9 +105,9 @@ namespace gl
 			{
 				for (int y = 0; y < height; y++)
 				{
-					if (data[4 * (x + width * y) + 0] > 250 &&
-						data[4 * (x + width * y) + 1] < 5 &&
-						data[4 * (x + width * y) + 2] > 250)
+					if (data[4 * (x + width * y) + 0] > 247 &&
+						data[4 * (x + width * y) + 1] < 8 &&
+						data[4 * (x + width * y) + 2] > 247)
 					{
 						data[4 * (x + width * y) + 0] = 0;
 						data[4 * (x + width * y) + 1] = 0;
