@@ -1,5 +1,6 @@
 #include "NodeRenderer.h"
 #include "components/Renderer.h"
+#include "components/RsmRenderer.h"
 #include <map>
 #include <vector>
 #include <algorithm>
@@ -42,12 +43,13 @@ void NodeRenderer::render(Node* rootNode, NodeRenderContext& context)
 
 	for (auto r : ordered)
 	{
-		r->preFrame(context.projectionMatrix, context.viewMatrix);
-		for(int phase = 0; phase < r->phases; phase++)
+		for (int phase = 0; phase < r->phases; phase++) {
+			r->phase = phase;
+			r->preFrame(rootNode, context.projectionMatrix, context.viewMatrix);
 			for (auto renderer : renderers[r])
-				if(renderer->enabled && renderer->shouldRender(phase))
+				if (renderer->enabled && renderer->shouldRender(phase))
 					renderer->render();
+			r->postFrame();
+		}
 	}
-
-
 }

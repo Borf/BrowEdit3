@@ -22,6 +22,7 @@ namespace gl
 		bool tryLoaded = false;
 		bool loaded = false;
 		bool flipSelection;
+		bool semiTransparent = false;
 
 		Texture(int width, int height);
 		~Texture();

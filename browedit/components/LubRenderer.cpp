@@ -142,7 +142,7 @@ void LubRenderer::render()
 	glEnable(GL_BLEND);
 	int src = d3dToOpenGlBlend(lubEffect->srcmode);
 	int dst = d3dToOpenGlBlend(lubEffect->destmode);
-	glBlendFunc(src, dst);
+	glBlendFuncSeparate(src, dst, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 	glDepthMask(0);
 
 	std::vector<VertexP3T2A1> verts;
@@ -202,7 +202,7 @@ LubRenderer::LubRenderContext::LubRenderContext() : shader(util::ResourceManager
 	order = 4;
 }
 
-void LubRenderer::LubRenderContext::preFrame(const glm::mat4& projectionMatrix, const glm::mat4& viewMatrix)
+void LubRenderer::LubRenderContext::preFrame(Node* rootNode, const glm::mat4& projectionMatrix, const glm::mat4& viewMatrix)
 {
 	glEnable(GL_DEPTH_TEST);
 	shader->use();

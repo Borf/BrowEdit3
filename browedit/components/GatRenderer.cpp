@@ -65,7 +65,7 @@ GatRenderer::GatRenderContext::GatRenderContext() : shader(util::ResourceManager
 }
 
 
-void GatRenderer::GatRenderContext::preFrame(const glm::mat4& projectionMatrix, const glm::mat4& viewMatrix)
+void GatRenderer::GatRenderContext::preFrame(Node* rootNode, const glm::mat4& projectionMatrix, const glm::mat4& viewMatrix)
 {
 	texture->bind();
 	shader->use();

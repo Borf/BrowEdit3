@@ -6,9 +6,12 @@ uniform vec3 lightDirection;
 //uniform float lightIntensity;
 
 uniform int shadeType;
+uniform float discardAlphaValue = 0.8;
 uniform float selection;
 uniform bool lightToggle;
 uniform bool viewTextures;
+uniform bool enableCullFace = true;
+in float cull;
 
 uniform bool fogEnabled;
 uniform float fogNear;
@@ -19,17 +22,30 @@ uniform vec4 fogColor;
 varying vec2 texCoord;
 varying vec3 normal;
 
-
-
+//texture animation
+uniform bool textureAnimToggle;
+uniform mat4 texMat = mat4(1.0f);
 
 void main()
 {
-	vec4 color = texture2D(s_texture, texCoord);
+	if (enableCullFace && cull <= 0) {
+		if (cull >= 0 && !gl_FrontFacing)
+			discard;
+		if (cull < 0 && gl_FrontFacing)
+			discard;
+	}
+	
+	vec2 texCoord2 = texCoord;
+	
+	if (textureAnimToggle) {
+		texCoord2 = vec2(texMat * vec4(texCoord2.x, texCoord2.y, 0, 1));
+	}
+	
+	vec4 color = texture2D(s_texture, texCoord2);
+	if (color.a < discardAlphaValue)
+		discard;
 	if(!viewTextures)
 		color.rgb = vec3(1,1,1);
-	if(color.a < 0.1)
-		discard;
-
 	if (lightToggle) {
 		if (shadeType == 4) { // only for editor
 			color.rgb *= lightDiffuse;

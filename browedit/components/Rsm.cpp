@@ -480,6 +480,7 @@ Rsm::Mesh::Mesh(Rsm* model, std::istream* rsmFile)
 				int textureId;
 				rsmFile->read(reinterpret_cast<char*>(&textureId), sizeof(int));
 
+				std::map<int, std::vector<TexFrame>> animationTypes;
 				int textureIdAnimationCount;
 				rsmFile->read(reinterpret_cast<char*>(&textureIdAnimationCount), sizeof(int));
 
@@ -489,20 +490,23 @@ Rsm::Mesh::Mesh(Rsm* model, std::istream* rsmFile)
 					rsmFile->read(reinterpret_cast<char*>(&type), sizeof(int));
 					rsmFile->read(reinterpret_cast<char*>(&amountFrames), sizeof(int));
 
+					std::vector<TexFrame> frames;
+					frames.resize(amountFrames);
+
 					for (int ii = 0; ii < amountFrames; ii++)
 					{
-						int frame;
-						rsmFile->read(reinterpret_cast<char*>(&frame), sizeof(int));
-						float offset;
-						rsmFile->read(reinterpret_cast<char*>(&offset), sizeof(float));
+						rsmFile->read(reinterpret_cast<char*>(&frames[ii].time), sizeof(int));
+						rsmFile->read(reinterpret_cast<char*>(&frames[ii].data), sizeof(float));
+						frames[ii].time = (int)ceil(frames[ii].time * model->fps); //TODO: remove this
 					}
-				}
-			}
 
+					animationTypes[type] = frames;
+				}
+
+				textureFrames[textureId] = animationTypes;
+			}
 		}
 	}
-
-
 }
 
 Rsm::Mesh::~Mesh()
@@ -717,6 +721,59 @@ void Rsm::Mesh::calcMatrix2()
 	}
 }
 
+bool Rsm::Mesh::getTextureAnimation(int textureId, int time, glm::vec2& texTranslate, glm::vec3& texScale, float& texRot)
+{
+	auto texEntry = textureFrames.find(textureId);
+
+	if (texEntry == textureFrames.end())
+		return false;
+
+	int tick = time % glm::max(1, model->animLen);
+	texRot = 0;
+
+	for (const auto& [type, texFrames] : texEntry->second) {
+		if (texFrames.size() == 0)
+			continue;
+
+		int prevIndex = -1;
+		int nextIndex = 0;
+
+		for (; nextIndex < texFrames.size() && tick >= texFrames[nextIndex].time; nextIndex++) {
+		}
+
+		prevIndex = nextIndex - 1;
+		float prevTick = (float)(prevIndex < 0 ? 0 : texFrames[prevIndex].time);
+		float nextTick = (float)(nextIndex == texFrames.size() ? model->animLen : texFrames[nextIndex].time);
+		float prev = prevIndex < 0 ? 0 : texFrames[prevIndex].data;
+		float next = nextIndex == texFrames.size() ? texFrames[nextIndex - 1].data : texFrames[nextIndex].data;
+
+		float mult = (tick - prevTick) / (nextTick - prevTick);
+		float offset = mult * (next - prev) + prev;
+
+		switch (type)
+		{
+		case 0:
+			texTranslate.x += offset;
+			break;
+		case 1:
+			texTranslate.y += offset;
+			break;
+		case 2:
+			texScale.x = offset;
+			break;
+		case 3:
+			texScale.y = offset;
+			break;
+		case 4:
+			texRot = offset;
+			break;
+		default:
+			break;
+		}
+	}
+
+	return true;
+}
 
 void Rsm::Mesh::setBoundingBox(glm::vec3& _bbmin, glm::vec3& _bbmax)
 {

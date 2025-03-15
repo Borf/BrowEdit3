@@ -136,7 +136,7 @@ Gnd::Gnd(const std::string& fileName, Rsw* rsw)
 			tile->color.a = (unsigned char)file->get();
 			tiles.push_back(tile);
 		}
-		std::cout << "At " << file->tellg() << std::endl;
+		
 		cubes.resize(width, std::vector<Cube*>(height, NULL));
 		for (int y = 0; y < height; y++)
 		{

@@ -15,6 +15,9 @@
 #include "components/WaterRenderer.h"
 #include "components/BillboardRenderer.h"
 
+#include "shaders/GndShader.h"
+#include "shaders/WaterShader.h"
+
 #include <browedit/HotkeyRegistry.h>
 #include <browedit/gl/FBO.h>
 #include <browedit/gl/Shader.h>
@@ -422,30 +425,34 @@ void MapView::render(BrowEdit* browEdit)
 	}
 
 	//TODO: fix this, don't want to individually set settings
-	map->rootNode->getComponent<GndRenderer>()->viewLightmapShadow = viewLightmapShadow;
-	map->rootNode->getComponent<GndRenderer>()->viewLightmapColor = viewLightmapColor;
-	map->rootNode->getComponent<GndRenderer>()->viewColors = viewColors;
-	map->rootNode->getComponent<GndRenderer>()->viewLighting = viewLighting;
-	map->rootNode->getComponent<GndRenderer>()->viewTextures = viewTextures;
-	map->rootNode->getComponent<GndRenderer>()->viewFog = viewFog;
-	if (map->rootNode->getComponent<GndRenderer>()->viewEmptyTiles != viewEmptyTiles)
+	auto gndRenderer = map->rootNode->getComponent<GndRenderer>();
+	gndRenderer->viewLightmapShadow = viewLightmapShadow;
+	gndRenderer->viewLightmapColor = viewLightmapColor;
+	gndRenderer->viewColors = viewColors;
+	gndRenderer->viewLighting = viewLighting;
+	gndRenderer->viewTextures = viewTextures;
+	gndRenderer->viewFog = viewFog;
+
+	if (gndRenderer->viewEmptyTiles != viewEmptyTiles)
 	{
-		map->rootNode->getComponent<GndRenderer>()->viewEmptyTiles = viewEmptyTiles;
+		gndRenderer->viewEmptyTiles = viewEmptyTiles;
 		auto gnd = map->rootNode->getComponent<Gnd>();
 		for (int x = 0; x < gnd->width; x++)
 			for (int y = 0; y < gnd->height; y++)
-				map->rootNode->getComponent<GndRenderer>()->setChunkDirty(x,y);
+				gndRenderer->setChunkDirty(x,y);
 	}
-	if (map->rootNode->getComponent<GndRenderer>()->smoothColors != smoothColors)
+	if (gndRenderer->smoothColors != smoothColors)
 	{
-		map->rootNode->getComponent<GndRenderer>()->smoothColors = smoothColors;
-		map->rootNode->getComponent<GndRenderer>()->gndShadowDirty = true;
+		gndRenderer->smoothColors = smoothColors;
+		gndRenderer->gndShadowDirty = true;
 	}
-	map->rootNode->getComponent<WaterRenderer>()->viewFog = viewFog;
 
+	map->rootNode->getComponent<WaterRenderer>()->viewFog = viewFog;
+	
 	RsmRenderer::RsmRenderContext::getInstance()->viewLighting = viewLighting;
 	RsmRenderer::RsmRenderContext::getInstance()->viewTextures = viewTextures;
 	RsmRenderer::RsmRenderContext::getInstance()->viewFog = viewFog;
+	RsmRenderer::RsmRenderContext::getInstance()->enableFaceCulling = enableFaceCulling;
 
 	map->rootNode->getComponent<GatRenderer>()->cameraDistance = cameraDistance;
 	map->rootNode->getComponent<GatRenderer>()->enabled = browEdit->editMode == BrowEdit::EditMode::Gat ? viewGatGat : viewGat;

@@ -418,6 +418,7 @@ void BrowEdit::run()
 		glViewport(0, 0, display_w, display_h);
 		glClearColor(config.backgroundColor.r, config.backgroundColor.g, config.backgroundColor.b, 1);
 		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+		glDepthFunc(GL_LESS);
 		glUseProgram(0);
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();

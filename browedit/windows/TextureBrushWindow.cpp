@@ -30,6 +30,7 @@ void BrowEdit::showTextureBrushWindow()
 		{
 			activeMapView->textureBrushWidth++;
 			activeMapView->textureBrushHeight++;
+			activeMapView->textureBrushUpdateBySelection = false;
 		}
 		if (ImGui::IsKeyPressed(GLFW_KEY_KP_SUBTRACT))
 		{
@@ -37,6 +38,7 @@ void BrowEdit::showTextureBrushWindow()
 				activeMapView->textureBrushWidth--;
 			if (activeMapView->textureBrushHeight > 1)
 				activeMapView->textureBrushHeight--;
+			activeMapView->textureBrushUpdateBySelection = false;
 		}
 	}
 
@@ -452,12 +454,16 @@ void BrowEdit::showTextureBrushWindow()
 		
 
 
-		if (ImGui::InputInt("Brush Width", &activeMapView->textureBrushWidth, 1))
+		if (ImGui::InputInt("Brush Width", &activeMapView->textureBrushWidth, 1)) {
 			if (activeMapView->textureBrushWidth < 1)
 				activeMapView->textureBrushWidth = 1;
-		if(ImGui::InputInt("Brush Height", &activeMapView->textureBrushHeight, 1))
+			activeMapView->textureBrushUpdateBySelection = false;
+		}
+		if (ImGui::InputInt("Brush Height", &activeMapView->textureBrushHeight, 1)) {
 			if (activeMapView->textureBrushHeight < 1)
 				activeMapView->textureBrushHeight = 1;
+			activeMapView->textureBrushUpdateBySelection = false;
+		}
 
 		glm::vec2 uvSize = activeMapView->textureEditUv2 - activeMapView->textureEditUv1;
 		// Updates brush size based on selection

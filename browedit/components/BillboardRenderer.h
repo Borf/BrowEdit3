@@ -52,7 +52,7 @@ public:
 		bool viewLighting = true;
 
 		BillboardRenderContext();
-		virtual void preFrame(const glm::mat4& projectionMatrix, const glm::mat4& viewMatrix) override;
+		virtual void preFrame(Node* rootNode, const glm::mat4& projectionMatrix, const glm::mat4& viewMatrix) override;
 	};
 
 	BillboardRenderer(const std::string& texture, const std::string& texture_selected = "");
