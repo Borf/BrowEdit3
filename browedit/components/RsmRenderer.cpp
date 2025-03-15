@@ -417,6 +417,8 @@ void RsmRenderer::RsmRenderContext::preFrame(Node* rootNode, const glm::mat4& pr
 		glEnable(GL_BLEND);
 		glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 		shader->setUniform(RsmShader::Uniforms::textureAnimToggle, true);
+
+		shader->setUniform(RsmShader::Uniforms::enableCullFace, false);
 	}
 }
 
