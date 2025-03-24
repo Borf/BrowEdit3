@@ -26,9 +26,11 @@ public:
 		bool viewLighting = true;
 		bool viewTextures = true;
 		bool viewFog = true;
+		bool enableFaceCulling = true;
 
 		RsmRenderContext();
-		virtual void preFrame(const glm::mat4& projectionMatrix, const glm::mat4& viewMatrix) override;
+		virtual void preFrame(Node* rootNode, const glm::mat4& projectionMatrix, const glm::mat4& viewMatrix) override;
+		virtual void postFrame() override;
 	};
 	class VboIndex
 	{
@@ -46,11 +48,10 @@ public:
 	class RenderInfo
 	{
 	public:
-		gl::VBO<VertexP3T2N3>* vbo;
-		std::vector<VboIndex> indices;
+		std::vector<gl::VBO<VertexP3T2N3C1>*> vbo;
+		std::vector<std::vector<VboIndex>> indices;
 		glm::mat4 matrix = glm::mat4(1.0f);
 		glm::mat4 matrixSub = glm::mat4(1.0f);
-		std::vector<gl::Texture*> textures; //should this be shared over all RenderInfo with the same RsmMesh?
 		bool selected = false;
 	};
 
@@ -63,10 +64,12 @@ public:
 	Rsw* rsw;
 
 	float time = -1;
+	int phase = 0;
 	bool meshDirty = true;
 
 	std::vector<gl::Texture*> textures; //should this be shared over all RsmRenderers with the same Rsm? static map<Rsm, std::vector<Texture*> ???
 	bool matrixCached = false;
+	bool reverseCullFace = false;
 
 	inline static Rsm* errorModel = nullptr;
 
@@ -77,8 +80,9 @@ public:
 	virtual void render();
 	void initMeshInfo(Rsm::Mesh* mesh, const glm::mat4& matrix = glm::mat4(1.0f));
 	void renderMesh(Rsm::Mesh* mesh, const glm::mat4& matrix, bool selectionPhase = false, bool calcMatrix = true);
+	void renderMeshSub(Rsm::Mesh* mesh, bool selectionPhase);
 	
-	virtual bool shouldRender(int phase) { return phase == 0 ? !selected : selected; }
+	virtual bool shouldRender(int phase) { return true; }
 
 	void setMeshesDirty();
 

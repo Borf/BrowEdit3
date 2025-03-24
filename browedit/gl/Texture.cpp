@@ -12,7 +12,9 @@ namespace gl
 	Texture::Texture(const std::string& fileName, bool flipSelection) : fileName(fileName), flipSelection(flipSelection)
 	{
 		ids = nullptr;
-		if(fileName.find(".gif") != fileName.length()-4)
+		if (fileName.find(".tga") == fileName.length() - 4)
+			semiTransparent = true;
+		if (fileName.find(".gif") != fileName.length() - 4)
 			reload();
 	}
 
@@ -99,54 +101,22 @@ namespace gl
 				return;
 			}
 
-			for (int i = 0; i < 10; i++) //TODO: maybe 10 is a bit too big?
+			for (int x = 0; x < width; x++)
 			{
-				bool changed = false;
-				for (int x = 0; x < width; x++)
+				for (int y = 0; y < height; y++)
 				{
-					for (int y = 0; y < height; y++)
+					if (data[4 * (x + width * y) + 0] > 247 &&
+						data[4 * (x + width * y) + 1] < 8 &&
+						data[4 * (x + width * y) + 2] > 247)
 					{
-						if (data[4 * (x + width * y) + 0] > 250 &&
-							data[4 * (x + width * y) + 1] < 5 &&
-							data[4 * (x + width * y) + 2] > 250)
-						{
-							changed = true;
-							int totalr = 0;
-							int totalg = 0;
-							int totalb = 0;
-							int total = 0;
-							for (int xx = -1; xx <= 1; xx++)
-							{
-								for (int yy = -1; yy <= 1; yy++)
-								{
-									int xxx = x + xx;
-									int yyy = y + yy;
-									if (xxx < 0 || xxx >= width || yyy < 0 || yyy >= height)
-										continue;
-									if (data[4 * (xxx + width * yyy) + 0] > 250 &&
-										data[4 * (xxx + width * yyy) + 1] < 5 &&
-										data[4 * (xxx + width * yyy) + 2] > 250)
-										continue;
-									totalr += data[4 * (xxx + width * yyy) + 0];
-									totalg += data[4 * (xxx + width * yyy) + 1];
-									totalb += data[4 * (xxx + width * yyy) + 2];
-									total++;
-								}
-							}
-							if (total > 0)
-							{
-								data[4 * (x + width * y) + 0] = totalr / total;
-								data[4 * (x + width * y) + 1] = totalg / total;
-								data[4 * (x + width * y) + 2] = totalb / total;
-							}
-
-							data[4 * (x + width * y) + 3] = 0;
-						}
+						data[4 * (x + width * y) + 0] = 0;
+						data[4 * (x + width * y) + 1] = 0;
+						data[4 * (x + width * y) + 2] = 0;
+						data[4 * (x + width * y) + 3] = 0;
 					}
 				}
-				if (!changed)
-					break;
 			}
+
 			if (ids == nullptr)
 			{
 				frameCount = 1;
