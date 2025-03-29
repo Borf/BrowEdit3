@@ -6,7 +6,7 @@ uniform vec3 lightDirection;
 //uniform float lightIntensity;
 
 uniform int shadeType;
-uniform float discardAlphaValue = 0.8;
+uniform float discardAlphaValue;
 uniform float selection;
 uniform bool lightToggle;
 uniform bool viewTextures;
