@@ -10,7 +10,7 @@ uniform float discardAlphaValue;
 uniform float selection;
 uniform bool lightToggle;
 uniform bool viewTextures;
-uniform bool enableCullFace = true;
+uniform bool enableCullFace;
 in float cull;
 
 uniform bool fogEnabled;
@@ -24,7 +24,7 @@ varying vec3 normal;
 
 //texture animation
 uniform bool textureAnimToggle;
-uniform mat4 texMat = mat4(1.0f);
+uniform mat4 texMat;
 
 void main()
 {
