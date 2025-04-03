@@ -153,6 +153,7 @@ public:
 		std::map<std::string, Hotkey> hotkeys;
 
 		bool openLightmapSettings = false;
+		bool cropWindowVisible = false;
 
 		//height edit
 		struct HeightEdit
@@ -329,6 +330,7 @@ public:
 	void showWallWindow();
 	void showHelpWindow();
 	void showLightmapSettingsWindow();
+	void showCropSettingsWindow();
 	void showTextureBrushWindow();
 	void showTextureManageWindow();
 	void showHotkeyEditorWindow();

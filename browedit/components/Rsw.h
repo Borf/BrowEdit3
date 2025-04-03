@@ -140,6 +140,16 @@ public:
 		NLOHMANN_DEFINE_TYPE_INTRUSIVE(LightmapSettings, quality, shadows, heightSelectionOnly, rangeX, rangeY);
 	} lightmapSettings;
 
+	class CropSettings
+	{
+	public:
+		bool heightSelectionOnly = true;
+		int cropLeft = 0;
+		int cropTop = 0;
+		int cropRight = 0;
+		int cropBottom = 0;
+	} cropSettings;
+
 	std::vector<Track> cinematicTracks;
 	float cinematicLength;
 

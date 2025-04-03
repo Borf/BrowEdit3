@@ -407,3 +407,12 @@ void GndRenderer::setChunksDirty()
 {
 	allDirty = true;
 }
+
+void GndRenderer::rebuildChunks() {
+	for (auto r : chunks)
+		for (auto c : r)
+			delete c;
+
+	chunks.clear();
+	gnd = nullptr;
+}

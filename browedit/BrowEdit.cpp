@@ -281,6 +281,9 @@ void BrowEdit::run()
 
 		showLightmapSettingsWindow();
 
+		if (windowData.cropWindowVisible)
+			showCropSettingsWindow();
+
 		if (windowData.progressWindowVisible)
 		{
 			std::lock_guard<std::mutex> guard(windowData.progressMutex);
