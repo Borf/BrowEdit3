@@ -436,6 +436,9 @@
     <ClCompile Include="browedit\util\Console.cpp">
       <Filter>browedit\util</Filter>
     </ClCompile>
+    <ClCompile Include="browedit\windows\CropSettingsWindow.cpp">
+      <Filter>browedit\windows</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="lib\imgui\imgui.h">

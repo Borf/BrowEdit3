@@ -75,6 +75,7 @@ public:
 
 	void setChunkDirty(int x, int y);
 	void setChunksDirty();
+	void rebuildChunks();
 	bool gndShadowDirty = true;
 
 	GndRenderer();
@@ -92,5 +93,5 @@ public:
 	bool quickRenderLight_hideOthers = false;
 	Node* quickRenderLightNode = nullptr;
 
-	bool viewEmptyTiles = false;
+	bool viewEmptyTiles = true;
 };

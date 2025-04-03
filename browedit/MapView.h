@@ -208,7 +208,7 @@ public:
 	bool viewLighting = true;
 	bool smoothColors = true;
 	bool viewTextures = true;
-	bool viewEmptyTiles = false;
+	bool viewEmptyTiles = true;
 	bool enableFaceCulling = true;
 	bool viewGat = false;
 	bool viewGatGat = true;
