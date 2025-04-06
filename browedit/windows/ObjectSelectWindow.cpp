@@ -68,6 +68,7 @@ public:
 		glm::mat4 mat = glm::mat4(1.0f);
 		if (rsm->version >= 0x202) {
 			mat = glm::scale(mat, glm::vec3(1, -1, 1));
+			node->getComponent<RsmRenderer>()->reverseCullFace = true;
 		}
 		mat = glm::translate(mat, glm::vec3(-rsm->realbbrange.x, rsm->realbbrange.y, -rsm->realbbrange.z));
 		node->getComponent<RsmRenderer>()->matrixCache = mat;
