@@ -220,6 +220,12 @@ void Rsm::updateMatrices()
 	realbbrange = (realbbmax + realbbmin) / 2.0f;
 	maxRange = glm::max(glm::max(realbbmax.x, -realbbmin.x), glm::max(glm::max(realbbmax.y, -realbbmin.y), glm::max(realbbmax.z, -realbbmin.z)));
 
+	drawnbbmax = glm::vec3(-999999, -999999, -999999);
+	drawnbbmin = glm::vec3(999999, 999999, 999999);
+	mat = glm::scale(glm::mat4(1.0f), glm::vec3(1, -1, 1));
+	dynamic_cast<Mesh*>(rootMesh)->setBoundingBox3(mat, drawnbbmin, drawnbbmax);
+	drawnbbrange = (drawnbbmax - drawnbbmin) / 2.0f;
+
 	setAnimated(rootMesh);
 }
 
@@ -831,6 +837,50 @@ void Rsm::Mesh::setBoundingBox2(glm::mat4& mat, glm::vec3& bbmin_, glm::vec3& bb
 
 	for (unsigned int i = 0; i < children.size(); i++)
 		dynamic_cast<Mesh*>(children[i])->setBoundingBox2(mat1, bbmin_, bbmax_);
+}
+
+void Rsm::Mesh::setBoundingBox3(glm::mat4& mat, glm::vec3& bbmin_, glm::vec3& bbmax_)
+{
+	if (model->version >= 0x202) {
+		for (unsigned int i = 0; i < faces.size(); i++)
+		{
+			for (int ii = 0; ii < 3; ii++)
+			{
+				glm::vec4 v = matrix2 * glm::vec4(vertices[faces[i].vertexIds[ii]], 1);
+				bbmin_.x = glm::min(bbmin_.x, v.x);
+				bbmin_.y = glm::min(bbmin_.y, v.y);
+				bbmin_.z = glm::min(bbmin_.z, v.z);
+
+				bbmax_.x = glm::max(bbmax_.x, v.x);
+				bbmax_.y = glm::max(bbmax_.y, v.y);
+				bbmax_.z = glm::max(bbmax_.z, v.z);
+			}
+		}
+
+		for (unsigned int i = 0; i < children.size(); i++)
+			dynamic_cast<Mesh*>(children[i])->setBoundingBox3(mat, bbmin_, bbmax_);
+	}
+	else {
+		glm::mat4 mat1 = mat * matrix1;
+		glm::mat4 mat2 = mat * matrix1 * matrix2;
+		for (unsigned int i = 0; i < faces.size(); i++)
+		{
+			for (int ii = 0; ii < 3; ii++)
+			{
+				glm::vec4 v = mat2 * glm::vec4(vertices[faces[i].vertexIds[ii]], 1);
+				bbmin_.x = glm::min(bbmin_.x, v.x);
+				bbmin_.y = glm::min(bbmin_.y, v.y);
+				bbmin_.z = glm::min(bbmin_.z, v.z);
+
+				bbmax_.x = glm::max(bbmax_.x, v.x);
+				bbmax_.y = glm::max(bbmax_.y, v.y);
+				bbmax_.z = glm::max(bbmax_.z, v.z);
+			}
+		}
+
+		for (unsigned int i = 0; i < children.size(); i++)
+			dynamic_cast<Mesh*>(children[i])->setBoundingBox3(mat1, bbmin_, bbmax_);
+	}
 }
 
 /**

@@ -59,7 +59,7 @@ public:
 		glEnable(GL_BLEND);
 		glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
-		float distance = 1.5f * glm::max(glm::abs(rsm->realbbmax.y), glm::max(glm::abs(rsm->realbbmax.z), glm::abs(rsm->realbbmax.x)));
+		float distance = 2.5f * glm::max(rsm->drawnbbrange.x, glm::max(rsm->drawnbbrange.y, rsm->drawnbbrange.z));
 
 		float ratio = fbo->getWidth() / (float)fbo->getHeight();
 		nodeRenderContext.projectionMatrix = glm::perspective(glm::radians(45.0f), ratio, 0.1f, 5000.0f);
