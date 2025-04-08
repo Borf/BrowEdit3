@@ -743,10 +743,17 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 					auto rswObject = map->selectedNodes[0]->getComponent<RswObject>(); 
 					if (rswObject)
 					{
-						if (map->selectedNodes.size() == 1 && map->selectedNodes[0]->getComponent<RswLight>())
+						if (map->selectedNodes.size() == 1 && map->selectedNodes[0]->getComponent<RswLight>()) {
 							rswObject->position = glm::vec3(rayCast.x - 5 * gnd->width, -rayCast.y + originalHeightFromGround, -(rayCast.z + (-10 - 5 * gnd->height)));
-						else
+						}
+						else {
 							rswObject->position = glm::vec3(rayCast.x - 5 * gnd->width, -rayCast.y, -(rayCast.z + (-10 - 5 * gnd->height)));
+
+							auto rsm = map->selectedNodes[0]->getComponent<Rsm>();
+							if (rsm && rsm->version >= 0x202) {
+								rswObject->position.y += rsm->bbmin.y;
+							}
+						}
 
 						bool snap = snapToGrid;
 						if (ImGui::GetIO().KeyShift)

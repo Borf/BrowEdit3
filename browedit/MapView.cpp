@@ -510,6 +510,7 @@ void MapView::render(BrowEdit* browEdit)
 				}
 
 				rswObject->position = glm::vec3(rayCast.x - 5 * gnd->width, -rayCast.y, -(rayCast.z + (-10 - 5 * gnd->height))) + newNode.second;
+				auto rsm = newNode.first->getComponent<Rsm>();
 
 				switch (browEdit->newNodePlacement) {
 					case BrowEdit::Relative:
@@ -518,23 +519,48 @@ void MapView::render(BrowEdit* browEdit)
 					case BrowEdit::Absolute:
 						rswObject->position.y = newNode.second.y + browEdit->newNodesCenter.y;
 						break;
+					case BrowEdit::Ground:
+						if (rsm && rsm->version >= 0x202) {
+							rswObject->position.y += rsm->bbmin.y;
+						}
+						break;
 				}
 
-				if (newNode.first->getComponent<RsmRenderer>())
+				auto rsmRenderer = newNode.first->getComponent<RsmRenderer>();
+				if (rsmRenderer)
 				{
+
 					glm::mat4 matrix = glm::mat4(1.0f);
-					matrix = glm::translate(matrix, glm::vec3(5 * gnd->width + rswObject->position.x, -rswObject->position.y, -(-10 - 5 * gnd->height + rswObject->position.z)));
+					matrix = glm::scale(matrix, glm::vec3(1, 1, -1));
+					matrix = glm::translate(matrix, glm::vec3(5 * gnd->width + rswObject->position.x, -rswObject->position.y, -10 - 5 * gnd->height + rswObject->position.z));
 					matrix = glm::rotate(matrix, -glm::radians(rswObject->rotation.z), glm::vec3(0, 0, 1));
 					matrix = glm::rotate(matrix, -glm::radians(rswObject->rotation.x), glm::vec3(1, 0, 0));
 					matrix = glm::rotate(matrix, glm::radians(rswObject->rotation.y), glm::vec3(0, 1, 0));
-					matrix = glm::scale(matrix, glm::vec3(1, -1, 1));
-					matrix = glm::scale(matrix, rswObject->scale);
-					matrix = glm::scale(matrix, glm::vec3(1, 1, -1));
-					newNode.first->getComponent<RsmRenderer>()->matrixCache = matrix;
+
+					if (rsm) {
+						matrix = glm::scale(matrix, glm::vec3(rswObject->scale.x, -rswObject->scale.y, rswObject->scale.z));
+
+						if (rsm->version < 0x202) {
+							matrix = glm::translate(matrix, glm::vec3(-rsm->realbbrange.x, rsm->realbbmin.y, -rsm->realbbrange.z));
+						}
+						else {
+							matrix = glm::scale(matrix, glm::vec3(1, -1, 1));
+						}
+					}
+					rsmRenderer->matrixCache = matrix;
+
+					if (rswObject->scale.x * rswObject->scale.y * rswObject->scale.z * (rsm->version >= 0x202 ? -1 : 1) < 0)
+						rsmRenderer->reverseCullFace = true;
 				}
 				if (newNode.first->getComponent<BillboardRenderer>())
 					newNode.first->getComponent<BillboardRenderer>()->gnd = gnd;
+
+				// If matrixCached is not set to true, the renderer assumes it's being called from Bromedit
+				if (rsmRenderer)
+					rsmRenderer->matrixCached = true;
 				NodeRenderer::render(newNode.first, nodeRenderContext);
+				if (rsmRenderer)
+					rsmRenderer->matrixCached = false;
 			}
 		}
 	}

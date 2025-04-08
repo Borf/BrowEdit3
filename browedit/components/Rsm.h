@@ -159,6 +159,7 @@ public:
 
 		void setBoundingBox(glm::vec3& bbmin, glm::vec3& bbmax);
 		void setBoundingBox2(glm::mat4& mat, glm::vec3& realbbmin, glm::vec3& realbbmax);
+		void setBoundingBox3(glm::mat4& mat, glm::vec3& drawnbbmin, glm::vec3& drawnbbmmax);
 		bool getTextureAnimation(int textureId, int time, glm::vec2& texTranslate, glm::vec3& texScale, float& texRot);
 	};
 
@@ -197,8 +198,12 @@ public:
 	glm::vec3 bbmin;
 	glm::vec3 bbmax;
 	glm::vec3 bbrange;
-
 	float maxRange;
+
+	glm::vec3 drawnbbmin;
+	glm::vec3 drawnbbmax;
+	glm::vec3 drawnbbrange;
+
 	enum class ShadeType
 	{
 		SHADE_NO,
