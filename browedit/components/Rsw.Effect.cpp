@@ -114,7 +114,7 @@ void LubEffect::load(const json& data)
 	from_json(data["rate"], rate);
 	from_json(data["size"], size);
 	from_json(data["life"], life);
-	texture = data["texture"];
+	texture = util::replace(data["texture"], "\\\\", "\\");
 	speed = data["speed"][0];
 	srcmode = data["srcmode"][0];
 	destmode = data["destmode"][0];

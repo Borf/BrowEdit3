@@ -644,7 +644,7 @@ void Rsw::save(const std::string& fileName, BrowEdit* browEdit)
 			SAVEPROP2("rate", lubEffects[i]->rate) << "," << std::endl;
 			SAVEPROP2("size", lubEffects[i]->size) << "," << std::endl;
 			SAVEPROP2("life", lubEffects[i]->life) << "," << std::endl;
-			SAVEPROPS("texture", lubEffects[i]->texture) << "," << std::endl;
+			SAVEPROPS("texture", util::replace(util::replace(lubEffects[i]->texture, "\\\\", "\\"), "\\", "\\\\")) << "," << std::endl;
 			SAVEPROP0("speed", lubEffects[i]->speed) << "," << std::endl;
 			SAVEPROP0("srcmode", lubEffects[i]->srcmode) << "," << std::endl;
 			SAVEPROP0("destmode", lubEffects[i]->destmode) << "," << std::endl;
