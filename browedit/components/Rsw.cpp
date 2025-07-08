@@ -644,7 +644,7 @@ void Rsw::save(const std::string& fileName, BrowEdit* browEdit)
 			SAVEPROP2("rate", lubEffects[i]->rate) << "," << std::endl;
 			SAVEPROP2("size", lubEffects[i]->size) << "," << std::endl;
 			SAVEPROP2("life", lubEffects[i]->life) << "," << std::endl;
-			SAVEPROPS("texture", lubEffects[i]->texture) << "," << std::endl;
+			SAVEPROPS("texture", util::replace(util::replace(lubEffects[i]->texture, "\\\\", "\\"), "\\", "\\\\")) << "," << std::endl;
 			SAVEPROP0("speed", lubEffects[i]->speed) << "," << std::endl;
 			SAVEPROP0("srcmode", lubEffects[i]->srcmode) << "," << std::endl;
 			SAVEPROP0("destmode", lubEffects[i]->destmode) << "," << std::endl;
@@ -1221,8 +1221,8 @@ bool RswModelCollider::collidesTexture(Rsm::Mesh* mesh, const math::Ray& ray, co
 			if (rsmMesh)
 			{
 				auto rsm = dynamic_cast<Rsm*>(rsmMesh->model);
-				if (rsm && rsm->textures.size() > mesh->faces[i].texId)
-					img = util::ResourceManager<Image>::load("data/texture/" + rsm->textures[mesh->faces[i].texId]);
+				if (rsm && mesh->faces[i].texId < rsm->textures.size() && mesh->textures[mesh->faces[i].texId] < rsm->textures.size())
+					img = util::ResourceManager<Image>::load("data/texture/" + rsm->textures[mesh->textures[mesh->faces[i].texId]]);
 			}
 			glm::vec3 hitPoint = ray.origin + ray.dir * t;
 			if (img && img->hasAlpha)

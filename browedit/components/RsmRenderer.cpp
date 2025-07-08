@@ -136,6 +136,8 @@ void RsmRenderer::render()
 			}
 		}
 
+		reverseCullFace = false;
+
 		if (rswObject->scale.x * rswObject->scale.y * rswObject->scale.z * (rsm->version >= 0x202 ? -1 : 1) < 0)
 			reverseCullFace = true;
 	}

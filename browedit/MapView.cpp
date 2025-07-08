@@ -547,7 +547,9 @@ void MapView::render(BrowEdit* browEdit)
 							matrix = glm::scale(matrix, glm::vec3(1, -1, 1));
 						}
 					}
+
 					rsmRenderer->matrixCache = matrix;
+					rsmRenderer->reverseCullFace = false;
 
 					if (rswObject->scale.x * rswObject->scale.y * rswObject->scale.z * (rsm->version >= 0x202 ? -1 : 1) < 0)
 						rsmRenderer->reverseCullFace = true;

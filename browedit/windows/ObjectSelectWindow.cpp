@@ -610,11 +610,12 @@ void BrowEdit::showObjectWindow()
 		{
 			static std::string currentFilterText = "";
 			static std::vector<std::string> filteredFiles;
-			util::tolowerInPlace(filter);
-			if (currentFilterText != filter)
+			std::string filter8859 = util::utf8_to_iso_8859_1(filter);
+			util::tolowerInPlace(filter8859);
+			if (currentFilterText != filter8859)
 			{
-				currentFilterText = filter;
-				std::vector<std::string> filterTags = util::split(filter, " ");
+				currentFilterText = filter8859;
+				std::vector<std::string> filterTags = util::split(filter8859, " ");
 				filteredFiles.clear();
 
 				for (auto t : tagListReverse)
