@@ -1221,8 +1221,8 @@ bool RswModelCollider::collidesTexture(Rsm::Mesh* mesh, const math::Ray& ray, co
 			if (rsmMesh)
 			{
 				auto rsm = dynamic_cast<Rsm*>(rsmMesh->model);
-				if (rsm && rsm->textures.size() > mesh->faces[i].texId)
-					img = util::ResourceManager<Image>::load("data/texture/" + rsm->textures[mesh->faces[i].texId]);
+				if (rsm && mesh->faces[i].texId < rsm->textures.size() && mesh->textures[mesh->faces[i].texId] < rsm->textures.size())
+					img = util::ResourceManager<Image>::load("data/texture/" + rsm->textures[mesh->textures[mesh->faces[i].texId]]);
 			}
 			glm::vec3 hitPoint = ray.origin + ray.dir * t;
 			if (img && img->hasAlpha)

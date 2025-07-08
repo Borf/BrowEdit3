@@ -51,10 +51,10 @@ float Image::get(const glm::vec2& uv)
 	if (!data || !hasAlpha)
 		return 1;
 
-	int x1 = (int)floor(uv.x * width);
-	int y1 = (int)floor(uv.y * height);
-	int x2 = (int)ceil(uv.x * width);
-	int y2 = (int)ceil(uv.y * height);
+	int x1 = glm::min(width - 1, (int)floor(uv.x * width));
+	int y1 = glm::min(height - 1, (int)floor(uv.y * height));
+	int x2 = glm::min(width - 1, (int)ceil(uv.x * width));
+	int y2 = glm::min(height - 1, (int)ceil(uv.y * height));
 
 #if 1
 	float fracX = glm::fract(uv.x * width);

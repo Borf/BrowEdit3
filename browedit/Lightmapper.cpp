@@ -372,6 +372,7 @@ std::pair<glm::vec3, int> Lightmapper::calculateLight(const glm::vec3& groundPos
 		else if (rswLight->lightType == RswLight::Type::Sun)
 		{
 			attenuation = 255;
+			distance = 99999;
 		}
 
 		bool collides = false;
@@ -421,7 +422,7 @@ std::pair<glm::vec3, int> Lightmapper::calculateLight(const glm::vec3& groundPos
 				// Check if the ray collides with the model
 				for(auto n : quadtree_models) {
 					if (collides && shadowStrength >= 1)
-						continue;
+						break;
 
 					if (n->collider->collidesTexture(ray, 0, distance - rswLight->minShadowDistance))
 					{
