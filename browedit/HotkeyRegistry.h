@@ -114,6 +114,10 @@ enum class HotkeyAction
 	HeightEdit_SelectAllTexture,
 	HeightEdit_SelectAllHeight,
 	HeightEdit_PasteSpecial,
+	HeightEdit_SmoothTiles,
+	HeightEdit_FlattenTiles,
+	HeightEdit_IncreaseHeight,
+	HeightEdit_DecreaseHeight,
 
 	EditMode_Height,
 	EditMode_Texture,

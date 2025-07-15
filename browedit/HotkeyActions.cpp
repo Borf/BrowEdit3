@@ -165,9 +165,7 @@ void BrowEdit::registerActions()
 	HotkeyRegistry::registerAction(HotkeyAction::GatEdit_Tile7,						[this]() { windowData.gatEdit.gatIndex = 7;	heightDoodle = false;	windowData.gatEdit.doodle = true; }, hasActiveMapViewGatMode);
 	HotkeyRegistry::registerAction(HotkeyAction::GatEdit_Tile8,						[this]() { windowData.gatEdit.gatIndex = 8;	heightDoodle = false;	windowData.gatEdit.doodle = true; }, hasActiveMapViewGatMode);
 	HotkeyRegistry::registerAction(HotkeyAction::GatEdit_Tile9,						[this]() { windowData.gatEdit.gatIndex = 9;	heightDoodle = false;	windowData.gatEdit.doodle = true; }, hasActiveMapViewGatMode);
-	HotkeyRegistry::registerAction(HotkeyAction::GatEdit_AdjustToGround,			[this]() { 
-		activeMapView->gatEdit_adjustToGround(this);
-	}, hasActiveMapViewGatMode);
+	HotkeyRegistry::registerAction(HotkeyAction::GatEdit_AdjustToGround,			[this]() { activeMapView->gatEdit_adjustToGround(this); }, hasActiveMapViewGatMode);
 	
 	HotkeyRegistry::registerAction(HotkeyAction::ColorEdit_Dropper,					[this]() { dropperEnabled = !dropperEnabled; cursor = dropperEnabled ? dropperCursor : nullptr; }, hasActiveMapViewGatMode);
 
@@ -180,7 +178,30 @@ void BrowEdit::registerActions()
 	HotkeyRegistry::registerAction(HotkeyAction::HeightEdit_SelectAllTexture,		[this]() { selectTool = BrowEdit::SelectTool::AllTex; heightDoodle = false; }, hasActiveMapViewHeightMode);
 	HotkeyRegistry::registerAction(HotkeyAction::HeightEdit_SelectAllHeight,		[this]() { selectTool = BrowEdit::SelectTool::AllHeight; heightDoodle = false; }, hasActiveMapViewHeightMode);
 	HotkeyRegistry::registerAction(HotkeyAction::HeightEdit_PasteSpecial,			[this]() { ImGui::OpenPopup("PasteSpecial");  }, hasActiveMapViewHeightMode);
+	HotkeyRegistry::registerAction(HotkeyAction::HeightEdit_SmoothTiles,			[this]() {
+		auto gnd = activeMapView->map->rootNode->getComponent<Gnd>();
 
+		if (gnd)
+			gnd->smoothTiles_Brow1(activeMapView->map, this, activeMapView->map->tileSelection);
+	}, hasActiveMapViewHeightMode);
+	HotkeyRegistry::registerAction(HotkeyAction::HeightEdit_FlattenTiles,			[this]() {
+		auto gnd = activeMapView->map->rootNode->getComponent<Gnd>();
+
+		if (gnd)
+			gnd->flattenTiles_Brow1(activeMapView->map, this, activeMapView->map->tileSelection);
+	}, hasActiveMapViewHeightMode);
+	HotkeyRegistry::registerAction(HotkeyAction::HeightEdit_IncreaseHeight,			[this]() {
+		auto gnd = activeMapView->map->rootNode->getComponent<Gnd>();
+
+		if (gnd)
+			gnd->increaseTileHeight(activeMapView->map, this, activeMapView->map->tileSelection, -activeMapView->gridSizeTranslate);
+	}, hasActiveMapViewHeightMode);
+	HotkeyRegistry::registerAction(HotkeyAction::HeightEdit_DecreaseHeight,			[this]() {
+		auto gnd = activeMapView->map->rootNode->getComponent<Gnd>();
+
+		if (gnd)
+			gnd->increaseTileHeight(activeMapView->map, this, activeMapView->map->tileSelection, activeMapView->gridSizeTranslate);
+	}, hasActiveMapViewHeightMode);
 
 	HotkeyRegistry::registerAction(HotkeyAction::Texture_PrevTexture,				[this]() { activeMapView->textureSelected = (activeMapView->textureSelected + activeMapView->map->rootNode->getComponent<Gnd>()->textures.size() - 1) % (int)activeMapView->map->rootNode->getComponent<Gnd>()->textures.size(); }, hasActiveMapViewTextureWallMode);
 	HotkeyRegistry::registerAction(HotkeyAction::Texture_NextTexture,				[this]() { activeMapView->textureSelected = (activeMapView->textureSelected + 1) % activeMapView->map->rootNode->getComponent<Gnd>()->textures.size(); }, hasActiveMapViewTextureWallMode);

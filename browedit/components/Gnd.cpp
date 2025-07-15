@@ -1250,6 +1250,48 @@ void Gnd::flattenTiles(Map* map, BrowEdit* browEdit, const std::vector<glm::ivec
 	node->getComponent<GndRenderer>()->setChunksDirty();
 }
 
+void Gnd::flattenTiles_Brow1(Map* map, BrowEdit* browEdit, const std::vector<glm::ivec2>& tiles)
+{
+	// Ensure the selection is rectangular
+	glm::ivec2 min(width, height);
+	glm::ivec2 max(-1, -1);
+	
+	for (auto t : tiles)
+	{
+		min.x = glm::min(t.x, min.x);
+		min.y = glm::min(t.y, min.y);
+	
+		max.x = glm::max(t.x, max.x);
+		max.y = glm::max(t.y, max.y);
+	}
+	
+	std::vector<glm::ivec2> tiles2;
+	
+	for (int x = min.x; x <= max.x; x++)
+		for (int y = min.y; y <= max.y; y++)
+			tiles2.push_back(glm::ivec2(x, y));
+	
+	auto action = new CubeHeightChangeAction<Gnd, Gnd::Cube>(this, tiles2);
+	glm::ivec2 offsets[] = { glm::ivec2(1, 0), glm::ivec2(0, 0) ,glm::ivec2(1, -1), glm::ivec2(0, -1) };
+	
+	auto gndRenderer = node->getComponent<GndRenderer>();
+
+	for (int tx = min.x; tx < max.x; tx++) {
+		for (int ty = min.y + 1; ty <= max.y; ty++) {
+			float height = cubes[tx][ty]->heights[1];
+
+			for (int i = 0; i < 4; i++) {
+				cubes[tx + offsets[i].x][ty + offsets[i].y]->heights[i] = height;
+			}
+		}
+	}
+	
+	node->getComponent<GndRenderer>()->setChunksDirty();
+	action->setNewHeights(this, tiles2);
+	map->doAction(action, browEdit);
+	node->getComponent<GndRenderer>()->setChunksDirty();
+}
+
 void Gnd::smoothTiles(Map* map, BrowEdit* browEdit, const std::vector<glm::ivec2>& tiles, int axis)
 {
 	auto action = new CubeHeightChangeAction<Gnd, Gnd::Cube>(this, tiles);
@@ -1305,6 +1347,90 @@ void Gnd::smoothTiles(Map* map, BrowEdit* browEdit, const std::vector<glm::ivec2
 		}
 	}
 	node->getComponent<GndRenderer>()->setChunksDirty();
+	action->setNewHeights(this, tiles);
+	map->doAction(action, browEdit);
+	node->getComponent<GndRenderer>()->setChunksDirty();
+}
+
+void Gnd::smoothTiles_Brow1(Map* map, BrowEdit* browEdit, const std::vector<glm::ivec2>& tiles)
+{
+	// Ensure the selection is rectangular
+	glm::ivec2 min(width, height);
+	glm::ivec2 max(-1, -1);
+
+	for (auto t : tiles)
+	{
+		min.x = glm::min(t.x, min.x);
+		min.y = glm::min(t.y, min.y);
+
+		max.x = glm::max(t.x, max.x);
+		max.y = glm::max(t.y, max.y);
+	}
+
+	std::vector<glm::ivec2> tiles2;
+
+	for (int x = min.x; x <= max.x; x++)
+		for (int y = min.y; y <= max.y; y++)
+			tiles2.push_back(glm::ivec2(x, y));
+
+	auto action = new CubeHeightChangeAction<Gnd, Gnd::Cube>(this, tiles2);
+	glm::ivec2 offsets[] = { glm::ivec2(0, 0), glm::ivec2(1, 0) ,glm::ivec2(0, 1), glm::ivec2(1, 1) };
+
+	auto gndRenderer = node->getComponent<GndRenderer>();
+	std::vector<std::vector<std::pair<float, int>>> heights;
+	heights.resize(width + 1, std::vector<std::pair<float, int>>());
+	for (int x = 0; x <= width; x++)
+		heights[x].resize(height + 1);
+
+	for (int x = min.x; x <= max.x; x++)
+		for (int y = min.y; y <= max.y; y++)
+			for (auto i = 0; i < 4; i++)
+			{
+				heights[x + offsets[i].x][y + offsets[i].y].first += cubes[x][y]->heights[i];
+				heights[x + offsets[i].x][y + offsets[i].y].second++;
+			}
+
+	for (int tx = min.x + 1; tx <= max.x; tx++) {
+		for (int ty = min.y + 1; ty <= max.y; ty++) {
+			float total = 0;
+			int count = 0;
+
+			for (int x = -1; x <= 1; x++) {
+				for (int y = -1; y <= 1; y++) {
+					total += heights[tx + x][ty + y].first / heights[tx + x][ty + y].second;
+					count++;
+				}
+			}
+
+			if (count == 0)
+				continue;
+
+			total /= count;
+
+			for (int i = 0; i < 4; i++) {
+				cubes[tx - offsets[i].x][ty - offsets[i].y]->heights[i] = total;
+			}
+		}
+	}
+
+	node->getComponent<GndRenderer>()->setChunksDirty();
+	action->setNewHeights(this, tiles2);
+	map->doAction(action, browEdit);
+	node->getComponent<GndRenderer>()->setChunksDirty();
+}
+
+void Gnd::increaseTileHeight(Map* map, BrowEdit* browEdit, const std::vector<glm::ivec2>& tiles, float increment)
+{
+	auto action = new CubeHeightChangeAction<Gnd, Gnd::Cube>(this, tiles);
+
+	for (auto t : tiles)
+	{
+		for (int i = 0; i < 4; i++)
+			cubes[t.x][t.y]->heights[i] += increment;
+	}
+
+	auto gndRenderer = node->getComponent<GndRenderer>();
+
 	action->setNewHeights(this, tiles);
 	map->doAction(action, browEdit);
 	node->getComponent<GndRenderer>()->setChunksDirty();
