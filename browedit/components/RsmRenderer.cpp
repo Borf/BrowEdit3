@@ -190,7 +190,7 @@ void RsmRenderer::initMeshInfo(Rsm::Mesh* mesh, const glm::mat4 &matrix)
 	for (size_t i = 0; i < mesh->faces.size(); i++)
 	{
 		for (int ii = 0; ii < 3; ii++)
-			verts[mesh->faces[i].texId].push_back(VertexP3T2N3C1(mesh->vertices[mesh->faces[i].vertexIds[ii]], mesh->texCoords[mesh->faces[i].texCoordIds[ii]], mesh->faces[i].vertexNormals[ii], mesh->faces[i].twoSided));
+			verts[mesh->faces[i].texId].push_back(VertexP3T2N3C1(mesh->vertices[mesh->faces[i].vertexIds[ii]], mesh->texCoords[mesh->faces[i].texCoordIds[ii]], mesh->faces[i].vertexNormals[ii], (float)mesh->faces[i].twoSided));
 	}
 
 	std::vector<VertexP3T2N3C1> allVerts[3];
