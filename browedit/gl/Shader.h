@@ -1,8 +1,9 @@
 #pragma once
 
-#include <glad/glad.h>
 #include <string>
 #include <glm/glm.hpp>
+
+using GLuint = unsigned int;
 
 namespace gl
 {

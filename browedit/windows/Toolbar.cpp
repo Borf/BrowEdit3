@@ -1,5 +1,5 @@
 #include <Windows.h>
-#include <glad/glad.h>
+#include <glad/gl.h>
 #include <browedit/Icons.h>
 #include <browedit/BrowEdit.h>
 #include <browedit/MapView.h>
@@ -14,9 +14,6 @@
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui.h>
 #include <imgui_internal.h>
-
-#include <Windows.h>
-#include <psapi.h>
 
 class Image;
 
@@ -112,9 +109,6 @@ void BrowEdit::toolbar()
 	ImGui::Begin("Statusbar", 0, toolbarFlags);
 	ImGui::Text("Browedit!");
 
-
-	PROCESS_MEMORY_COUNTERS_EX pmc;
-	GetProcessMemoryInfo(GetCurrentProcess(), (PROCESS_MEMORY_COUNTERS*)&pmc, sizeof(pmc));
 	/*static ULARGE_INTEGER lastCPU, lastSysCPU, lastUserCPU;
 	static int numProcessors = -1;
 	static HANDLE self;
@@ -159,27 +153,17 @@ void BrowEdit::toolbar()
 	else
 		sprintf_s(images, 100, "");
 
-	static bool hasMemory = true;
-	int mem[4] = { 0,0,0,0 };
-	if (hasMemory)
-	{
-		glGetIntegerv(0x9048, &mem[1]); //GPU_MEMORY_INFO_TOTAL_AVAILABLE_MEMORY_NVX      
-		glGetIntegerv(0x9049, &mem[0]); //GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX  
-
-		if (mem[0] == 0 || mem[1] == 0)
-			hasMemory = false;
-	}
-	static char txt[1024];
-	if(hasMemory)
-		sprintf_s(txt, 1024, "Load: Tex(%zu), Models(%zu), %sMem(%zu MB), GPU(%d MB / %d MB)", util::ResourceManager<gl::Texture>::count(), util::ResourceManager<Rsm>::count(), images, pmc.WorkingSetSize / 1024/1024, (mem[1]-mem[0])/1024, mem[1]/1024);
-	else
-		sprintf_s(txt, 1024, "Load: Tex(%zu), Models(%zu), %sMem(%zu MB)", util::ResourceManager<gl::Texture>::count(), util::ResourceManager<Rsm>::count(), images, pmc.WorkingSetSize / 1024 / 1024);
-	auto len = ImGui::CalcTextSize(txt);
+	std::string stats = std::format("Load: Tex({}), Models({}), {}Mem({:.3g} {} / {:.3g} {}), GPU({:.3g} {} / {:.3g} {})",
+		util::ResourceManager<gl::Texture>::count(), util::ResourceManager<Rsm>::count(), images,
+		util::toUnitSize(memoryLimits.systemUsed), util::toSizeUnit(memoryLimits.systemUsed), util::toUnitSize(memoryLimits.systemSize), util::toSizeUnit(memoryLimits.systemSize),
+		util::toUnitSize(memoryLimits.gpuUsed), util::toSizeUnit(memoryLimits.gpuUsed), util::toUnitSize(memoryLimits.gpuSize), util::toSizeUnit(memoryLimits.gpuSize)
+	);
+	auto len = ImGui::CalcTextSize(stats.c_str());
 	ImGui::SameLine(ImGui::GetWindowWidth() - len.x - 6 - ImGui::GetStyle().FramePadding.x);
 	ImRect bb(ImGui::GetCursorScreenPos() - ImVec2(3,3), ImGui::GetCursorScreenPos() + len + ImVec2(6,6));
 	ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
 	ImGui::RenderFrame(bb.Min, bb.Max, 0, true, ImGui::GetStyle().FrameRounding);
-	ImGui::Text(txt);
+	ImGui::Text(stats.c_str());
 
 	if (activeMapView)
 	{
@@ -190,15 +174,15 @@ void BrowEdit::toolbar()
 			int objectCount = 0;
 			activeMapView->map->rootNode->traverse([&objectCount](Node* n) { if (n->getComponent<RswObject>()) objectCount++; });
 
-			sprintf_s(txt, 1024, "Map: %s, Tiles(%zu), Lightmaps(%zu), Objects(%d)", activeMapView->map->name.c_str(), activeMapView->map->rootNode->getComponent<Gnd>()->tiles.size(), activeMapView->map->rootNode->getComponent<Gnd>()->lightmaps.size(), objectCount);
-			auto len2 = ImGui::CalcTextSize(txt);
+			stats = std::format("Map: {}, Tiles({}), Lightmaps({}), Objects({})", activeMapView->map->name.c_str(), activeMapView->map->rootNode->getComponent<Gnd>()->tiles.size(), activeMapView->map->rootNode->getComponent<Gnd>()->lightmaps.size(), objectCount);
+			auto len2 = ImGui::CalcTextSize(stats.c_str());
 
 			ImGui::SameLine(ImGui::GetWindowWidth() - len2.x - len.x - 2 * ImGui::GetStyle().FramePadding.x - 14);
 
 			ImRect bb(ImGui::GetCursorScreenPos() - ImVec2(3, 3), ImGui::GetCursorScreenPos() + len2 + ImVec2(6, 6));
 			ImGui::RenderFrame(bb.Min, bb.Max, 0, true, ImGui::GetStyle().FrameRounding);
 
-			ImGui::Text(txt);
+			ImGui::Text(stats.c_str());
 		}
 	}
 	ImGui::PopStyleVar();

@@ -1,5 +1,5 @@
 #include <Windows.h> //for warning
-#include <glad/glad.h>
+#include <glad/gl.h>
 #include "Texture.h"
 
 #include <browedit/util/FileIO.h>

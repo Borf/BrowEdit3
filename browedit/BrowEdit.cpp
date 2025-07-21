@@ -1,5 +1,6 @@
 #include "BrowEdit.h"
 #include "Version.h"
+#include <glad/gl.h>
 #include <GLFW/glfw3.h>
 #include <BugTrap.h>
 
