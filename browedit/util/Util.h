@@ -5,12 +5,44 @@ class Map;
 class Node;
 #include <json.hpp>
 #include <glm/glm.hpp>
+#include <array>
 #include <string>
 #include <vector>
 #include <imgui.h>
 
+constexpr uint64_t operator""_KB(uint64_t x)
+{
+  return x << 10;
+}
+
+constexpr uint64_t operator""_MB(uint64_t x)
+{
+  return x << 20;
+}
+
+constexpr uint64_t operator""_GB(uint64_t x)
+{
+  return x << 30;
+}
+
+constexpr uint64_t operator""_TB(uint64_t x)
+{
+  return x << 40;
+}
+
+constexpr uint64_t operator""_PB(uint64_t x)
+{
+  return x << 50;
+}
+
 namespace util
 {
+	constexpr std::array<const char*, 6> sizeUnits = {"B", "KB", "MB", "GB", "TB", "PB"};
+
+	std::pair<const char*, double> getSizeUnit(std::size_t x);
+	const char* toSizeUnit(std::size_t x);
+	double toUnitSize(std::size_t x);
+
 	short swapShort(const short s);
 	std::string iso_8859_1_to_utf8(const std::string& str);
 	std::string utf8_to_iso_8859_1(const std::string& str);

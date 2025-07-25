@@ -35,6 +35,41 @@ extern BrowEdit* browEdit;
 
 namespace util
 {
+	std::pair<const char*, double> getSizeUnit(std::size_t x)
+	{
+		if (x == 0) return std::make_pair(util::sizeUnits[0], 0.f);
+
+		uint8_t unit = 0;
+
+		while((x / 1024) > 1024)
+		{
+			if((unit + 1) == util::sizeUnits.size()) break;
+
+			++unit;
+			x /= 1024;
+		}
+
+		double size = static_cast<double>(x);
+		if ((x / 1024.f) > 0 && (unit + 1) < util::sizeUnits.size())
+		{
+			++unit;
+			size /= 1024.f;
+		}
+
+		return std::make_pair(util::sizeUnits[unit], size);
+	}
+
+	const char* toSizeUnit(std::size_t x)
+	{
+
+		return getSizeUnit(x).first;
+	}
+
+	double toUnitSize(std::size_t x)
+	{
+		return getSizeUnit(x).second;
+	}
+
 	short swapShort(const short s)
 	{
 		return ((s&0xff)<<8) | ((s>>8)&0xff);
