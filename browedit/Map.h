@@ -23,6 +23,7 @@ public:
 	std::vector<glm::ivec2> gatSelection;
 
 	bool changed = false;
+	bool mapHasNoGnd = false; // This variable is meant to prevent the console from being filled with the "map has no gnd" error
 
 	std::vector<glm::ivec2> getSelectionAroundTiles();
 

@@ -59,6 +59,9 @@
     <Filter Include="docs\formats">
       <UniqueIdentifier>{ada228bb-85f8-4714-b5e0-fc414f2ce1a9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="lib\lzma">
+      <UniqueIdentifier>{de415d4a-c057-4b3e-8e11-1ab003df01e9}</UniqueIdentifier>
+    </Filter>
     <Filter Include="lib\glad">
       <UniqueIdentifier>{30eef2f8-2b2d-4913-97b5-7e7d692deb17}</UniqueIdentifier>
     </Filter>
@@ -439,6 +442,9 @@
     <ClCompile Include="browedit\windows\CropSettingsWindow.cpp">
       <Filter>browedit\windows</Filter>
     </ClCompile>
+    <ClCompile Include="lib\lzma\LzmaDec.c">
+      <Filter>lib\lzma</Filter>
+    </ClCompile>
     <ClCompile Include="lib\glad\src\gl.c">
       <Filter>lib\glad</Filter>
     </ClCompile>
@@ -761,6 +767,18 @@
     </ClInclude>
     <ClInclude Include="browedit\util\Console.h">
       <Filter>browedit\util</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\lzma\LzmaDec.h">
+      <Filter>lib\lzma</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\lzma\Precomp.h">
+      <Filter>lib\lzma</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\lzma\7zTypes.h">
+      <Filter>lib\lzma</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\lzma\Compiler.h">
+      <Filter>lib\lzma</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

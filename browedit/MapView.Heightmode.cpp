@@ -774,10 +774,12 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 				auto mouseDragEnd = mouse3D;
 				mouseDown = false;
 
-				std::vector<glm::ivec2> newSelection;
-				if (ImGui::GetIO().KeyShift || ImGui::GetIO().KeyCtrl)
-					newSelection = map->tileSelection;
-
+				std::map<int, glm::ivec2> newSelection;
+				if (ImGui::GetIO().KeyShift || ImGui::GetIO().KeyCtrl) {
+					for (auto& tile : map->tileSelection) {
+						newSelection[tile.x + gnd->width * tile.y] = tile;
+					}
+				}
 				if (browEdit->selectTool == BrowEdit::SelectTool::Rectangle)
 				{
 					int tileMinX = (int)glm::floor(glm::min(mouseDragStart.x, mouseDragEnd.x) / 10);
@@ -791,11 +793,11 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 							for (int y = tileMinY; y < tileMaxY; y++)
 								if (ImGui::GetIO().KeyCtrl)
 								{
-									if (std::find(newSelection.begin(), newSelection.end(), glm::ivec2(x, y)) != newSelection.end())
-										newSelection.erase(std::remove_if(newSelection.begin(), newSelection.end(), [&](const glm::ivec2& el) { return el.x == x && el.y == y; }));
+									if (newSelection.contains(x + gnd->width * y))
+										newSelection.erase(x + gnd->width * y);
 								}
-								else if (std::find(newSelection.begin(), newSelection.end(), glm::ivec2(x, y)) == newSelection.end())
-									newSelection.push_back(glm::ivec2(x, y));
+								else if (!newSelection.contains(x + gnd->width * y))
+									newSelection[x + gnd->width * y] = glm::ivec2(x, y);
 				}
 				else if (browEdit->selectTool == BrowEdit::SelectTool::Lasso)
 				{
@@ -809,29 +811,28 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 							if(polygon.contains(glm::vec2(x, y)))
 								if (ImGui::GetIO().KeyCtrl)
 								{
-									if (std::find(newSelection.begin(), newSelection.end(), glm::ivec2(x, y)) != newSelection.end())
-										newSelection.erase(std::remove_if(newSelection.begin(), newSelection.end(), [&](const glm::ivec2& el) { return el.x == x && el.y == y; }));
+									if (newSelection.contains(x + gnd->width * y))
+										newSelection.erase(x + gnd->width * y);
 								}
-								else if (std::find(newSelection.begin(), newSelection.end(), glm::ivec2(x, y)) == newSelection.end())
-									newSelection.push_back(glm::ivec2(x, y));
-
+								else if (!newSelection.contains(x + gnd->width * y))
+									newSelection[x + gnd->width * y] = glm::ivec2(x, y);
 						}
 					}
 					for (auto t : selectLasso)
 						if (ImGui::GetIO().KeyCtrl)
 						{
-							if (std::find(newSelection.begin(), newSelection.end(), glm::ivec2(t.x, t.y)) != newSelection.end())
-								newSelection.erase(std::remove_if(newSelection.begin(), newSelection.end(), [&](const glm::ivec2& el) { return el.x == t.x && el.y == t.y; }));
+							if (newSelection.contains(t.x + gnd->width * t.y))
+								newSelection.erase(t.x + gnd->width * t.y);
 						}
-						else if (std::find(newSelection.begin(), newSelection.end(), glm::ivec2(t.x, t.y)) == newSelection.end())
-							newSelection.push_back(glm::ivec2(t.x, t.y));
+						else if (!newSelection.contains(t.x + gnd->width * t.y))
+							newSelection[t.x + gnd->width * t.y] = glm::ivec2(t.x, t.y);
 					selectLasso.clear();
 				}
 				else if (browEdit->selectTool == BrowEdit::SelectTool::WandTex)
 				{
 					glm::ivec2 tileHovered((int)glm::floor(mouse3D.x / 10), (gnd->height - (int)glm::floor(mouse3D.z) / 10));
 
-					std::vector<glm::ivec2> tilesToFill;
+					std::map<int, glm::ivec2> tilesToFill;
 					std::queue<glm::ivec2> queue;
 					std::map<int, bool> done;
 
@@ -842,43 +843,46 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 					{
 						auto p = queue.front();
 						queue.pop();
+						if (!gnd->inMap(p) || gnd->cubes[p.x][p.y]->tileUp == -1)
+							continue;
 						for (const auto& o : offsets)
 						{
 							auto pp = p + o;
-							if (!gnd->inMap(pp) || !gnd->inMap(p))
+							if (!gnd->inMap(pp))
 								continue;
 							auto c = gnd->cubes[pp.x][pp.y];
-							if (c->tileUp == -1 || gnd->cubes[p.x][p.y]->tileUp == -1)
+							if (c->tileUp == -1)
 								continue;
 							auto t = gnd->tiles[c->tileUp];
 							if (t->textureIndex != gnd->tiles[gnd->cubes[p.x][p.y]->tileUp]->textureIndex)
 								continue;
-							if (done.find(pp.x + gnd->width * pp.y) == done.end())
+							if (!done.contains(pp.x + gnd->width * pp.y))
 							{
 								done[pp.x + gnd->width * pp.y] = true;
 								queue.push(pp);
 							}
 						}
-						if (gnd->inMap(p) && std::find(tilesToFill.begin(), tilesToFill.end(), p) == tilesToFill.end())
-							tilesToFill.push_back(p);
+						if (gnd->inMap(p) && !tilesToFill.contains(p.x + gnd->width * p.y))
+							tilesToFill[p.x + gnd->width * p.y] = p;
 						c++;
 					}
-					for (const auto& t : tilesToFill)
+					for (const auto& entry : tilesToFill)
 					{
+						auto t = entry.second;
 						if (ImGui::GetIO().KeyCtrl)
 						{
-							if (std::find(newSelection.begin(), newSelection.end(), t) != newSelection.end())
-								newSelection.erase(std::remove_if(newSelection.begin(), newSelection.end(), [&](const glm::ivec2& el) { return el.x == t.x && el.y == t.y; }));
+							if (newSelection.contains(t.x + gnd->width * t.y))
+								newSelection.erase(t.x + gnd->width * t.y);
 						}
-						else if (std::find(newSelection.begin(), newSelection.end(), t) == newSelection.end())
-							newSelection.push_back(t);
+						else if (!newSelection.contains(t.x + gnd->width * t.y))
+							newSelection[t.x + gnd->width * t.y] = t;
 					}
 				}
 				else if (browEdit->selectTool == BrowEdit::SelectTool::WandHeight)
 				{
 					glm::ivec2 tileHovered((int)glm::floor(mouse3D.x / 10), (gnd->height - (int)glm::floor(mouse3D.z) / 10));
 
-					std::vector<glm::ivec2> tilesToFill;
+					std::map<int, glm::ivec2> tilesToFill;
 					std::queue<glm::ivec2> queue;
 					std::map<int, bool> done;
 
@@ -889,34 +893,37 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 					{
 						auto p = queue.front();
 						queue.pop();
+						if (!gnd->inMap(p))
+							continue;
 						for (const auto& o : offsets)
 						{
 							auto pp = p + o;
-							if (!gnd->inMap(pp) || !gnd->inMap(p))
+							if (!gnd->inMap(pp))
 								continue;
 							auto c = gnd->cubes[pp.x][pp.y];
 
 							if (!c->sameHeight(*gnd->cubes[p.x][p.y]))
 								continue;
-							if (done.find(pp.x + gnd->width * pp.y) == done.end())
+							if (!done.contains(pp.x + gnd->width * pp.y))
 							{
 								done[pp.x + gnd->width * pp.y] = true;
 								queue.push(pp);
 							}
 						}
-						if (gnd->inMap(p) && std::find(tilesToFill.begin(), tilesToFill.end(), p) == tilesToFill.end())
-							tilesToFill.push_back(p);
+						if (gnd->inMap(p) && !tilesToFill.contains(p.x + gnd->width * p.y))
+							tilesToFill[p.x + gnd->width * p.y] = p;
 						c++;
 					}
-					for (const auto& t : tilesToFill)
+					for (const auto& entry : tilesToFill)
 					{
+						auto t = entry.second;
 						if (ImGui::GetIO().KeyCtrl)
 						{
-							if (std::find(newSelection.begin(), newSelection.end(), t) != newSelection.end())
-								newSelection.erase(std::remove_if(newSelection.begin(), newSelection.end(), [&](const glm::ivec2& el) { return el.x == t.x && el.y == t.y; }));
+							if (newSelection.contains(t.x + gnd->width * t.y))
+								newSelection.erase(t.x + gnd->width * t.y);
 						}
-						else if (std::find(newSelection.begin(), newSelection.end(), t) == newSelection.end())
-							newSelection.push_back(t);
+						else if (!newSelection.contains(t.x + gnd->width * t.y))
+							newSelection[t.x + gnd->width * t.y] = t;
 					}
 				}
 				else if (browEdit->selectTool == BrowEdit::SelectTool::AllTex)
@@ -935,11 +942,11 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 						{
 							if (ImGui::GetIO().KeyCtrl)
 							{
-								if (std::find(newSelection.begin(), newSelection.end(), t) != newSelection.end())
-									newSelection.erase(std::remove_if(newSelection.begin(), newSelection.end(), [&](const glm::ivec2& el) { return el.x == t.x && el.y == t.y; }));
+								if (newSelection.contains(t.x + gnd->width * t.y))
+									newSelection.erase(t.x + gnd->width * t.y);
 							}
-							else if (std::find(newSelection.begin(), newSelection.end(), t) == newSelection.end())
-								newSelection.push_back(t);
+							else if (!newSelection.contains(t.x + gnd->width * t.y))
+								newSelection[t.x + gnd->width * t.y] = t;
 						}
 					}
 				}
@@ -958,19 +965,24 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 						{
 							if (ImGui::GetIO().KeyCtrl)
 							{
-								if (std::find(newSelection.begin(), newSelection.end(), t) != newSelection.end())
-									newSelection.erase(std::remove_if(newSelection.begin(), newSelection.end(), [&](const glm::ivec2& el) { return el.x == t.x && el.y == t.y; }));
+								if (newSelection.contains(t.x + gnd->width * t.y))
+									newSelection.erase(t.x + gnd->width * t.y);
 							}
-							else if (std::find(newSelection.begin(), newSelection.end(), t) == newSelection.end())
-								newSelection.push_back(t);
+							else if (!newSelection.contains(t.x + gnd->width * t.y))
+								newSelection[t.x + gnd->width * t.y] = t;
 						}
 					}
 				}
 
+				std::vector<glm::ivec2> newSelection2;
 
-				if (map->tileSelection != newSelection)
+				for (const auto& entry : newSelection) {
+					newSelection2.push_back(entry.second);
+				}
+
+				if (map->tileSelection != newSelection2)
 				{
-					map->doAction(new TileSelectAction(map, newSelection), browEdit);
+					map->doAction(new TileSelectAction(map, newSelection2), browEdit);
 				}
 			}
 		}

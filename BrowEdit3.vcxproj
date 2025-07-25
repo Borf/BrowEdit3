@@ -120,6 +120,7 @@
     <ClCompile Include="lib\imgui\imgui_tables.cpp" />
     <ClCompile Include="lib\imgui\imgui_widgets.cpp" />
     <ClCompile Include="lib\imgui\misc\cpp\imgui_stdlib.cpp" />
+    <ClCompile Include="lib\lzma\LzmaDec.c" />
     <ClCompile Include="lib\sfl\stb\stb_image.cpp" />
     <ClCompile Include="lib\sfl\stb\stb_image_write.cpp" />
     <ClCompile Include="lib\tinygltf\tiny_gltf.cc" />
@@ -231,6 +232,10 @@
     <ClInclude Include="lib\imgui\imstb_textedit.h" />
     <ClInclude Include="lib\imgui\imstb_truetype.h" />
     <ClInclude Include="lib\imgui\misc\cpp\imgui_stdlib.h" />
+    <ClInclude Include="lib\lzma\7zTypes.h" />
+    <ClInclude Include="lib\lzma\Compiler.h" />
+    <ClInclude Include="lib\lzma\LzmaDec.h" />
+    <ClInclude Include="lib\lzma\Precomp.h" />
     <ClInclude Include="lib\tinygltf\tiny_gltf.h" />
     <ClInclude Include="lib\zlib\crc32.h" />
     <ClInclude Include="lib\zlib\deflate.h" />
@@ -323,7 +328,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32_LEAN_AND_MEAN;VC_EXTRALEAN;NOMINMAX;GRF_STATIC;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>lib/imgui/;lib/glfw-3.3.8/include;lib/grflib;lib/zlib;lib/sfl;lib/glm;lib/glad/include;$(SolutionDir);lib/bugtrap;lib/magic_enum/include;lib/imGuIZMO.quat/imGuIZMO.quat</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>lib/imgui/;lib/glfw-3.3.8/include;lib/grflib;lib/zlib;lib/sfl;lib/glm;lib/glad/include;lib/lzma;$(SolutionDir);lib/bugtrap;lib/magic_enum/include;lib/imGuIZMO.quat/imGuIZMO.quat</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -349,7 +354,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32_LEAN_AND_MEAN;VC_EXTRALEAN;NOMINMAX;GRF_STATIC;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>lib/imgui/;lib/glfw-3.3.8/include;lib/grflib;lib/zlib;lib/sfl;lib/glm;lib/glad/include;$(SolutionDir);lib/bugtrap;lib/magic_enum/include;lib/imGuIZMO.quat/imGuIZMO.quat</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>lib/imgui/;lib/glfw-3.3.8/include;lib/grflib;lib/zlib;lib/sfl;lib/glm;lib/glad/include;lib/lzma;$(SolutionDir);lib/bugtrap;lib/magic_enum/include;lib/imGuIZMO.quat/imGuIZMO.quat</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <BrowseInformation>false</BrowseInformation>

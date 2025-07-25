@@ -798,7 +798,11 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 				for(auto& p : objectSelectLasso)
 					polygon.push_back(glm::vec2(p.x, p.z));
 
-				bool first = true;
+				bool modified = false;
+				std::vector<Node*> newSelectedNodes;
+
+				if (ImGui::GetIO().KeyShift)
+					newSelectedNodes = map->selectedNodes;
 
 				auto ga = new GroupAction();
 				map->rootNode->traverse([&](Node* n)
@@ -810,14 +814,25 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 					glm::vec2 pos(5 * gnd->width + rswObject->position.x, -(-10 - 5 * gnd->height + rswObject->position.z));
 					if (polygon.contains(pos))
 					{
-						auto action = new SelectAction(map, n, ImGui::GetIO().KeyShift || !first, std::find(map->selectedNodes.begin(), map->selectedNodes.end(), n) != map->selectedNodes.end() && ImGui::GetIO().KeyShift);
-						action->perform(map, browEdit);
-						ga->addAction(action);
-						first = false;
+						if (ImGui::GetIO().KeyShift) {
+							if (std::find(map->selectedNodes.begin(), map->selectedNodes.end(), n) != map->selectedNodes.end()) {
+								newSelectedNodes.erase(std::remove_if(newSelectedNodes.begin(), newSelectedNodes.end(), [n](Node* n2) { return n2 == n; }));
+							}
+							else {
+								newSelectedNodes.push_back(n);
+							}
+						}
+						else {
+							newSelectedNodes.push_back(n);
+						}
+						modified = true;
 					}
 				});
-				if (!first)
-					map->doAction(ga, browEdit);
+
+				if (modified) {
+					auto action = new SelectAction(map, newSelectedNodes, false, false);
+					map->doAction(action, browEdit);
+				}
 			}
 			objectSelectLasso.clear();
 		}

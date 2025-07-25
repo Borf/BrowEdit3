@@ -186,21 +186,8 @@ void BrowEdit::menuBar()
 		}
 
 		if (ImGui::MenuItem("Select all lights")) {
-			auto ga = new GroupAction();
-
-			activeMapView->map->rootNode->traverse([&](Node* n)
-				{
-					auto lightObject = n->getComponent<RswLight>();
-					if (!lightObject)
-						return;
-
-					auto action = new SelectAction(activeMapView->map, n, true, false);
-					action->perform(activeMapView->map, this);
-					ga->addAction(action);
-				});
-
-			if (!ga->isEmpty())
-				activeMapView->map->doAction(ga, this);
+			if (activeMapView)
+				activeMapView->map->selectAll<RswLight>(this);
 		}
 
 		ImGui::EndMenu();

@@ -363,19 +363,18 @@ void Map::selectSameModels(BrowEdit* browEdit)
 template<class T>
 void Map::selectAll(BrowEdit* browEdit)
 {
-	auto ga = new GroupAction();
+	std::vector<Node*> newNodes;
 	rootNode->traverse([&](Node* n) {
 		if (std::find(selectedNodes.begin(), selectedNodes.end(), n) != selectedNodes.end())
 			return;
 		auto rswObject = n->getComponent<T>();
 		if (rswObject)
 		{
-			auto sa = new SelectAction(this, n, true, false);
-			selectedNodes.push_back(n);
-			ga->addAction(sa);
+			newNodes.push_back(n);
 		}
 		});
-	doAction(ga, browEdit);
+	auto sa = new SelectAction(this, newNodes, true, false);
+	doAction(sa, browEdit);
 }
 template void Map::selectAll<RswObject>(BrowEdit* browEdit);
 template void Map::selectAll<RswModel>(BrowEdit* browEdit);

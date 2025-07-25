@@ -60,6 +60,8 @@ GRFEXTERN_BEGIN
 GRFINLINE uint32_t LittleEndian32(uint8_t *p);
 GRFINLINE uint32_t ToLittleEndian32(uint32_t);
 
+GRFINLINE __int64 LittleEndian64(uint8_t *p);
+
 GRFEXPORT char *GRF_normalize_path(char *out, const char *in);
 GRFEXPORT uint32_t GRF_NameHash(const char *name);
 
