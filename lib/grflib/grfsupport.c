@@ -58,7 +58,6 @@ LittleEndian32(uint8_t *p)
 	return ((p[3] * 256 + p[2]) * 256 + p[1]) * 256 + *p;
 }
 
-
 /** Endian support function.
  *
  * Transforms a host uint32_t into a little-endian uint32_t
@@ -76,6 +75,22 @@ ToLittleEndian32(uint32_t hi)
 	p[2] = (hi & 0xFF0000) >> 16U;
 	p[3] = (hi & 0xFF000000) >> 24U;
 	return lei;
+}
+
+/** Endian support function.
+ *
+ * Grabs a __int64 from a 4byte (or more) character array.
+ *
+ * @warning If the character array is less than 4 bytes long, this function
+ *		will access memory outside of the array
+ *
+ * @param p A uint8_t (char) array holding the bytes
+ * @return A __int64 in Little Endian order
+ */
+GRFINLINE __int64
+LittleEndian64(uint8_t* p)
+{
+	return (__int64)LittleEndian32(p) + ((__int64)LittleEndian32(p + 4) << 32);
 }
 
 

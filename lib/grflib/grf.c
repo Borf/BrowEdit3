@@ -42,18 +42,18 @@
 #include "grf.h"
 
 #include <zlib.h>
+#include <LzmaDec.h>
 #include <string.h>
 #include <stdlib.h>
 
 GRFEXTERN_BEGIN
 
 /* Headers */
-#define GRF_HEADER		"Master of Magic"
-#define GRF_HEADER_LEN		(sizeof(GRF_HEADER) - 1)	/* -1 to strip
-								 * null terminator
-								 */
-#define GRF_HEADER_MID_LEN	(sizeof(GRF_HEADER) + 0xE)	/* -1 + 0xF */
-#define GRF_HEADER_FULL_LEN	(sizeof(GRF_HEADER) + 0x1E)	/* -1 + 0x1F */
+#define GRF_HEADER_MASTER_OF_MAGIC		"Master of Magic\0"
+#define GRF_HEADER_EVENT_HORIZON		"Event Horizon\0RL"
+#define GRF_HEADER_LEN		16
+#define GRF_HEADER_MID_LEN	(GRF_HEADER_LEN + 0xE)	/* -1 + 0xF */
+#define GRF_HEADER_FULL_LEN	(GRF_HEADER_LEN + 0x1E)	/* -1 + 0x1F */
 
 
 /** Special file extensions.
@@ -471,12 +471,14 @@ static int GRF_readVer1_info(Grf *grf, GrfError *error, GrfOpenCallback callback
 	return 0;
 }
 
+static void* SzAlloc(ISzAllocPtr p, size_t size) { return malloc(size); }
+static void SzFree(ISzAllocPtr p, void* address) { free(address); }
+static ISzAlloc SzAllocForLzma = { SzAlloc, SzFree };
+
 /*! \brief Private function to read GRF0x2xx headers
  *
  * Reads the information about files within the archive...
- * for archive versions 0x02xx
- *
- * \todo Find GRF versions other than just 0x200 (do any exist?)
+ * for archive versions 0x02xx and 0x03xx
  *
  * \param grf Pointer to the Grf struct to read to
  * \param error Pointer to a GrfErrorType struct/enum for error reporting
@@ -493,7 +495,7 @@ static int GRF_readVer2_info(Grf *grf, GrfError *error, GrfOpenCallback callback
 	char *buf, *zbuf;
 
 	/* Check grf */
-	if (grf->version != 0x200) {
+	if (grf->version != 0x200 && grf->version != 0x300) {
 		GRF_SETERR(error,GE_NSUP,GRF_readVer2_info);
 		return 1;
 	}
@@ -540,12 +542,48 @@ static int GRF_readVer2_info(Grf *grf, GrfError *error, GrfOpenCallback callback
 		return 1;
 	}
 	zlen = len2;
-	z = uncompress((Bytef*) buf, &zlen, (const Bytef *) zbuf, (uLong) len);
-	if (z != Z_OK) {
-		free(buf);
-		free(zbuf);
-		GRF_SETERR_2(error, GE_ZLIB, uncompress, (ssize_t) z);  /* NOTE: int => ssize_t /-signed-/ => uintptr* conversion */
-		return 1;
+	
+	/* lzma decompression, first byte is 0 */
+	if (len > 0 && zbuf[0] == '\0') {
+		if (len < LZMA_PROPS_SIZE + 1) {
+			// Not enough data to start decode
+			free(buf);
+			free(zbuf);
+			GRF_SETERR(error, GE_ERRNO, GRF_readVer2_info);
+			return 1;
+		}
+
+		SizeT pack_size = len - LZMA_PROPS_SIZE - 1;
+		SizeT lzmalen = (SizeT)zlen;
+
+		ELzmaStatus detailed_status;
+
+		// Decode, starting from input offset 1
+		z = LzmaDecode(
+			&buf[0], &lzmalen,						// Decoded
+			&zbuf[1 + LZMA_PROPS_SIZE], &pack_size,	// Encoded
+			&zbuf[1], LZMA_PROPS_SIZE,				// Properties
+			LZMA_FINISH_END, &detailed_status, &SzAllocForLzma
+		);
+
+		zlen = (uLongf)lzmalen;
+
+		if (z != Z_OK) {
+			free(buf);
+			free(zbuf);
+			GRF_SETERR_2(error, GE_ZLIB, LzmaDecode, (ssize_t)z);
+			return 1;
+		}
+	}
+	/* zlib decompression */
+	else {
+		z = uncompress((Bytef*) buf, &zlen, (const Bytef *) zbuf, (uLong) len);
+		if (z != Z_OK) {
+			free(buf);
+			free(zbuf);
+			GRF_SETERR_2(error, GE_ZLIB, uncompress, (ssize_t) z);  /* NOTE: int => ssize_t /-signed-/ => uintptr* conversion */
+			return 1;
+		}
 	}
 
 	/* Free the compressed file table */
@@ -568,15 +606,22 @@ static int GRF_readVer2_info(Grf *grf, GrfError *error, GrfOpenCallback callback
 		offset+=len;
 
 		/* Grab the rest of the information */
-		grf->files[i].compressed_len=LittleEndian32((uint8_t*)buf+offset);
-		grf->files[i].compressed_len_aligned=LittleEndian32((uint8_t*)buf+offset+4);
-		grf->files[i].real_len=LittleEndian32((uint8_t*)buf+offset+8);
-		grf->files[i].flags=*(uint8_t*)(buf+offset+0xC);
-		grf->files[i].pos=LittleEndian32((uint8_t*)buf+offset+0xD)+GRF_HEADER_FULL_LEN;
-		grf->files[i].hash=GRF_NameHash(grf->files[i].name);
+
+		grf->files[i].compressed_len = LittleEndian32((uint8_t*)buf + offset);
+		grf->files[i].compressed_len_aligned = LittleEndian32((uint8_t*)buf + offset + 4);
+		grf->files[i].real_len = LittleEndian32((uint8_t*)buf + offset + 8);
+		grf->files[i].flags = *(uint8_t*)(buf + offset + 0xC);
+		if (grf->version >= 0x0300)
+			grf->files[i].pos = LittleEndian64((uint8_t*)buf + offset + 0xD) + GRF_HEADER_FULL_LEN;
+		else
+			grf->files[i].pos = LittleEndian32((uint8_t*)buf + offset + 0xD) + GRF_HEADER_FULL_LEN;
+		grf->files[i].hash = GRF_NameHash(grf->files[i].name);
 
 		/* Advance to the next file */
-		offset+=0x11;
+		if (grf->version >= 0x0300)
+			offset += 0x15;
+		else
+			offset += 0x11;
 
 		/* Run the callback, if we have one */
 		if (callback) {
@@ -731,14 +776,13 @@ GRFEXPORT Grf *
 grf_callback_open (const char *fname, const char *mode, GrfError *error, GrfOpenCallback callback)
 {
 	char buf[GRF_HEADER_FULL_LEN];
-	uint32_t i, zero = 0, zero_fcount = ToLittleEndian32(7), create_ver = ToLittleEndian32(0x0200);
+	uint32_t i, zero = 0, zero_fcount = ToLittleEndian32(7), create_ver = ToLittleEndian32(0x0200), create_ver_300 = ToLittleEndian32(0x0300);
 	int z;
 	Grf *grf;
 	uLongf zlen;
 	uLong zlenmax;
 	uint32_t zlen_le;
 	char *zbuf;
-
 
 	if (!fname || !mode) {
 		GRF_SETERR(error,GE_BADARGS,grf_callback_open);
@@ -784,18 +828,35 @@ grf_callback_open (const char *fname, const char *mode, GrfError *error, GrfOpen
 		}
 		zlen_le = ToLittleEndian32(zlen);
 
-		if (0==fwrite(GRF_HEADER, GRF_HEADER_LEN, 1, grf->f) ||               /* MoM header */
-		  0==fwrite(&crypt_watermark, sizeof(crypt_watermark), 1, grf->f) ||  /* 00 01 ... */
-		  0==fwrite(&zero, sizeof(uint32_t), 1U, grf->f) ||                   /* offset */
-		  0==fwrite(&zero, sizeof(uint32_t), 1U, grf->f) ||                   /* seed */
-		  0==fwrite(&zero_fcount, sizeof(uint32_t), 1U, grf->f) ||            /* filecount + 7 */
-		  0==fwrite(&create_ver, sizeof(uint32_t), 1U, grf->f) ||             /* 0x200 */
-		  0==fwrite(&zlen_le, sizeof(uint32_t), 1U, grf->f) ||                /* comp tbl size */
-		  0==fwrite(&zero, sizeof(uint32_t), 1U, grf->f) ||                   /* nfiles */
-		  0==fwrite(zbuf, zlen, 1U, grf->f)) {                                /* table */
-			free(zbuf);
-			GRF_SETERR(error,GE_ERRNO,fwrite);
-			return NULL;
+		if (grf->version >= 0x0300) {
+			if (0 == fwrite(GRF_HEADER_EVENT_HORIZON, GRF_HEADER_LEN, 1, grf->f) ||		/* Event Horizon.RL header */
+				0 == fwrite(&crypt_watermark, sizeof(crypt_watermark), 1, grf->f) ||	/* 00 01 ... */
+				0 == fwrite(&zero, sizeof(__int64), 1U, grf->f) ||						/* offset */
+				0 == fwrite(&zero, sizeof(uint32_t), 1U, grf->f) ||						/* filecount */
+				0 == fwrite(&create_ver_300, sizeof(uint32_t), 1U, grf->f) ||			/* 0x300 */
+				0 == fwrite(&zero, sizeof(uint32_t), 1U, grf->f) ||						/* empty 4 bytes */
+				0 == fwrite(&zlen_le, sizeof(uint32_t), 1U, grf->f) ||					/* comp tbl size */
+				0 == fwrite(&zero, sizeof(uint32_t), 1U, grf->f) ||						/* tbl size */
+				0 == fwrite(zbuf, zlen, 1U, grf->f)) {									/* table */
+				free(zbuf);
+				GRF_SETERR(error, GE_ERRNO, fwrite);
+				return NULL;
+			}
+		}
+		else {
+			if (0==fwrite(GRF_HEADER_MASTER_OF_MAGIC, GRF_HEADER_LEN, 1, grf->f) ||		/* Master of Magic header */
+			  0==fwrite(&crypt_watermark, sizeof(crypt_watermark), 1, grf->f) ||		/* 00 01 ... */
+			  0==fwrite(&zero, sizeof(uint32_t), 1U, grf->f) ||							/* offset */
+			  0==fwrite(&zero, sizeof(uint32_t), 1U, grf->f) ||							/* seed */
+			  0==fwrite(&zero_fcount, sizeof(uint32_t), 1U, grf->f) ||					/* filecount + 7 */
+			  0==fwrite(&create_ver, sizeof(uint32_t), 1U, grf->f) ||					/* 0x200 */
+			  0==fwrite(&zlen_le, sizeof(uint32_t), 1U, grf->f) ||						/* comp tbl size */
+			  0==fwrite(&zero, sizeof(uint32_t), 1U, grf->f) ||							/* tbl size */
+			  0==fwrite(zbuf, zlen, 1U, grf->f)) {										/* table */
+				free(zbuf);
+				GRF_SETERR(error,GE_ERRNO,fwrite);
+				return NULL;
+			}
 		}
 		free(zbuf);
 		if (0!= _fseeki64(grf->f,0,SEEK_SET)) {
@@ -815,7 +876,8 @@ grf_callback_open (const char *fname, const char *mode, GrfError *error, GrfOpen
 	}
 
 	/* Check the header */
-	if (memcmp(buf, GRF_HEADER, GRF_HEADER_LEN)) {
+	if (memcmp(buf, GRF_HEADER_MASTER_OF_MAGIC, GRF_HEADER_LEN) != 0 &&
+		memcmp(buf, GRF_HEADER_EVENT_HORIZON, GRF_HEADER_LEN) != 0) {
 		grf_free(grf);
 		GRF_SETERR(error,GE_INVALID,grf_callback_open);
 		return NULL;
@@ -834,11 +896,11 @@ grf_callback_open (const char *fname, const char *mode, GrfError *error, GrfOpen
 	 * GRF files that do not allow it are generally found after a
 	 * "Ragnarok.exe /repak" command has been issued
 	 */
-	if (buf[GRF_HEADER_LEN+1]==1) {
+	if (buf[GRF_HEADER_LEN]==1) {
 		grf->allowCrypt=1;
-		/* 00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E */
-		for (i=0;i<0xF;i++)
-			if (buf[GRF_HEADER_LEN+i] != (int)i) {
+		/* 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E */
+		for (i=0;i<0xE;i++)
+			if (buf[GRF_HEADER_LEN+i] != (int)(i + 1)) {
 				grf_free(grf);
 				GRF_SETERR(error,GE_CORRUPTED,grf_callback_open);
 				return NULL;
@@ -846,8 +908,8 @@ grf_callback_open (const char *fname, const char *mode, GrfError *error, GrfOpen
 	}
 	else if (buf[GRF_HEADER_LEN]==0) {
 		grf->allowCrypt=0;
-		/* 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 */
-		for (i=0;i<0xF;i++)
+		/* 00 00 00 00 00 00 00 00 00 00 00 00 00 00 */
+		for (i=0;i<0xE;i++)
 			if (buf[GRF_HEADER_LEN+i] != 0) {
 				grf_free(grf);
 				GRF_SETERR(error,GE_CORRUPTED,grf_callback_open);
@@ -871,7 +933,12 @@ grf_callback_open (const char *fname, const char *mode, GrfError *error, GrfOpen
 	grf->version=LittleEndian32((uint8_t*)buf+GRF_HEADER_MID_LEN+0xC);
 
 	/* Read the number of files */
-	grf->nfiles=LittleEndian32((uint8_t *)buf+GRF_HEADER_MID_LEN+8)-LittleEndian32((uint8_t*)buf+GRF_HEADER_MID_LEN+4)-7;
+	if (grf->version >= 0x0300 && memcmp(buf, GRF_HEADER_EVENT_HORIZON, GRF_HEADER_LEN) == 0) {
+		grf->nfiles = LittleEndian32((uint8_t*)buf + GRF_HEADER_MID_LEN + 8);
+	}
+	else {
+		grf->nfiles = LittleEndian32((uint8_t*)buf + GRF_HEADER_MID_LEN + 8) - LittleEndian32((uint8_t*)buf + GRF_HEADER_MID_LEN + 4) - 7;
+	}
 
 	/* Create the array of files */
 	if (grf->nfiles) {
@@ -896,16 +963,30 @@ grf_callback_open (const char *fname, const char *mode, GrfError *error, GrfOpen
 	grf->len= _ftelli64(grf->f);
 
 	/* Seek to the offset of the file tables */
-	if (_fseeki64(grf->f, LittleEndian32((uint8_t*)buf+GRF_HEADER_MID_LEN)+GRF_HEADER_FULL_LEN, SEEK_SET)) {
-		grf_free(grf);
-		GRF_SETERR(error,GE_ERRNO,fseek);
-		return NULL;
+	switch (grf->version & 0xFF00) {
+	case 0x0300:
+		if (_fseeki64(grf->f, LittleEndian64((uint8_t*)buf + GRF_HEADER_MID_LEN) + GRF_HEADER_FULL_LEN + 4, SEEK_SET)) {
+			grf_free(grf);
+			GRF_SETERR(error, GE_ERRNO, fseek);
+			return NULL;
+		}
+		break;
+	case 0x0200:
+	case 0x0100:
+	default:
+		if (_fseeki64(grf->f, LittleEndian32((uint8_t*)buf+GRF_HEADER_MID_LEN)+GRF_HEADER_FULL_LEN, SEEK_SET)) {
+			grf_free(grf);
+			GRF_SETERR(error,GE_ERRNO,fseek);
+			return NULL;
+		}
+		break;
 	}
 
 	/* Run a different function to read the file information based on
 	 * the major version number
 	 */
 	switch (grf->version&0xFF00) {
+	case 0x0300:
 	case 0x0200:
 		i=GRF_readVer2_info(grf,error,callback);
 		break;
@@ -1030,7 +1111,37 @@ grf_index_get (Grf *grf, uint32_t index, uint32_t *size, GrfError *error)
 	GRF_SETERR(error,GE_SUCCESS,grf_index_get);
 
 	/* Uncompress the data, and catch any errors */
-	if ((z=uncompress((Bytef*)grf->files[index].data,&zlen,(const Bytef *)zbuf, (uLong)zsiz))!=Z_OK) {
+	if (zsiz > 0 && zbuf[0] == '\0') {
+		if (zsiz < LZMA_PROPS_SIZE + 1) {
+			// Not enough data to start decode
+			free(grf->files[index].data);
+			GRF_SETERR(error, GE_ERRNO, realloc);
+			return NULL;
+		}
+
+		SizeT pack_size = zsiz - LZMA_PROPS_SIZE - 1;
+		SizeT lzmalen = (SizeT)zlen;
+
+		ELzmaStatus detailed_status;
+
+		// Decode, starting from input offset 1
+		z = LzmaDecode(
+			&grf->files[index].data[0], &lzmalen,	// Decoded
+			&zbuf[1 + LZMA_PROPS_SIZE], &pack_size,				// Encoded
+			&zbuf[1], LZMA_PROPS_SIZE,		// Properties
+			LZMA_FINISH_END, &detailed_status, &SzAllocForLzma
+		);
+
+		zlen = (uLongf)lzmalen;
+
+		if (z != Z_OK) {
+			free(grf->files[index].data);
+			grf->files[index].data = NULL;
+			GRF_SETERR_2(error, GE_ZLIB, LzmaDecode, (ssize_t)z);
+			return NULL;
+		}
+	}
+	else if ((z=uncompress((Bytef*)grf->files[index].data,&zlen,(const Bytef *)zbuf, (uLong)zsiz))!=Z_OK) {
 		/* Ignore Z_DATA_ERROR */
 		if (z == Z_DATA_ERROR) {
 			/* Set an error, just don't crash out */

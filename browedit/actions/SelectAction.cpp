@@ -17,6 +17,28 @@ SelectAction::SelectAction(Map* map, Node* node, bool keepSelection, bool deSele
 		newSelection.erase(std::remove_if(newSelection.begin(), newSelection.end(), [node](Node* n) { return n == node; }));
 }
 
+SelectAction::SelectAction(Map* map, std::vector<Node*> nodes, bool keepSelection, bool deSelect)
+{
+	multiSelection = true;
+	name = "none";
+
+	if (nodes.size() > 0) {
+		name = "multi selection (" + std::to_string(nodes.size()) + ")";
+	}
+	oldSelection = map->selectedNodes;
+	if (keepSelection)
+		newSelection = oldSelection;
+
+	if (!deSelect) {
+		for (auto node : nodes)
+			newSelection.push_back(node);
+	}
+	else {
+		for (auto node : nodes)
+			newSelection.erase(std::remove_if(newSelection.begin(), newSelection.end(), [node](Node* n) { return n == node; }));
+	}
+}
+
 void SelectAction::perform(Map* map, BrowEdit* browEdit)
 {
 	for (auto node : map->selectedNodes)
