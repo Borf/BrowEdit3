@@ -105,7 +105,8 @@
     <ClCompile Include="browedit\windows\Toolbar.cpp" />
     <ClCompile Include="browedit\windows\UndoWindow.cpp" />
     <ClCompile Include="browedit\windows\WallEditWindow.cpp" />
-    <ClCompile Include="lib\glad\src\glad.c" />
+    <ClCompile Include="lib\glad\src\gl.c" />
+    <ClCompile Include="lib\glad\src\wgl.c" />
     <ClCompile Include="lib\grflib\grf.c" />
     <ClCompile Include="lib\grflib\grfcrypt.c" />
     <ClCompile Include="lib\grflib\grfsupport.c" />
@@ -294,14 +295,14 @@
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
-    <CharacterSet>NotSet</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>NotSet</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">

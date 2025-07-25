@@ -4,6 +4,7 @@
 #include <browedit/components/Rsw.h>
 #include <browedit/components/Gnd.h>
 #include <browedit/components/BillboardRenderer.h>
+#include <glad/gl.h>
 #include <browedit/gl/Texture.h>
 #include <browedit/gl/Vertex.h>
 

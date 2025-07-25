@@ -251,6 +251,20 @@ public:
 
 	std::map<std::string, std::vector<std::string>> tagList; // tag -> [ file ], utf8
 	std::map<std::string, std::vector<std::string>> tagListReverse; // file -> [ tag ], kr
+	struct
+	{
+		uint64_t systemSize;
+		uint64_t systemUsed;
+		uint64_t systemFree;
+
+		uint64_t gpuSize;
+		uint64_t gpuFree;
+		uint64_t gpuUsed;
+
+		uint64_t gpuSharedSize;
+		uint64_t gpuSharedFree;
+		uint64_t gpuSharedUsed;
+	} memoryLimits;
 	GLFWwindow* window;
 	GLFWcursor* dropperCursor;
 	GLFWcursor* cursor;
@@ -292,6 +306,7 @@ public:
 	void glfwEnd();
 	bool glfwLoopBegin();
 	void glfwLoopEnd();
+	void calcMemoryLimits();
 
 	bool imguiBegin();
 	void imguiEnd();

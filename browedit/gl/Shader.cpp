@@ -1,6 +1,7 @@
 #include <browedit/util/FileIO.h>
 #include "Shader.h"
 #include <iostream>
+#include <glad/gl.h>
 #include <glm/gtc/type_ptr.hpp>
 
 namespace gl

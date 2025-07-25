@@ -1,4 +1,5 @@
 #include "FBO.h"
+#include <glad/gl.h>
 #include <glm/glm.hpp>
 #include <stb/stb_image_write.h>
 #include <thread>

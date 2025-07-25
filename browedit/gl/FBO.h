@@ -3,7 +3,8 @@
 #include <string>
 #include <functional>
 
-#include <glad/glad.h>
+using GLint = int;
+using GLuint = unsigned int;
 
 namespace gl
 {

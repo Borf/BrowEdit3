@@ -62,6 +62,9 @@
     <Filter Include="lib\lzma">
       <UniqueIdentifier>{de415d4a-c057-4b3e-8e11-1ab003df01e9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="lib\glad">
+      <UniqueIdentifier>{30eef2f8-2b2d-4913-97b5-7e7d692deb17}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="lib\imgui\imgui.cpp">
@@ -204,9 +207,6 @@
     </ClCompile>
     <ClCompile Include="browedit\gl\FBO.cpp">
       <Filter>browedit\gl</Filter>
-    </ClCompile>
-    <ClCompile Include="lib\glad\src\glad.c">
-      <Filter>lib</Filter>
     </ClCompile>
     <ClCompile Include="lib\sfl\stb\stb_image_write.cpp">
       <Filter>lib</Filter>
@@ -444,6 +444,12 @@
     </ClCompile>
     <ClCompile Include="lib\lzma\LzmaDec.c">
       <Filter>lib\lzma</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\glad\src\gl.c">
+      <Filter>lib\glad</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\glad\src\wgl.c">
+      <Filter>lib\glad</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
