@@ -390,11 +390,11 @@ std::pair<glm::vec3, int> Lightmapper::calculateLight(const glm::vec3& groundPos
 				glm::ivec2 dir(ray.dir.x < 0 ? -1 : (ray.dir.x > 0 ? 1 : 0), ray.dir.z < 0 ? -1 : (ray.dir.z > 0 ? 1 : 0));
 				glm::ivec2 dirs[3] = { glm::ivec2(dir.x, 0), glm::ivec2(0, dir.y), glm::ivec2(dir.x, dir.y) };
 				
-				std::set<struct light_model*> quadtree_models;
+				std::unordered_set<light_model, light_modelHash, light_modelEqual> quadtree_models;
 				
 				while (qx >= 0 && qx < quadtree.size() && qy >= 0 && qy < quadtree[0].size()) {
 					for (int i = 0; i < quadtree[qx][qy].models.size(); i++)
-						quadtree_models.insert(&quadtree[qx][qy].models[i]);
+						quadtree_models.insert(quadtree[qx][qy].models[i]);
 
 					int j = 0;
 				
@@ -424,10 +424,10 @@ std::pair<glm::vec3, int> Lightmapper::calculateLight(const glm::vec3& groundPos
 					if (collides && shadowStrength >= 1)
 						break;
 
-					if (n->collider->collidesTexture(ray, 0, distance - rswLight->minShadowDistance))
+					if (n.collider->collidesTexture(ray, 0, distance - rswLight->minShadowDistance))
 					{
 						collides = true;
-						shadowStrength += n->rswModel->shadowStrength;
+						shadowStrength += n.rswModel->shadowStrength;
 					}
 				}
 			}

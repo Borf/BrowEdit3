@@ -53,6 +53,7 @@ public:
 	float toolbarHeight() { return toolbarButtonSize + 8; }
 	int lightmapperThreadCount = 4;
 	int lightmapperRefreshTimer = 2;
+	bool additiveShadow = true;
 	std::string isValid() const;
 	bool showWindow(BrowEdit* browEdit);
 	void setupFileIO();
@@ -90,5 +91,6 @@ public:
 		colorPresets,
 		ffmpegPath,
 		lightmapperThreadCount,
-		lightmapperRefreshTimer);
+		lightmapperRefreshTimer,
+		additiveShadow);
 };

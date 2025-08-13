@@ -370,8 +370,9 @@ Rsm::Mesh::Mesh(Rsm* model, std::istream* rsmFile)
 		rsmFile->read(reinterpret_cast<char*>(f->texCoordIds), sizeof(short) * 3);
 		rsmFile->read(reinterpret_cast<char*>(&f->texId), sizeof(short));
 		rsmFile->read(reinterpret_cast<char*>(&f->padding), sizeof(short));
-
 		rsmFile->read(reinterpret_cast<char*>(&f->twoSided), sizeof(int));
+		f->twoSided = f->twoSided > 0 ? 1 : 0;
+
 		if (model->version >= 0x0102)
 		{
 			rsmFile->read(reinterpret_cast<char*>(&f->smoothGroups[0]), sizeof(int));
