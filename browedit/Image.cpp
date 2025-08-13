@@ -15,7 +15,7 @@ Image::Image(const std::string& fileName)
 	is->read(fileData, len);
 	delete is;
 	int depth;
-	unsigned char* tmpData = stbi_load_from_memory((stbi_uc*)fileData, (int)len, &width, &height, &depth, 3);
+	unsigned char* tmpData = stbi_load_from_memory((stbi_uc*)fileData, (int)len, &width, &height, &depth, 4);
 	if (!tmpData)
 	{
 		const char* err = stbi_failure_reason();
@@ -31,15 +31,15 @@ Image::Image(const std::string& fileName)
 	{
 		for (int x = 0; x < width; x++)
 		{
-			data[x + width * y] = tmpData[3 * (x + width * y) + 3];
-			if (tmpData[3 * (x + width * y) + 0] > 253 &&
-				tmpData[3 * (x + width * y) + 1] < 2 &&
-				tmpData[3 * (x + width * y) + 2] > 253)
+			data[x + width * y] = tmpData[4 * (x + width * y) + 3];
+			if (tmpData[4 * (x + width * y) + 0] > 247 &&
+				tmpData[4 * (x + width * y) + 1] < 8 &&
+				tmpData[4 * (x + width * y) + 2] > 247)
 			{
 				data[x + width * y] = 0;
 				hasAlpha = true;
 			}
-			if (tmpData[3 * (x + width * y) + 3] != 255)
+			if (tmpData[4 * (x + width * y) + 3] != 255)
 				hasAlpha = true;
 		}
 	}

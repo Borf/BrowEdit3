@@ -167,8 +167,12 @@ void BrowEdit::toolbar()
 
 	if (activeMapView)
 	{
-		if (!activeMapView->map->rootNode->getComponent<Gnd>())
-			std::cerr << "Map has no gnd" << std::endl;
+		if (!activeMapView->map->rootNode->getComponent<Gnd>()) {
+			if (!activeMapView->map->mapHasNoGnd) {
+				std::cerr << "Map has no gnd" << std::endl;
+				activeMapView->map->mapHasNoGnd = true;
+			}
+		}
 		else
 		{
 			int objectCount = 0;

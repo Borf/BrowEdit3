@@ -518,149 +518,147 @@ glm::vec3 Gnd::rayCastLightmap(const math::Ray& ray, int cx, int cy, int xMin, i
 	// if the Y position goes up on the axis, which is (theoretically) always the case. It is very useful
 	// since maps tend to have many flat cubes and we can skip the majority of them.
 	
-	// line function: y = xz_a * x + xz_b;
-	float xz_a = ray.dir.x == 0 ? 1 : ray.dir.z / ray.dir.x;
-	float xz_b = ray.origin.z - xz_a * ray.origin.x;
-	float xz_ray_length = glm::length(glm::vec2(ray.dir.x, ray.dir.z));
-	float y = 9999999999.0f;
-
-	glm::ivec2 dir(ray.dir.x < 0 ? -1 : (ray.dir.x > 0 ? 1 : 0), ray.dir.z < 0 ? 1 : (ray.dir.z > 0 ? -1 : 0));
+	glm::vec2 dir(ray.dir.x, ray.dir.z);
+	dir = glm::normalize(dir);
 
 	// Cannot collide with another cube directly above itself.
-	if (dir[0] == 0 && dir[1] == 0)
+	if (glm::abs(ray.dir.x) < 0.001f && glm::abs(ray.dir.z) < 0.001f)
 		return glm::vec3(std::numeric_limits<float>::max());
 
-	// To test collision against the original cube; a tad annoying to handle
-	bool first = true;
-	int cxx, cyy, next_cx = 0;
+	const float cellSize = 10.0f;
 
-	while (cx >= xMin && cx < xMax && cy >= yMin && cy < yMax) {
-		if (first) {
-			cxx = cx;
-			cyy = cy;
-		}
-		else {
-			// Z axis only
-			if (ray.dir.x == 0) {
-				next_cx = cx;
-			}
-			else {
-				float next_x;
+	// Ray line function on the xz plane: y = xz_a * x + xz_b
+	// It is used to check the y (height) value of the ray when you reach a new cube.
+	float xz_a = ray.dir.x == 0 ? 1 : ray.dir.z / ray.dir.x;
+	float xz_b = ray.origin.z - xz_a * ray.origin.x;
 
-				if (ray.dir.z > 0)
-					next_x = ((height - cy + 1) * 10.0f - xz_b) / xz_a;
-				else
-					next_x = ((height - cy) * 10.0f - xz_b) / xz_a;
-			
-				next_cx = (int)(next_x / 10);
-			}
+	glm::ivec2 step(dir.x > 0 ? 1 : (dir.x < 0 ? -1 : 0), dir.y > 0 ? 1 : (dir.y < 0 ? -1 : 0));
+	glm::vec2 origin(ray.origin.x, ray.origin.z);
 
-			// If we don't move along the X axis, then move along the Z axis.
-			// cxx/cyy is the next cube to check for a collision.
-			cxx = cx + (next_cx != cx ? dir[0] : 0);
-			cyy = cy + (next_cx == cx ? dir[1] : 0);
+	float tDeltaX = (step[0] != 0) ? glm::abs(cellSize / dir.x) : INFINITY;
+	float tDeltaY = (step[1] != 0) ? glm::abs(cellSize / dir.y) : INFINITY;
 
-			if ((cxx == cx && cyy == cy) || cxx < xMin || cxx >= xMax || cyy < yMin || cyy >= yMax)
-				break;
-		}
+	float nextBoundaryX = step[0] > 0 ? (cx + 1) * cellSize : cx * cellSize;
+	float nextBoundaryZ = step[1] > 0 ? (height - cy + 1) * cellSize : (height - cy) * cellSize;
 
-		Gnd::Cube* cube = cubes[cxx][cyy];
+	float tMaxX = (step[0] != 0) ? (nextBoundaryX - ray.origin.x) / dir.x : INFINITY;
+	float tMaxY = (step[1] != 0) ? (nextBoundaryZ - ray.origin.z) / dir.y : INFINITY;
+	
+	if (tMaxX < 0) tMaxX = 0;
+	if (tMaxY < 0) tMaxY = 0;
 
-		if ((cube->tileUp != -1 && (ray.dir.y <= 0 || (y >= glm::min(cube->h1, glm::min(cube->h2, glm::min(cube->h3, cube->h4))))))
-			|| (cube->tileSide != -1 && cxx < width - 1 && (ray.dir.y <= 0 || (y >= glm::min(cube->h2, glm::min(cube->h4, glm::min(cubes[cxx + 1][cyy]->h1, cubes[cxx + 1][cyy]->h3))))))
-			|| (cube->tileFront != -1 && cyy < height - 1 && (ray.dir.y <= 0 || (y >= glm::min(cube->h3, glm::min(cube->h4, glm::min(cubes[cxx][cyy + 1]->h2, cubes[cxx][cyy + 1]->h1))))))
+	glm::vec2 cubeCollision(ray.origin.x, ray.origin.z);
+
+	float xz_ray_length = glm::length(glm::vec2(ray.dir.x, ray.dir.z));
+	float y = -ray.origin.y;
+	float distance = 0;
+
+	do {
+		Gnd::Cube* cube = cubes[cx][cy];
+
+		// Check if y value is below the highest point of the cube
+		if ((cube->tileUp != -1 && (ray.dir.y <= 0 || (y > glm::min(cube->h1, glm::min(cube->h2, glm::min(cube->h3, cube->h4))))))
+			|| (cube->tileSide != -1 && cx < width - 1 && (ray.dir.y <= 0 || (y > glm::min(cube->h2, glm::min(cube->h4, glm::min(cubes[cx + 1][cy]->h1, cubes[cx + 1][cy]->h3))))))
+			|| (cube->tileFront != -1 && cy < height - 1 && (ray.dir.y <= 0 || (y > glm::min(cube->h3, glm::min(cube->h4, glm::min(cubes[cx][cy + 1]->h2, cubes[cx][cy + 1]->h1))))))
 			) {
-			float xx, zz;
-
-			if (!first) {
-				if (next_cx == cx) {
-					zz = (height - cy + 1 + ((dir[1] + 1) >> 1)) * 10.0f;
-					xx = (zz - xz_b) / xz_a;
-				}
-				else {
-					xx = (cx + ((dir[0] + 1) >> 1)) * 10.0f;
-					zz = xz_a * xx + xz_b;
-				}
-
-				y = -ray.dir.y * (glm::length(glm::vec2(xx, zz) - glm::vec2(ray.origin.x, ray.origin.z)) / xz_ray_length) - ray.origin.y;
-			}
-			else {
+			distance = glm::length(cubeCollision - origin);
+			
+			if (distance == 0) {
 				y = -ray.origin.y;
 			}
+			else {
+				y = -ray.dir.y * (distance / xz_ray_length) - ray.origin.y;
+			}
+
+			if (cube->tileUp != -1 && (ray.dir.y <= 0 || (y > glm::min(cube->h1, glm::min(cube->h2, glm::min(cube->h3, cube->h4))))))
+			{
+				glm::vec3 v1(10 * cx, -cube->h3, 10 * height - 10 * cy);
+				glm::vec3 v2(10 * cx + 10, -cube->h4, 10 * height - 10 * cy);
+				glm::vec3 v3(10 * cx, -cube->h1, 10 * height - 10 * cy + 10);
+				glm::vec3 v4(10 * cx + 10, -cube->h2, 10 * height - 10 * cy + 10);
+			
+				{
+					std::vector<glm::vec3> v{ v4, v2, v1 };
+					if (ray.LineIntersectPolygon(v, f))
+						if (f >= rayOffset)
+							return ray.origin + f * ray.dir;
+				}
+				{
+					std::vector<glm::vec3> v{ v4, v1, v3 };
+					if (ray.LineIntersectPolygon(v, f))
+						if (f >= rayOffset)
+							return ray.origin + f * ray.dir;
+				}
+			}
+			if (cube->tileSide != -1 && cx < width - 1 && (ray.dir.y <= 0 || (y > glm::min(cube->h2, glm::min(cube->h4, glm::min(cubes[cx + 1][cy]->h1, cubes[cx + 1][cy]->h3))))))
+			{
+				glm::vec3 v1(10 * cx + 10, -cube->h2, 10 * height - 10 * cy + 10);
+				glm::vec3 v2(10 * cx + 10, -cube->h4, 10 * height - 10 * cy);
+				glm::vec3 v3(10 * cx + 10, -cubes[cx + 1][cy]->h1, 10 * height - 10 * cy + 10);
+				glm::vec3 v4(10 * cx + 10, -cubes[cx + 1][cy]->h3, 10 * height - 10 * cy);
+			
+				{
+					std::vector<glm::vec3> v{ v4, v2, v1 };
+					if (ray.LineIntersectPolygon(v, f))
+						if (f >= rayOffset)
+							return ray.origin + f * ray.dir;
+				}
+				{
+					std::vector<glm::vec3> v{ v4, v1, v3 };
+					if (ray.LineIntersectPolygon(v, f))
+						if (f >= rayOffset)
+							return ray.origin + f * ray.dir;
+				}
+			}
+			if (cube->tileFront != -1 && cy < height - 1 && (ray.dir.y <= 0 || (y > glm::min(cube->h3, glm::min(cube->h4, glm::min(cubes[cx][cy + 1]->h2, cubes[cx][cy + 1]->h1))))))
+			{
+				glm::vec3 v1(10 * cx, -cube->h3, 10 * height - 10 * cy);
+				glm::vec3 v2(10 * cx + 10, -cube->h4, 10 * height - 10 * cy);
+				glm::vec3 v4(10 * cx + 10, -cubes[cx][cy + 1]->h2, 10 * height - 10 * cy);
+				glm::vec3 v3(10 * cx, -cubes[cx][cy + 1]->h1, 10 * height - 10 * cy);
+			
+				{
+					std::vector<glm::vec3> v{ v4, v2, v1 };
+					if (ray.LineIntersectPolygon(v, f))
+						if (f >= rayOffset)
+							return ray.origin + f * ray.dir;
+				}
+				{
+					std::vector<glm::vec3> v{ v4, v1, v3 };
+					if (ray.LineIntersectPolygon(v, f))
+						if (f >= rayOffset)
+							return ray.origin + f * ray.dir;
+				}
+			}
+		}
+
+		// Advance to the next cell
+		if (tMaxX < tMaxY) {
+			tMaxX += tDeltaX;
+
+			if (step[0] > 0)
+				cubeCollision.x = cellSize * (cx + 1);
+			else
+				cubeCollision.x = cellSize * cx;
+
+			cubeCollision.y = xz_a * cubeCollision.x + xz_b;
+
+			cx += step[0];
 		}
 		else {
-			// y value went above the next cube vertices, skip
-			cx = cxx;
-			cy = cyy;
-			first = false;
-			continue;
+			tMaxY += tDeltaY;
+
+			if (step[1] > 0)
+				cubeCollision.y = cellSize * (height - cy + 1);
+			else
+				cubeCollision.y = cellSize * (height - cy);
+
+			if (dir[0] != 0)
+				cubeCollision.x = (cubeCollision.y - xz_b) / xz_a;
+
+			cy -= step[1];
 		}
-
-		cx = cxx;
-		cy = cyy;
-		first = false;
-
-		if (cube->tileUp != -1 && (ray.dir.y <= 0 || (y >= glm::min(cube->h1, glm::min(cube->h2, glm::min(cube->h3, cube->h4))))))
-		{
-			glm::vec3 v1(10 * cx, -cube->h3, 10 * height - 10 * cy);
-			glm::vec3 v2(10 * cx + 10, -cube->h4, 10 * height - 10 * cy);
-			glm::vec3 v3(10 * cx, -cube->h1, 10 * height - 10 * cy + 10);
-			glm::vec3 v4(10 * cx + 10, -cube->h2, 10 * height - 10 * cy + 10);
-
-			{
-				std::vector<glm::vec3> v{ v4, v2, v1 };
-				if (ray.LineIntersectPolygon(v, f))
-					if (f >= rayOffset)
-						return ray.origin + f * ray.dir;
-			}
-			{
-				std::vector<glm::vec3> v{ v4, v1, v3 };
-				if (ray.LineIntersectPolygon(v, f))
-					if (f >= rayOffset)
-						return ray.origin + f * ray.dir;
-			}
-		}
-		if (cube->tileSide != -1 && cx < width - 1 && (ray.dir.y <= 0 || (y >= glm::min(cube->h2, glm::min(cube->h4, glm::min(cubes[cx + 1][cy]->h1, cubes[cx + 1][cy]->h3))))))
-		{
-			glm::vec3 v1(10 * cx + 10, -cube->h2, 10 * height - 10 * cy + 10);
-			glm::vec3 v2(10 * cx + 10, -cube->h4, 10 * height - 10 * cy);
-			glm::vec3 v3(10 * cx + 10, -cubes[cx + 1][cy]->h1, 10 * height - 10 * cy + 10);
-			glm::vec3 v4(10 * cx + 10, -cubes[cx + 1][cy]->h3, 10 * height - 10 * cy);
-
-			{
-				std::vector<glm::vec3> v{ v4, v2, v1 };
-				if (ray.LineIntersectPolygon(v, f))
-					if (f >= rayOffset)
-						return ray.origin + f * ray.dir;
-			}
-			{
-				std::vector<glm::vec3> v{ v4, v1, v3 };
-				if (ray.LineIntersectPolygon(v, f))
-					if (f >= rayOffset)
-						return ray.origin + f * ray.dir;
-			}
-		}
-		if (cube->tileFront != -1 && cy < height - 1 && (ray.dir.y <= 0 || (y >= glm::min(cube->h3, glm::min(cube->h4, glm::min(cubes[cx][cy + 1]->h2, cubes[cx][cy + 1]->h1))))))
-		{
-			glm::vec3 v1(10 * cx, -cube->h3, 10 * height - 10 * cy);
-			glm::vec3 v2(10 * cx + 10, -cube->h4, 10 * height - 10 * cy);
-			glm::vec3 v4(10 * cx + 10, -cubes[cx][cy + 1]->h2, 10 * height - 10 * cy);
-			glm::vec3 v3(10 * cx, -cubes[cx][cy + 1]->h1, 10 * height - 10 * cy);
-
-			{
-				std::vector<glm::vec3> v{ v4, v2, v1 };
-				if (ray.LineIntersectPolygon(v, f))
-					if (f >= rayOffset)
-						return ray.origin + f * ray.dir;
-			}
-			{
-				std::vector<glm::vec3> v{ v4, v1, v3 };
-				if (ray.LineIntersectPolygon(v, f))
-					if (f >= rayOffset)
-						return ray.origin + f * ray.dir;
-			}
-		}
-	}
+	} while (cx >= xMin && cx < xMax && cy >= yMin && cy < yMax);
 
 	return glm::vec3(std::numeric_limits<float>::max());
 }

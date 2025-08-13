@@ -3,6 +3,7 @@
 #include <thread>
 #include <vector>
 #include <string>
+#include <unordered_set>
 #include <glm/glm.hpp>
 
 class Map;
@@ -23,6 +24,18 @@ public:
 		Node* node;
 		RswModel* rswModel;
 		RswModelCollider* collider;
+	};
+
+	struct light_modelHash {
+		std::size_t operator()(const light_model& s) const noexcept {
+			return std::hash<Node*>()(s.node);
+		}
+	};
+
+	struct light_modelEqual {
+		bool operator()(const light_model& a, const light_model& b) const noexcept {
+			return a.node == b.node;
+		}
 	};
 
 	struct light_quad_node {
