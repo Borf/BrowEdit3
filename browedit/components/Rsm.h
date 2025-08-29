@@ -126,6 +126,13 @@ public:
 
 		Mesh* parent;
 
+		bool reverseCullFace;
+		bool reverseCullFaceSub;
+		// Decomposition values for the offset matrix
+		glm::vec3 offsetPosition;
+		glm::vec3 offsetScale;
+		glm::vec3 offsetRotation;
+
 		void fetchChildren(std::map<std::string, Mesh* > meshes);
 
 		void foreach(const std::function<void(Mesh*)>& callback)

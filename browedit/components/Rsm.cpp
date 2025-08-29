@@ -317,6 +317,7 @@ Rsm::Mesh::Mesh(Rsm* model, std::istream* rsmFile)
 	offset[1][2] = rsmFile->readFloat();
 	offset[2][2] = rsmFile->readFloat();
 #endif
+	util::decompose(offset, offsetRotation, offsetScale, offsetPosition);
 
 	rsmFile->read(reinterpret_cast<char*>(glm::value_ptr(pos_)), sizeof(float) * 3);
 
@@ -411,24 +412,13 @@ Rsm::Mesh::Mesh(Rsm* model, std::istream* rsmFile)
 		for (auto& f : faces)
 			for (int i = 0; i < 3; i++)
 				for (int ii = 0; ii < 3; ii++)
-					if (f.smoothGroups[ii] != -1)
-						vertexNormals[f.smoothGroups[ii]][f.vertexIds[i]] += f.normal;
+					vertexNormals[f.smoothGroups[ii]][f.vertexIds[i]] += f.normal;
 		for (auto& f : faces)
 		{
-			for (int ii = 0; ii < 3; ii++)
-			{
-				if (f.smoothGroups[ii] != -1)
-				{
-					for (int i = 0; i < 3; i++)
-					{
-						if (ii == 0)
-							f.vertexNormals[i] = glm::vec3(0);
-						f.vertexNormals[i] += glm::normalize(vertexNormals[f.smoothGroups[0]][f.vertexIds[i]]);
-					}
-				}
-			}
 			for (int i = 0; i < 3; i++)
-				f.vertexNormals[i] = glm::normalize(f.vertexNormals[i]);
+			{
+				f.vertexNormals[i] = glm::normalize(vertexNormals[f.smoothGroups[0]][f.vertexIds[i]]);
+			}
 		}
 	}
 
@@ -542,6 +532,7 @@ void Rsm::Mesh::fetchChildren(std::map<std::string, Mesh* > meshes)
 void Rsm::Mesh::calcMatrix1(int time)
 {
 	matrix1 = glm::mat4(1.0f);
+	float cull = 1;
 
 	if (model->version < 0x0202) {
 		if (parent == NULL)
@@ -594,8 +585,7 @@ void Rsm::Mesh::calcMatrix1(int time)
 				quat = glm::normalize(quat);
 
 				matrix1 = matrix1 * glm::toMat4(quat);
-
-					}
+			}
 			else
 			{
 				matrix1 *= glm::toMat4(glm::normalize(rotFrames[0].quaternion));
@@ -603,6 +593,15 @@ void Rsm::Mesh::calcMatrix1(int time)
 		}
 
 		matrix1 = glm::scale(matrix1, scale);
+
+		// Cull face check
+		if (parent != nullptr)
+			cull = parent->reverseCullFaceSub ? -1.0f : 1.0f;
+
+		cull = cull * scale.x * scale.y * scale.z;
+		reverseCullFaceSub = cull < 0;
+		cull = cull * offsetScale.x * offsetScale.y * offsetScale.z;
+		reverseCullFace = cull < 0;
 	}
 	else {
 		matrix2 = glm::mat4(1.0f);
@@ -704,6 +703,11 @@ void Rsm::Mesh::calcMatrix1(int time)
 			matrix2[3].y += parent->matrix2[3].y;
 			matrix2[3].z += parent->matrix2[3].z;
 		}
+
+		// Cull face check
+		reverseCullFaceSub = cull < 0;
+		cull = cull * offsetScale.x * offsetScale.y * offsetScale.z;
+		reverseCullFace = cull < 0;
 	}
 
 	for (unsigned int i = 0; i < children.size(); i++)

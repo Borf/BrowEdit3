@@ -1945,6 +1945,50 @@ namespace util
 		return "";
 	}
 
+	void decompose(glm::mat4 m, glm::vec3& euler, glm::vec3& scale, glm::vec3& translation) {
+		scale.x = glm::length(m[0]);
+		scale.y = glm::length(m[1]);
+		scale.z = glm::length(m[2]);
+
+		auto Pdum3 = glm::cross(glm::vec3(m[1]), glm::vec3(m[2]));
+		if (glm::dot(glm::vec3(m[0]), Pdum3) < 0) {
+			scale *= -1;
+		}
+
+		translation = glm::vec3(m[3]);
+
+		for (int i = 0; i < 3; i++) {
+			if (scale[i] == 0) continue;
+			for (int j = 0; j < 4; j++)
+				m[i][j] = m[i][j] / scale[i];
+		}
+
+		float m11 = m[0][0];
+		float m12 = m[0][1];
+		float m13 = m[0][2];
+
+		float m21 = m[1][0];
+		float m22 = m[1][1];
+		float m23 = m[1][2];
+
+		float m31 = m[2][0];
+		float m32 = m[2][1];
+		float m33 = m[2][2];
+
+		euler.x = asin(glm::clamp(m23, -1.0f, 1.0f));
+
+		if (glm::abs(m23) < 0.9999999f) {
+			euler.y = atan2(m13, m33);
+			euler.z = atan2(m21, m22);
+		}
+		else {
+			euler.y = atan2(-m31, m11);
+			euler.z = 0.0f;
+		}
+
+		euler = glm::degrees(euler);
+	}
+
 }
 
 

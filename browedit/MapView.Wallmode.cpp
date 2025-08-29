@@ -372,7 +372,7 @@ void MapView::postRenderWallMode(BrowEdit* browEdit)
 			}
 		}
 	}
-	if (selectedWalls.size() > 0)
+	if (selectedWalls.size() > 0 && browEdit->activeMapView)
 	{
 		std::vector<VertexP3T2N3> verts;
 		std::vector<VertexP3T2N3> topverts;

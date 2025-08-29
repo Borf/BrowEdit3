@@ -214,6 +214,8 @@ public:
 
 		glm::vec3 normal;
 		glm::vec3 normals[4];
+		glm::vec3 normalsDefault[4];
+		glm::vec3 normalsForCalc[4];
 
 		void calcNormal();
 		void calcNormals(Gnd* gnd, int x, int y);

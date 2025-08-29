@@ -840,16 +840,13 @@ void WallCalculation::calcUV(const glm::ivec3& position, Gnd* gnd)
 	if (position.z == 1 && position.x < gnd->width-1) //tileside
 	{
 		auto cube2 = gnd->cubes[position.x + 1][position.y];
-		if (cube->h2 > cube2->h1 && cube->h4 > cube2->h3)
-			index = (gnd->height - position.y - offset) % wallWidth;
+		index = (gnd->height - position.y - offset) % wallWidth;
 		minHeight = glm::min(glm::min(glm::min(-cube->h2, -cube->h4), -cube2->h1), -cube2->h3);
 		maxHeight = glm::max(glm::max(glm::max(-cube->h2, -cube->h4), -cube2->h1), -cube2->h3);
 	}
 	if (position.z == 2 && position.y < gnd->height-1) //tilefront
 	{
 		auto cube2 = gnd->cubes[position.x][position.y + 1];
-		if (cube2->h2 > cube->h4 && cube2->h1 > cube->h3)
-			index = (gnd->width - position.x - offset) % wallWidth;
 		minHeight = glm::min(glm::min(glm::min(-cube->h4, -cube->h3), -cube2->h2), -cube2->h1);
 		maxHeight = glm::max(glm::max(glm::max(-cube->h4, -cube->h3), -cube2->h2), -cube2->h1);
 	}
@@ -870,27 +867,6 @@ void WallCalculation::calcUV(const glm::ivec3& position, Gnd* gnd)
 	g_uv3.y = 1 - g_uv3.y;
 	g_uv4.y = 1 - g_uv4.y;
 
-	if (position.z == 2 && position.y < gnd->height-1) //tilefront
-	{
-		auto cube2 = gnd->cubes[position.x][position.y + 1];
-		if (cube2->h2 > cube->h4 && cube2->h1 > cube->h3)
-		{
-			std::swap(g_uv1.x, g_uv2.x);
-			std::swap(g_uv3.x, g_uv4.x);
-			std::swap(g_uv1.y, g_uv3.y);
-			std::swap(g_uv2.y, g_uv4.y);
-		}
-	}
-	if (position.z == 1 && position.x < gnd->width-1) //tileside
-	{
-		auto cube2 = gnd->cubes[position.x + 1][position.y];
-		if (cube->h2 < cube2->h1 && cube->h4 < cube2->h3)
-		{
-			std::swap(g_uv1.y, g_uv3.y);
-			std::swap(g_uv2.y, g_uv4.y);
-		}
-	}
-
 	if (autoStraight)
 	{
 		float h1 = -cube->h4;
@@ -910,26 +886,29 @@ void WallCalculation::calcUV(const glm::ivec3& position, Gnd* gnd)
 		}
 		else
 			return;
-		glm::vec2 guv1(g_uv1.x, glm::mix(g_uv1.y, g_uv3.y, (h1 - minHeight) / (maxHeight - minHeight)));
-		glm::vec2 guv2(g_uv2.x, glm::mix(g_uv2.y, g_uv4.y, (h2 - minHeight) / (maxHeight - minHeight)));
-		glm::vec2 guv3(g_uv3.x, glm::mix(g_uv1.y, g_uv3.y, (h3 - minHeight) / (maxHeight - minHeight)));
-		glm::vec2 guv4(g_uv4.x, glm::mix(g_uv2.y, g_uv4.y, (h4 - minHeight) / (maxHeight - minHeight)));
 
-		g_uv1 = guv1;
-		g_uv2 = guv2;
-		g_uv3 = guv3;
-		g_uv4 = guv4;
-		//if (position.z == 2 && gnd->cubes[position.x][position.y + 1]->h2 > cube->h4 && gnd->cubes[position.x][position.y + 1]->h1 > cube->h3)
-		//{
-		//	std::swap(g_uv1.y, g_uv2.y);
-		//	std::swap(g_uv3.y, g_uv4.y);
-		//}
-		//if (position.z == 1 && cube->h2 < gnd->cubes[position.x + 1][position.y]->h1 && cube->h4 < gnd->cubes[position.x + 1][position.y]->h3)
-		//{
-		//	std::swap(g_uv1.y, g_uv2.y);
-		//	std::swap(g_uv3.y, g_uv4.y);
-		//}
+		if (xInc.y == 0) {
+			glm::vec2 guv1(g_uv1.x, glm::mix(g_uv1.y, g_uv3.y, (h1 - minHeight) / (maxHeight - minHeight)));
+			glm::vec2 guv2(g_uv2.x, glm::mix(g_uv2.y, g_uv4.y, (h2 - minHeight) / (maxHeight - minHeight)));
+			glm::vec2 guv3(g_uv3.x, glm::mix(g_uv1.y, g_uv3.y, (h3 - minHeight) / (maxHeight - minHeight)));
+			glm::vec2 guv4(g_uv4.x, glm::mix(g_uv2.y, g_uv4.y, (h4 - minHeight) / (maxHeight - minHeight)));
 
+			g_uv1 = guv1;
+			g_uv2 = guv2;
+			g_uv3 = guv3;
+			g_uv4 = guv4;
+		}
+		else {
+			glm::vec2 guv1(glm::mix(g_uv1.x, g_uv3.x, (h1 - minHeight) / (maxHeight - minHeight)), g_uv1.y);
+			glm::vec2 guv2(glm::mix(g_uv2.x, g_uv4.x, (h2 - minHeight) / (maxHeight - minHeight)), g_uv2.y);
+			glm::vec2 guv3(glm::mix(g_uv1.x, g_uv3.x, (h3 - minHeight) / (maxHeight - minHeight)), g_uv3.y);
+			glm::vec2 guv4(glm::mix(g_uv2.x, g_uv4.x, (h4 - minHeight) / (maxHeight - minHeight)), g_uv4.y);
+
+			g_uv1 = guv1;
+			g_uv2 = guv2;
+			g_uv3 = guv3;
+			g_uv4 = guv4;
+		}
 	}
 
 }

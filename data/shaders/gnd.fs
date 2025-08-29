@@ -3,9 +3,6 @@
 uniform sampler2D s_texture;
 uniform sampler2D s_lighting;
 
-uniform vec3 lightDiffuse;
-uniform vec3 lightAmbient;
-uniform vec3 lightDirection;
 //uniform float lightIntensity;
 uniform float lightToggle = 1.0f;
 uniform float colorToggle = 1.0f;
@@ -25,6 +22,7 @@ in vec2 texCoord;
 in vec2 texCoord2;
 in vec3 normal;
 in vec4 color;
+in vec3 mult;
 
 out vec4 fragColor;
 in vec3 fragPos;
@@ -65,15 +63,7 @@ void main()
 	for (int i = 0; i < lightCount; i++)
         light.rgb += CalcPointLight(lights[i], normalize(normal), fragPos);
 	
-	float NL = clamp(dot(normalize(normal), vec3(1,-1,1)*lightDirection),0.0,1.0);
-	vec3 ambientFactor = (1.0 - lightAmbient) * lightAmbient;
-	vec3 ambient = lightAmbient - ambientFactor + ambientFactor * lightDiffuse;
-	vec3 diffuseFactor = (1.0 - lightDiffuse) * lightDiffuse;
-	vec3 diffuse = lightDiffuse - diffuseFactor + diffuseFactor * lightAmbient;
-	vec3 mult1 = min(NL * diffuse + ambient, 1.0);
-	// The formula quite literally changes when the combined value of lightAmbient + lightDiffuse is greater than 1.0
-	vec3 mult2 = min(max(lightDiffuse, lightAmbient) + (1.0 - max(lightDiffuse, lightAmbient)) * min(lightDiffuse, lightAmbient), 1.0);
-	texture.rgb *= min(mult1, mult2);
+	texture.rgb *= mult;
 	texture.rgb *= max(color, colorToggle).rgb;
 	texture.rgb *= max(texture2D(s_lighting, texCoord2).a, shadowMapToggle);
 	
@@ -101,7 +91,6 @@ void main()
 // calculates the color when using a point light.
 vec3 CalcPointLight(Light light, vec3 normal, vec3 inFragPos)
 {
-	normal = vec3(normal.x, -normal.y, normal.z);
 	vec3 lightDir = normalize(light.position - inFragPos);
     float distance = length(light.position - inFragPos);
 	
