@@ -440,8 +440,12 @@ std::pair<glm::vec3, int> Lightmapper::calculateLight(const glm::vec3& groundPos
 		}
 		if (shadowStrength > 1)
 			shadowStrength = 1;
-		if (rswLight->diffuseLighting)
-			attenuation *= dotproduct;
+		if (rswLight->diffuseLighting) {
+			if (rswLight->lightType != RswLight::Type::Sun || settings.additiveShadow)
+				attenuation = attenuation * dotproduct;
+			else
+				attenuation = attenuation * (1 - dotproduct);
+		}
 		if (rswLight->affectShadowMap) {
 			if (settings.additiveShadow)
 				intensity += (int)((1 - shadowStrength) * attenuation * rswLight->intensity);
@@ -537,6 +541,7 @@ void Lightmapper::calcPos(int direction, int tileId, int x, int y)
 							std::cout << "uhoh";
 						}
 						normal.y *= -1;
+						normal.z *= -1;
 						normal = glm::normalize(normal);
 						groundPos = glm::vec3(p.x, h, p.y);
 					}

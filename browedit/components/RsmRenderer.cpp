@@ -250,6 +250,7 @@ void RsmRenderer::renderMeshSub(Rsm::Mesh* mesh, bool selectionPhase)
 	{
 		vbo->bind();
 		shader->setUniform(RsmShader::Uniforms::modelMatrix, renderInfo[mesh->index].matrix);
+		shader->setUniform(RsmShader::Uniforms::reverseCullFace, mesh->reverseCullFace);
 		if (ri.selected || selectionPhase)
 			shader->setUniform(RsmShader::Uniforms::selection, 1.0f);
 		else if (!selectionPhase && selected)

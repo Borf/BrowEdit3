@@ -121,7 +121,7 @@ void GndRenderer::render()
 	glm::vec3 lightDirection(0.0f, 1.0f, 0.0f);
 	glm::mat4 rot = glm::mat4(1.0f);
 	rot = glm::rotate(rot, glm::radians(-(float)rsw->light.latitude), glm::vec3(1, 0, 0));
-	rot = glm::rotate(rot, glm::radians((float)rsw->light.longitude), glm::vec3(0, 1, 0));
+	rot = glm::rotate(rot, glm::radians(-(float)rsw->light.longitude), glm::vec3(0, 1, 0));
 	lightDirection = lightDirection * glm::mat3(rot);
 	shader->setUniform(GndShader::Uniforms::lightAmbient, rsw->light.ambient);
 	shader->setUniform(GndShader::Uniforms::lightDiffuse, rsw->light.diffuse);
@@ -346,18 +346,33 @@ void GndRenderer::Chunk::rebuild()
 				if (x < gnd->width - 1 && y < gnd->height - 1 && gnd->cubes[x + 1][y + 1]->tileUp != -1)
 					c2 = glm::vec4(gnd->tiles[gnd->cubes[x + 1][y + 1]->tileUp]->color) / 255.0f;
 
+				glm::vec3 normal(-1, 0, 0);
+
+				if (gnd->inMap(glm::ivec2(x + 1, y))) {
+					Gnd::Cube* cubeAdj = gnd->cubes[x + 1][y];
+					
+					// 
+					// 3----4 3----4
+					// |    | |    |
+					// | c  | | adj|
+					// 1----2 1----2
+					// Tokei: the client only checks the opposite side height (c.h3 against adj.h1) to know whether the triangle normal should be reversed or not.
+					// This Gravity logic doesn't make sense, I assume it was copy pasted from tileFront without thinking too much.
+					if (cube->h3 < cubeAdj->h1)
+						normal *= -1;
+				}
 
 				//up front
-				VertexP3T2T2C4N3 v1(glm::vec3(10 * x + 10, -cube->h2, 10 * gnd->height - 10 * y + 10),					tile->v2, glm::vec2(lm2.x, lm1.y), c1, glm::vec3(-1, 0, 0));
+				VertexP3T2T2C4N3 v1(glm::vec3(10 * x + 10, -cube->h2, 10 * gnd->height - 10 * y + 10),					tile->v2, glm::vec2(lm2.x, lm1.y), c1, normal);
 				//up back
-				VertexP3T2T2C4N3 v2(glm::vec3(10 * x + 10, -cube->h4, 10 * gnd->height - 10 * y),						tile->v1, glm::vec2(lm1.x, lm1.y), c2, glm::vec3(-1, 0, 0));
+				VertexP3T2T2C4N3 v2(glm::vec3(10 * x + 10, -cube->h4, 10 * gnd->height - 10 * y),						tile->v1, glm::vec2(lm1.x, lm1.y), c2, normal);
 				//down front
-				VertexP3T2T2C4N3 v3(glm::vec3(10 * x + 10, -gnd->cubes[x + 1][y]->h1, 10 * gnd->height - 10 * y + 10),	tile->v4, glm::vec2(lm2.x, lm2.y), c1, glm::vec3(-1, 0, 0));
+				VertexP3T2T2C4N3 v3(glm::vec3(10 * x + 10, -gnd->cubes[x + 1][y]->h1, 10 * gnd->height - 10 * y + 10),	tile->v4, glm::vec2(lm2.x, lm2.y), c1, normal);
 				//down back
-				VertexP3T2T2C4N3 v4(glm::vec3(10 * x + 10, -gnd->cubes[x + 1][y]->h3, 10 * gnd->height - 10 * y),		tile->v3, glm::vec2(lm1.x, lm2.y), c2, glm::vec3(-1, 0, 0));
+				VertexP3T2T2C4N3 v4(glm::vec3(10 * x + 10, -gnd->cubes[x + 1][y]->h3, 10 * gnd->height - 10 * y),		tile->v3, glm::vec2(lm1.x, lm2.y), c2, normal);
 
-				verts[tile->textureIndex].push_back(v3); verts[tile->textureIndex].push_back(v2); verts[tile->textureIndex].push_back(v1);
-				verts[tile->textureIndex].push_back(v4); verts[tile->textureIndex].push_back(v2); verts[tile->textureIndex].push_back(v3);
+				verts[tile->textureIndex].push_back(v1); verts[tile->textureIndex].push_back(v3); verts[tile->textureIndex].push_back(v4);
+				verts[tile->textureIndex].push_back(v4); verts[tile->textureIndex].push_back(v2); verts[tile->textureIndex].push_back(v1);
 			}
 			if (cube->tileFront != -1 && y < gnd->height - 1)
 			{
@@ -374,10 +389,29 @@ void GndRenderer::Chunk::rebuild()
 				if (x < gnd->width - 1 && y < gnd->height - 1 && gnd->cubes[x + 1][y + 1]->tileUp != -1)
 					c2 = glm::vec4(gnd->tiles[gnd->cubes[x + 1][y + 1]->tileUp]->color) / 255.0f;
 
-				VertexP3T2T2C4N3 v1(glm::vec3(10 * x, -cube->h3, 10 * gnd->height - 10 * y),						tile->v1, glm::vec2(lm1.x, lm1.y), c1, glm::vec3(0, 0, 1));
-				VertexP3T2T2C4N3 v2(glm::vec3(10 * x + 10, -cube->h4, 10 * gnd->height - 10 * y),					tile->v2, glm::vec2(lm2.x, lm1.y), c2, glm::vec3(0, 0, 1));
-				VertexP3T2T2C4N3 v4(glm::vec3(10 * x + 10, -gnd->cubes[x][y + 1]->h2, 10 * gnd->height - 10 * y),	tile->v4, glm::vec2(lm2.x, lm2.y), c2, glm::vec3(0, 0, 1));
-				VertexP3T2T2C4N3 v3(glm::vec3(10 * x, -gnd->cubes[x][y + 1]->h1, 10 * gnd->height - 10 * y),		tile->v3, glm::vec2(lm1.x, lm2.y), c1, glm::vec3(0, 0, 1));
+				glm::vec3 normal(0, 0, -1);
+
+				if (gnd->inMap(glm::ivec2(x, y + 1))) {
+					Gnd::Cube* cubeAdj = gnd->cubes[x][y + 1];
+
+					// 3----4
+					// |    |
+					// | adj|
+					// 1----2
+					// 
+					// 3----4
+					// |    |
+					// | c  |
+					// 1----2
+					// Tokei: This condition does make sense compared to the tileSide one, since they vertexes tested are actually adjacent.
+					if (cube->h3 < cubeAdj->h1)
+						normal *= -1;
+				}
+
+				VertexP3T2T2C4N3 v1(glm::vec3(10 * x, -cube->h3, 10 * gnd->height - 10 * y),						tile->v1, glm::vec2(lm1.x, lm1.y), c1, normal);
+				VertexP3T2T2C4N3 v2(glm::vec3(10 * x + 10, -cube->h4, 10 * gnd->height - 10 * y),					tile->v2, glm::vec2(lm2.x, lm1.y), c2, normal);
+				VertexP3T2T2C4N3 v4(glm::vec3(10 * x + 10, -gnd->cubes[x][y + 1]->h2, 10 * gnd->height - 10 * y),	tile->v4, glm::vec2(lm2.x, lm2.y), c2, normal);
+				VertexP3T2T2C4N3 v3(glm::vec3(10 * x, -gnd->cubes[x][y + 1]->h1, 10 * gnd->height - 10 * y),		tile->v3, glm::vec2(lm1.x, lm2.y), c1, normal);
 
 				verts[tile->textureIndex].push_back(v1); verts[tile->textureIndex].push_back(v2); verts[tile->textureIndex].push_back(v3);
 				verts[tile->textureIndex].push_back(v3); verts[tile->textureIndex].push_back(v2); verts[tile->textureIndex].push_back(v4);

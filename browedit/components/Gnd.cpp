@@ -1587,23 +1587,39 @@ Gnd::Texture::~Texture()
 void Gnd::Cube::calcNormal()
 {
 	/*
-		1----2
+		3----4
 		|\   |
 		| \  |
 		|  \ |
 		|   \|
-		3----4
+		1----2
 	*/
-	glm::vec3 v1(10, -h1, 0);
-	glm::vec3 v2(0, -h2, 0);
-	glm::vec3 v3(10, -h3, 10);
-	glm::vec3 v4(0, -h4, 10);
+	glm::vec3 v1(0, h1, 0);
+	glm::vec3 v2(10, h2, 0);
+	glm::vec3 v3(0, h3, 10);
+	glm::vec3 v4(10, h4, 10);
 
-	glm::vec3 normal1 = glm::normalize(glm::cross(v4 - v3, v1 - v3));
-	glm::vec3 normal2 = glm::normalize(glm::cross(v1 - v2, v4 - v2));
-	normal = glm::normalize(normal1 + normal2);
+	glm::vec3 normal1 = glm::normalize(glm::cross(v2 - v1, v3 - v1));
+	glm::vec3 normal2 = glm::normalize(glm::cross(v3 - v4, v2 - v4));
+	normal = normal1 + normal2;
+
+	// Default values if the vertex is not connected to another tile.
+	normalsDefault[0] = normal1;
+	normalsDefault[1] = normal;
+	normalsDefault[2] = normal;
+	normalsDefault[3] = normal1;	// Using normal1 here is intended, it's just how it is in the client
+
+	// Values used when calculating with adjacent normals
+	normalsForCalc[0] = normal1;
+	normalsForCalc[1] = normal;
+	normalsForCalc[2] = normal;
+	normalsForCalc[3] = normal2;
+
+	// Do not normalize "normal" before assining it above; otherwise the normals' weight won't match when computing them together in calcNormals()
+	normal = glm::normalize(normal);
+
 	for (int i = 0; i < 4; i++)
-		normals[i] = normal;
+		normals[i] = normalsDefault[i];
 }
 
 
@@ -1611,14 +1627,25 @@ void Gnd::Cube::calcNormals(Gnd* gnd, int x, int y)
 {
 	for (int i = 0; i < 4; i++)
 	{
-		normals[i] = glm::vec3(0, 0, 0);
-		for (int ii = 0; ii < 4; ii++)
+		normals[i] = normalsDefault[i];
+		float h = heights[i];
+
+		for (int ii = 1; ii < 4; ii++)
 		{
 			int xx = (ii % 2) * ((i % 2 == 0) ? -1 : 1);
 			int yy = (ii / 2) * (i < 2 ? -1 : 1);
-			if (gnd->inMap(glm::ivec2(x + xx,y+yy)))
-				normals[i] += gnd->cubes[x + xx][y + yy]->normal;
+			if (gnd->inMap(glm::ivec2(x + xx, y + yy))) {
+				// ci is the matching corner index in the cube we're testing against
+				int ci = (i + ii * (1 - 2 * (i & 1))) & 3;
+
+				// If the height of the two vertexes doesn't match perfectly, the normals are not added
+				if (gnd->cubes[x + xx][y + yy]->heights[ci] != h)
+					continue;
+
+				normals[i] += gnd->cubes[x + xx][y + yy]->normalsForCalc[ci];
+			}
 		}
+
 		normals[i] = glm::normalize(normals[i]);
 	}
 }

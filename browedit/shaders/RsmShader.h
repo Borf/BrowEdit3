@@ -33,6 +33,7 @@ public:
 			//fogExp,
 			textureAnimToggle,
 			texMat,
+			reverseCullFace,
 			End
 		};
 	};
@@ -60,5 +61,6 @@ public:
 		//bindUniform(Uniforms::fogExp, "fogExp");
 		bindUniform(Uniforms::textureAnimToggle, "textureAnimToggle");
 		bindUniform(Uniforms::texMat, "texMat");
+		bindUniform(Uniforms::reverseCullFace, "reverseCullFace");
 	}
 };
