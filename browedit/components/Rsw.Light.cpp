@@ -213,6 +213,7 @@ void RswLight::buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>& nod
 	util::CheckboxMulti<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Affects Shadowmap", [](RswLight* l) { return &l->affectShadowMap; });
 	util::CheckboxMulti<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Affects Colormap", [](RswLight* l) { return &l->affectLightmap; });
 	util::CheckboxMulti<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Terrain Shadows", [](RswLight* l) { return &l->shadowTerrain; });
+	util::CheckboxMulti<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Ignore Terrain Shading", [](RswLight* l) { return &l->noTerrainShading; });
 	util::DragFloatMulti<RswLight>(browEdit, browEdit->activeMapView->map, rswLights, "Intensity", [](RswLight* l) { return &l->intensity; }, 0.05f, 0.0f, 100000.0f);
 
 	if (rswLights.front()->lightType == RswLight::Type::Spot)

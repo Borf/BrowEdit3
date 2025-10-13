@@ -305,7 +305,7 @@ std::pair<glm::vec3, int> Lightmapper::calculateLight(const glm::vec3& groundPos
 			lightDirection2 = rswLight->direction; //TODO: should this be -direction?
 		else if (rswLight->lightType == RswLight::Type::Sun && rswLight->sunMatchRswDirection)
 			lightDirection2 = lightDirection;
-		auto dotproduct = glm::dot(normal, lightDirection2);
+		auto dotproduct = rswLight->noTerrainShading ? 1.0f : glm::dot(normal, lightDirection2);
 
 		if (dotproduct <= 0) {
 			if (rswLight->lightType == RswLight::Type::Sun) {
