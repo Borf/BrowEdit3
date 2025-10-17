@@ -16,7 +16,7 @@ RswModel::RswModel(RswModel* other) : aabb(other->aabb), animType(other->animTyp
 {
 }
 
-void RswModel::load(std::istream* is, int version, unsigned char buildNumber, bool loadModel)
+void RswModel::load(std::istream* is, int version, int buildNumber, bool loadModel)
 {
 	auto rswObject = node->getComponent<RswObject>();
 	if (version >= 0x103)

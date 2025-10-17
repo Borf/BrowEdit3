@@ -180,7 +180,7 @@ public:
 
 	RswObject() {}
 	RswObject(RswObject* other);
-	void load(std::istream* is, int version, unsigned char buildNumber, bool loadModel);
+	void load(std::istream* is, int version, int buildNumber, bool loadModel);
 	void save(std::ofstream& file, Rsw *rsw);
 	static void buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>&);
 	NLOHMANN_DEFINE_TYPE_INTRUSIVE(RswObject, position, rotation, scale);
@@ -205,7 +205,7 @@ public:
 	RswModel() : aabb(glm::vec3(), glm::vec3()) {}
 	RswModel(const std::string &fileName) : aabb(glm::vec3(), glm::vec3()), animType(0), animSpeed(1), blockType(0), fileName(fileName) {}
 	RswModel(RswModel* other);
-	void load(std::istream* is, int version, unsigned char buildNumber, bool loadModel);
+	void load(std::istream* is, int version, int buildNumber, bool loadModel);
 	void loadExtra(nlohmann::json data);
 	void save(std::ofstream &file, int version, int buildNumber);
 	nlohmann::json saveExtra();
@@ -277,6 +277,7 @@ public:
 	glm::vec2 rate;
 	glm::vec2 size;
 	glm::vec2 life;
+	glm::vec2 scale = glm::vec2(1, 1);
 	std::string texture;
 	float speed;
 	int srcmode;
@@ -284,12 +285,13 @@ public:
 	int maxcount;
 	int zenable;
 	int billboard_off;
+	int eternity;
 	glm::vec3 rotate_angle; // v3
 	bool dirty;
 
 	void load(const nlohmann::json& data);
 	static void buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>&);
-	NLOHMANN_DEFINE_TYPE_INTRUSIVE(LubEffect, dir1, dir2, gravity, pos, radius, color, rate, size, life, texture, speed, srcmode, destmode, maxcount, zenable, billboard_off, rotate_angle);
+	NLOHMANN_DEFINE_TYPE_INTRUSIVE(LubEffect, dir1, dir2, gravity, pos, radius, color, rate, size, life, scale, texture, speed, srcmode, destmode, maxcount, zenable, billboard_off, eternity, rotate_angle);
 };
 
 class RswEffect : public Component

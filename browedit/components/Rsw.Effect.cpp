@@ -101,7 +101,7 @@ void LubEffect::load(const json& data)
 	from_json(data["gravity"], gravity);
 	from_json(data["pos"], pos);
 	from_json(data["radius"], radius);
-	if(data.size() == 4)
+	if(data["color"].size() == 4)
 		from_json(data["color"], color);
 	else
 	{
@@ -123,6 +123,10 @@ void LubEffect::load(const json& data)
 	
 	if (data.find("billboard_off") != data.end())
 		billboard_off = data["billboard_off"][0];
+	if (data.find("eternity") != data.end())
+		eternity = data["eternity"][0];
+	if (data.find("scale") != data.end())
+		from_json(data["scale"], scale);
 	if (data.find("rotate_angle") != data.end())
 		from_json(data["rotate_angle"], rotate_angle);
 }
@@ -180,6 +184,7 @@ void LubEffect::buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>& no
 		util::ColorEdit4Multi<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "color", [](LubEffect* e) {return &e->color; });
 		util::DragFloat2Multi<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "rate", [](LubEffect* e) {return &e->rate; }, 0.1f, 0, 0);
 		util::DragFloat2Multi<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "size", [](LubEffect* e) {return &e->size; }, 0.1f, 0, 0);
+		util::DragFloat2Multi<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "scale", [](LubEffect* e) {return &e->scale; }, 0.1f, 0, 0);
 		util::DragFloat2Multi<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "life", [](LubEffect* e) {return &e->life; }, 0.1f, 0, 0);
 		util::InputTextMulti<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "texture", [](LubEffect* e) {return &e->texture;}, [&](Node* node, std::string* ptr, std::string* startValue, const std::string& action) {
 			browEdit->activeMapView->map->doAction(new LubChangeTextureAction(node->getComponent<LubEffect>(), *startValue, *ptr), browEdit);
@@ -191,6 +196,7 @@ void LubEffect::buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>& no
 		util::DragIntMulti<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "zenable", [](LubEffect* e) {return &e->zenable; }, 1, 0, 1);
 		util::DragIntMulti<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "billboard_off ", [](LubEffect* e) {return &e->billboard_off; }, 1, 0, 1);
 		util::DragFloat3Multi<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "rotate_angle", [](LubEffect* e) {return &e->rotate_angle; }, 1.0f, 0, 360);
+		util::DragIntMulti<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "eternity", [](LubEffect* e) {return &e->eternity; }, 1, 0, 1);
 	}
 
 }

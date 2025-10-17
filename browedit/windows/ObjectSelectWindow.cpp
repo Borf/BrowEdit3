@@ -375,11 +375,13 @@ void BrowEdit::showObjectWindow()
 								lubEffect->rate = glm::vec2(5, 15);
 								lubEffect->size = glm::vec2(3, 8);
 								lubEffect->life = glm::vec2(1, 5);
+								lubEffect->scale = glm::vec2(1, 1);
 								lubEffect->speed = 0.5f;
 								lubEffect->srcmode = 10;
 								lubEffect->destmode = 2;
 								lubEffect->maxcount = 30;
 								lubEffect->zenable = 1;
+								lubEffect->eternity = 0;
 
 								newNode->addComponent(new LubRenderer());
 							}

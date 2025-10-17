@@ -643,6 +643,7 @@ void Rsw::save(const std::string& fileName, BrowEdit* browEdit)
 			SAVEPROP4("color", glm::round(lubEffects[i]->color * 255.0f)) << "," << std::endl;
 			SAVEPROP2("rate", lubEffects[i]->rate) << "," << std::endl;
 			SAVEPROP2("size", lubEffects[i]->size) << "," << std::endl;
+			SAVEPROP2("scale", lubEffects[i]->scale) << "," << std::endl;
 			SAVEPROP2("life", lubEffects[i]->life) << "," << std::endl;
 			SAVEPROPS("texture", util::replace(util::replace(lubEffects[i]->texture, "\\\\", "\\"), "\\", "\\\\")) << "," << std::endl;
 			SAVEPROP0("speed", lubEffects[i]->speed) << "," << std::endl;
@@ -651,7 +652,8 @@ void Rsw::save(const std::string& fileName, BrowEdit* browEdit)
 			SAVEPROP0("maxcount", lubEffects[i]->maxcount) << "," << std::endl;
 			SAVEPROP0("zenable", lubEffects[i]->zenable) << "," << std::endl;
 			SAVEPROP0("billboard_off", lubEffects[i]->billboard_off) << "," << std::endl;
-			SAVEPROP3("rotate_angle", lubEffects[i]->rotate_angle) << std::endl;
+			SAVEPROP3("rotate_angle", lubEffects[i]->rotate_angle) << "," << std::endl;
+			SAVEPROP0("eternity", lubEffects[i]->eternity) << std::endl;
 
 
 			lubFile << "\t}";

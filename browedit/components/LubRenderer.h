@@ -27,6 +27,7 @@ public:
 				s_texture,
 				color,
 				billboard_off,
+				scale,
 				selection,
 				End
 			};
@@ -39,6 +40,7 @@ public:
 			bindUniform(Uniforms::modelMatrix, "modelMatrix");
 			bindUniform(Uniforms::color, "color");
 			bindUniform(Uniforms::billboard_off, "billboard_off");
+			bindUniform(Uniforms::scale, "scale");
 			bindUniform(Uniforms::selection, "selection");
 		}
 	};
@@ -51,17 +53,19 @@ private:
 	gl::Texture* texture = nullptr;
 
 	float lastTime;
-	float emitTime = 0;
+	float nextEmitTime = 0;
 	class Particle
 	{
 	public:
+		glm::vec3 startPosition;
 		glm::vec3 position;
 		glm::vec3 speed;
 		glm::vec3 dir;
 		float size;
-		float life;
-		float start_life;
 		float alpha;
+		float duration;
+		float tickStart;
+		bool toDelete;
 	};
 	std::vector<Particle> particles;
 

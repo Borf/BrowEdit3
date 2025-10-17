@@ -21,10 +21,11 @@ RswObject::RswObject(RswObject* other) : position(other->position), rotation(oth
 {
 }
 
-void RswObject::load(std::istream* is, int version, unsigned char buildNumber, bool loadModel)
+void RswObject::load(std::istream* is, int version, int buildNumber, bool loadModel)
 {
 	int type;
 	is->read(reinterpret_cast<char*>(&type), sizeof(int));
+
 	if (type == 1)
 	{
 //		std::cout << "Loading model" << std::endl;
