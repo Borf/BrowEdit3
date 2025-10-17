@@ -901,9 +901,8 @@ void MapView::drawLight(Node* n)
 	auto rswLight = n->getComponent<RswLight>();
 	auto gnd = n->root->getComponent<Gnd>();
 
-	if (rswLight->lightType == RswLight::Type::Sun)
+	if (rswLight->lightType == RswLight::Type::Sun || gnd == nullptr)
 		return;
-
 
 	glm::mat4 modelMatrix(1.0f);
 	modelMatrix = glm::scale(modelMatrix, glm::vec3(1, 1, -1));

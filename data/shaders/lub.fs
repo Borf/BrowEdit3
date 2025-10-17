@@ -16,7 +16,7 @@ void main()
 	else {
 		vec4 outColor = texture2D(s_texture, texCoord);
 		outColor *= color;
-		outColor.a *= alpha;
+		outColor.a = alpha;
 		fragColor = outColor;
 	}
 }

@@ -167,10 +167,10 @@
 		}
 	};
 
-	class VertexP3T2A1 : public Vert<3 + 2 + 1>
+	class VertexP2T2A1 : public Vert<3 + 2 + 1>
 	{
 	public:
-		VertexP3T2A1(const glm::vec3& pos, const glm::vec2& t, float alpha)
+		VertexP2T2A1(const glm::vec2& pos, const glm::vec2& t, float alpha)
 		{
 			int index = 0;
 			set(pos, index);

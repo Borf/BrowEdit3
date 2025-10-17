@@ -383,7 +383,7 @@ Rsm::Mesh::Mesh(Rsm* model, std::istream* rsmFile)
 				rsmFile->read(reinterpret_cast<char*>(&f->smoothGroups[2]), sizeof(int));
 			for(int i = 32; i < len; i+=4)
 			{
-				std::cout << "Model " << model->fileName << " has too many smooth groups. Please contact borf" << std::endl;
+				// Tokei: those are group masks from 3DS models, actually. So the smoothGroups don't belong to a vertex, but rather is a single big ID flag.
 				int tmp;
 				rsmFile->read(reinterpret_cast<char*>(&tmp), sizeof(int));
 			}
