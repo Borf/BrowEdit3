@@ -276,6 +276,8 @@ void BrowEdit::run()
 			showShadowEditWindow();
 		if (editMode == EditMode::Cinematic)
 			showCinematicModeWindow();
+		if (editMode == EditMode::Water)
+			showWaterEditWindow();
 
 		if (windowData.hotkeyEditWindowVisible)
 			showHotkeyEditorWindow();
@@ -595,6 +597,8 @@ void BrowEdit::showMapWindow(MapView& mapView, float deltaTime)
 					mapView.postRenderShadowMode(this);
 				else if (editMode == EditMode::Cinematic)
 					mapView.postRenderCinematicMode(this);
+				else if (editMode == EditMode::Water)
+					mapView.postRenderWaterMode(this);
 			}
 
 

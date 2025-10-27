@@ -451,6 +451,15 @@
     <ClCompile Include="lib\glad\src\wgl.c">
       <Filter>lib\glad</Filter>
     </ClCompile>
+    <ClCompile Include="browedit\windows\WaterEditWindow.cpp">
+      <Filter>browedit\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="browedit\MapView.Watermode.cpp">
+      <Filter>browedit</Filter>
+    </ClCompile>
+    <ClCompile Include="browedit\actions\WaterHeightChangeAction.cpp">
+      <Filter>browedit\actions</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="lib\imgui\imgui.h">
@@ -779,6 +788,9 @@
     </ClInclude>
     <ClInclude Include="lib\lzma\Compiler.h">
       <Filter>lib\lzma</Filter>
+    </ClInclude>
+    <ClInclude Include="browedit\actions\WaterHeightChangeAction.h">
+      <Filter>browedit\actions</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

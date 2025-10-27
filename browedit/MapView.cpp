@@ -80,6 +80,7 @@ MapView::MapView(Map* map, const std::string &viewName) : map(map), viewName(vie
 	gridVbo = new gl::VBO<VertexP3T2>();
 	rotateGridVbo = new gl::VBO<VertexP3T2>();
 	textureGridVbo = new gl::VBO<VertexP3T2>();
+	waterGridVbo = new gl::VBO<VertexP3T2>();
 	rebuildObjectModeGrid();
 	rebuildObjectRotateModeGrid();
 }

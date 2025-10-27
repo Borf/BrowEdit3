@@ -2,6 +2,7 @@
 
 #include "Action.h"
 #include <browedit/Node.h>
+#include <browedit/BrowEdit.h>
 #include <browedit/components/RsmRenderer.h>
 #include <browedit/components/GndRenderer.h>
 #include <browedit/components/WaterRenderer.h>
@@ -37,6 +38,11 @@ public:
 		if (waterRenderer) {
 			waterRenderer->renderFullWater = false;
 			waterRenderer->setDirty();
+
+			for (auto& mv : browEdit->mapViews)
+				if (mv.map == map) {
+					mv.waterGridDirty = true;
+				}
 		}
 		if ((std::string*)ptr == &(node->name))
 			node->onRename(map);
@@ -54,6 +60,11 @@ public:
 		if (waterRenderer) {
 			waterRenderer->renderFullWater = false;
 			waterRenderer->setDirty();
+
+			for (auto& mv : browEdit->mapViews)
+				if (mv.map == map) {
+					mv.waterGridDirty = true;
+				}
 		}
 		if ((std::string*)ptr == &(node->name))
 			node->onRename(map);

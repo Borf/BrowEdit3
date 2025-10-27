@@ -4,6 +4,7 @@
 #include <browedit/util/ResourceManager.h>
 #include <browedit/Node.h>
 #include <browedit/shaders/WaterShader.h>
+#include <browedit/shaders/SimpleShader.h>
 #include <browedit/gl/Texture.h>
 #include <stb/stb_image_write.h>
 #include <map>
@@ -19,8 +20,9 @@ WaterRenderer::WaterRenderer()
 
 WaterRenderer::~WaterRenderer()
 {
-	for (auto t : textures)
-		util::ResourceManager<gl::Texture>::unload(t);
+	for (auto types : type2textures)
+		for (auto t : types.second)
+			util::ResourceManager<gl::Texture>::unload(t);
 }
 
 void WaterRenderer::setDirty()
@@ -56,9 +58,9 @@ void WaterRenderer::render()
 			vertIndices.clear();
 			std::vector<VertexP3T2> verts;
 
-			for (int yy = rsw->water.splitHeight - 1; yy >= 0; yy--) {
+			for (int yy = 0; yy < rsw->water.splitHeight; yy++) {
 				for (int xx = 0; xx < rsw->water.splitWidth; xx++) {
-					auto water = &rsw->water.zones[xx][rsw->water.splitHeight - yy - 1];
+					auto water = &rsw->water.zones[xx][yy];
 
 					waveHeight = water->height - water->amplitude;
 
@@ -69,32 +71,33 @@ void WaterRenderer::render()
 
 					int ymax = perHeight * (yy + 1);
 
-					if (ymax == rsw->water.splitHeight - 1)
+					if (yy == rsw->water.splitHeight - 1)
 						ymax = gnd->height;
 
 					int vertsCount = 0;
 
 					for (int x = perWidth * xx; x < xmax; x++) {
 						for (int y = perHeight * yy; y < ymax; y++) {
-							auto c = gnd->cubes[x][gnd->height - y - 1];
+							auto c = gnd->cubes[x][y];
 
 							if (!this->renderFullWater) {
-								if (c->tileUp == -1)
-									continue;
+								//if (c->tileUp == -1)
+								//	continue;
 
 								if (c->heights[0] <= waveHeight && c->heights[1] <= waveHeight && c->heights[2] <= waveHeight && c->heights[3] <= waveHeight)
 									continue;
 							}
 					
-							verts.push_back(VertexP3T2(glm::vec3(10 * x,		0, 10 * (y+1)),	glm::vec2((x % 4) * 0.25f + 0.00f, (y % 4) * 0.25f + 0.00f)));
-							verts.push_back(VertexP3T2(glm::vec3(10 * (x+1),	0, 10 * (y+1)),	glm::vec2((x % 4) * 0.25f + 0.25f, (y % 4) * 0.25f + 0.00f)));
-							verts.push_back(VertexP3T2(glm::vec3(10 * (x+1),	0, 10 * (y+2)), glm::vec2((x % 4) * 0.25f + 0.25f, (y % 4) * 0.25f + 0.25f)));
-							verts.push_back(VertexP3T2(glm::vec3(10 * x,		0, 10 * (y+2)), glm::vec2((x % 4) * 0.25f + 0.00f, (y % 4) * 0.25f + 0.25f)));
+							int yyy = gnd->height - y - 1;
+							verts.push_back(VertexP3T2(glm::vec3(10 * x,		0, 10 * (yyy + 1)),	glm::vec2((x % 4) * 0.25f + 0.00f, (y % 4) * 0.25f + 0.25f)));
+							verts.push_back(VertexP3T2(glm::vec3(10 * (x+1),	0, 10 * (yyy + 1)),	glm::vec2((x % 4) * 0.25f + 0.25f, (y % 4) * 0.25f + 0.25f)));
+							verts.push_back(VertexP3T2(glm::vec3(10 * (x+1),	0, 10 * (yyy + 2)), glm::vec2((x % 4) * 0.25f + 0.25f, (y % 4) * 0.25f + 0.00f)));
+							verts.push_back(VertexP3T2(glm::vec3(10 * x,		0, 10 * (yyy + 2)), glm::vec2((x % 4) * 0.25f + 0.00f, (y % 4) * 0.25f + 0.00f)));
 							vertsCount += 4;
 						}
 					}
 					
-					vertIndices.push_back(VboIndex(32 * (int)vertIndices.size(), prevOffset, vertsCount));
+					vertIndices.push_back(VboIndex(0, prevOffset, vertsCount));
 					prevOffset += vertsCount;
 				}
 			}
@@ -106,7 +109,7 @@ void WaterRenderer::render()
 	if (!this->rsw)
 		return;
 
-	if (textures.size() == 0)
+	if (type2textures.size() == 0)
 		return;
 
 	float time = (float)glfwGetTime();
@@ -144,7 +147,7 @@ void WaterRenderer::render()
 
 			int vertIndex = y * rsw->water.splitWidth + x;
 			int index = ((int)(time * 60 / water->textureAnimSpeed)) % 32;
-			textures[(gnd && gnd->version <= 0x108 ? 0 : vertIndices[vertIndex].texture) + index]->bind();
+			type2textures[water->type][index]->bind();
 			glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexP3T2), (void*)(0 * sizeof(float)));
 			glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexP3T2), (void*)(3 * sizeof(float)));
 			glDrawArrays(GL_QUADS, (int)vertIndices[vertIndex].begin, (int)vertIndices[vertIndex].count);
@@ -160,19 +163,13 @@ void WaterRenderer::reloadTextures()
 	// Only reload necessary textures, it prevents lag issues
 	for (int y = 0; y < rsw->water.splitHeight; y++) {
 		for (int x = 0; x < rsw->water.splitWidth; x++) {
-			for (int i = 0; i < 32; i++) {
-				char buf[128];
-				sprintf_s(buf, 128, "data/texture/워터/water%i%02i%s", rsw->water.zones[x][y].type, i, ".jpg");
+			int waterType = rsw->water.zones[x][y].type;
 
-				int index = 32 * (y * rsw->water.splitWidth + x) + i;
-				if (index >= textures.size()) {
-					textures.push_back(util::ResourceManager<gl::Texture>::load(buf));
-				}
-				else {
-					if (textures[index]->fileName != buf) {
-						util::ResourceManager<gl::Texture>::unload(textures[index]);
-						textures[index] = util::ResourceManager<gl::Texture>::load(buf);
-					}
+			if (type2textures.find(waterType) == type2textures.end()) {
+				for (int i = 0; i < 32; i++) {
+					char buf[128];
+					sprintf_s(buf, 128, "data/texture/워터/water%i%02i%s", rsw->water.zones[x][y].type, i, ".jpg");
+					type2textures[waterType].push_back(util::ResourceManager<gl::Texture>::load(buf));
 				}
 			}
 		}

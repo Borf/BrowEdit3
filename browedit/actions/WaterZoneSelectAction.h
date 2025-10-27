@@ -29,16 +29,3 @@ public:
 	virtual void undo(Map* map, BrowEdit* browEdit) override;
 	virtual std::string str() override;
 };
-
-class WaterZoneSelectAction : public Action
-{
-	std::vector<glm::ivec2> oldSelection;
-	std::vector<glm::ivec2> newSelection;
-public:
-	WaterZoneSelectAction(Map* map, const std::vector<glm::ivec2>& newSelection);
-
-	virtual void perform(Map* map, BrowEdit* browEdit) override;
-	virtual void undo(Map* map, BrowEdit* browEdit) override;
-	virtual std::string str() override;
-};
-

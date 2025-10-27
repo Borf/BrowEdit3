@@ -42,11 +42,11 @@ public:
 		}
 	};
 
-	std::vector<gl::Texture*> textures;
 	Rsw* rsw;
 	Gnd* gnd;
 	gl::VBO<VertexP3T2>* vbo = nullptr;
 	std::vector<VboIndex> vertIndices;
+	std::unordered_map<int, std::vector<gl::Texture*>> type2textures;
 	bool dirty = true;
 	bool viewFog = false;
 	bool renderFullWater = false;

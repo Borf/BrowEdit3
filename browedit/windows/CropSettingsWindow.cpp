@@ -155,6 +155,9 @@ void BrowEdit::showCropSettingsWindow()
 				delete rsw->quadtree;
 				rsw->quadtree = new Rsw::QuadTreeNode(10 * -gnd->width / 2.0f, 10 * -gnd->height / 2.0f, (float)gnd->width * 10 - 1.0f, (float)gnd->height * 10 - 1.0f, 0);
 				rsw->recalculateQuadtree(nullptr);
+
+				rsw->water.splitHeight = glm::min(gnd->width, rsw->water.splitHeight);
+				rsw->water.splitWidth = glm::min(gnd->height, rsw->water.splitWidth);
 			}
 		}
 	}

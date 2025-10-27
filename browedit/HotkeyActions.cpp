@@ -218,6 +218,7 @@ void BrowEdit::registerActions()
 	HotkeyRegistry::registerAction(HotkeyAction::EditMode_Shadow,					[this]() { editMode = EditMode::Shadow; });
 	HotkeyRegistry::registerAction(HotkeyAction::EditMode_Sprite,					[this]() { editMode = EditMode::Sprite; });
 	HotkeyRegistry::registerAction(HotkeyAction::EditMode_Cinematic,				[this]() { editMode = EditMode::Cinematic; });
+	HotkeyRegistry::registerAction(HotkeyAction::EditMode_Water,					[this]() { editMode = EditMode::Water; });
 	
 	HotkeyRegistry::registerAction(HotkeyAction::View_ShadowMap,					[this]() { activeMapView->viewLightmapShadow = !activeMapView->viewLightmapShadow; }, hasActiveMapView);
 	HotkeyRegistry::registerAction(HotkeyAction::View_ColorMap,						[this]() { activeMapView->viewLightmapColor = !activeMapView->viewLightmapColor; }, hasActiveMapView);

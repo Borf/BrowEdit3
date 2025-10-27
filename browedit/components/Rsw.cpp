@@ -610,17 +610,28 @@ void Rsw::save(const std::string& fileName, BrowEdit* browEdit)
 	extraFile << std::setw(2)<<extraProperties;
 	extraFile.close();
 
-	std::string mapName = fileName;
-	if (mapName.find(".rsw") != std::string::npos)
-		mapName = mapName.substr(0, mapName.find(".rsw"));
-	if (mapName.find("\\") != std::string::npos)
-		mapName = mapName.substr(mapName.rfind("\\")+1);
-	std::string luaMapName = util::replace(mapName, "@", "");
-	
 	if (lubEffects.size() > 0)
 	{
-		std::cout << "Lub effects found, saving to " << browEdit->config.ropath << "data\\luafiles514\\lua files\\effecttool\\" << mapName << ".lub" << std::endl;
-		std::ofstream lubFile((browEdit->config.ropath + "data\\luafiles514\\lua files\\effecttool\\" + mapName + ".lub").c_str(), std::ios_base::out | std::ios_base::binary);
+		std::string mapName = fileName;
+		if (mapName.find(".rsw") != std::string::npos)
+			mapName = mapName.substr(0, mapName.find(".rsw"));
+		if (mapName.find("\\") != std::string::npos)
+			mapName = mapName.substr(mapName.rfind("\\")+1);
+		std::string luaMapName = util::replace(mapName, "@", "");
+		std::string lubDirectory = browEdit->config.ropath + "data\\luafiles514\\lua files\\effecttool\\";
+
+		// Use the path from the fileName instead, in case the user exported the map elsewhere
+		if (fileName.find("\\") != std::string::npos)
+			lubDirectory = fileName.substr(0, fileName.rfind("\\")) + "\\luafiles514\\lua files\\effecttool\\";
+
+		std::string lubPath = lubDirectory + mapName + ".lub";
+
+		std::cout << "LUB: " + lubPath << std::endl;
+		if (!std::filesystem::exists(lubDirectory)) {
+			std::filesystem::create_directories(lubDirectory);
+		}
+
+		std::ofstream lubFile(lubPath.c_str(), std::ios_base::out | std::ios_base::binary);
 		lubFile << "_" << luaMapName << "_effect_version = "<<lubVersion<<".0" << std::endl;
 		lubFile << "_" << luaMapName << "_emitterInfo =" << std::endl;
 		lubFile << "{" << std::endl;
@@ -815,106 +826,7 @@ void Rsw::buildImGui(BrowEdit* browEdit)
 	}
 	if (ImGui::CollapsingHeader("Water", ImGuiTreeNodeFlags_DefaultOpen))
 	{
-		auto gnd = browEdit->activeMapView->map->rootNode->getComponent<Gnd>();
-
-		if (gnd && gnd->version >= 0x108) {
-			if (util::DragInt(browEdit, browEdit->activeMapView->map, node, "Split width", &water.splitWidth, 1, 1, 10, "", [&](int* ptr, int startValue) {
-				water.splitWidth = glm::max(1, water.splitWidth);
-				water.splitHeight = glm::max(1, water.splitHeight);
-				auto action = new WaterSplitChangeAction(water, startValue, water.splitHeight);
-				browEdit->activeMapView->map->doAction(action, browEdit);
-				})) {
-				water.resize(water.splitWidth, water.splitHeight);
-				auto waterRenderer = node->getComponent<WaterRenderer>();
-				waterRenderer->setDirty();
-			}
-
-			if (util::DragInt(browEdit, browEdit->activeMapView->map, node, "Split height", &water.splitHeight, 1, 1, 10, "", [&](int* ptr, int startValue) {
-				water.splitWidth = glm::max(1, water.splitWidth);
-				water.splitHeight = glm::max(1, water.splitHeight);
-				auto action = new WaterSplitChangeAction(water, glm::max(1, water.splitWidth), startValue);
-				browEdit->activeMapView->map->doAction(action, browEdit);
-				})) {
-				water.resize(water.splitWidth, water.splitHeight);
-				auto waterRenderer = node->getComponent<WaterRenderer>();
-				waterRenderer->setDirty();
-			}
-
-			if (gnd->version >= 0x109) {
-				for (int y = 0; y < water.splitHeight; y++) {
-					for (int x = 0; x < water.splitWidth; x++) {
-						ImGui::LabelText("", "Water zone: x:%d - y:%d", x, y);
-
-						std::string uid = std::to_string(x) + "_" + std::to_string(y);
-
-						if (util::DragInt(browEdit, browEdit->activeMapView->map, node, ("Type##" + uid).c_str(), &water.zones[x][y].type, 1, 0, 1000))
-						{
-							auto waterRenderer = node->getComponent<WaterRenderer>();
-							waterRenderer->reloadTextures();
-						}
-						if (util::DragFloat(browEdit, browEdit->activeMapView->map, node, ("Height##" + uid).c_str(), &water.zones[x][y].height, 0.1f, -100, 100)) {
-							auto waterRenderer = node->getComponent<WaterRenderer>();
-
-							if (!waterRenderer->renderFullWater) {
-								waterRenderer->renderFullWater = true;
-								waterRenderer->setDirty();
-							}
-						}
-						util::DragFloat(browEdit, browEdit->activeMapView->map, node, ("Wave Height##" + uid).c_str(), &water.zones[x][y].amplitude, 0.1f, -100, 100);
-						util::DragInt(browEdit, browEdit->activeMapView->map, node, ("Texture Animation Speed##" + uid).c_str(), &water.zones[x][y].textureAnimSpeed, 1, 0, 1000);
-						util::DragFloat(browEdit, browEdit->activeMapView->map, node, ("Wave Speed##" + uid).c_str(), &water.zones[x][y].waveSpeed, 0.1f, -100, 100);
-						util::DragFloat(browEdit, browEdit->activeMapView->map, node, ("Wave Pitch##" + uid).c_str(), &water.zones[x][y].wavePitch, 0.1f, -100, 100);
-					}
-				}
-			}
-			else {	// 0x108
-				if (util::DragInt(browEdit, browEdit->activeMapView->map, node, "Type", &water.zones[0][0].type, 1, 0, 1000))
-				{
-					auto waterRenderer = node->getComponent<WaterRenderer>();
-					waterRenderer->reloadTextures();
-				}
-				util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Wave Height", &water.zones[0][0].amplitude, 0.1f, -100, 100);
-				util::DragInt(browEdit, browEdit->activeMapView->map, node, "Texture Animation Speed", &water.zones[0][0].textureAnimSpeed, 1, 0, 1000);
-				util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Wave Speed", &water.zones[0][0].waveSpeed, 0.1f, -100, 100);
-				util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Wave Pitch", &water.zones[0][0].wavePitch, 0.1f, -100, 100);
-				
-				for (int y = 0; y < water.splitHeight; y++) {
-					for (int x = 0; x < water.splitWidth; x++) {
-						ImGui::LabelText("", "Water zone: x:%d - y:%d", x, y);
-
-						std::string uid = std::to_string(x) + "_" + std::to_string(y);
-
-						if (util::DragFloat(browEdit, browEdit->activeMapView->map, node, ("Height##" + uid).c_str(), &water.zones[x][y].height, 0.1f, -100, 100)) {
-							auto waterRenderer = node->getComponent<WaterRenderer>();
-
-							if (!waterRenderer->renderFullWater) {
-								waterRenderer->renderFullWater = true;
-								waterRenderer->setDirty();
-							}
-						}
-					}
-				}
-			}
-		}
-		else {
-			if (util::DragInt(browEdit, browEdit->activeMapView->map, node, "Type", &water.zones[0][0].type, 1, 0, 1000))
-			{
-				auto waterRenderer = node->getComponent<WaterRenderer>();
-				waterRenderer->reloadTextures();
-			}
-			if (util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Height", &water.zones[0][0].height, 0.1f, -100, 100)) {
-				auto waterRenderer = node->getComponent<WaterRenderer>();
-
-				if (!waterRenderer->renderFullWater) {
-					waterRenderer->renderFullWater = true;
-					waterRenderer->setDirty();
-				}
-			}
-			util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Wave Height", &water.zones[0][0].amplitude, 0.1f, -100, 100);
-			util::DragInt(browEdit, browEdit->activeMapView->map, node, "Texture Animation Speed", &water.zones[0][0].textureAnimSpeed, 1, 0, 1000);
-			util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Wave Speed", &water.zones[0][0].waveSpeed, 0.1f, -100, 100);
-			util::DragFloat(browEdit, browEdit->activeMapView->map, node, "Wave Pitch", &water.zones[0][0].wavePitch, 0.1f, -100, 100);
-		}
+		ImGui::Text("Water settings are now in the 'Water edit mode' tab.");
 	}
 
 	if (ImGui::CollapsingHeader("Fog", ImGuiTreeNodeFlags_DefaultOpen))
@@ -1506,7 +1418,29 @@ Rsw::Water* Rsw::WaterData::getFromGat(int x, int y, Gnd* gnd) {
 }
 
 Rsw::Water* Rsw::WaterData::getFromGnd(int x, int y, Gnd* gnd) {
-	return &zones[glm::min(splitWidth - 1, x / (gnd->width / splitWidth))][glm::min(splitHeight - 1, y / (gnd->height / splitHeight))];
+	return &zones[glm::min(splitWidth - 1, x / (int)(gnd->width / splitWidth))][glm::min(splitHeight - 1, y / (int)(gnd->height / splitHeight))];
+}
+
+void Rsw::WaterData::getIndexFromGnd(int x, int y, Gnd* gnd, int* wx, int* wy) {
+	*wx = glm::min(splitWidth - 1, x / (int)(gnd->width / splitWidth));
+	*wy = glm::min(splitHeight - 1, y / (int)(gnd->height / splitHeight));
+}
+
+void Rsw::WaterData::getBoundsFromGnd(int x, int y, Gnd* gnd, int* xmin, int* xmax, int* ymin, int* ymax) {
+	int perWidth = glm::max(1, gnd->width / glm::max(1, splitWidth));
+	int perHeight = glm::max(1, gnd->height / glm::max(1, splitHeight));
+
+	*xmin = perWidth * x;
+	*xmax = perWidth * (x + 1);
+
+	if (x == splitWidth - 1)
+		*xmax = gnd->width;
+
+	*ymin = perHeight * y - 1;
+	*ymax = perHeight * (y + 1) - 1;
+
+	if (y == splitHeight - 1)
+		*ymax = gnd->height - 1;
 }
 
 void Rsw::WaterData::resize(int width, int height) {
@@ -1521,4 +1455,107 @@ void Rsw::WaterData::resize(int width, int height) {
 	for (int y = (int)zones.size(); y < width; y++) {
 		zones.push_back(zones[zones.size() - 1]);
 	}
+}
+
+
+
+glm::vec3 Rsw::rayCastWater(const math::Ray& ray, Gnd* gnd, bool emptyTiles, int xMin, int yMin, int xMax, int yMax, float rayOffset)
+{
+	if (version < 0x109)
+		return glm::vec3(std::numeric_limits<float>::max());
+	
+	if (water.zones.size() == 0 || water.splitWidth <= 0 || water.splitHeight <= 0)
+		return glm::vec3(std::numeric_limits<float>::max());
+
+	if (xMax == -1)
+		xMax = water.splitWidth;
+	if (yMax == -1)
+		yMax = water.splitHeight;
+
+	xMin = glm::max(0, xMin);
+	yMin = glm::max(0, yMin);
+	xMax = glm::min(xMax, water.splitWidth);
+	yMax = glm::min(yMax, water.splitHeight);
+
+	const int chunkSize = 10;
+
+	std::vector<glm::vec3> collisions;
+	float f = 0;
+	int height = gnd->height;
+	int width = gnd->width;
+
+	int perWidth = width / glm::max(1, water.splitWidth);
+	int perHeight = height / glm::max(1, water.splitHeight);
+
+	for (auto xx = xMin; xx < xMax; xx += chunkSize)
+	{
+		for (auto yy = yMin; yy < yMax; yy += chunkSize)
+		{
+			auto water0 = &water.zones[xx][yy];
+
+			int xmin0 = perWidth * xx;
+			int xmax0 = perWidth * (xx + chunkSize);
+
+			if (xx + chunkSize >= water.splitWidth - 1)
+				xmax0 = width;
+			
+			int ymin0 = perHeight * yy - 1;
+			int ymax0 = perHeight * (yy + chunkSize) - 1;
+
+			if (yy + chunkSize >= water.splitHeight - 1)
+				ymax0 = height - 1;
+
+			math::AABB box(glm::vec3(10 * xmin0, -999999, 10 * height - 10 * ymax0), glm::vec3(10 * xmax0, 999999, 10 * height - 10 * ymin0));
+			if (!box.hasRayCollision(ray, -999999, 9999999))
+				continue;
+			for (int x = xx; x < glm::min(water.splitWidth, xx + chunkSize); x++)
+			{
+				for (int y = yy; y < glm::min(water.splitHeight, yy + chunkSize); y++)
+				{
+					auto water1 = &water.zones[x][y];
+
+					float waveHeight = -water1->height;
+
+					int xmin1 = perWidth * x;
+					int xmax1 = perWidth * (x + 1);
+
+					if (x == water.splitWidth - 1)
+						xmax1 = width;
+
+					int ymin1 = perHeight * y - 1;
+					int ymax1 = perHeight * (y + 1) - 1;
+
+					if (y == water.splitHeight - 1)
+						ymax1 = height - 1;
+
+					glm::vec3 v1(10 * xmin1, waveHeight, 10 * height - 10 * ymin1);
+					glm::vec3 v2(10 * xmax1, waveHeight, 10 * height - 10 * ymin1);
+					glm::vec3 v3(10 * xmin1, waveHeight, 10 * height - 10 * ymax1);
+					glm::vec3 v4(10 * xmax1, waveHeight, 10 * height - 10 * ymax1);
+					
+					{
+						std::vector<glm::vec3> v{ v4, v2, v1 };
+						if (ray.LineIntersectPolygon(v, f, 1e-6f))
+							if (f >= rayOffset)
+								collisions.push_back(ray.origin + f * ray.dir);
+					}
+					{
+						std::vector<glm::vec3> v{ v4, v1, v3 };
+						if (ray.LineIntersectPolygon(v, f, 1e-6f))
+							if (f >= rayOffset)
+								collisions.push_back(ray.origin + f * ray.dir);
+					}
+				}
+			}
+
+		}
+	}
+	if (collisions.size() == 0)
+		return glm::vec3(std::numeric_limits<float>::max());
+
+	std::sort(collisions.begin(), collisions.end(), [&ray](const glm::vec3& a, const glm::vec3& b) {
+		return glm::distance(a, ray.origin) < glm::distance(b, ray.origin);
+		});
+
+	return collisions[0];
 }
