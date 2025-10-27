@@ -606,24 +606,6 @@ void Rsm::Mesh::calcMatrix1(int time)
 	else {
 		matrix2 = glm::mat4(1.0f);
 
-		if (scaleFrames.size() > 0) {
-			int tick = time % glm::max(1, model->animLen);
-			int prevIndex = -1;
-			int nextIndex = 0;
-
-			for (; nextIndex < scaleFrames.size() && tick >= scaleFrames[nextIndex].time; nextIndex++) {
-			}
-
-			prevIndex = nextIndex - 1;
-			float prevTick = (float)(prevIndex < 0 ? 0 : scaleFrames[prevIndex].time);
-			float nextTick = (float)(nextIndex == scaleFrames.size() ? model->animLen : scaleFrames[nextIndex].time);
-			glm::vec3 prev = prevIndex < 0 ? glm::vec3(1) : scaleFrames[prevIndex].scale;
-			glm::vec3 next = nextIndex == scaleFrames.size() ? scaleFrames[nextIndex - 1].scale : scaleFrames[nextIndex].scale;
-
-			float mult = (tick - prevTick) / (nextTick - prevTick);
-			matrix1 = glm::scale(matrix1, mult * (next - prev) + prev);
-		}
-
 		if (rotFrames.size() > 0)
 		{
 			int tick = time % glm::max(1, model->animLen);
@@ -653,9 +635,26 @@ void Rsm::Mesh::calcMatrix1(int time)
 			}
 		}
 
-		matrix2 = glm::mat4(matrix1);
+		if (scaleFrames.size() > 0) {
+			int tick = time % glm::max(1, model->animLen);
+			int prevIndex = -1;
+			int nextIndex = 0;
+
+			for (; nextIndex < scaleFrames.size() && tick >= scaleFrames[nextIndex].time; nextIndex++) {
+			}
+
+			prevIndex = nextIndex - 1;
+			float prevTick = (float)(prevIndex < 0 ? 0 : scaleFrames[prevIndex].time);
+			float nextTick = (float)(nextIndex == scaleFrames.size() ? model->animLen : scaleFrames[nextIndex].time);
+			glm::vec3 prev = prevIndex < 0 ? glm::vec3(1) : scaleFrames[prevIndex].scale;
+			glm::vec3 next = nextIndex == scaleFrames.size() ? scaleFrames[nextIndex - 1].scale : scaleFrames[nextIndex].scale;
+
+			float mult = (tick - prevTick) / (nextTick - prevTick);
+			matrix1 = glm::scale(matrix1, mult * (next - prev) + prev);
+		}
+
 		glm::vec3 position;
-		
+
 		if (posFrames.size() > 0) {
 			int tick = time % glm::max(1, model->animLen);
 			int prevIndex = -1;
@@ -684,25 +683,12 @@ void Rsm::Mesh::calcMatrix1(int time)
 				position = pos_;
 			}
 		}
-
-		matrix2[3].x = position.x;
-		matrix2[3].y = position.y;
-		matrix2[3].z = position.z;
-
-		Mesh *mesh = this;
-
-		while (mesh->parent != NULL)
-		{
-			mesh = mesh->parent;
-			matrix2 = mesh->matrix1 * matrix2;
-		}
 		
+		matrix1 = glm::translate(glm::mat4(1.0f), position) * matrix1;
+		matrix2 = matrix1;
+
 		if (parent != NULL)
-		{
-			matrix2[3].x += parent->matrix2[3].x;
-			matrix2[3].y += parent->matrix2[3].y;
-			matrix2[3].z += parent->matrix2[3].z;
-		}
+			matrix2 = parent->matrix2 * matrix2;
 
 		// Cull face check
 		reverseCullFaceSub = cull < 0;
