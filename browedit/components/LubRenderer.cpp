@@ -4,6 +4,7 @@
 #include <browedit/components/Rsw.h>
 #include <browedit/components/Gnd.h>
 #include <browedit/components/BillboardRenderer.h>
+#include <browedit/NodeRenderer.h>
 #include <glad/gl.h>
 #include <browedit/gl/Texture.h>
 #include <browedit/gl/Vertex.h>
@@ -17,7 +18,7 @@ LubRenderer::LubRenderer()
 
 LubRenderer::~LubRenderer()
 {
-	if(texture)
+	if (texture)
 		util::ResourceManager<gl::Texture>::unload(texture);
 }
 
@@ -43,7 +44,7 @@ int d3dToOpenGlBlend(int d3d)
 	return GL_ONE;
 }
 
-void LubRenderer::render()
+void LubRenderer::render(NodeRenderContext& context)
 {
 	if (!rswObject)
 		rswObject = node->getComponent<RswObject>();
@@ -219,13 +220,13 @@ LubRenderer::LubRenderContext::LubRenderContext() : shader(util::ResourceManager
 	order = 4;
 }
 
-void LubRenderer::LubRenderContext::preFrame(Node* rootNode, const glm::mat4& projectionMatrix, const glm::mat4& viewMatrix)
+void LubRenderer::LubRenderContext::preFrame(Node* rootNode, NodeRenderContext& context)
 {
 	glEnable(GL_DEPTH_TEST);
 	shader->use();
-	shader->setUniform(LubShader::Uniforms::projectionMatrix, projectionMatrix);
-	shader->setUniform(LubShader::Uniforms::cameraMatrix, viewMatrix);
-	shader->setUniform(LubShader::Uniforms::color, glm::vec4(1,1,1,1));
+	shader->setUniform(LubShader::Uniforms::projectionMatrix, context.projectionMatrix);
+	shader->setUniform(LubShader::Uniforms::cameraMatrix, context.viewMatrix);
+	shader->setUniform(LubShader::Uniforms::color, glm::vec4(1, 1, 1, 1));
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
 	glEnableVertexAttribArray(2);

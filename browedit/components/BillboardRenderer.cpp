@@ -3,6 +3,7 @@
 #include <browedit/Node.h>
 #include <browedit/components/Rsw.h>
 #include <browedit/components/Gnd.h>
+#include <browedit/NodeRenderer.h>
 #include <glad/gl.h>
 #include <browedit/gl/Texture.h>
 #include <browedit/gl/Vertex.h>
@@ -14,7 +15,7 @@ static std::vector<VertexP3T2> verts;
 BillboardRenderer::BillboardRenderer(const std::string& textureFile, const std::string& textureFile_selected)
 {
 	texture = util::ResourceManager<gl::Texture>::load(textureFile);
-	if(textureFile_selected != "")
+	if (textureFile_selected != "")
 		textureSelected = util::ResourceManager<gl::Texture>::load(textureFile_selected);
 	renderContext = BillboardRenderContext::getInstance();
 	if (verts.size() == 0)
@@ -29,12 +30,12 @@ BillboardRenderer::BillboardRenderer(const std::string& textureFile, const std::
 BillboardRenderer::~BillboardRenderer()
 {
 	util::ResourceManager<gl::Texture>::unload(texture);
-	if(textureSelected)
+	if (textureSelected)
 		util::ResourceManager<gl::Texture>::unload(textureSelected);
 }
 
 
-void BillboardRenderer::render()
+void BillboardRenderer::render(NodeRenderContext& context)
 {
 	if (!rswObject)
 		rswObject = node->getComponent<RswObject>();
@@ -64,7 +65,7 @@ void BillboardRenderer::render()
 
 }
 
-void BillboardRenderer::setTexture(const std::string &texture)
+void BillboardRenderer::setTexture(const std::string& texture)
 {
 	util::ResourceManager<gl::Texture>::unload(this->texture);
 	util::ResourceManager<gl::Texture>::unload(this->textureSelected);
@@ -82,15 +83,15 @@ BillboardRenderer::BillboardRenderContext::BillboardRenderContext() : shader(uti
 	order = 3;
 }
 
-void BillboardRenderer::BillboardRenderContext::preFrame(Node* rootNode, const glm::mat4& projectionMatrix, const glm::mat4& viewMatrix)
+void BillboardRenderer::BillboardRenderContext::preFrame(Node* rootNode, NodeRenderContext& context)
 {
 	glEnable(GL_BLEND);
-	glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA,GL_ONE,GL_ONE_MINUS_SRC_ALPHA);
+	glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_DEPTH_TEST);
 	shader->use();
-	shader->setUniform(BillboardShader::Uniforms::projectionMatrix, projectionMatrix);
-	shader->setUniform(BillboardShader::Uniforms::cameraMatrix, viewMatrix);
-	shader->setUniform(BillboardShader::Uniforms::color, glm::vec4(1,1,1,1));
+	shader->setUniform(BillboardShader::Uniforms::projectionMatrix, context.projectionMatrix);
+	shader->setUniform(BillboardShader::Uniforms::cameraMatrix, context.viewMatrix);
+	shader->setUniform(BillboardShader::Uniforms::color, glm::vec4(1, 1, 1, 1));
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
 	glDisableVertexAttribArray(2);

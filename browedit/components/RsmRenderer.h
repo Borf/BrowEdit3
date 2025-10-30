@@ -29,8 +29,8 @@ public:
 		bool enableFaceCulling = true;
 
 		RsmRenderContext();
-		virtual void preFrame(Node* rootNode, const glm::mat4& projectionMatrix, const glm::mat4& viewMatrix) override;
-		virtual void postFrame() override;
+		virtual void preFrame(Node* rootNode, NodeRenderContext& context) override;
+		virtual void postFrame(NodeRenderContext& context) override;
 	};
 	class VboIndex
 	{
@@ -77,7 +77,7 @@ public:
 	RsmRenderer();
 	~RsmRenderer();
 	void begin();
-	virtual void render();
+	virtual void render(NodeRenderContext& context) override;
 	void initMeshInfo(Rsm::Mesh* mesh, const glm::mat4& matrix = glm::mat4(1.0f));
 	void renderMesh(Rsm::Mesh* mesh, const glm::mat4& matrix, bool selectionPhase = false, bool calcMatrix = true);
 	void renderMeshSub(Rsm::Mesh* mesh, bool selectionPhase);

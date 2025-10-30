@@ -7,8 +7,10 @@
 #include <browedit/gl/Texture.h>
 #include <browedit/shaders/RsmShader.h>
 #include <browedit/util/ResourceManager.h>
+#include <browedit/NodeRenderer.h>
+#include <browedit/MapView.h>
+#include <browedit/gl/FBO.h>
 #include <glm/glm.hpp>
-
 RsmRenderer::RsmRenderer()
 {
 	renderContext = RsmRenderContext::getInstance();
@@ -42,7 +44,7 @@ void RsmRenderer::begin()
 	renderInfo.clear();
 }
 
-void RsmRenderer::render()
+void RsmRenderer::render(NodeRenderContext& context)
 {
 	if (!this->rsm || !this->rsm->loaded)
 	{
@@ -70,6 +72,8 @@ void RsmRenderer::render()
 		this->rsw = node->root->getComponent<Rsw>();
 	if (!this->rsm)
 		return;
+	
+	time = context.time;
 
 	if (!this->rsm->loaded)
 	{
@@ -96,6 +100,10 @@ void RsmRenderer::render()
 		for (int i = 0; i < rsm->meshCount; i++) {
 			renderInfo[i].vbo.resize(renderContext->phases);
 			renderInfo[i].indices.resize(renderContext->phases);
+		}
+		if (textures.size() == 0) {
+			for (const auto& textureFilename : rsm->textures)
+				textures.push_back(util::ResourceManager<gl::Texture>::load("data\\texture\\" + textureFilename));
 		}
 		initMeshInfo(rsm->rootMesh);
 	}
@@ -148,7 +156,7 @@ void RsmRenderer::render()
 		matrixCache = glm::scale(matrixCache, glm::vec3(1, -1, 1));
 	}
 
-	phase = dynamic_cast<RsmRenderContext*>(renderContext)->phase;
+	phase = renderContext->phase;
 
 	auto shader = dynamic_cast<RsmRenderContext*>(renderContext)->shader;
 	shader->setUniform(RsmShader::Uniforms::shadeType, (int)rsm->shadeType);
@@ -366,13 +374,13 @@ RsmRenderer::RsmRenderContext::RsmRenderContext() : shader(util::ResourceManager
 	shader->setUniform(RsmShader::Uniforms::s_texture, 0);
 }
 
-void RsmRenderer::RsmRenderContext::preFrame(Node* rootNode, const glm::mat4& projectionMatrix, const glm::mat4& viewMatrix)
+void RsmRenderer::RsmRenderContext::preFrame(Node* rootNode, NodeRenderContext& context)
 {
 	shader->use();
 
 	if (phase == 0) {
-		shader->setUniform(RsmShader::Uniforms::projectionMatrix, projectionMatrix);
-		shader->setUniform(RsmShader::Uniforms::cameraMatrix, viewMatrix);
+		shader->setUniform(RsmShader::Uniforms::projectionMatrix, context.projectionMatrix);
+		shader->setUniform(RsmShader::Uniforms::cameraMatrix, context.viewMatrix);
 		shader->setUniform(RsmShader::Uniforms::lightToggle, viewLighting);
 		shader->setUniform(RsmShader::Uniforms::viewTextures, viewTextures);
 		shader->setUniform(RsmShader::Uniforms::fogEnabled, viewFog);
@@ -425,7 +433,7 @@ void RsmRenderer::RsmRenderContext::preFrame(Node* rootNode, const glm::mat4& pr
 	}
 }
 
-void RsmRenderer::RsmRenderContext::postFrame()
+void RsmRenderer::RsmRenderContext::postFrame(NodeRenderContext& context)
 {
 	if (phase == 0) {
 

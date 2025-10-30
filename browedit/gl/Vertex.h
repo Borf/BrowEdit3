@@ -155,6 +155,15 @@
 		}
 	};
 
+	class VertexP3 : public Vert<3>
+	{
+	public:
+		VertexP3(const glm::vec3& pos)
+		{
+			int index = 0;
+			set(pos, index);
+		}
+	};
 
 	class VertexP3T2 : public Vert<3 + 2>
 	{

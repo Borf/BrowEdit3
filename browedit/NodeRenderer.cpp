@@ -6,6 +6,8 @@
 #include <algorithm>
 #include "Node.h"
 
+class NodeRenderContext;
+
 void NodeRenderer::begin()
 {
 
@@ -45,11 +47,11 @@ void NodeRenderer::render(Node* rootNode, NodeRenderContext& context)
 	{
 		for (int phase = 0; phase < r->phases; phase++) {
 			r->phase = phase;
-			r->preFrame(rootNode, context.projectionMatrix, context.viewMatrix);
+			r->preFrame(rootNode, context);
 			for (auto renderer : renderers[r])
 				if (renderer->enabled && renderer->shouldRender(phase))
-					renderer->render();
-			r->postFrame();
+					renderer->render(context);
+			r->postFrame(context);
 		}
 	}
 }

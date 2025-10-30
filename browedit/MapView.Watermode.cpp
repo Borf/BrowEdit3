@@ -30,7 +30,7 @@
 
 void MapView::rebuildWaterGrid(Rsw* rsw, Gnd* gnd, bool forced)
 {
-	std::vector<VertexP3T2> verts;
+	std::vector<VertexP3> verts;
 	glm::vec3 n(0, -1, 0);
 
 	if (waterGridDirty || forced || rsw->water.splitHeight * rsw->water.splitWidth * 8 != waterGridVbo->size()) {
@@ -43,10 +43,10 @@ void MapView::rebuildWaterGrid(Rsw* rsw, Gnd* gnd, bool forced)
 
 				rsw->water.getBoundsFromGnd(x, y, gnd, &xmin, &xmax, &ymin, &ymax);
 
-				VertexP3T2 v0 = VertexP3T2(glm::vec3(10 * xmin, -zone->height, 10 * gnd->height - 10 * ymin), glm::vec2(0));
-				VertexP3T2 v1 = VertexP3T2(glm::vec3(10 * xmax, -zone->height, 10 * gnd->height - 10 * ymax), glm::vec2(0));
-				VertexP3T2 v2 = VertexP3T2(glm::vec3(10 * xmax, -zone->height, 10 * gnd->height - 10 * ymin), glm::vec2(0));
-				VertexP3T2 v3 = VertexP3T2(glm::vec3(10 * xmin, -zone->height, 10 * gnd->height - 10 * ymax), glm::vec2(0));
+				VertexP3 v0 = VertexP3(glm::vec3(10 * xmin, -zone->height, 10 * gnd->height - 10 * ymin));
+				VertexP3 v1 = VertexP3(glm::vec3(10 * xmax, -zone->height, 10 * gnd->height - 10 * ymax));
+				VertexP3 v2 = VertexP3(glm::vec3(10 * xmax, -zone->height, 10 * gnd->height - 10 * ymin));
+				VertexP3 v3 = VertexP3(glm::vec3(10 * xmin, -zone->height, 10 * gnd->height - 10 * ymax));
 
 				verts.push_back(v0); verts.push_back(v2);
 				verts.push_back(v0); verts.push_back(v3);
@@ -139,14 +139,13 @@ void MapView::postRenderWaterMode(BrowEdit* browEdit)
 	if (showWaterGrid && !isDragged && waterGridVbo->size() > 0) {
 		waterGridVbo->bind();
 		glEnableVertexAttribArray(0);
-		glEnableVertexAttribArray(1);
+		glDisableVertexAttribArray(1);
 		glDisableVertexAttribArray(2);
 		glDisableVertexAttribArray(3);
 		glDisableVertexAttribArray(4);
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		simpleShader->setUniform(SimpleShader::Uniforms::color, glm::vec4(1, 1, 1, 0.25f));
-		glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexP3T2), (void*)(0 * sizeof(float)));
-		glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexP3T2), (void*)(3 * sizeof(float)));
+		glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexP3), (void*)(0 * sizeof(float)));
 		glDrawArrays(GL_LINES, 0, (int)waterGridVbo->size());
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		waterGridVbo->unBind();
@@ -154,8 +153,8 @@ void MapView::postRenderWaterMode(BrowEdit* browEdit)
 
 	if (waterSelection.size() > 0 && canSelect)
 	{
-		std::vector<VertexP3T2> verts;
-		std::vector<VertexP3T2> vertsGrid;
+		std::vector<VertexP3> verts;
+		std::vector<VertexP3> vertsGrid;
 
 		for (auto& tile : waterSelection)
 		{
@@ -164,10 +163,10 @@ void MapView::postRenderWaterMode(BrowEdit* browEdit)
 
 			rsw->water.getBoundsFromGnd(tile.x, tile.y, gnd, &xmin, &xmax, &ymin, &ymax);
 
-			VertexP3T2 v0 = VertexP3T2(glm::vec3(10 * xmin, -zone->height, 10 * gnd->height - 10 * ymin), glm::vec2(0));
-			VertexP3T2 v1 = VertexP3T2(glm::vec3(10 * xmax, -zone->height, 10 * gnd->height - 10 * ymax), glm::vec2(0));
-			VertexP3T2 v2 = VertexP3T2(glm::vec3(10 * xmax, -zone->height, 10 * gnd->height - 10 * ymin), glm::vec2(0));
-			VertexP3T2 v3 = VertexP3T2(glm::vec3(10 * xmin, -zone->height, 10 * gnd->height - 10 * ymax), glm::vec2(0));
+			VertexP3 v0 = VertexP3(glm::vec3(10 * xmin, -zone->height, 10 * gnd->height - 10 * ymin));
+			VertexP3 v1 = VertexP3(glm::vec3(10 * xmax, -zone->height, 10 * gnd->height - 10 * ymax));
+			VertexP3 v2 = VertexP3(glm::vec3(10 * xmax, -zone->height, 10 * gnd->height - 10 * ymin));
+			VertexP3 v3 = VertexP3(glm::vec3(10 * xmin, -zone->height, 10 * gnd->height - 10 * ymax));
 
 			verts.push_back(v0);
 			verts.push_back(v1);
@@ -185,20 +184,18 @@ void MapView::postRenderWaterMode(BrowEdit* browEdit)
 
 		if (vertsGrid.size() > 0) {
 			glEnableVertexAttribArray(0);
-			glEnableVertexAttribArray(1);
+			glDisableVertexAttribArray(1);
 			glDisableVertexAttribArray(2);
 			glDisableVertexAttribArray(3);
 			glDisableVertexAttribArray(4);
-			glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexP3T2), verts[0].data);
-			glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexP3T2), verts[0].data + 3);
+			glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexP3), verts[0].data);
 
 			glLineWidth(1.0f);
 			simpleShader->setUniform(SimpleShader::Uniforms::color, glm::vec4(1, 0, 0, (gnd->version >= 0x108 && showWaterSelectedOverlay) ? 0.15f : 0.0f));
 			glDrawArrays(GL_TRIANGLES, 0, (int)verts.size());
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 			simpleShader->setUniform(SimpleShader::Uniforms::color, glm::vec4(1, 0, 0, 1.0f));
-			glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexP3T2), vertsGrid[0].data);
-			glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexP3T2), vertsGrid[0].data + 3);
+			glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexP3), vertsGrid[0].data);
 			glDrawArrays(GL_LINES, 0, (int)vertsGrid.size());
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		}
@@ -219,13 +216,13 @@ void MapView::postRenderWaterMode(BrowEdit* browEdit)
 
 		int xmin = perWidth * minValues.x;
 		int xmax = perWidth * (maxValues.x + 1);
-
+		
 		if (maxValues.x == rsw->water.splitWidth - 1)
 			xmax = gnd->width;
-
+		
 		int ymin = perHeight * minValues.y - 1;
 		int ymax = perHeight * (maxValues.y + 1) - 1;
-
+		
 		if (maxValues.y == rsw->water.splitHeight - 1)
 			ymax = gnd->height - 1;
 
@@ -329,12 +326,11 @@ void MapView::postRenderWaterMode(BrowEdit* browEdit)
 					glLineWidth(2);
 					gridVbo->bind();
 					glEnableVertexAttribArray(0);
-					glEnableVertexAttribArray(1);
+					glDisableVertexAttribArray(1);
 					glDisableVertexAttribArray(2);
 					glDisableVertexAttribArray(3);
 					glDisableVertexAttribArray(4);
-					glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexP3T2), (void*)(0 * sizeof(float)));
-					glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexP3T2), (void*)(3 * sizeof(float)));
+					glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexP3), (void*)(0 * sizeof(float)));
 					glDrawArrays(GL_LINES, 0, (int)gridVbo->size());
 					gridVbo->unBind();
 				}
@@ -437,7 +433,7 @@ void MapView::postRenderWaterMode(BrowEdit* browEdit)
 	if (mouseDown)
 	{
 		auto mouseDragEnd = mouse3D;
-		std::vector<VertexP3T2> verts;
+		std::vector<VertexP3> verts;
 		float dist = 0.002f * cameraDistance;
 		int waterMinX, waterMinY, waterMaxX, waterMaxY;
 
@@ -466,39 +462,29 @@ void MapView::postRenderWaterMode(BrowEdit* browEdit)
 			{
 				for (int y = waterMinY; y < waterMaxY + 1; y++)
 				{
+					int xmin, xmax, ymin, ymax;
 					auto zone = &rsw->water.zones[x][y];
 
-					int xmin = perWidth * x;
-					int xmax = perWidth * (x + 1);
+					rsw->water.getBoundsFromGnd(x, y, gnd, &xmin, &xmax, &ymin, &ymax);
 
-					if (x == rsw->water.splitWidth - 1)
-						xmax = gnd->width;
+					verts.push_back(VertexP3(glm::vec3(10 * xmin, -zone->height + dist, 10 * gnd->height - 10 * ymin)));
+					verts.push_back(VertexP3(glm::vec3(10 * xmax, -zone->height + dist, 10 * gnd->height - 10 * ymax)));
+					verts.push_back(VertexP3(glm::vec3(10 * xmax, -zone->height + dist, 10 * gnd->height - 10 * ymin)));
 
-					int ymin = perHeight * y - 1;
-					int ymax = perHeight * (y + 1) - 1;
-
-					if (y == rsw->water.splitHeight - 1)
-						ymax = gnd->height - 1;
-
-					verts.push_back(VertexP3T2(glm::vec3(10 * xmin, -zone->height + dist, 10 * gnd->height - 10 * ymin), glm::vec2(0)));
-					verts.push_back(VertexP3T2(glm::vec3(10 * xmax, -zone->height + dist, 10 * gnd->height - 10 * ymax), glm::vec2(0)));
-					verts.push_back(VertexP3T2(glm::vec3(10 * xmax, -zone->height + dist, 10 * gnd->height - 10 * ymin), glm::vec2(0)));
-
-					verts.push_back(VertexP3T2(glm::vec3(10 * xmin, -zone->height + dist, 10 * gnd->height - 10 * ymax), glm::vec2(0)));
-					verts.push_back(VertexP3T2(glm::vec3(10 * xmin, -zone->height + dist, 10 * gnd->height - 10 * ymin), glm::vec2(0)));
-					verts.push_back(VertexP3T2(glm::vec3(10 * xmax, -zone->height + dist, 10 * gnd->height - 10 * ymax), glm::vec2(0)));
+					verts.push_back(VertexP3(glm::vec3(10 * xmin, -zone->height + dist, 10 * gnd->height - 10 * ymax)));
+					verts.push_back(VertexP3(glm::vec3(10 * xmin, -zone->height + dist, 10 * gnd->height - 10 * ymin)));
+					verts.push_back(VertexP3(glm::vec3(10 * xmax, -zone->height + dist, 10 * gnd->height - 10 * ymax)));
 				}
 			}
 
 		if (verts.size() > 0)
 		{
 			glEnableVertexAttribArray(0);
-			glEnableVertexAttribArray(1);
+			glDisableVertexAttribArray(1);
 			glDisableVertexAttribArray(2);
 			glDisableVertexAttribArray(3);
 			glDisableVertexAttribArray(4);
-			glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexP3T2), verts[0].data);
-			glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexP3T2), verts[0].data + 3);
+			glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexP3), verts[0].data);
 			simpleShader->setUniform(SimpleShader::Uniforms::color, glm::vec4(1, 0, 0, 0.5f));
 			glDrawArrays(GL_TRIANGLES, 0, (int)verts.size());
 		}

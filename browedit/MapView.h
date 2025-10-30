@@ -61,7 +61,7 @@ public:
 
 	gl::VBO<VertexP3T2>* gridVbo = nullptr;
 	gl::VBO<VertexP3T2>* rotateGridVbo = nullptr;
-	gl::VBO<VertexP3T2>* waterGridVbo = nullptr;
+	gl::VBO<VertexP3>* waterGridVbo = nullptr;
 
 	NodeRenderContext nodeRenderContext;
 	Gadget gadget;

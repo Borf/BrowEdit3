@@ -78,12 +78,12 @@ public:
 		glm::mat4 viewMatrix = glm::mat4(1.0f);
 
 		LubRenderContext();
-		virtual void preFrame(Node* rootNode, const glm::mat4& projectionMatrix, const glm::mat4& viewMatrix) override;
+		virtual void preFrame(Node* rootNode, NodeRenderContext& context) override;
 	};
 
 	LubRenderer();
 	~LubRenderer();
-	virtual void render();
+	virtual void render(NodeRenderContext& context);
 	bool selected = false;
 	void setDirty() { this->dirty = true; }
 };

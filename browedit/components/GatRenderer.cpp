@@ -4,6 +4,7 @@
 #include <browedit/Node.h>
 #include <browedit/shaders/SimpleShader.h>
 #include <browedit/gl/Texture.h>
+#include <browedit/NodeRenderer.h>
 #include <stb/stb_image_write.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include <map>
@@ -25,7 +26,7 @@ GatRenderer::~GatRenderer()
 			delete c;
 }
 
-void GatRenderer::render()
+void GatRenderer::render(NodeRenderContext& context)
 {
 	if (!this->gat)
 	{
@@ -65,12 +66,12 @@ GatRenderer::GatRenderContext::GatRenderContext() : shader(util::ResourceManager
 }
 
 
-void GatRenderer::GatRenderContext::preFrame(Node* rootNode, const glm::mat4& projectionMatrix, const glm::mat4& viewMatrix)
+void GatRenderer::GatRenderContext::preFrame(Node* rootNode, NodeRenderContext& context)
 {
 	texture->bind();
 	shader->use();
-	shader->setUniform(SimpleShader::Uniforms::projectionMatrix, projectionMatrix);
-	shader->setUniform(SimpleShader::Uniforms::viewMatrix, viewMatrix);
+	shader->setUniform(SimpleShader::Uniforms::projectionMatrix, context.projectionMatrix);
+	shader->setUniform(SimpleShader::Uniforms::viewMatrix, context.viewMatrix);
 	shader->setUniform(SimpleShader::Uniforms::textureFac, 1.0f);
 	shader->setUniform(SimpleShader::Uniforms::lightMin, 0.5f);
 	shader->setUniform(SimpleShader::Uniforms::color, glm::vec4(1, 1, 1, 1));

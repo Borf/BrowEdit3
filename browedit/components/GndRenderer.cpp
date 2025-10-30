@@ -5,6 +5,7 @@
 #include <browedit/Node.h>
 #include <browedit/shaders/GndShader.h>
 #include <browedit/gl/Texture.h>
+#include <browedit/NodeRenderer.h>
 #include <stb/stb_image_write.h>
 #include <map>
 #include <iostream>
@@ -24,14 +25,14 @@ GndRenderer::~GndRenderer()
 {
 	util::ResourceManager<gl::Texture>::unload(white);
 	delete gndShadow;
-	for(auto t : textures)
+	for (auto t : textures)
 		util::ResourceManager<gl::Texture>::unload(t);
 	for (auto r : chunks)
 		for (auto c : r)
 			delete c;
 }
 
-void GndRenderer::render()
+void GndRenderer::render(NodeRenderContext& context)
 {
 	if (!this->gnd)
 	{ //todo: move a tryLoadGnd method
@@ -100,7 +101,7 @@ void GndRenderer::render()
 				y++;
 				if (y * gnd->lightmapHeight >= shadowmapSize)
 				{
-					std::cerr<< "Lightmap too big!" << std::endl;
+					std::cerr << "Lightmap too big!" << std::endl;
 					y = 0;
 				}
 			}
@@ -188,11 +189,11 @@ GndRenderer::GndRenderContext::GndRenderContext() : shader(util::ResourceManager
 }
 
 
-void GndRenderer::GndRenderContext::preFrame(Node* rootNode, const glm::mat4& projectionMatrix, const glm::mat4& viewMatrix)
+void GndRenderer::GndRenderContext::preFrame(Node* rootNode, NodeRenderContext& context)
 {
 	shader->use();
-	shader->setUniform(GndShader::Uniforms::ProjectionMatrix, projectionMatrix);
-	this->viewMatrix = viewMatrix;
+	shader->setUniform(GndShader::Uniforms::ProjectionMatrix, context.projectionMatrix);
+	this->viewMatrix = context.viewMatrix;
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
 	glEnableVertexAttribArray(2);
@@ -230,7 +231,7 @@ void GndRenderer::Chunk::render()
 		vbo.bind();
 		for (VboIndex& it : vertIndices)
 		{
-			if(it.texture != -1)
+			if (it.texture != -1)
 				renderer->textures[it.texture]->bind();
 			else
 			{

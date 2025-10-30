@@ -196,6 +196,7 @@ void ModelEditor::run(BrowEdit* browEdit)
 					nodeRenderContext.viewMatrix = glm::translate(nodeRenderContext.viewMatrix, glm::vec3(0, rsm->bbrange.y, 0));
 				else
 					nodeRenderContext.viewMatrix = glm::translate(nodeRenderContext.viewMatrix, glm::vec3(0, -rsm->bbrange.y, 0));
+				nodeRenderContext.time = (float)glfwGetTime();
 
 				// draw grid
 				simpleShader->use();

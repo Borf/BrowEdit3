@@ -80,7 +80,7 @@ MapView::MapView(Map* map, const std::string &viewName) : map(map), viewName(vie
 	gridVbo = new gl::VBO<VertexP3T2>();
 	rotateGridVbo = new gl::VBO<VertexP3T2>();
 	textureGridVbo = new gl::VBO<VertexP3T2>();
-	waterGridVbo = new gl::VBO<VertexP3T2>();
+	waterGridVbo = new gl::VBO<VertexP3>();
 	rebuildObjectModeGrid();
 	rebuildObjectRotateModeGrid();
 }
@@ -488,6 +488,8 @@ void MapView::render(BrowEdit* browEdit)
 	}
 	map->rootNode->getComponent<WaterRenderer>()->enabled = viewWater;
 
+	nodeRenderContext.mapView = this;
+	nodeRenderContext.time = (float)glfwGetTime();
 	NodeRenderer::render(map->rootNode, nodeRenderContext);
 
 	// position and draw the new nodes
