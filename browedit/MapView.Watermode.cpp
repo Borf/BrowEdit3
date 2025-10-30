@@ -205,7 +205,7 @@ void MapView::postRenderWaterMode(BrowEdit* browEdit)
 
 		glm::ivec2 maxValues(-99999, -99999), minValues(999999, 9999999);
 
-		for (auto& tile : map->waterSelection)
+		for (auto& tile : waterSelection)
 		{
 			maxValues = glm::max(maxValues, tile);
 			minValues = glm::min(minValues, tile);
