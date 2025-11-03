@@ -42,18 +42,11 @@ public:
 		}
 	};
 
-	struct WaterDrawEntry {
-		int x;
-		int y;
-		float distance;
-	};
-
 	Rsw* rsw;
 	Gnd* gnd;
 	gl::VBO<VertexP3T2>* vbo = nullptr;
 	std::vector<VboIndex> vertIndices;
 	std::unordered_map<int, std::vector<gl::Texture*>> type2textures;
-	std::vector<glm::vec3> waterCenters;
 	bool dirty = true;
 	bool viewFog = false;
 	bool renderFullWater = false;

@@ -27,6 +27,7 @@ public:
 		bool viewTextures = true;
 		bool viewFog = true;
 		bool enableFaceCulling = true;
+		int counter = 0;
 
 		RsmRenderContext();
 		virtual void preFrame(Node* rootNode, NodeRenderContext& context) override;

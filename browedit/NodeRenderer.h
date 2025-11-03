@@ -9,6 +9,10 @@ class Node;
 class NodeRenderContext;
 class MapView;
 
+namespace gl {
+	class FBO;
+}
+
 class NodeRenderer
 {
 public:
@@ -23,6 +27,8 @@ public:
 	glm::mat4 viewMatrix;
 	glm::mat4 projectionMatrix;
 	float time;
+	gl::FBO* fbo;
+	gl::FBO* outlineFbo;
 	MapView* mapView;
 
 	std::map<Node*, std::map<Renderer::RenderContext*, std::vector<Renderer*>>> renderers;

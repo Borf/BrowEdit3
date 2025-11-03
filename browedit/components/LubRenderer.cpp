@@ -18,7 +18,7 @@ LubRenderer::LubRenderer()
 
 LubRenderer::~LubRenderer()
 {
-	if (texture)
+	if(texture)
 		util::ResourceManager<gl::Texture>::unload(texture);
 }
 
@@ -226,7 +226,7 @@ void LubRenderer::LubRenderContext::preFrame(Node* rootNode, NodeRenderContext& 
 	shader->use();
 	shader->setUniform(LubShader::Uniforms::projectionMatrix, context.projectionMatrix);
 	shader->setUniform(LubShader::Uniforms::cameraMatrix, context.viewMatrix);
-	shader->setUniform(LubShader::Uniforms::color, glm::vec4(1, 1, 1, 1));
+	shader->setUniform(LubShader::Uniforms::color, glm::vec4(1,1,1,1));
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
 	glEnableVertexAttribArray(2);

@@ -25,7 +25,7 @@ GndRenderer::~GndRenderer()
 {
 	util::ResourceManager<gl::Texture>::unload(white);
 	delete gndShadow;
-	for (auto t : textures)
+	for(auto t : textures)
 		util::ResourceManager<gl::Texture>::unload(t);
 	for (auto r : chunks)
 		for (auto c : r)
@@ -101,7 +101,7 @@ void GndRenderer::render(NodeRenderContext& context)
 				y++;
 				if (y * gnd->lightmapHeight >= shadowmapSize)
 				{
-					std::cerr << "Lightmap too big!" << std::endl;
+					std::cerr<< "Lightmap too big!" << std::endl;
 					y = 0;
 				}
 			}
@@ -231,7 +231,7 @@ void GndRenderer::Chunk::render()
 		vbo.bind();
 		for (VboIndex& it : vertIndices)
 		{
-			if (it.texture != -1)
+			if(it.texture != -1)
 				renderer->textures[it.texture]->bind();
 			else
 			{

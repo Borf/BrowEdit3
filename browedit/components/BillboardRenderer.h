@@ -61,6 +61,6 @@ public:
 	virtual void render(NodeRenderContext& context);
 	bool selected = false;
 
-	void setTexture(const std::string& texture);
+	void setTexture(const std::string &texture);
 
 };

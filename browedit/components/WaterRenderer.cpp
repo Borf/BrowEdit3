@@ -6,7 +6,6 @@
 #include <browedit/shaders/WaterShader.h>
 #include <browedit/shaders/SimpleShader.h>
 #include <browedit/NodeRenderer.h>
-#include <browedit/MapView.h>
 #include <browedit/gl/Texture.h>
 #include <stb/stb_image_write.h>
 #include <map>
@@ -58,7 +57,6 @@ void WaterRenderer::render(NodeRenderContext& context)
 				vbo = new gl::VBO<VertexP3T2>();
 			
 			vertIndices.clear();
-			waterCenters.clear();
 			std::vector<VertexP3T2> verts;
 
 			for (int yy = 0; yy < rsw->water.splitHeight; yy++) {
@@ -84,6 +82,9 @@ void WaterRenderer::render(NodeRenderContext& context)
 							auto c = gnd->cubes[x][y];
 
 							if (!this->renderFullWater) {
+								//if (c->tileUp == -1)
+								//	continue;
+
 								if (c->heights[0] <= waveHeight && c->heights[1] <= waveHeight && c->heights[2] <= waveHeight && c->heights[3] <= waveHeight)
 									continue;
 							}
@@ -99,10 +100,6 @@ void WaterRenderer::render(NodeRenderContext& context)
 					
 					vertIndices.push_back(VboIndex(0, prevOffset, vertsCount));
 					prevOffset += vertsCount;
-
-					// Pre-compute the water centers here, since they will never change until the water zones are rebuilt
-					int yavg = perHeight * yy - 1 + (yy == rsw->water.splitHeight - 1 ? gnd->height : perHeight * (yy + 1) - 1);
-					waterCenters.push_back(glm::vec3((perWidth * xx + xmax) * 5.0f, -water->height, 10.0f * gnd->height - yavg * 5.0f));
 				}
 			}
 
@@ -130,51 +127,32 @@ void WaterRenderer::render(NodeRenderContext& context)
 	glEnable(GL_BLEND);
 	vbo->bind();
 
-	// Sort water zones, otherwise this can look weird
-	std::vector<WaterDrawEntry> drawList;
-	drawList.reserve(rsw->water.splitWidth * rsw->water.splitHeight);
-
-	glm::mat4 invViewMatrix = glm::inverse(context.viewMatrix);
-	glm::vec3 cameraPosition = glm::vec3(invViewMatrix[3][0], invViewMatrix[3][1], invViewMatrix[3][2]);
-	
 	for (int y = 0; y < rsw->water.splitHeight; y++) {
 		for (int x = 0; x < rsw->water.splitWidth; x++) {
-			float dist = glm::distance2(waterCenters[x + y * rsw->water.splitWidth], cameraPosition);
-			drawList.push_back({ x, y, dist });
-		}
-	}
-	
-	std::sort(drawList.begin(), drawList.end(),
-		[](const WaterDrawEntry& a, const WaterDrawEntry& b) {
-			return a.distance > b.distance;
-		});
+			auto water = &rsw->water.zones[x][y];
 
-	for (const auto& entry : drawList) {
-		int x = entry.x;
-		int y = entry.y;
-		auto water = &rsw->water.zones[x][y];
-
-		shader->setUniform(WaterShader::Uniforms::waterHeight, -water->height);
-
-		if (gnd && gnd->version <= 0x108) {
-			water = &rsw->water.zones[0][0];
-			shader->setUniform(WaterShader::Uniforms::amplitude, water->amplitude);
-			shader->setUniform(WaterShader::Uniforms::waveSpeed, water->waveSpeed);
-			shader->setUniform(WaterShader::Uniforms::wavePitch, water->wavePitch);
-		}
-		else {
 			shader->setUniform(WaterShader::Uniforms::waterHeight, -water->height);
-			shader->setUniform(WaterShader::Uniforms::amplitude, water->amplitude);
-			shader->setUniform(WaterShader::Uniforms::waveSpeed, water->waveSpeed);
-			shader->setUniform(WaterShader::Uniforms::wavePitch, water->wavePitch);
-		}
 
-		int vertIndex = y * rsw->water.splitWidth + x;
-		int index = ((int)(time * 60 / water->textureAnimSpeed)) % 32;
-		type2textures[water->type][index]->bind();
-		glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexP3T2), (void*)(0 * sizeof(float)));
-		glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexP3T2), (void*)(3 * sizeof(float)));
-		glDrawArrays(GL_QUADS, (int)vertIndices[vertIndex].begin, (int)vertIndices[vertIndex].count);
+			if (gnd && gnd->version <= 0x108) {
+				water = &rsw->water.zones[0][0];
+				shader->setUniform(WaterShader::Uniforms::amplitude, water->amplitude);
+				shader->setUniform(WaterShader::Uniforms::waveSpeed, water->waveSpeed);
+				shader->setUniform(WaterShader::Uniforms::wavePitch, water->wavePitch);
+			}
+			else {
+				shader->setUniform(WaterShader::Uniforms::waterHeight, -water->height);
+				shader->setUniform(WaterShader::Uniforms::amplitude, water->amplitude);
+				shader->setUniform(WaterShader::Uniforms::waveSpeed, water->waveSpeed);
+				shader->setUniform(WaterShader::Uniforms::wavePitch, water->wavePitch);
+			}
+
+			int vertIndex = y * rsw->water.splitWidth + x;
+			int index = ((int)(time * 60 / water->textureAnimSpeed)) % 32;
+			type2textures[water->type][index]->bind();
+			glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexP3T2), (void*)(0 * sizeof(float)));
+			glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexP3T2), (void*)(3 * sizeof(float)));
+			glDrawArrays(GL_QUADS, (int)vertIndices[vertIndex].begin, (int)vertIndices[vertIndex].count);
+		}
 	}
 
 	glDepthMask(1);

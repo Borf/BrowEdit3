@@ -209,6 +209,7 @@
     <ClInclude Include="browedit\Node.h" />
     <ClInclude Include="browedit\NodeRenderer.h" />
     <ClInclude Include="browedit\shaders\GndShader.h" />
+    <ClInclude Include="browedit\shaders\OutlineShader.h" />
     <ClInclude Include="browedit\shaders\RsmShader.h" />
     <ClInclude Include="browedit\shaders\SimpleShader.h" />
     <ClInclude Include="browedit\shaders\WaterShader.h" />
@@ -270,6 +271,8 @@
     <None Include="data\shaders\gnd.vs" />
     <None Include="data\shaders\lub.fs" />
     <None Include="data\shaders\lub.vs" />
+    <None Include="data\shaders\outline.fs" />
+    <None Include="data\shaders\outline.vs" />
     <None Include="data\shaders\rsm.fs" />
     <None Include="data\shaders\rsm.vs" />
     <None Include="data\shaders\simple.fs" />
@@ -375,8 +378,8 @@
       <IgnoreSpecificDefaultLibraries>MSVCRT</IgnoreSpecificDefaultLibraries>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /y $(TargetPath) $(SolutionDir)
-xcopy /y $(OutDir)BrowEdit3.pdb $(SolutionDir)
+      <Command>xcopy /y "$(TargetPath)" "$(SolutionDir)"
+xcopy /y "$(OutDir)BrowEdit3.pdb" "$(SolutionDir)"
 </Command>
     </PostBuildEvent>
     <PostBuildEvent>
