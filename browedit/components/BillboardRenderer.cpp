@@ -3,6 +3,7 @@
 #include <browedit/Node.h>
 #include <browedit/components/Rsw.h>
 #include <browedit/components/Gnd.h>
+#include <browedit/NodeRenderer.h>
 #include <glad/gl.h>
 #include <browedit/gl/Texture.h>
 #include <browedit/gl/Vertex.h>
@@ -34,7 +35,7 @@ BillboardRenderer::~BillboardRenderer()
 }
 
 
-void BillboardRenderer::render()
+void BillboardRenderer::render(NodeRenderContext& context)
 {
 	if (!rswObject)
 		rswObject = node->getComponent<RswObject>();
@@ -82,14 +83,14 @@ BillboardRenderer::BillboardRenderContext::BillboardRenderContext() : shader(uti
 	order = 3;
 }
 
-void BillboardRenderer::BillboardRenderContext::preFrame(Node* rootNode, const glm::mat4& projectionMatrix, const glm::mat4& viewMatrix)
+void BillboardRenderer::BillboardRenderContext::preFrame(Node* rootNode, NodeRenderContext& context)
 {
 	glEnable(GL_BLEND);
 	glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA,GL_ONE,GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_DEPTH_TEST);
 	shader->use();
-	shader->setUniform(BillboardShader::Uniforms::projectionMatrix, projectionMatrix);
-	shader->setUniform(BillboardShader::Uniforms::cameraMatrix, viewMatrix);
+	shader->setUniform(BillboardShader::Uniforms::projectionMatrix, context.projectionMatrix);
+	shader->setUniform(BillboardShader::Uniforms::cameraMatrix, context.viewMatrix);
 	shader->setUniform(BillboardShader::Uniforms::color, glm::vec4(1,1,1,1));
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);

@@ -27,7 +27,7 @@ public:
 		SimpleShader* shader = nullptr;
 		gl::Texture* texture = nullptr;
 		GatRenderContext();
-		virtual void preFrame(Node* rootNode, const glm::mat4& projectionMatrix, const glm::mat4& viewMatrix) override;
+		virtual void preFrame(Node* rootNode, NodeRenderContext& context) override;
 	};
 
 	class Chunk
@@ -57,5 +57,5 @@ public:
 
 	GatRenderer(gl::Texture* texture);
 	~GatRenderer();
-	void render() override;
+	void render(NodeRenderContext& context) override;
 };

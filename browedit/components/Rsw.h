@@ -40,7 +40,7 @@ public:
 		void draw(int);
 	};
 
-	struct Water
+	struct Water : public Component
 	{
 		float	height = 0;
 		int		type = 0;
@@ -60,6 +60,8 @@ public:
 
 		Water* getFromGat(int x, int y, Gnd* gnd);
 		Water* getFromGnd(int x, int y, Gnd* gnd);
+		void getIndexFromGnd(int x, int y, Gnd* gnd, int* wx, int* wy);
+		void getBoundsFromGnd(int x, int y, Gnd* gnd, int* xmin, int* xmax, int* ymin, int* ymax);
 		void resize(int width, int height);
 	};
 
@@ -167,6 +169,7 @@ public:
 	void newMap(const std::string& fileName, int width, int height, Map* map, BrowEdit* browEdit);
 	void buildImGui(BrowEdit* browEdit) override;
 	void recalculateQuadtree(QuadTreeNode* node = nullptr);
+	glm::vec3 rayCastWater(const math::Ray& ray, Gnd* gnd, bool emptyTiles = false, int xMin = 0, int yMin = 0, int xMax = -1, int yMax = -1, float offset = 0.0f);
 };
 
 

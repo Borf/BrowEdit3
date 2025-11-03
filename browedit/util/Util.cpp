@@ -252,16 +252,18 @@ namespace util
 
 	bool DragInt(BrowEdit* browEdit, Map* map, Node* node, const char* label, int* ptr, float v_speed, int v_min, int v_max, const std::string& action, const std::function<void(int*, int)>& editAction)
 	{
-		static int startValue;
+		static std::unordered_map<ImGuiID, int> startValues;
 		bool ret = ImGui::DragInt(label, ptr, v_speed, v_min, v_max);
+		ImGuiID id = ImGui::GetID(label);
 
 		if (ImGui::IsItemActivated())
-			startValue = *ptr;
+			startValues[id] = *ptr;
 		if (ImGui::IsItemDeactivatedAfterEdit()) {
 			if (editAction != nullptr)
-				editAction(ptr, startValue);
+				editAction(ptr, startValues[id]);
 			else
-				map->doAction(new ObjectChangeAction(node, ptr, startValue, action == "" ? label : action), browEdit);
+				map->doAction(new ObjectChangeAction(node, ptr, startValues[id], action == "" ? label : action), browEdit);
+			startValues.erase(id);
 		}
 		ImGui::PushID(label);
 		if (ImGui::BeginPopupContextItem("CopyPaste"))
@@ -276,7 +278,7 @@ namespace util
 					auto cb = ImGui::GetClipboardText();
 					if (cb)
 					{
-						startValue = *ptr;
+						int startValue = *ptr;
 						*ptr = std::stoi(cb);
 						if (editAction != nullptr)
 							editAction(ptr, startValue);
@@ -727,6 +729,7 @@ namespace util
 	template bool DragFloatMulti<LubEffect>(BrowEdit* browEdit, Map* map, const std::vector<LubEffect*>& data, const char* label, const std::function<float* (LubEffect*)>& getProp, float v_speed, float v_min, float v_max);
 	template bool DragFloatMulti<RswSound>(BrowEdit* browEdit, Map* map, const std::vector<RswSound*>& data, const char* label, const std::function<float* (RswSound*)>& getProp, float v_speed, float v_min, float v_max);
 	template bool DragFloatMulti<RswModel>(BrowEdit* browEdit, Map* map, const std::vector<RswModel*>& data, const char* label, const std::function<float* (RswModel*)>& getProp, float v_speed, float v_min, float v_max);
+	template bool DragFloatMulti<Rsw::Water>(BrowEdit* browEdit, Map* map, const std::vector<Rsw::Water*>& data, const char* label, const std::function<float* (Rsw::Water*)>& getProp, float v_speed, float v_min, float v_max);
 
 
 	template<class T>
@@ -793,6 +796,7 @@ namespace util
 	template bool DragIntMulti<LubEffect>(BrowEdit* browEdit, Map* map, const std::vector<LubEffect*>& data, const char* label, const std::function<int* (LubEffect*)>& getProp, int v_speed, int v_min, int v_max);
 	template bool DragIntMulti<RswSound>(BrowEdit* browEdit, Map* map, const std::vector<RswSound*>& data, const char* label, const std::function<int* (RswSound*)>& getProp, int v_speed, int v_min, int v_max);
 	template bool DragIntMulti<RswModel>(BrowEdit* browEdit, Map* map, const std::vector<RswModel*>& data, const char* label, const std::function<int* (RswModel*)>& getProp, int v_speed, int v_min, int v_max);
+	template bool DragIntMulti<Rsw::Water>(BrowEdit* browEdit, Map* map, const std::vector<Rsw::Water*>& data, const char* label, const std::function<int* (Rsw::Water*)>& getProp, int v_speed, int v_min, int v_max);
 
 
 	template<class T>

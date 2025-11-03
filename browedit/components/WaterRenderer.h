@@ -25,7 +25,7 @@ public:
 		WaterShader* shader = nullptr;
 
 		WaterRenderContext();
-		virtual void preFrame(Node* rootNode, const glm::mat4& projectionMatrix, const glm::mat4& viewMatrix) override;
+		virtual void preFrame(Node* rootNode, NodeRenderContext& context) override;
 	};
 
 	class VboIndex
@@ -42,18 +42,18 @@ public:
 		}
 	};
 
-	std::vector<gl::Texture*> textures;
 	Rsw* rsw;
 	Gnd* gnd;
 	gl::VBO<VertexP3T2>* vbo = nullptr;
 	std::vector<VboIndex> vertIndices;
+	std::unordered_map<int, std::vector<gl::Texture*>> type2textures;
 	bool dirty = true;
 	bool viewFog = false;
 	bool renderFullWater = false;
 
 	WaterRenderer();
 	~WaterRenderer();
-	void render() override;
+	void render(NodeRenderContext& context) override;
 	void reloadTextures();
 	void setDirty();
 };

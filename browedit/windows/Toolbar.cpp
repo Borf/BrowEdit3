@@ -46,6 +46,8 @@ void BrowEdit::toolbar()
 		ImGui::Text("Sprite");
 	else if (editMode == EditMode::Cinematic)
 		ImGui::Text("Cinematic");
+	else if (editMode == EditMode::Water)
+			ImGui::Text("Water");
 	else
 		ImGui::Text("???");
 	ImGui::SameLine();
@@ -68,7 +70,10 @@ void BrowEdit::toolbar()
 	toolBarToggleButton("sprite", ICON_EDIT_SPRITE, editMode == EditMode::Sprite, "Sprite edit mode", HotkeyAction::EditMode_Sprite, config.toolbarButtonsWallEdit);
 	ImGui::SameLine();
 	toolBarToggleButton("cinematic", ICON_EDIT_CINEMATIC, editMode == EditMode::Cinematic, "Cinematic Mode", HotkeyAction::EditMode_Cinematic, config.toolbarButtonsWallEdit);
-	ImGui::SameLine(130 + 9 * (config.toolbarButtonSize + 5) + 20 );
+	ImGui::SameLine();
+	toolBarToggleButton("watermode", ICON_VIEW_WATER_ON, editMode == EditMode::Water, "Water edit mode", HotkeyAction::EditMode_Water, config.toolbarButtonsWallEdit);
+	ImGuiContext& g = *GImGui;
+	ImGui::SameLine(125 + 10 * (config.toolbarButtonSize + g.Style.ItemSpacing.x));
 
 	if (editMode == EditMode::Object)
 	{

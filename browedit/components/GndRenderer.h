@@ -30,7 +30,7 @@ public:
 		glm::mat4 viewMatrix = glm::mat4(1.0f);
 
 		GndRenderContext();
-		virtual void preFrame(Node* rootNode, const glm::mat4& projectionMatrix, const glm::mat4& viewMatrix) override;
+		virtual void preFrame(Node* rootNode, NodeRenderContext& context) override;
 	};
 
 	class VboIndex
@@ -80,7 +80,7 @@ public:
 
 	GndRenderer();
 	~GndRenderer();
-	void render() override;
+	void render(NodeRenderContext& context) override;
 
 
 	bool viewLightmapShadow = true;

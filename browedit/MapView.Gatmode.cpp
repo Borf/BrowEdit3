@@ -402,7 +402,7 @@ void MapView::postRenderGatMode(BrowEdit* browEdit)
 				if (gadgetHeight[i].axisClicked)
 				{
 					dragIndex = i;
-					mouseDragPlane.normal = glm::normalize(glm::vec3(nodeRenderContext.viewMatrix * glm::vec4(0, 0, 1, 1)) - glm::vec3(nodeRenderContext.viewMatrix * glm::vec4(0, 0, 0, 1)));
+					mouseDragPlane.normal = -mouseRay.dir;
 					mouseDragPlane.normal.y = 0;
 					mouseDragPlane.normal = glm::normalize(mouseDragPlane.normal);
 					mouseDragPlane.D = -glm::dot(pos[i], mouseDragPlane.normal);

@@ -7,6 +7,7 @@
 namespace gl { class Texture; }
 class RswObject;
 class Gnd;
+class NodeRenderContext;
 
 class BillboardRenderer : public Renderer
 {
@@ -52,12 +53,12 @@ public:
 		bool viewLighting = true;
 
 		BillboardRenderContext();
-		virtual void preFrame(Node* rootNode, const glm::mat4& projectionMatrix, const glm::mat4& viewMatrix) override;
+		virtual void preFrame(Node* rootNode, NodeRenderContext& context) override;
 	};
 
 	BillboardRenderer(const std::string& texture, const std::string& texture_selected = "");
 	~BillboardRenderer();
-	virtual void render();
+	virtual void render(NodeRenderContext& context);
 	bool selected = false;
 
 	void setTexture(const std::string &texture);

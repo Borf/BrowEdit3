@@ -3,7 +3,7 @@
 
 #include <browedit/Map.h>
 
-TileSelectAction::TileSelectAction(Map* map, const glm::ivec2 &pos, bool keepSelection, bool deSelect)
+TileSelectAction::TileSelectAction(Map* map, const glm::ivec2& pos, bool keepSelection, bool deSelect)
 {
 	oldSelection = map->tileSelection;
 	if (keepSelection)
@@ -12,7 +12,7 @@ TileSelectAction::TileSelectAction(Map* map, const glm::ivec2 &pos, bool keepSel
 	if (!deSelect)
 		newSelection.push_back(pos);
 	else
-		newSelection.erase(std::remove_if(newSelection.begin(), newSelection.end(), [&pos](const glm::ivec2 &n) { return n == pos; }));
+		newSelection.erase(std::remove_if(newSelection.begin(), newSelection.end(), [&pos](const glm::ivec2& n) { return n == pos; }));
 }
 
 TileSelectAction::TileSelectAction(Map* map, const std::vector<glm::ivec2>& newSelection)
@@ -75,30 +75,3 @@ std::string GatTileSelectAction::str()
 {
 	return "Gat selection";
 }
-
-
-
-/////////////////
-
-WaterZoneSelectAction::WaterZoneSelectAction(Map* map, const std::vector<glm::ivec2>& newSelection)
-{
-	oldSelection = map->waterSelection;
-	this->newSelection = newSelection;
-}
-
-
-void WaterZoneSelectAction::perform(Map* map, BrowEdit* browEdit)
-{
-	map->waterSelection = newSelection;
-}
-
-void WaterZoneSelectAction::undo(Map* map, BrowEdit* browEdit)
-{
-	map->waterSelection = oldSelection;
-}
-
-std::string WaterZoneSelectAction::str()
-{
-	return "Water selection";
-}
-

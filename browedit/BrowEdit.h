@@ -227,6 +227,7 @@ public:
 		Shadow,
 		Sprite,
 		Cinematic,
+		Water,
 	} editMode = EditMode::Gat;
 	
 	enum class SelectTool
@@ -352,6 +353,7 @@ public:
 	void showColorEditWindow();
 	void showShadowEditWindow();
 	void showCinematicModeWindow();
+	void showWaterEditWindow();
 
 	void copyTiles();
 	void copyGat();

@@ -451,6 +451,15 @@
     <ClCompile Include="lib\glad\src\wgl.c">
       <Filter>lib\glad</Filter>
     </ClCompile>
+    <ClCompile Include="browedit\windows\WaterEditWindow.cpp">
+      <Filter>browedit\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="browedit\MapView.Watermode.cpp">
+      <Filter>browedit</Filter>
+    </ClCompile>
+    <ClCompile Include="browedit\actions\WaterHeightChangeAction.cpp">
+      <Filter>browedit\actions</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="lib\imgui\imgui.h">
@@ -780,6 +789,12 @@
     <ClInclude Include="lib\lzma\Compiler.h">
       <Filter>lib\lzma</Filter>
     </ClInclude>
+    <ClInclude Include="browedit\actions\WaterHeightChangeAction.h">
+      <Filter>browedit\actions</Filter>
+    </ClInclude>
+    <ClInclude Include="browedit\shaders\OutlineShader.h">
+      <Filter>browedit\shaders</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="BrowEdit3.rc">
@@ -852,6 +867,12 @@
     </None>
     <None Include="docs\formats\Gnd.md">
       <Filter>docs\formats</Filter>
+    </None>
+    <None Include="data\shaders\outline.fs">
+      <Filter>data\shaders</Filter>
+    </None>
+    <None Include="data\shaders\outline.vs">
+      <Filter>data\shaders</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

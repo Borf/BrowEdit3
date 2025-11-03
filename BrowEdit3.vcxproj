@@ -32,6 +32,7 @@
     <ClCompile Include="browedit\actions\TileNewAction.cpp" />
     <ClCompile Include="browedit\actions\TilePropertyChangeAction.cpp" />
     <ClCompile Include="browedit\actions\TileSelectAction.cpp" />
+    <ClCompile Include="browedit\actions\WaterHeightChangeAction.cpp" />
     <ClCompile Include="browedit\actions\WaterSplitChangeAction.cpp" />
     <ClCompile Include="browedit\BrowEdit.cpp" />
     <ClCompile Include="browedit\BrowEdit.glfw.cpp" />
@@ -72,6 +73,7 @@
     <ClCompile Include="browedit\MapView.Shadowmode.cpp" />
     <ClCompile Include="browedit\MapView.Texturemode.cpp" />
     <ClCompile Include="browedit\MapView.Wallmode.cpp" />
+    <ClCompile Include="browedit\MapView.Watermode.cpp" />
     <ClCompile Include="browedit\math\AABB.cpp" />
     <ClCompile Include="browedit\math\HermiteCurve.cpp" />
     <ClCompile Include="browedit\math\Plane.cpp" />
@@ -105,6 +107,7 @@
     <ClCompile Include="browedit\windows\Toolbar.cpp" />
     <ClCompile Include="browedit\windows\UndoWindow.cpp" />
     <ClCompile Include="browedit\windows\WallEditWindow.cpp" />
+    <ClCompile Include="browedit\windows\WaterEditWindow.cpp" />
     <ClCompile Include="lib\glad\src\gl.c" />
     <ClCompile Include="lib\glad\src\wgl.c" />
     <ClCompile Include="lib\grflib\grf.c" />
@@ -163,6 +166,7 @@
     <ClInclude Include="browedit\actions\TileNewAction.h" />
     <ClInclude Include="browedit\actions\TilePropertyChangeAction.h" />
     <ClInclude Include="browedit\actions\TileSelectAction.h" />
+    <ClInclude Include="browedit\actions\WaterHeightChangeAction.h" />
     <ClInclude Include="browedit\actions\WaterSplitChangeAction.h" />
     <ClInclude Include="browedit\BrowEdit.h" />
     <ClInclude Include="browedit\components\BillboardRenderer.h" />
@@ -205,6 +209,7 @@
     <ClInclude Include="browedit\Node.h" />
     <ClInclude Include="browedit\NodeRenderer.h" />
     <ClInclude Include="browedit\shaders\GndShader.h" />
+    <ClInclude Include="browedit\shaders\OutlineShader.h" />
     <ClInclude Include="browedit\shaders\RsmShader.h" />
     <ClInclude Include="browedit\shaders\SimpleShader.h" />
     <ClInclude Include="browedit\shaders\WaterShader.h" />
@@ -266,6 +271,8 @@
     <None Include="data\shaders\gnd.vs" />
     <None Include="data\shaders\lub.fs" />
     <None Include="data\shaders\lub.vs" />
+    <None Include="data\shaders\outline.fs" />
+    <None Include="data\shaders\outline.vs" />
     <None Include="data\shaders\rsm.fs" />
     <None Include="data\shaders\rsm.vs" />
     <None Include="data\shaders\simple.fs" />
@@ -371,8 +378,8 @@
       <IgnoreSpecificDefaultLibraries>MSVCRT</IgnoreSpecificDefaultLibraries>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /y $(TargetPath) $(SolutionDir)
-xcopy /y $(OutDir)BrowEdit3.pdb $(SolutionDir)
+      <Command>xcopy /y "$(TargetPath)" "$(SolutionDir)"
+xcopy /y "$(OutDir)BrowEdit3.pdb" "$(SolutionDir)"
 </Command>
     </PostBuildEvent>
     <PostBuildEvent>

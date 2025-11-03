@@ -22,7 +22,7 @@ namespace math
 
 
 		bool planeIntersection(const Plane &plane, float &t) const;
-		bool LineIntersectPolygon(const std::span<glm::vec3> &vertices, float &t) const;
+		bool LineIntersectPolygon(const std::span<glm::vec3> &vertices, float &t, const float espilon = 0.001f) const;
 
 		Ray operator *(const glm::mat4 &matrix) const;
 

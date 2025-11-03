@@ -27,6 +27,7 @@
 #include <browedit/math/HermiteCurve.h>
 #include <browedit/util/ResourceManager.h>
 #include <browedit/shaders/SimpleShader.h>
+#include <browedit/shaders/OutlineShader.h>
 #include <browedit/HotkeyRegistry.h>
 
 #include <glm/glm.hpp>
@@ -48,7 +49,9 @@ extern float timeSelected;
 
 MapView::MapView(Map* map, const std::string &viewName) : map(map), viewName(viewName), mouseRay(glm::vec3(0,0,0), glm::vec3(0,0,0))
 {
-	fbo = new gl::FBO(1920, 1080, true);
+	fbo = new gl::FBO(1920, 1080, false, 1, true);
+	outlineFbo = new gl::FBO(1920, 1080, false, 1, true);
+
 	//shader = new TestShader();
 
 	auto gnd = map->rootNode->getComponent<Gnd>();
@@ -73,6 +76,8 @@ MapView::MapView(Map* map, const std::string &viewName) : map(map), viewName(vie
 		skyDomeMesh.init();
 	if (!simpleShader)
 		simpleShader = util::ResourceManager<gl::Shader>::load<SimpleShader>();
+	if (!outlineShader)
+		outlineShader = util::ResourceManager<gl::Shader>::load<OutlineShader>();
 
 	for(int i = 0; i < 9; i++)
 		gadgetHeight[i].mode = Gadget::Mode::TranslateY;
@@ -80,8 +85,11 @@ MapView::MapView(Map* map, const std::string &viewName) : map(map), viewName(vie
 	gridVbo = new gl::VBO<VertexP3T2>();
 	rotateGridVbo = new gl::VBO<VertexP3T2>();
 	textureGridVbo = new gl::VBO<VertexP3T2>();
+	waterGridVbo = new gl::VBO<VertexP3>();
+	outlineVbo = new gl::VBO<VertexP3T2>();
 	rebuildObjectModeGrid();
 	rebuildObjectRotateModeGrid();
+	rebuildOutlineVbo();
 }
 
 void MapView::toolbar(BrowEdit* browEdit)
@@ -335,6 +343,11 @@ void MapView::toolbar(BrowEdit* browEdit)
 
 void MapView::render(BrowEdit* browEdit)
 {
+	outlineFbo->bind();
+	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	outlineFbo->unbind();
+
 	fbo->bind();
 	glViewport(0, 0, fbo->getWidth(), fbo->getHeight());
 	glClearColor(browEdit->config.backgroundColor.r, browEdit->config.backgroundColor.g, browEdit->config.backgroundColor.b, 1.0f);
@@ -487,7 +500,45 @@ void MapView::render(BrowEdit* browEdit)
 	}
 	map->rootNode->getComponent<WaterRenderer>()->enabled = viewWater;
 
+	nodeRenderContext.mapView = this;
+	nodeRenderContext.time = (float)glfwGetTime();
+	nodeRenderContext.fbo = fbo;
+	nodeRenderContext.outlineFbo = outlineFbo;
 	NodeRenderer::render(map->rootNode, nodeRenderContext);
+
+	// Draw selection outline
+	outlineShader->use();
+	outlineShader->setUniform(OutlineShader::Uniforms::iResolution, glm::vec2(outlineFbo->getWidth(), outlineFbo->getHeight()));
+	outlineShader->setUniform(OutlineShader::Uniforms::selectionOverlay, glm::vec4(1, 0, 0, 0.15f));
+	outlineShader->setUniform(OutlineShader::Uniforms::selectionOutline, glm::vec4(1, 0, 0, 1));
+	outlineShader->setUniform(OutlineShader::Uniforms::selectionOccludedOverlay, glm::vec4(1, 1, 1, 0));
+	outlineShader->setUniform(OutlineShader::Uniforms::selectionOccludedOutline, glm::vec4(1, 1, 1, 0.5f));
+	
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, fbo->depthTexture);
+	glUniform1i(glGetUniformLocation(outlineShader->programId, "s_depth_fbo"), 1);
+	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_2D, outlineFbo->depthTexture);
+	glUniform1i(glGetUniformLocation(outlineShader->programId, "s_depth_outline"), 2);
+	glActiveTexture(GL_TEXTURE0);
+	
+	outlineVbo->bind();
+	glDisable(GL_DEPTH_TEST);
+	glEnable(GL_BLEND);
+	glBindTexture(GL_TEXTURE_2D, outlineFbo->texid[0]);
+	
+	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(1);
+	glDisableVertexAttribArray(2);
+	glDisableVertexAttribArray(3);
+	glDisableVertexAttribArray(4);
+	
+	glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexP3T2), (void*)(0 * sizeof(float)));
+	glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexP3T2), (void*)(3 * sizeof(float)));
+	
+	glDrawArrays(GL_TRIANGLES, 0, (int)outlineVbo->size());
+	glEnable(GL_DEPTH_TEST);
+	outlineVbo->unBind();
 
 	// position and draw the new nodes
 	if (browEdit->newNodes.size() > 0 && hovered)
@@ -626,6 +677,8 @@ void MapView::render(BrowEdit* browEdit)
 //update just fixes the camera
 void MapView::update(BrowEdit* browEdit, const ImVec2 &size, float deltaTime)
 {
+	if (outlineFbo->getWidth() != (int)size.x || outlineFbo->getHeight() != (int)size.y)
+		outlineFbo->resize((int)size.x, (int)size.y);
 	if (fbo->getWidth() != (int)size.x || fbo->getHeight() != (int)size.y)
 		fbo->resize((int)size.x, (int)size.y);
 	mouseState.position = glm::vec2(ImGui::GetMousePos().x - ImGui::GetCursorScreenPos().x, ImGui::GetMousePos().y - ImGui::GetCursorScreenPos().y);
@@ -1024,9 +1077,17 @@ void MapView::drawLight(Node* n)
 	}
 }
 
-
-
-
+void MapView::rebuildOutlineVbo()
+{
+	std::vector<VertexP3T2> verts;
+	verts.push_back(VertexP3T2(glm::vec3(-1, -1, 0), glm::vec2(0, 0)));
+	verts.push_back(VertexP3T2(glm::vec3(1, -1, 0), glm::vec2(1, 0)));
+	verts.push_back(VertexP3T2(glm::vec3(1, 1, 0), glm::vec2(1, 1)));
+	verts.push_back(VertexP3T2(glm::vec3(1, 1, 0), glm::vec2(1, 1)));
+	verts.push_back(VertexP3T2(glm::vec3(-1, 1, 0), glm::vec2(0, 1)));
+	verts.push_back(VertexP3T2(glm::vec3(-1, -1, 0), glm::vec2(0, 0)));
+	outlineVbo->setData(verts, GL_STATIC_DRAW);
+}
 
 void MapView::CubeMesh::buildVertices(std::vector<VertexP3T2N3> &verts)
 {//https://dotnetfiddle.net/tPcv8S

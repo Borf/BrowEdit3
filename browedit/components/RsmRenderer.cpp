@@ -7,6 +7,10 @@
 #include <browedit/gl/Texture.h>
 #include <browedit/shaders/RsmShader.h>
 #include <browedit/util/ResourceManager.h>
+#include <browedit/NodeRenderer.h>
+#include <browedit/MapView.h>
+#include <browedit/NodeRenderer.h>
+#include <browedit/gl/FBO.h>
 #include <glm/glm.hpp>
 
 RsmRenderer::RsmRenderer()
@@ -42,7 +46,7 @@ void RsmRenderer::begin()
 	renderInfo.clear();
 }
 
-void RsmRenderer::render()
+void RsmRenderer::render(NodeRenderContext& context)
 {
 	if (!this->rsm || !this->rsm->loaded)
 	{
@@ -70,6 +74,8 @@ void RsmRenderer::render()
 		this->rsw = node->root->getComponent<Rsw>();
 	if (!this->rsm)
 		return;
+	
+	time = context.time;
 
 	if (!this->rsm->loaded)
 	{
@@ -96,6 +102,10 @@ void RsmRenderer::render()
 		for (int i = 0; i < rsm->meshCount; i++) {
 			renderInfo[i].vbo.resize(renderContext->phases);
 			renderInfo[i].indices.resize(renderContext->phases);
+		}
+		if (textures.size() == 0) {
+			for (const auto& textureFilename : rsm->textures)
+				textures.push_back(util::ResourceManager<gl::Texture>::load("data\\texture\\" + textureFilename));
 		}
 		initMeshInfo(rsm->rootMesh);
 	}
@@ -146,10 +156,13 @@ void RsmRenderer::render()
 	{
 		matrixCache = glm::mat4(1.0f);
 		matrixCache = glm::scale(matrixCache, glm::vec3(1, -1, 1));
+
+		if (rsm->version >= 0x202)
+			reverseCullFace = true;
 	}
 
-	phase = dynamic_cast<RsmRenderContext*>(renderContext)->phase;
-
+	phase = renderContext->phase;
+	
 	auto shader = dynamic_cast<RsmRenderContext*>(renderContext)->shader;
 	shader->setUniform(RsmShader::Uniforms::shadeType, (int)rsm->shadeType);
 	shader->setUniform(RsmShader::Uniforms::modelMatrix2, matrixCache);
@@ -159,27 +172,29 @@ void RsmRenderer::render()
 	else
 		glFrontFace(GL_CCW);
 
-	if (selected)
-	{
-		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-		glLineWidth(20.0f);
-		glDepthMask(GL_FALSE);
-		shader->setUniform(RsmShader::Uniforms::selection, 1.0f);
-		renderMesh(rsm->rootMesh, glm::mat4(1.0f), true);
-		
-		glDepthMask(GL_TRUE);
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	if (phase == 3) {
+		if (selected) {
+			auto rsmRenderContext = dynamic_cast<RsmRenderContext*>(renderContext);
+			int current = ++rsmRenderContext->counter;
+			shader->setUniform(RsmShader::Uniforms::selectedColor, glm::vec4((current % 255) / 255.0f, (current / 255) / 255.0f, 0, 1));
 
-		if (phase > 0) {
-			glDepthMask(GL_FALSE);
+			for (int i = 0; i < 3; i++) {
+				phase = i;
+				if (i == 0)
+					shader->setUniform(RsmShader::Uniforms::discardAlphaValue, 0.8f);
+				else
+					shader->setUniform(RsmShader::Uniforms::discardAlphaValue, 0.0f);
+				
+				renderMesh(rsm->rootMesh, glm::mat4(1.0f), true);
+			}
+
+			phase = 3;
 		}
 
-		shader->setUniform(RsmShader::Uniforms::selection, 0.25f);
-		renderMesh(rsm->rootMesh, glm::mat4(1.0f));
-		shader->setUniform(RsmShader::Uniforms::selection, 0.0f);
+		return;
 	}
-	else
-		renderMesh(rsm->rootMesh, glm::mat4(1.0f));
+	
+	renderMesh(rsm->rootMesh, glm::mat4(1.0f));
 }
 
 
@@ -193,7 +208,8 @@ void RsmRenderer::initMeshInfo(Rsm::Mesh* mesh, const glm::mat4 &matrix)
 			verts[mesh->faces[i].texId].push_back(VertexP3T2N3C1(mesh->vertices[mesh->faces[i].vertexIds[ii]], mesh->texCoords[mesh->faces[i].texCoordIds[ii]], mesh->faces[i].vertexNormals[ii], (float)mesh->faces[i].twoSided));
 	}
 
-	std::vector<VertexP3T2N3C1> allVerts[3];
+	std::vector<VertexP3T2N3C1> allVerts[4];
+
 	int phaseId = 0;
 
 	for (std::map<int, std::vector<VertexP3T2N3C1> >::iterator it2 = verts.begin(); it2 != verts.end(); it2++)
@@ -251,15 +267,10 @@ void RsmRenderer::renderMeshSub(Rsm::Mesh* mesh, bool selectionPhase)
 		vbo->bind();
 		shader->setUniform(RsmShader::Uniforms::modelMatrix, renderInfo[mesh->index].matrix);
 		shader->setUniform(RsmShader::Uniforms::reverseCullFace, mesh->reverseCullFace);
-		if (ri.selected || selectionPhase)
-			shader->setUniform(RsmShader::Uniforms::selection, 1.0f);
-		else if (!selectionPhase && selected)
-			shader->setUniform(RsmShader::Uniforms::selection, .25f);
-		else
-			shader->setUniform(RsmShader::Uniforms::selection, .0f);
 		if (ri.selected)
-			glDisable(GL_DEPTH_TEST);
-
+			shader->setUniform(RsmShader::Uniforms::selection, 0.25f);
+		else
+			shader->setUniform(RsmShader::Uniforms::selection, 0.0f);
 		glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexP3T2N3C1), (void*)(0 * sizeof(float)));
 		glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexP3T2N3C1), (void*)(3 * sizeof(float)));
 		glVertexAttribPointer(2, 3, GL_FLOAT, false, sizeof(VertexP3T2N3C1), (void*)(5 * sizeof(float)));
@@ -361,18 +372,18 @@ void RsmRenderer::setMeshesDirty() {
 RsmRenderer::RsmRenderContext::RsmRenderContext() : shader(util::ResourceManager<gl::Shader>::load<RsmShader>())
 {
 	order = 1;
-	phases = 3;
+	phases = 4;
 	shader->use();
 	shader->setUniform(RsmShader::Uniforms::s_texture, 0);
 }
 
-void RsmRenderer::RsmRenderContext::preFrame(Node* rootNode, const glm::mat4& projectionMatrix, const glm::mat4& viewMatrix)
+void RsmRenderer::RsmRenderContext::preFrame(Node* rootNode, NodeRenderContext& context)
 {
 	shader->use();
 
 	if (phase == 0) {
-		shader->setUniform(RsmShader::Uniforms::projectionMatrix, projectionMatrix);
-		shader->setUniform(RsmShader::Uniforms::cameraMatrix, viewMatrix);
+		shader->setUniform(RsmShader::Uniforms::projectionMatrix, context.projectionMatrix);
+		shader->setUniform(RsmShader::Uniforms::cameraMatrix, context.viewMatrix);
 		shader->setUniform(RsmShader::Uniforms::lightToggle, viewLighting);
 		shader->setUniform(RsmShader::Uniforms::viewTextures, viewTextures);
 		shader->setUniform(RsmShader::Uniforms::fogEnabled, viewFog);
@@ -423,9 +434,20 @@ void RsmRenderer::RsmRenderContext::preFrame(Node* rootNode, const glm::mat4& pr
 
 		shader->setUniform(RsmShader::Uniforms::enableCullFace, false);
 	}
+	else if (phase == 3) {
+		if (context.outlineFbo == nullptr)
+			return;
+
+		glDepthFunc(GL_LESS);
+		glDepthMask(true);
+		context.fbo->unbind();
+		context.outlineFbo->bind();
+		shader->setUniform(RsmShader::Uniforms::selected, true);
+		counter = 0;
+	}
 }
 
-void RsmRenderer::RsmRenderContext::postFrame()
+void RsmRenderer::RsmRenderContext::postFrame(NodeRenderContext& context)
 {
 	if (phase == 0) {
 
@@ -436,6 +458,14 @@ void RsmRenderer::RsmRenderContext::postFrame()
 	else if (phase == 2) {
 		glDepthMask(true);
 		shader->setUniform(RsmShader::Uniforms::textureAnimToggle, false);
+	}
+	else if (phase == 3) {
+		if (context.outlineFbo == nullptr)
+			return;
+
+		shader->setUniform(RsmShader::Uniforms::selected, false);
+		context.outlineFbo->unbind();
+		context.fbo->bind();
 	}
 
 	glFrontFace(GL_CCW);

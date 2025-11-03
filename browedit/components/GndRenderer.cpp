@@ -5,6 +5,7 @@
 #include <browedit/Node.h>
 #include <browedit/shaders/GndShader.h>
 #include <browedit/gl/Texture.h>
+#include <browedit/NodeRenderer.h>
 #include <stb/stb_image_write.h>
 #include <map>
 #include <iostream>
@@ -31,7 +32,7 @@ GndRenderer::~GndRenderer()
 			delete c;
 }
 
-void GndRenderer::render()
+void GndRenderer::render(NodeRenderContext& context)
 {
 	if (!this->gnd)
 	{ //todo: move a tryLoadGnd method
@@ -188,11 +189,11 @@ GndRenderer::GndRenderContext::GndRenderContext() : shader(util::ResourceManager
 }
 
 
-void GndRenderer::GndRenderContext::preFrame(Node* rootNode, const glm::mat4& projectionMatrix, const glm::mat4& viewMatrix)
+void GndRenderer::GndRenderContext::preFrame(Node* rootNode, NodeRenderContext& context)
 {
 	shader->use();
-	shader->setUniform(GndShader::Uniforms::ProjectionMatrix, projectionMatrix);
-	this->viewMatrix = viewMatrix;
+	shader->setUniform(GndShader::Uniforms::ProjectionMatrix, context.projectionMatrix);
+	this->viewMatrix = context.viewMatrix;
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
 	glEnableVertexAttribArray(2);

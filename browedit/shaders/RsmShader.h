@@ -20,7 +20,7 @@ public:
 			lightAmbient,
 			//lightIntensity,
 			lightDirection,
-			selection,
+			selected,
 			shadeType,
 			discardAlphaValue,
 			lightToggle,
@@ -34,6 +34,8 @@ public:
 			textureAnimToggle,
 			texMat,
 			reverseCullFace,
+			selectedColor,
+			selection,
 			End
 		};
 	};
@@ -48,7 +50,7 @@ public:
 		bindUniform(Uniforms::lightDiffuse, "lightDiffuse");
 		//bindUniform(Uniforms::lightIntensity, "lightIntensity");
 		bindUniform(Uniforms::lightDirection, "lightDirection");
-		bindUniform(Uniforms::selection, "selection");
+		bindUniform(Uniforms::selected, "selected");
 		bindUniform(Uniforms::shadeType, "shadeType");
 		bindUniform(Uniforms::discardAlphaValue, "discardAlphaValue");
 		bindUniform(Uniforms::lightToggle, "lightToggle");
@@ -62,5 +64,7 @@ public:
 		bindUniform(Uniforms::textureAnimToggle, "textureAnimToggle");
 		bindUniform(Uniforms::texMat, "texMat");
 		bindUniform(Uniforms::reverseCullFace, "reverseCullFace");
+		bindUniform(Uniforms::selectedColor, "selectedColor");
+		bindUniform(Uniforms::selection, "selection");
 	}
 };

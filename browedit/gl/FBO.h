@@ -12,12 +12,12 @@ namespace gl
 	{
 		int width;
 		int height;
-		GLuint depthBuffer;
-		GLuint depthTexture;
 		int textureCount;
 	public:
 		GLuint fboId;
 		GLint oldFBO;
+		GLuint depthTexture;
+		GLuint depthBuffer;
 		enum Type
 		{
 			Color,

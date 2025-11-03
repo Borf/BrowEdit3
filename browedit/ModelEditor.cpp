@@ -169,8 +169,6 @@ void ModelEditor::run(BrowEdit* browEdit)
 			if (m.fbo->getWidth() != size.x || m.fbo->getHeight() != size.y)
 				m.fbo->resize((int)size.x, (int)size.y);
 
-			rsmRenderer->time = fmod(timeSelected/1000.0f, rsm->animLen/1000.0f);
-
 			if (size.x > 0 && size.y > 0)
 			{
 				m.fbo->bind();
@@ -196,6 +194,8 @@ void ModelEditor::run(BrowEdit* browEdit)
 					nodeRenderContext.viewMatrix = glm::translate(nodeRenderContext.viewMatrix, glm::vec3(0, rsm->bbrange.y, 0));
 				else
 					nodeRenderContext.viewMatrix = glm::translate(nodeRenderContext.viewMatrix, glm::vec3(0, -rsm->bbrange.y, 0));
+				nodeRenderContext.time = fmod(timeSelected / 1000.0f, rsm->animLen / 1000.0f);
+				nodeRenderContext.fbo = m.fbo;
 
 				// draw grid
 				simpleShader->use();

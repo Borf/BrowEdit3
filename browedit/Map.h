@@ -21,6 +21,7 @@ public:
 	std::vector<Node*> selectedNodes;
 	std::vector<glm::ivec2> tileSelection;
 	std::vector<glm::ivec2> gatSelection;
+	std::vector<glm::ivec2> waterSelection;
 
 	bool changed = false;
 	bool mapHasNoGnd = false; // This variable is meant to prevent the console from being filled with the "map has no gnd" error
