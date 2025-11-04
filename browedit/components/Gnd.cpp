@@ -1224,7 +1224,7 @@ void Gnd::cleanTiles()
 
 void Gnd::removeUnusedTextures(BrowEdit* browEdit)
 {
-	int oldSize = textures.size();
+	int oldSize = (int)textures.size();
 
 	std::set<int> used;
 
@@ -1247,7 +1247,7 @@ void Gnd::removeUnusedTextures(BrowEdit* browEdit)
 	}
 
 	std::vector<int> toDelete;
-	for (int i = textures.size() - 1; i >= 0; i--) {
+	for (int i = (int)textures.size() - 1; i >= 0; i--) {
 		if (used.count(i)) continue;
 
 		toDelete.push_back(i);
@@ -1257,13 +1257,14 @@ void Gnd::removeUnusedTextures(BrowEdit* browEdit)
 		auto ga = new GroupAction();
 
 		for (auto index : toDelete) {
+			std::cout << "Removed " << textures[index]->file << " (id: " << index << ")" << std::endl;
 			ga->addAction(new GndTextureDelAction(index));
 		}
 
 		browEdit->activeMapView->map->doAction(ga, browEdit);
 	}
 
-	std::cout << "Removed " << (oldSize - textures.size()) << " textures" << std::endl;
+	std::cout << "Removed " << (oldSize - (int)textures.size()) << " texture(s)" << std::endl;
 }
 
 void Gnd::recalculateNormals()
