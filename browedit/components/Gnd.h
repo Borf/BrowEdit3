@@ -35,6 +35,7 @@ public:
 	void makeLightmapsDiffRes(int rx, int ry);
 	void removeZeroHeightWalls();
 	void cleanTiles();
+	void removeUnusedTextures(BrowEdit* browEdit);
 	void recalculateNormals();
 
 	void flattenTiles(Map* map, BrowEdit* browEdit, const std::vector<glm::ivec2>& tiles);
