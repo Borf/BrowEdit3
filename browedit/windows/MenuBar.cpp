@@ -229,6 +229,8 @@ void BrowEdit::menuBar()
 		if (ImGui::MenuItem("Make tiles unique"))
 			activeMapView->map->rootNode->getComponent<Gnd>()->makeTilesUnique();
 		hotkeyMenuItem("Remove zero height walls", HotkeyAction::Global_ClearZeroHeightWalls);
+		if (ImGui::MenuItem("Remove unused ground textures"))
+			activeMapView->map->rootNode->getComponent<Gnd>()->removeUnusedTextures(this);
 		if (ImGui::MenuItem("Clean Tiles"))
 			activeMapView->map->rootNode->getComponent<Gnd>()->cleanTiles();
 		if (ImGui::MenuItem("Edit lighting/water/fog")) {

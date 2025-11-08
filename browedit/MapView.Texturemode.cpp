@@ -466,6 +466,11 @@ void MapView::postRenderTextureMode(BrowEdit* browEdit)
 			{
 				auto cube = gnd->cubes[tile.x][tile.y];
 
+				if (textureBrushWidth == 0)
+					textureBrushWidth = 1;
+				if (textureBrushHeight == 0)
+					textureBrushHeight = 1;
+
 				glm::vec2 v1 = uvStart + xInc * (float)((tile.x + browEdit->textureFillOffset.x)%textureBrushWidth) + yInc * (float)((tile.y + browEdit->textureFillOffset.y)%textureBrushHeight);
 				glm::vec2 v2 = v1 + xInc;
 				glm::vec2 v3 = v1 + yInc;

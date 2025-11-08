@@ -972,7 +972,6 @@ void WallCalculation::prepare(BrowEdit* browEdit)
 	uvStart = uv1 + browEdit->activeMapView->textureEditUv1.x * (uv2 - uv1) + browEdit->activeMapView->textureEditUv1.y * (uv3 - uv1);
 }
 
-extern std::vector<glm::ivec3> selectedWalls; //ewwww
 void Map::wallAddSelected(BrowEdit* browEdit)
 {
 	auto gnd = rootNode->getComponent<Gnd>();
@@ -984,7 +983,7 @@ void Map::wallAddSelected(BrowEdit* browEdit)
 	auto ga = new GroupAction();
 	int id = (int)gnd->tiles.size();
 
-	for (const auto& w : selectedWalls)
+	for (const auto& w : wallSelection)
 	{
 		auto cube = gnd->cubes[w.x][w.y];
 
@@ -1023,7 +1022,7 @@ void Map::wallReApplySelected(BrowEdit* browEdit)
 	auto ga = new GroupAction();
 	int id = (int)gnd->tiles.size();
 
-	for (const auto& w : selectedWalls)
+	for (const auto& w : wallSelection)
 	{
 		auto cube = gnd->cubes[w.x][w.y];
 
@@ -1057,7 +1056,7 @@ void Map::wallRemoveSelected(BrowEdit* browEdit)
 	auto gnd = rootNode->getComponent<Gnd>();
 	auto gndRenderer = rootNode->getComponent<GndRenderer>();
 	auto ga = new GroupAction();
-	for (const auto& w : selectedWalls)
+	for (const auto& w : wallSelection)
 	{
 		auto cube = gnd->cubes[w.x][w.y];
 		if (w.z == 1 && cube->tileSide != -1)
@@ -1076,7 +1075,7 @@ void Map::wallFlipSelectedTextureHorizontal(BrowEdit* browEdit)
 	auto gndRenderer = rootNode->getComponent<GndRenderer>();
 	auto ga = new GroupAction();
 
-	for (const auto& w : selectedWalls)
+	for (const auto& w : wallSelection)
 	{
 		auto cube = gnd->cubes[w.x][w.y];
 		Gnd::Tile* tile = nullptr;
@@ -1101,7 +1100,7 @@ void Map::wallFlipSelectedTextureVertical(BrowEdit* browEdit)
 	auto gndRenderer = rootNode->getComponent<GndRenderer>();
 	auto ga = new GroupAction();
 
-	for (const auto& w : selectedWalls)
+	for (const auto& w : wallSelection)
 	{
 		auto cube = gnd->cubes[w.x][w.y];
 		Gnd::Tile* tile = nullptr;

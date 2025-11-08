@@ -4,33 +4,33 @@
 #include <browedit/components/RsmRenderer.h>
 #include <browedit/components/BillboardRenderer.h>
 
-extern std::vector<glm::ivec3> selectedWalls; //eww
-
-
 SelectWallAction::SelectWallAction(Map* map, const glm::ivec3 &selection, bool keepSelection, bool deSelect)
 {
+	if (map == nullptr)
+		return;
+
 	name = "Select walls";
-	oldSelection = selectedWalls;
+	oldSelection = map->wallSelection;
 	if (keepSelection)
 		newSelection = oldSelection;
 	else
-		selectedWalls.clear();
+		map->wallSelection.clear();
 
 	if (!deSelect)
 		newSelection.push_back(selection);
 	else
 		newSelection.erase(std::remove_if(newSelection.begin(), newSelection.end(), [selection](const glm::ivec3 n) { return n == selection; }));
-	selectedWalls.push_back(selection);
+	map->wallSelection.push_back(selection);
 }
 
 void SelectWallAction::perform(Map* map, BrowEdit* browEdit)
 {
-	selectedWalls = newSelection;
+	map->wallSelection = newSelection;
 }
 
 void SelectWallAction::undo(Map* map, BrowEdit* browEdit)
 {
-	selectedWalls = oldSelection;
+	map->wallSelection = oldSelection;
 }
 
 std::string SelectWallAction::str()

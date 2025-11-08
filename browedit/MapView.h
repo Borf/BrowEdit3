@@ -99,7 +99,6 @@ public:
 	glm::vec2 cameraTargetRot;
 	glm::vec3 cameraTargetPos;
 
-
 	bool snapToGrid = false;
 	bool gridLocal = true;
 	float gridSizeTranslate = 5;
@@ -161,7 +160,7 @@ public:
 	bool wallAutoStraight = true;
 	bool wallTopDropper = false;
 	bool wallBottomDropper = false;
-
+	bool wallPreview = false;
 
 	//height edit mode
 	bool mouseDown = false;
@@ -177,7 +176,6 @@ public:
 	glm::vec2 mouseDragStart2D;
 	std::vector<glm::ivec2> selectLasso;
 	std::vector<glm::vec3> objectSelectLasso;
-
 
 	MouseState mouseState;
 	MouseState prevMouseState;

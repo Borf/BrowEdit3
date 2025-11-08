@@ -15,6 +15,7 @@
 #include <browedit/math/Polygon.h>
 #include <browedit/actions/GroupAction.h>
 #include <browedit/actions/TileSelectAction.h>
+#include <browedit/actions/TileNewAction.h>
 #include <browedit/actions/CubeHeightChangeAction.h>
 #include <browedit/actions/CubeTileChangeAction.h>
 #include <browedit/actions/NewObjectAction.h>
@@ -712,6 +713,39 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 
 					if (browEdit->windowData.heightEdit.edgeMode == 3 && gnd->tiles.size() > 0) // add walls
 					{
+						auto ga = new GroupAction();
+						int id = (int)gnd->tiles.size();
+
+						auto addTile = [&](const glm::ivec2& w, int index)
+						{
+							auto cube = gnd->cubes[w.x][w.y];
+							auto t = new Gnd::Tile();
+
+							t->color = glm::ivec4(255, 255, 255, 255);
+							t->textureIndex = 0;
+							t->lightmapIndex = 0;
+
+							t->v1 = glm::vec2(0.00, 1);
+							t->v2 = glm::vec2(0.25, 1);
+							t->v3 = glm::vec2(0.00, 0);
+							t->v4 = glm::vec2(0.25, 0);
+
+							switch (index) {
+							case 0:
+								ga->addAction(new CubeTileChangeAction(w, cube, id, cube->tileFront, cube->tileSide));
+								break;
+							case 1:
+								ga->addAction(new CubeTileChangeAction(w, cube, cube->tileUp, id, cube->tileSide));
+								break;
+							case 2:
+								ga->addAction(new CubeTileChangeAction(w, cube, cube->tileUp, cube->tileFront, id));
+								break;
+							}
+
+							cube->tileIds[index] = id++;
+							ga->addAction(new TileNewAction(t));
+						};
+
 						for (auto t : map->tileSelection)
 						{
 							//h1 bottomleft
@@ -719,29 +753,32 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 							//h3 topleft
 							//h4 topright
 							if (t.x > 0 && !isTileSelected(t.x - 1, t.y) && (
-								gnd->cubes[t.x][t.y]->h1 != gnd->cubes[t.x - 1][t.y]->h2 || 
+								gnd->cubes[t.x][t.y]->h1 != gnd->cubes[t.x - 1][t.y]->h2 ||
 								gnd->cubes[t.x][t.y]->h3 != gnd->cubes[t.x - 1][t.y]->h4) &&
 								gnd->cubes[t.x - 1][t.y]->tileSide == -1)
-								gnd->cubes[t.x - 1][t.y]->tileSide = 0;
-
+								addTile(glm::ivec2(t.x - 1, t.y), 2);
+							
 							if (t.x < gnd->width-1 && !isTileSelected(t.x + 1, t.y) && (
 								gnd->cubes[t.x][t.y]->h2 != gnd->cubes[t.x + 1][t.y]->h1 ||
 								gnd->cubes[t.x][t.y]->h4 != gnd->cubes[t.x + 1][t.y]->h3) &&
 								gnd->cubes[t.x][t.y]->tileSide == -1)
-								gnd->cubes[t.x][t.y]->tileSide = 0;
+								addTile(t, 2);
 
 							if (t.y > 0 && !isTileSelected(t.x, t.y - 1) && (
 								gnd->cubes[t.x][t.y]->h1 != gnd->cubes[t.x][t.y - 1]->h3 ||
 								gnd->cubes[t.x][t.y]->h2 != gnd->cubes[t.x][t.y - 1]->h4) &&
 								gnd->cubes[t.x][t.y - 1]->tileFront == -1)
-								gnd->cubes[t.x][t.y - 1]->tileFront = 0;
+								addTile(glm::ivec2(t.x, t.y - 1), 1);
 
 							if (t.y < gnd->height-1 && !isTileSelected(t.x, t.y + 1) && (
 								gnd->cubes[t.x][t.y]->h3 != gnd->cubes[t.x][t.y + 1]->h1 ||
 								gnd->cubes[t.x][t.y]->h4 != gnd->cubes[t.x][t.y + 1]->h2) &&
 								gnd->cubes[t.x][t.y]->tileFront == -1)
-								gnd->cubes[t.x][t.y]->tileFront = 0;
+								addTile(t, 1);
+						}
 
+						if (!ga->isEmpty()) {
+							map->doAction(ga, browEdit);
 						}
 					}
 

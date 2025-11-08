@@ -11,6 +11,7 @@
 #include <browedit/actions/CubeTileChangeAction.h>
 #include <browedit/actions/WaterSplitChangeAction.h>
 #include <browedit/actions/GndVersionChangeAction.h>
+#include <browedit/actions/GndTextureActions.h>
 #include <browedit/actions/GroupAction.h>
 #include <iostream>
 #include <fstream>
@@ -1219,6 +1220,51 @@ void Gnd::cleanTiles()
 						cubes[x][y]->tileIds[ii]--;
 	}
 	std::cout<< "Tiles cleanup, ending with " << tiles.size() << " tiles" << std::endl;
+}
+
+void Gnd::removeUnusedTextures(BrowEdit* browEdit)
+{
+	int oldSize = (int)textures.size();
+
+	std::set<int> used;
+
+	for (int y = 0; y < height; y++) {
+		for (int x = 0; x < width; x++) {
+			auto cube = cubes[x][y];
+
+			for (int i = 0; i < 3; i++) {
+				if (cube->tileIds[i] == -1)
+					continue;
+
+				auto tile = tiles[cube->tileIds[i]];
+
+				if (tile->textureIndex == -1)
+					continue;
+
+				used.insert(tile->textureIndex);
+			}
+		}
+	}
+
+	std::vector<int> toDelete;
+	for (int i = (int)textures.size() - 1; i >= 0; i--) {
+		if (used.count(i)) continue;
+
+		toDelete.push_back(i);
+	}
+
+	if (toDelete.size() > 0) {
+		auto ga = new GroupAction();
+
+		for (auto index : toDelete) {
+			std::cout << "Removed " << textures[index]->file << " (id: " << index << ")" << std::endl;
+			ga->addAction(new GndTextureDelAction(index));
+		}
+
+		browEdit->activeMapView->map->doAction(ga, browEdit);
+	}
+
+	std::cout << "Removed " << (oldSize - (int)textures.size()) << " texture(s)" << std::endl;
 }
 
 void Gnd::recalculateNormals()

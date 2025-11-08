@@ -2,6 +2,7 @@
 
 #include "Action.h"
 #include <map>
+#include <vector>
 
 class GndTextureAddAction : public Action
 {
@@ -15,7 +16,14 @@ public:
 
 class GndTextureDelAction : public Action
 {
+	int index;
+	std::string fileName;
+	std::vector<int> tiles;
 public:
+	GndTextureDelAction(int index);
+	virtual void perform(Map* map, BrowEdit* browEdit) override;
+	virtual void undo(Map* map, BrowEdit* browEdit) override;
+	virtual std::string str() override;
 };
 
 

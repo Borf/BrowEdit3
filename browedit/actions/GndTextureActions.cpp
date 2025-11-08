@@ -48,7 +48,78 @@ void GndTextureAddAction::undo(Map* map, BrowEdit* browEdit)
 
 std::string GndTextureAddAction::str()
 {
-	return "Added Texture";
+	return "Added texture " + util::iso_8859_1_to_utf8(fileName);
+}
+
+GndTextureDelAction::GndTextureDelAction(int index) : index(index)
+{
+}
+
+void GndTextureDelAction::perform(Map* map, BrowEdit* browEdit)
+{
+	auto gnd = map->rootNode->getComponent<Gnd>();
+	auto gndRenderer = map->rootNode->getComponent<GndRenderer>();
+
+	if (index < 0 || index >= gnd->textures.size())
+		return;
+
+	fileName = gnd->textures[index]->file;
+
+	util::ResourceManager<gl::Texture>::unload(gndRenderer->textures[index]);
+	gndRenderer->textures.erase(gndRenderer->textures.begin() + index);
+
+	delete gnd->textures[index];
+	gnd->textures.erase(gnd->textures.begin() + index);
+	tiles.clear();
+
+	for (int i = 0; i < gnd->tiles.size(); i++) {
+		auto& tile = gnd->tiles[i];
+
+		if (tile->textureIndex == index) {
+			tiles.push_back(i);
+			tile->textureIndex = -1;
+		}
+		else if (tile->textureIndex > index)
+			tile->textureIndex--;
+	}
+
+	for (auto& mv : browEdit->mapViews)
+	{
+		if (mv.map == map && mv.textureSelected >= gnd->textures.size())
+			mv.textureSelected = (int)gnd->textures.size() - 1;
+	}
+
+	gndRenderer->setChunksDirty();
+}
+
+void GndTextureDelAction::undo(Map* map, BrowEdit* browEdit)
+{
+	auto gnd = map->rootNode->getComponent<Gnd>();
+	auto gndRenderer = map->rootNode->getComponent<GndRenderer>();
+
+	if (index < 0 || index > gnd->textures.size())
+		return;
+
+	gnd->textures.insert(gnd->textures.begin() + index, new Gnd::Texture(fileName, fileName));
+	gndRenderer->textures.insert(gndRenderer->textures.begin() + index, util::ResourceManager<gl::Texture>::load("data\\texture\\" + fileName));
+
+	for (int i = 0; i < gnd->tiles.size(); i++) {
+		auto& tile = gnd->tiles[i];
+
+		if (tile->textureIndex >= index)
+			tile->textureIndex++;
+	}
+
+	for (auto idx : tiles) {
+		gnd->tiles[idx]->textureIndex = index;
+	}
+
+	gndRenderer->setChunksDirty();
+}
+
+std::string GndTextureDelAction::str()
+{
+	return "Deleted texture " + util::iso_8859_1_to_utf8(fileName);
 }
 
 GndTextureChangeAction::GndTextureChangeAction(int index, const std::string& fileName) : index(index), newTexture(fileName)
