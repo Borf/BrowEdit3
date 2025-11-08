@@ -11,7 +11,6 @@
 #include <browedit/util/Util.h>
 #include <GLFW/glfw3.h>
 
-extern bool previewWall; //move this
 extern bool dropperEnabled; //move this
 
 
@@ -144,7 +143,7 @@ void BrowEdit::registerActions()
 	HotkeyRegistry::registerAction(HotkeyAction::WallEdit_AddWall,					[this]() { activeMapView->map->wallAddSelected(this); }, hasActiveMapViewWallMode);
 	HotkeyRegistry::registerAction(HotkeyAction::WallEdit_RemoveWall,				[this]() { activeMapView->map->wallRemoveSelected(this); }, hasActiveMapViewWallMode);
 	HotkeyRegistry::registerAction(HotkeyAction::WallEdit_ReApply,					[this]() { activeMapView->map->wallReApplySelected(this); }, hasActiveMapViewWallMode);
-	HotkeyRegistry::registerAction(HotkeyAction::WallEdit_Preview,					[this]() { previewWall = !previewWall; }, hasActiveMapViewWallMode);
+	HotkeyRegistry::registerAction(HotkeyAction::WallEdit_Preview,					[this]() { activeMapView->wallPreview = !activeMapView->wallPreview; }, hasActiveMapViewWallMode);
 	HotkeyRegistry::registerAction(HotkeyAction::WallEdit_OffsetLower,				[this]() { activeMapView->wallOffset = glm::max(1, activeMapView->wallOffset - 1); }, hasActiveMapViewWallMode);
 	HotkeyRegistry::registerAction(HotkeyAction::WallEdit_OffsetRaise,				[this]() { activeMapView->wallOffset++; }, hasActiveMapViewWallMode);
 	HotkeyRegistry::registerAction(HotkeyAction::WallEdit_SizeLower,				[this]() { activeMapView->wallWidth = glm::max(1, activeMapView->wallWidth - 1); }, hasActiveMapViewWallMode);

@@ -59,6 +59,10 @@ void GndTextureDelAction::perform(Map* map, BrowEdit* browEdit)
 {
 	auto gnd = map->rootNode->getComponent<Gnd>();
 	auto gndRenderer = map->rootNode->getComponent<GndRenderer>();
+
+	if (index < 0 || index >= gnd->textures.size())
+		return;
+
 	fileName = gnd->textures[index]->file;
 
 	util::ResourceManager<gl::Texture>::unload(gndRenderer->textures[index]);
@@ -92,6 +96,9 @@ void GndTextureDelAction::undo(Map* map, BrowEdit* browEdit)
 {
 	auto gnd = map->rootNode->getComponent<Gnd>();
 	auto gndRenderer = map->rootNode->getComponent<GndRenderer>();
+
+	if (index < 0 || index > gnd->textures.size())
+		return;
 
 	gnd->textures.insert(gnd->textures.begin() + index, new Gnd::Texture(fileName, fileName));
 	gndRenderer->textures.insert(gndRenderer->textures.begin() + index, util::ResourceManager<gl::Texture>::load("data\\texture\\" + fileName));

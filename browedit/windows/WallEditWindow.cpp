@@ -13,9 +13,6 @@
 #include <imgui.h>
 #include <imgui_internal.h>
 
-extern std::vector<glm::ivec3> selectedWalls; //TODO: I want less extern
-extern bool previewWall;
-
 void BrowEdit::showWallWindow()
 {
 	if (!activeMapView)
@@ -429,13 +426,13 @@ void BrowEdit::showWallWindow()
 	ImGui::Checkbox("Auto Straight", &activeMapView->wallAutoStraight);
 
 	hotkeyButton("Apply Texture", HotkeyAction::WallEdit_ReApply);
-	previewWall = ImGui::IsItemHovered();
+	activeMapView->wallPreview = ImGui::IsItemHovered();
 
 
-	if (selectedWalls.size() > 0)
+	if (activeMapView->map->wallSelection.size() > 0)
 	{
 		if(ImGui::CollapsingHeader("Selection Texture Editing", ImGuiTreeNodeFlags_DefaultOpen))
-		for (const auto& w: selectedWalls)
+		for (const auto& w: activeMapView->map->wallSelection)
 		{
 			if (gnd->cubes[w.x][w.y]->tileIds[w.z == 1 ? 2 : 1] > -1)
 			{

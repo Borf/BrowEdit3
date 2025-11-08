@@ -1230,9 +1230,9 @@ void Gnd::removeUnusedTextures(BrowEdit* browEdit)
 
 	for (int y = 0; y < height; y++) {
 		for (int x = 0; x < width; x++) {
-			for (int i = 0; i < 3; i++) {
-				auto cube = cubes[x][y];
+			auto cube = cubes[x][y];
 
+			for (int i = 0; i < 3; i++) {
 				if (cube->tileIds[i] == -1)
 					continue;
 

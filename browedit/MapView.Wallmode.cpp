@@ -14,14 +14,6 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <imgui.h>
 
-
-glm::ivec2 selectionStart;
-int selectionSide;
-std::vector<glm::ivec3> selectedWalls;
-bool previewWall = false; //move this
-bool selecting = false;
-bool panning = false;
-
 void MapView::postRenderWallMode(BrowEdit* browEdit)
 {
 	bool dropper = wallBottomDropper || wallTopDropper;
@@ -52,7 +44,7 @@ void MapView::postRenderWallMode(BrowEdit* browEdit)
 	fbo->bind();
 
 	if (!ImGui::IsMouseClicked(ImGuiMouseButton_Left) && ImGui::IsMouseDown(ImGuiMouseButton_Left))
-		side = selectionSide;
+		side = map->wallSelect.selectionSide;
 
 	if (side == 0)
 	{
@@ -146,12 +138,12 @@ void MapView::postRenderWallMode(BrowEdit* browEdit)
 		}
 		else
 		{
-			if (!selecting && !panning)
+			if (!map->wallSelect.selecting && !map->wallSelect.panning)
 			{
 				if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
 				{
 					bool collision = false;
-					for (const auto& wall : selectedWalls)
+					for (const auto& wall : map->wallSelection)
 					{
 						glm::ivec2 tile = glm::ivec2(wall);
 						if (gnd->inMap(tile) && (
@@ -193,14 +185,14 @@ void MapView::postRenderWallMode(BrowEdit* browEdit)
 
 					if (!collision)
 					{
-						selectionStart = tileHovered;
-						selectionSide = side;
-						selecting = true;
+						map->wallSelect.selectionStart = tileHovered;
+						map->wallSelect.selectionSide = side;
+						map->wallSelect.selecting = true;
 					}
 					else
 					{
 						originalTiles.clear();
-						for (const auto& w : selectedWalls)
+						for (const auto& w : map->wallSelection)
 						{
 							auto cube = gnd->cubes[w.x][w.y];
 							Gnd::Tile* tile = nullptr;
@@ -212,16 +204,16 @@ void MapView::postRenderWallMode(BrowEdit* browEdit)
 								continue;
 							originalTiles.push_back(Gnd::Tile(*tile));
 						}
-						panning = true;
+						map->wallSelect.panning = true;
 						std::cout << "Panning!" << std::endl;
 					}
 				}
 			}
-			if (selecting)
+			if (map->wallSelect.selecting)
 			{
 				if (ImGui::IsMouseDown(ImGuiMouseButton_Left))
 				{
-					glm::ivec2 tile = selectionStart;
+					glm::ivec2 tile = map->wallSelect.selectionStart;
 					for (int i = 0; i < 100; i++)
 					{
 						if (gnd->inMap(tile) && (
@@ -230,14 +222,14 @@ void MapView::postRenderWallMode(BrowEdit* browEdit)
 						{
 							auto cube = gnd->cubes[tile.x][tile.y];
 							glm::vec3 v1, v2, v3, v4;
-							if (selectionSide == 1)
+							if (map->wallSelect.selectionSide == 1)
 							{
 								v1 = glm::vec3(10 * tile.x + 10, -cube->h2, 10 * gnd->height - 10 * tile.y + 10);
 								v2 = glm::vec3(10 * tile.x + 10, -cube->h4, 10 * gnd->height - 10 * tile.y);
 								v3 = glm::vec3(10 * tile.x + 10, -gnd->cubes[tile.x + 1][tile.y]->h1, 10 * gnd->height - 10 * tile.y + 10);
 								v4 = glm::vec3(10 * tile.x + 10, -gnd->cubes[tile.x + 1][tile.y]->h3, 10 * gnd->height - 10 * tile.y);
 							}
-							if (selectionSide == 2)
+							if (map->wallSelect.selectionSide == 2)
 							{
 								v1 = glm::vec3(10 * tile.x, -cube->h3, 10 * gnd->height - 10 * tile.y);
 								v2 = glm::vec3(10 * tile.x + 10, -cube->h4, 10 * gnd->height - 10 * tile.y);
@@ -265,47 +257,47 @@ void MapView::postRenderWallMode(BrowEdit* browEdit)
 							glEnable(GL_DEPTH_TEST);
 
 						}
-						if (selectionSide == 1 && tile.y == tileHovered.y)
+						if (map->wallSelect.selectionSide == 1 && tile.y == tileHovered.y)
 							break;
-						if (selectionSide == 2 && tile.x == tileHovered.x)
+						if (map->wallSelect.selectionSide == 2 && tile.x == tileHovered.x)
 							break;
-						if (selectionSide == 1)
-							tile += glm::ivec2(0, glm::sign(tileHovered.y - selectionStart.y));
+						if (map->wallSelect.selectionSide == 1)
+							tile += glm::ivec2(0, glm::sign(tileHovered.y - map->wallSelect.selectionStart.y));
 						else
-							tile += glm::ivec2(glm::sign(tileHovered.x - selectionStart.x), 0);
-						if (tileHovered == selectionStart)
+							tile += glm::ivec2(glm::sign(tileHovered.x - map->wallSelect.selectionStart.x), 0);
+						if (tileHovered == map->wallSelect.selectionStart)
 							break;
 					}
 				}
 				if (ImGui::IsMouseReleased(ImGuiMouseButton_Left))
 				{
 					auto ga = new GroupAction();
-					glm::ivec2 tile = selectionStart;
+					glm::ivec2 tile = map->wallSelect.selectionStart;
 					for (int i = 0; i < 100; i++)
 					{
-						if (gnd->inMap(tile) && std::find(selectedWalls.begin(), selectedWalls.end(), glm::ivec3(tile, selectionSide)) == selectedWalls.end())
-							ga->addAction(new SelectWallAction(map, glm::ivec3(tile, selectionSide), ga->isEmpty() ? ImGui::GetIO().KeyShift : true, false));
-						if (selectionSide == 1 && tile.y == tileHovered.y)
+						if (gnd->inMap(tile) && std::find(map->wallSelection.begin(), map->wallSelection.end(), glm::ivec3(tile, map->wallSelect.selectionSide)) == map->wallSelection.end())
+							ga->addAction(new SelectWallAction(map, glm::ivec3(tile, map->wallSelect.selectionSide), ga->isEmpty() ? ImGui::GetIO().KeyShift : true, false));
+						if (map->wallSelect.selectionSide == 1 && tile.y == tileHovered.y)
 							break;
-						if (selectionSide == 2 && tile.x == tileHovered.x)
+						if (map->wallSelect.selectionSide == 2 && tile.x == tileHovered.x)
 							break;
-						if (selectionSide == 1)
-							tile += glm::ivec2(0, glm::sign(tileHovered.y - selectionStart.y));
+						if (map->wallSelect.selectionSide == 1)
+							tile += glm::ivec2(0, glm::sign(tileHovered.y - map->wallSelect.selectionStart.y));
 						else
-							tile += glm::ivec2(glm::sign(tileHovered.x - selectionStart.x), 0);
-						if (tileHovered == selectionStart)
+							tile += glm::ivec2(glm::sign(tileHovered.x - map->wallSelect.selectionStart.x), 0);
+						if (tileHovered == map->wallSelect.selectionStart)
 							break;
 					}
 					if (!ga->isEmpty())
 						map->doAction(ga, browEdit);
 					else
 						delete ga;
-					selecting = false;
+					map->wallSelect.selecting = false;
 				}
 			}
-			if (panning)
+			if (map->wallSelect.panning)
 			{
-				for (const auto& w : selectedWalls)
+				for (const auto& w : map->wallSelection)
 				{
 					auto cube = gnd->cubes[w.x][w.y];
 					Gnd::Tile* tile = nullptr;
@@ -350,10 +342,10 @@ void MapView::postRenderWallMode(BrowEdit* browEdit)
 				}
 				if (ImGui::IsMouseReleased(ImGuiMouseButton_Left))
 				{
-					panning = false;
+					map->wallSelect.panning = false;
 					auto ga = new GroupAction();
 					int i = 0;
-					for (const auto& w : selectedWalls)
+					for (const auto& w : map->wallSelection)
 					{
 						auto cube = gnd->cubes[w.x][w.y];
 						Gnd::Tile* tile = nullptr;
@@ -372,7 +364,7 @@ void MapView::postRenderWallMode(BrowEdit* browEdit)
 			}
 		}
 	}
-	if (selectedWalls.size() > 0 && browEdit->activeMapView)
+	if (map->wallSelection.size() > 0 && browEdit->activeMapView)
 	{
 		std::vector<VertexP3T2N3> verts;
 		std::vector<VertexP3T2N3> topverts;
@@ -381,7 +373,7 @@ void MapView::postRenderWallMode(BrowEdit* browEdit)
 		WallCalculation calculation;
 		calculation.prepare(browEdit);
 
-		for (const auto& wall : selectedWalls)
+		for (const auto& wall : map->wallSelection)
 		{
 			glm::ivec2 tile = glm::ivec2(wall);
 
@@ -407,7 +399,7 @@ void MapView::postRenderWallMode(BrowEdit* browEdit)
 					v3 = glm::vec3(10 * tile.x, -gnd->cubes[tile.x][tile.y + 1]->h1, 10 * gnd->height - 10 * tile.y);
 					normal = glm::vec3(0, 0, 1);
 				}
-				if (previewWall)
+				if (wallPreview)
 				{
 					calculation.calcUV(wall, gnd);
 					verts.push_back(VertexP3T2N3(v1, calculation.g_uv1, normal));
@@ -475,7 +467,7 @@ void MapView::postRenderWallMode(BrowEdit* browEdit)
 			glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexP3T2N3), verts[0].data + 0);
 			glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexP3T2N3), verts[0].data + 3);
 			glVertexAttribPointer(2, 3, GL_FLOAT, false, sizeof(VertexP3T2N3), verts[0].data + 5);
-			if (previewWall && browEdit->activeMapView->textureSelected >= 0 && browEdit->activeMapView->textureSelected < gndRenderer->textures.size())
+			if (wallPreview && browEdit->activeMapView->textureSelected >= 0 && browEdit->activeMapView->textureSelected < gndRenderer->textures.size())
 			{
 				simpleShader->setUniform(SimpleShader::Uniforms::textureFac, 1.0f);
 				simpleShader->setUniform(SimpleShader::Uniforms::color, glm::vec4(browEdit->config.wallEditHighlightColor, 1));
