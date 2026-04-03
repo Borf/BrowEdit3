@@ -1,4 +1,5 @@
 #include <Windows.h>
+#include <shellapi.h>
 #include <browedit/Map.h>
 #include <browedit/Node.h>
 #include <browedit/actions/Action.h>
@@ -12,6 +13,7 @@
 #include <browedit/actions/TilePropertyChangeAction.h>
 #include <browedit/components/Rsw.h>
 #include <browedit/components/Gnd.h>
+#include <browedit/components/Gat.h>
 #include <browedit/components/GndRenderer.h>
 #include <browedit/components/BillboardRenderer.h>
 #include <browedit/BrowEdit.h>
@@ -724,6 +726,99 @@ void Map::exportTileColors(BrowEdit* browEdit, bool exportWalls)
 	stbi_write_png((browEdit->config.ropath + name + ".tilecolor.png").c_str(), gnd->width * wallMultiplier, gnd->height * wallMultiplier, 3, img, gnd->width * wallMultiplier * 3);
 	delete[] img;
 }
+
+
+void Map::exportMinimapWalkable(BrowEdit* browEdit)
+{
+	auto gat = rootNode->getComponent<Gat>();
+	if (!gat)
+		return;
+
+	const int outW = 512;
+	const int outH = 512;
+	unsigned char* img = new unsigned char[outW * outH * 3];
+
+	// Fill with magenta (255,0,255) — the RO transparency key color for padding
+	for (int i = 0; i < outW * outH * 3; i += 3)
+	{
+		img[i + 0] = 255;
+		img[i + 1] = 0;
+		img[i + 2] = 255;
+	}
+
+	// Preserve aspect ratio: scale to fit 512x512, center with magenta padding
+	float scale = std::min((float)outW / gat->width, (float)outH / gat->height);
+	int contentW = (int)(gat->width * scale);
+	int contentH = (int)(gat->height * scale);
+	int ox = (outW - contentW) / 2;
+	int oy = (outH - contentH) / 2;
+
+	// GAT type colors — dark = walkable, light = walls (matching game minimap)
+	auto gatColor = [](int gatType) -> glm::ivec3
+	{
+		switch (gatType)
+		{
+		case 0:  return glm::ivec3(40, 40, 40);      // walkable — dark
+		case 1:  return glm::ivec3(170, 170, 170);    // not walkable — light grey
+		case 3:  return glm::ivec3(60, 80, 120);      // walkable + water — dark blue
+		case 4:  return glm::ivec3(50, 50, 50);       // walkable (no-water variant)
+		case 5:  return glm::ivec3(80, 80, 80);       // snipable — medium dark
+		default: return glm::ivec3(130, 130, 130);    // unknown — medium grey
+		}
+	};
+
+	for (int py = 0; py < contentH; py++)
+	{
+		for (int px = 0; px < contentW; px++)
+		{
+			int gx = (int)((float)px / contentW * gat->width);
+			// Flip Y: GAT Y=0 is bottom, BMP Y=0 is top
+			int gy = (int)((float)(contentH - 1 - py) / contentH * gat->height);
+			if (gx >= gat->width) gx = gat->width - 1;
+			if (gy >= gat->height) gy = gat->height - 1;
+			if (gy < 0) gy = 0;
+
+			auto cube = gat->cubes[gx][gy];
+			auto color = gatColor(cube->gatType);
+			int outX = ox + px;
+			int outY = oy + py;
+			int idx = (outX + outW * outY) * 3;
+			img[idx + 0] = (unsigned char)color.r;
+			img[idx + 1] = (unsigned char)color.g;
+			img[idx + 2] = (unsigned char)color.b;
+		}
+	}
+
+	// Extract map name — strip path and file extension (.rsw, .gnd, .gat)
+	std::string mapName = name;
+	auto pos = mapName.rfind('\\');
+	if (pos != std::string::npos)
+		mapName = mapName.substr(pos + 1);
+	pos = mapName.rfind('/');
+	if (pos != std::string::npos)
+		mapName = mapName.substr(pos + 1);
+	pos = mapName.rfind('.');
+	if (pos != std::string::npos)
+		mapName = mapName.substr(0, pos);
+
+	std::string outDir = browEdit->config.ropath + "data\\texture\\\xc0\xaf\xc0\xfa\xc0\xce\xc5\xcd\xc6\xe4\xc0\xcc\xbd\xba\\map";
+	std::filesystem::create_directories(outDir);
+	std::string outPath = outDir + "\\" + mapName + ".bmp";
+	int ok = stbi_write_bmp(outPath.c_str(), outW, outH, 3, img);
+	delete[] img;
+	if (ok)
+	{
+		std::cout << "Exported walkable minimap: " << outPath << std::endl;
+		std::string cmd = "/select,\"" + outPath + "\"";
+		ShellExecuteA(NULL, "open", "explorer.exe", cmd.c_str(), NULL, SW_SHOWNORMAL);
+	}
+	else
+	{
+		std::cout << "ERROR: Failed to write " << outPath << std::endl;
+		MessageBoxA(NULL, ("Failed to write:\n" + outPath).c_str(), "Export Error", MB_OK | MB_ICONERROR);
+	}
+}
+
 
 void Map::importTileColors(BrowEdit* browEdit, bool exportWalls)
 {
