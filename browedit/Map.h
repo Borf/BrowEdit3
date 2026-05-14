@@ -73,6 +73,7 @@ public:
 	void exportShadowMap(BrowEdit* browEdit, bool exportWalls, bool exportBorders);
 	void exportLightMap(BrowEdit* browEdit, bool exportWalls, bool exportBorders);
 	void exportTileColors(BrowEdit* browEdit, bool exportWalls);
+	void exportMinimapWalkable(BrowEdit* browEdit);
 
 	void importShadowMap(BrowEdit* browEdit, bool exportWalls, bool exportBorders);
 	void importLightMap(BrowEdit* browEdit, bool exportWalls, bool exportBorders);

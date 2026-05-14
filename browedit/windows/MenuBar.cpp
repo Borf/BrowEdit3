@@ -213,6 +213,8 @@ void BrowEdit::menuBar()
 				activeMapView->map->exportLightMap(this, exportWalls, exportBorders);
 			if (ImGui::MenuItem("Export tile colors"))
 				activeMapView->map->exportTileColors(this, exportWalls);
+			if (ImGui::MenuItem("Export minimap"))
+				activeMapView->map->exportMinimapWalkable(this);
 			ImGui::Separator();
 			if (ImGui::MenuItem("Import shadowmap"))
 				activeMapView->map->importShadowMap(this, exportWalls, exportBorders);
