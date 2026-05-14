@@ -847,6 +847,7 @@ void Rsw::recalculateQuadtree(QuadTreeNode* node)
 {
 	static Gnd* gnd;
 	static Rsw* rsw;
+	static Gat* gat;
 	bool rootNode = false;
 	if (!node)
 	{
@@ -854,6 +855,7 @@ void Rsw::recalculateQuadtree(QuadTreeNode* node)
 		node = quadtree;
 		gnd = this->node->getComponent<Gnd>();
 		rsw = this->node->getComponent<Rsw>();
+		gat = this->node->getComponent<Gat>();
 
 		quad_min.clear();
 		quad_max.clear();
@@ -862,14 +864,25 @@ void Rsw::recalculateQuadtree(QuadTreeNode* node)
 
 		for (int x = 0; x < gnd->width; x++) {
 			for (int y = 0; y < gnd->height; y++) {
-				auto water = rsw->water.getFromGnd(x, gnd->height - y - 1, gnd);
-				auto c = gnd->cubes[x][gnd->height - y - 1];
+				int yGnd = gnd->height - y - 1;
+				auto water = rsw->water.getFromGnd(x, yGnd, gnd);
+				auto c = gnd->cubes[x][yGnd];
 				float waveHeight = water->height - water->amplitude;
 				glm::vec2 h(99999, -99999);
 
 				for (int i = 0; i < 4; i++) {
 					h.x = glm::min(h.x, c->heights[i]);
 					h.y = glm::max(h.y, c->heights[i]);
+				}
+
+				// Also adjust the height from the 4 gat cells on the GND cube
+				for (int k = 0; k < 4; k++) {
+					auto gatCell = gat->cubes[x * 2 + k % 2][yGnd * 2 + (k >> 1)];
+
+					for (int i = 0; i < 4; i++) {
+						h.x = glm::min(h.x, gatCell->heights[i]);
+						h.y = glm::max(h.y, gatCell->heights[i]);
+					}
 				}
 
 				if (c->tileUp > -1 && c->heights[0] > waveHeight && c->heights[1] > waveHeight && c->heights[2] > waveHeight && c->heights[3] > waveHeight) {
