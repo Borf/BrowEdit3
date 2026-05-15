@@ -97,14 +97,24 @@ void MapView::toolbar(BrowEdit* browEdit)
 	browEdit->toolBarToggleButton("ortho", ortho ? ICON_ORTHO : ICON_PERSPECTIVE, &ortho, "Toggle between ortho and perspective camera", browEdit->config.toolbarButtonsViewOptions);
 	ImGui::SameLine();
 
+	const std::string viewOptionsPopupId = "ViewOptions##" + viewName;
+	showViewOptions = ImGui::IsPopupOpen(viewOptionsPopupId.c_str());
 	ImVec2 viewOptionsBtnPos = ImGui::GetCursorScreenPos();
-	if (browEdit->toolBarToggleButton("showViewOptions", ICON_VIEWOPTIONS, &showViewOptions, "View Options", browEdit->config.toolbarButtonsViewOptions))
-		ImGui::OpenPopup(("ViewOptions##" + viewName).c_str());
+	bool viewOptionsButtonClicked = browEdit->toolBarToggleButton("showViewOptions", ICON_VIEWOPTIONS, showViewOptions, "View Options", browEdit->config.toolbarButtonsViewOptions);
+	bool closeViewOptionsPopup = viewOptionsButtonClicked && showViewOptions;
+	if (viewOptionsButtonClicked && !showViewOptions)
+		ImGui::OpenPopup(viewOptionsPopupId.c_str());
 	ImGui::SameLine();
 	ImGui::SetNextWindowPos(viewOptionsBtnPos + ImVec2(0, browEdit->config.toolbarButtonSize));
-	if (ImGui::BeginPopup(("ViewOptions##" + viewName).c_str(), ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoNav))
+	if (ImGui::BeginPopup(viewOptionsPopupId.c_str(), ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoNav))
 	{
-		ImGui::Text("Render Settings");
+		if (closeViewOptionsPopup)
+		{
+			ImGui::CloseCurrentPopup();
+		}
+		else
+		{
+			ImGui::Text("Render Settings");
 			browEdit->toolBarToggleButton("viewLightMapShadow", viewLightmapShadow ? ICON_SHADOWMAP_ON : ICON_SHADOWMAP_OFF, viewLightmapShadow, "Toggle shadowmap", HotkeyAction::View_ShadowMap, browEdit->config.toolbarButtonsViewOptions);
 			ImGui::SameLine();
 			browEdit->toolBarToggleButton("viewLightmapColor", viewLightmapColor ? ICON_COLORMAP_ON : ICON_COLORMAP_OFF, viewLightmapColor, "Toggle colormap", HotkeyAction::View_ColorMap, browEdit->config.toolbarButtonsViewOptions);
@@ -202,6 +212,7 @@ void MapView::toolbar(BrowEdit* browEdit)
 			ImGui::Checkbox("Cube", &skyboxCube);
 			ImGui::DragFloat("Height", &skyboxHeight, 10, -4000, 4000);
 			ImGui::DragFloat("Rotation", &skyboxRotation, 1, 0, 360);
+		}
 
 		ImGui::EndPopup();
 	}
