@@ -97,10 +97,22 @@ void MapView::toolbar(BrowEdit* browEdit)
 	browEdit->toolBarToggleButton("ortho", ortho ? ICON_ORTHO : ICON_PERSPECTIVE, &ortho, "Toggle between ortho and perspective camera", browEdit->config.toolbarButtonsViewOptions);
 	ImGui::SameLine();
 
-	if (showViewOptions)
+	const std::string viewOptionsPopupId = "ViewOptions##" + viewName;
+	showViewOptions = ImGui::IsPopupOpen(viewOptionsPopupId.c_str());
+	ImVec2 viewOptionsBtnPos = ImGui::GetCursorScreenPos();
+	bool viewOptionsButtonClicked = browEdit->toolBarToggleButton("showViewOptions", ICON_VIEWOPTIONS, showViewOptions, "View Options", browEdit->config.toolbarButtonsViewOptions);
+	bool closeViewOptionsPopup = viewOptionsButtonClicked && showViewOptions;
+	if (viewOptionsButtonClicked && !showViewOptions)
+		ImGui::OpenPopup(viewOptionsPopupId.c_str());
+	ImGui::SameLine();
+	ImGui::SetNextWindowPos(viewOptionsBtnPos + ImVec2(0, browEdit->config.toolbarButtonSize));
+	if (ImGui::BeginPopup(viewOptionsPopupId.c_str(), ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoNav))
 	{
-		ImGui::SetNextWindowPos(ImGui::GetCursorScreenPos() + ImVec2(0, browEdit->config.toolbarButtonSize));
-		if (ImGui::Begin(("ViewOptions##" + viewName).c_str(), 0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav))
+		if (closeViewOptionsPopup)
+		{
+			ImGui::CloseCurrentPopup();
+		}
+		else
 		{
 			ImGui::Text("Render Settings");
 			browEdit->toolBarToggleButton("viewLightMapShadow", viewLightmapShadow ? ICON_SHADOWMAP_ON : ICON_SHADOWMAP_OFF, viewLightmapShadow, "Toggle shadowmap", HotkeyAction::View_ShadowMap, browEdit->config.toolbarButtonsViewOptions);
@@ -200,12 +212,10 @@ void MapView::toolbar(BrowEdit* browEdit)
 			ImGui::Checkbox("Cube", &skyboxCube);
 			ImGui::DragFloat("Height", &skyboxHeight, 10, -4000, 4000);
 			ImGui::DragFloat("Rotation", &skyboxRotation, 1, 0, 360);
-
-			ImGui::End();
 		}
+
+		ImGui::EndPopup();
 	}
-	browEdit->toolBarToggleButton("showViewOptions", ICON_VIEWOPTIONS, &showViewOptions, "View Options", browEdit->config.toolbarButtonsViewOptions);
-	ImGui::SameLine();
 	ImGui::SetNextItemWidth(50);
 	ImGui::DragInt("##quadTreeMaxLevel", &quadTreeMaxLevel, 1, 0, 6);
 	if (ImGui::IsItemHovered())
