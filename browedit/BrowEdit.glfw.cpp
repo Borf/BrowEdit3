@@ -122,6 +122,12 @@ bool BrowEdit::glfwBegin()
 
     std::cout << "Using renderer " << glGetString(GL_RENDERER) << std::endl;
 
+#ifdef __APPLE__
+    GLuint globalVAO;
+    glGenVertexArrays(1, &globalVAO);
+    glBindVertexArray(globalVAO);
+#endif
+
     memset(&memoryLimits, 0, sizeof(memoryLimits));
     calcMemoryLimits();
 
