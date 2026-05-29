@@ -1749,6 +1749,18 @@ namespace util
 		}
 		_chdir(curdir);
 		return "";
+#elif defined(__APPLE__)
+		char buffer[1024];
+		std::string command = "osascript -e 'POSIX path of (choose file)'";
+		FILE* pipe = popen(command.c_str(), "r");
+		if (!pipe) return "";
+		std::string result = "";
+		while (fgets(buffer, sizeof(buffer), pipe) != NULL) {
+			result += buffer;
+		}
+		pclose(pipe);
+		if (!result.empty() && result[result.length()-1] == '\n') result.erase(result.length()-1);
+		return result;
 #else
 		std::cerr << "SelectFileDialog not implemented for this platform" << std::endl;
 		return "";
@@ -1788,6 +1800,18 @@ namespace util
 		}
 		_chdir(curdir);
 		return "";
+#elif defined(__APPLE__)
+		char buffer[1024];
+		std::string command = "osascript -e 'POSIX path of (choose file name with prompt \"Save As...\")'";
+		FILE* pipe = popen(command.c_str(), "r");
+		if (!pipe) return "";
+		std::string result = "";
+		while (fgets(buffer, sizeof(buffer), pipe) != NULL) {
+			result += buffer;
+		}
+		pclose(pipe);
+		if (!result.empty() && result[result.length()-1] == '\n') result.erase(result.length()-1);
+		return result;
 #else
 		std::cerr << "SaveAsDialog not implemented for this platform" << std::endl;
 		return "";
@@ -1834,6 +1858,18 @@ namespace util
 			return retpath;
 		}
 		return "";
+#elif defined(__APPLE__)
+		char buffer[1024];
+		std::string command = "osascript -e 'POSIX path of (choose folder with prompt \"" + title + "\")'";
+		FILE* pipe = popen(command.c_str(), "r");
+		if (!pipe) return "";
+		std::string result = "";
+		while (fgets(buffer, sizeof(buffer), pipe) != NULL) {
+			result += buffer;
+		}
+		pclose(pipe);
+		if (!result.empty() && result[result.length()-1] == '\n') result.erase(result.length()-1);
+		return result;
 #else
 		std::cerr << "SelectPathDialog not implemented for this platform" << std::endl;
 		return "";
