@@ -266,17 +266,21 @@ namespace util
 
 	std::istream* FileIO::DirSource::open(const std::string& fileName)
 	{
-		return new std::ifstream(directory + fileName, std::ios_base::in | std::ios_base::binary);
+		std::string name = fileName;
+		std::replace(name.begin(), name.end(), '\\', '/');
+		return new std::ifstream(directory + name, std::ios_base::in | std::ios_base::binary);
 	}
 
 	bool FileIO::DirSource::exists(const std::string& fileName)
 	{
 		if (fileName == "")
 			return false;
+		std::string name = fileName;
+		std::replace(name.begin(), name.end(), '\\', '/');
 		std::error_code ec;
 		try
 		{
-			bool exists = std::filesystem::exists(directory + fileName, ec); //TODO
+			bool exists = std::filesystem::exists(directory + name, ec); //TODO
 			if (ec)
 			{
 				std::cerr << "Exception when checking if file exists: " << fileName << std::endl;
@@ -296,15 +300,17 @@ namespace util
 	{
 		try
 		{
-			if (!std::filesystem::exists(directory + dir))
+			std::string name = dir;
+			std::replace(name.begin(), name.end(), '\\', '/');
+			if (!std::filesystem::exists(directory + name))
 				return;
 
-			for (const auto& entry : std::filesystem::directory_iterator(directory + dir, std::filesystem::directory_options::follow_directory_symlink | std::filesystem::directory_options::skip_permission_denied))
+			for (const auto& entry : std::filesystem::directory_iterator(directory + name, std::filesystem::directory_options::follow_directory_symlink | std::filesystem::directory_options::skip_permission_denied))
 			{
 				auto f = entry.path().string();
 				if (f.size() > directory.size() && directory.size() > 0 && f.find(directory) == 0)
 					f = f.substr(directory.size());
-				if (entry.is_directory() && f.find("game\\") != std::string::npos)
+				if (entry.is_directory() && (f.find("game\\") != std::string::npos || f.find("game/") != std::string::npos))
 					continue;
 				if (entry.is_directory())
 					listFiles(f, files);

@@ -224,7 +224,7 @@ bool Config::showWindow(BrowEdit* browEdit)
 		{
 			std::string initial = util::utf8_to_iso_8859_1(ffmpegPath);
 			if (initial.find(":") == std::string::npos)
-				initial = std::filesystem::current_path().string() + "\\" + initial;
+				initial = std::filesystem::current_path().string() + "/" + initial;
 
 			if (!std::filesystem::is_regular_file(initial))
 				initial = "";
@@ -274,7 +274,7 @@ void Config::save()
 void Config::setupFileIO()
 {
 	util::FileIO::begin();
-	util::FileIO::addDirectory(".\\");
+	util::FileIO::addDirectory("./");
 	util::FileIO::addDirectory(util::utf8_to_iso_8859_1(ropath));
 	for (const auto& grf : grfs)
 		util::FileIO::addGrf(util::utf8_to_iso_8859_1(grf));
