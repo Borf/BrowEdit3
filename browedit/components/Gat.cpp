@@ -205,7 +205,11 @@ void Gat::buildImGui(BrowEdit* browEdit)
 {
 	ImGui::Text("GAT");
 	char versionStr[10];
-	sprintf_s(versionStr, 10, "%04x", version);
+#ifdef _WIN32
+		sprintf_s(versionStr, 10, "%04x", version);
+#else
+		snprintf(versionStr, 10, "%04x", version);
+#endif
 	if (ImGui::BeginCombo("GatVersion", versionStr))
 	{
 		if (ImGui::Selectable("0103", version == 0x0103))

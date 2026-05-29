@@ -1,5 +1,7 @@
 #ifdef _WIN32
+	#ifdef _WIN32
 	#include <windows.h>
+	#endif
 	#include <mmsystem.h>
 #endif
 #include <browedit/BrowEdit.h>
@@ -322,12 +324,12 @@ void BrowEdit::showObjectWindow()
 							file.substr(file.size() - 5) == ".rsm2")
 						{
 							std::string name = path.substr(0, path.rfind(".")); //remove .rsm
-							name = name.substr(11); // remove data\model\ 
+							name = name.substr(11); // remove data/model/
 							Node* newNode = new Node(util::iso_8859_1_to_utf8(name));
 							newNode->addComponent(util::ResourceManager<Rsm>::load(path));
 							newNode->addComponent(new RsmRenderer());
 							newNode->addComponent(new RswObject());
-							newNode->addComponent(new RswModel(util::iso_8859_1_to_utf8(path.substr(11)))); //remove data\model\ 
+							newNode->addComponent(new RswModel(util::iso_8859_1_to_utf8(path.substr(11)))); //remove data/model/
 							newNode->addComponent(new RswModelCollider());
 							newNodes.push_back(std::pair<Node*, glm::vec3>(newNode, glm::vec3(0, 0, 0)));
 							newNodesCenter = glm::vec3(0, 0, 0);
@@ -468,7 +470,7 @@ void BrowEdit::showObjectWindow()
 						}
 						else if (file.substr(file.size() - 4) == ".wav")
 						{
-							auto s = new RswSound(util::iso_8859_1_to_utf8(path.substr(9))); //remove data\wav\ 
+							auto s = new RswSound(util::iso_8859_1_to_utf8(path.substr(9))); //remove data/wav/
 							Node* newNode = new Node(file);
 							newNode->addComponent(new RswObject());
 							newNode->addComponent(s);
@@ -495,7 +497,11 @@ void BrowEdit::showObjectWindow()
 							is->read(buffer, len);
 							delete is;
 
+#ifdef _WIN32
 							PlaySound(buffer, NULL, SND_MEMORY | SND_ASYNC);
+#else
+							std::cerr << "PlaySound not implemented on this platform" << std::endl;
+#endif
 							delete[] buffer;
 						}
 					}

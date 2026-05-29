@@ -1,4 +1,6 @@
+#ifdef _WIN32
 #include <Windows.h>
+#endif
 #include "CubeTileChangeAction.h"
 #include <browedit/Map.h>
 #include <browedit/Node.h>
@@ -19,7 +21,7 @@ CubeTileChangeAction::CubeTileChangeAction(glm::ivec2 tile, Gnd::Cube* cube, int
 	this->newValues[cube][2] = tileSide;
 }
 
-CubeTileChangeAction::CubeTileChangeAction(const std::vector<glm::ivec2>& selection, const std::map<Gnd::Cube*, int[3]>& oldValues, const std::map<Gnd::Cube*, int[3]>& newValues)
+CubeTileChangeAction::CubeTileChangeAction(const std::vector<glm::ivec2>& selection, const std::map<Gnd::Cube*, std::array<int, 3>>& oldValues, const std::map<Gnd::Cube*, std::array<int, 3>>& newValues)
 {
 	this->selection = selection;
 	this->oldValues = oldValues;

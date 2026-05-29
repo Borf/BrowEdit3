@@ -1,4 +1,6 @@
+#ifdef _WIN32
 #include <Windows.h>
+#endif
 #include "Rsw.h"
 #include <browedit/BrowEdit.h>
 #include <browedit/Node.h>

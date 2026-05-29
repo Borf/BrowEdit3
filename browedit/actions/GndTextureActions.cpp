@@ -1,4 +1,6 @@
+#ifdef _WIN32
 #include <Windows.h>
+#endif
 #include "GndTextureActions.h"
 #include <browedit/components/Gnd.h>
 #include <browedit/components/GndRenderer.h>

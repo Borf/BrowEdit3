@@ -1,4 +1,6 @@
+#ifdef _WIN32
 #include <Windows.h>
+#endif
 #include "Lightmapper.h"
 #include <browedit/BrowEdit.h>
 #include <browedit/Map.h>

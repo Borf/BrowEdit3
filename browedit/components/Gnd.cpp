@@ -972,7 +972,11 @@ void Gnd::buildImGui(BrowEdit* browEdit)
 {
 	ImGui::Text("Gnd");
 	char versionStr[10];
-	sprintf_s(versionStr, 10, "%04x", version);
+#ifdef _WIN32
+		sprintf_s(versionStr, 10, "%04x", version);
+#else
+		snprintf(versionStr, 10, "%04x", version);
+#endif
 	if (ImGui::BeginCombo("Version##gnd", versionStr))
 	{
 		int prevVersion = version;

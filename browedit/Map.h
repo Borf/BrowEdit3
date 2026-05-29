@@ -9,6 +9,7 @@ class Rsw;
 class Gnd;
 class BrowEdit;
 class GroupAction;
+class RswObject;
 namespace gl { class FBO; }
 
 class Map

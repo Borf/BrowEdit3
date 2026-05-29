@@ -1,4 +1,6 @@
+#ifdef _WIN32
 #include <Windows.h>
+#endif
 #include "MapView.h"
 #include <browedit/BrowEdit.h>
 #include <browedit/shaders/SimpleShader.h>

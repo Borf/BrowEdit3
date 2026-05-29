@@ -1,8 +1,11 @@
 #pragma once
 
 #include <ios>
+#include <streambuf>
 #ifdef _WIN32
+	#ifdef _WIN32
 	#include <Windows.h>
+	#endif
 #endif
 
 class ConsoleInject

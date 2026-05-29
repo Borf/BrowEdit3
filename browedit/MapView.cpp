@@ -1,5 +1,7 @@
 #define IMGUI_DEFINE_MATH_OPERATORS
+#ifdef _WIN32
 #include <Windows.h>
+#endif
 #include "MapView.h"
 #include "Map.h"
 #include "BrowEdit.h"

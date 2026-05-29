@@ -3,7 +3,9 @@
 #include <iostream>
 #include <glad/gl.h>
 #ifdef _WIN32
+    #ifdef _WIN32
     #include <Windows.h>
+    #endif
     #include <psapi.h>
 
     #define GLFW_EXPOSE_NATIVE_WIN32
@@ -13,11 +15,15 @@
 #else
     #include <sys/resource.h>
     #include <sys/types.h>
+#ifdef __APPLE__
+    #include <sys/sysctl.h>
+#else
     #include <sys/sysinfo.h>
 
     // ToDo: Wayland?
     #define GLFW_EXPOSE_NATIVE_X11
     #include <glad/glx.h>
+#endif
 #endif
 #include <GLFW/glfw3.h>
 #include <GLFW/glfw3native.h>
@@ -47,7 +53,7 @@ static void glfw_close_callback(GLFWwindow* window)
 #ifdef _WIN32
 void APIENTRY onDebug(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
 #else
-void onDebug(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, GLvoid* userParam)
+void onDebug(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
 #endif
 {
     if (id == 131185 || // VIDEO memory
@@ -98,7 +104,7 @@ bool BrowEdit::glfwBegin()
         !gladLoadGL((GLADloadfunc)glfwGetProcAddress)
         #ifdef _WIN32
             || !gladLoadWGL(GetDC(glfwGetWin32Window(window)), (GLADloadfunc)glfwGetProcAddress)
-        #else
+        #elif !defined(__APPLE__)
             || !gladLoadGLX(glfwGetX11Display(), XDefaultScreen(glfwGetX11Display()), (GLADloadfunc)glfwGetProcAddress)
         #endif
     )
@@ -185,6 +191,20 @@ void BrowEdit::calcMemoryLimits()
 
         // ToDo: get shared gpu memory size
         memoryLimits.gpuSharedSize = memInfo.ullTotalPhys / 2;
+    #elif defined(__APPLE__)
+        int mib[2];
+        int64_t physical_memory;
+        size_t length;
+        mib[0] = CTL_HW;
+        mib[1] = HW_MEMSIZE;
+        length = sizeof(int64_t);
+        sysctl(mib, 2, &physical_memory, &length, NULL, 0);
+        memoryLimits.systemSize = physical_memory;
+        
+        struct rusage usage;
+        getrusage(RUSAGE_SELF, &usage);
+        memoryLimits.systemUsed = usage.ru_maxrss; // bytes on macOS
+        memoryLimits.gpuSharedSize = memoryLimits.systemSize / 2;
     #else
         struct sysinfo memInfo;
         sysinfo(&memInfo);
@@ -193,7 +213,7 @@ void BrowEdit::calcMemoryLimits()
         getrusage(RUSAGE_SELF, &usage);
 
         memoryLimits.systemSize = (memInfo.freeram + memInfo.freeswap) * memInfo.mem_unit;
-        memoryLimits.systemUsed = usage.ru_maxrss * 1024;
+        memoryLimits.systemUsed = usage.ru_maxrss * 1024; // kilobytes on Linux
 
         // ToDo: get shared gpu memory size
         memoryLimits.gpuSharedSize = memoryLimits.systemSize / 2;
@@ -225,7 +245,7 @@ void BrowEdit::calcMemoryLimits()
                 wglGetGPUIDsAMD(static_cast<UINT>(gpus.size()), gpus.data());
                 wglGetGPUInfoAMD(gpus[0], WGL_GPU_RAM_AMD, GL_UNSIGNED_INT, sizeof(memoryLimits.gpuSize), &memoryLimits.gpuSize);
             }
-        #else
+        #elif !defined(__APPLE__)
             if (GLAD_GLX_AMD_gpu_association)
             {
                 std::vector<unsigned int> gpus(glxGetGPUIDsAMD(0, 0));

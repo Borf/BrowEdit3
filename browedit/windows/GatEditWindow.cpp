@@ -1,4 +1,6 @@
 #include <browedit/BrowEdit.h>
+#include <browedit/Config.h>
+#include <thread>
 #include <browedit/Icons.h>
 #include <browedit/components/Gat.h>
 #include <browedit/components/GatRenderer.h>

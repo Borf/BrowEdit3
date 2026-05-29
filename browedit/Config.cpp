@@ -1,5 +1,7 @@
 #ifdef _WIN32
+	#ifdef _WIN32
 	#include <windows.h> // for warning
+	#endif
 #endif
 #include "Config.h"
 #include <filesystem>
@@ -9,11 +11,17 @@
 #include <json.hpp>
 #include <browedit/BrowEdit.h>
 #include <browedit/util/FileIO.h>
+#ifdef _WIN32
 #define GLFW_EXPOSE_NATIVE_WIN32
+#endif
 #include <glfw/glfw3.h>
+#ifdef _WIN32
 #include <glfw/glfw3native.h>
+#endif
 #include <glm/gtc/type_ptr.hpp>
+#ifdef _WIN32
 #include <ShlObj_core.h>
+#endif
 #include <magic_enum.hpp>
 #include <browedit/HotkeyRegistry.h>
 
@@ -416,7 +424,9 @@ void Config::defaultHotkeys()
 	if (!in.is_open())
 	{
 		std::cout << "Warning, data folder is not found. Please use a proper browedit3 distribution, don't try to compile it yourself if you don't know what you're doing" << std::endl;
+#ifdef _WIN32
 		MessageBox(NULL, "Warning, data folder is not found. Please use a proper browedit3 distribution, don't try to compile it yourself if you don't know what you're doing", "Warning, improper use detected", MB_OK);
+#endif
 		exit(0);
 	}
 	json j;

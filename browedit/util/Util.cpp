@@ -7,7 +7,11 @@
 #include <misc/cpp/imgui_stdlib.h>
 #include <imgui_internal.h>
 #include <iostream>
+#ifdef _WIN32
 #include <ShlObj_core.h>
+#else
+#include <execinfo.h>
+#endif
 
 #include <browedit/Map.h>
 #include <browedit/BrowEdit.h>
@@ -629,7 +633,7 @@ namespace util
 	template bool InputTextMulti<RswSound>(BrowEdit* browEdit, Map* map, const std::vector<RswSound*>& data, const char* label, const std::function<std::string* (RswSound*)>& getProp);
 	template bool InputTextMulti<RswModel>(BrowEdit* browEdit, Map* map, const std::vector<RswModel*>& data, const char* label, const std::function<std::string* (RswModel*)>& getProp);
 
-	const ImGuiDataTypeInfo* ImGui::DataTypeGetInfo(ImGuiDataType data_type);
+	// const ImGuiDataTypeInfo* ImGui::DataTypeGetInfo(ImGuiDataType data_type);
 	bool DragScalarNMultiLabel(const char* label, ImGuiDataType data_type, void* p_data, int components, float v_speed, const void* p_min, const void* p_max, const std::vector<const char*> &formats, ImGuiSliderFlags flags)
 	{
 		ImGuiWindow* window = ImGui::GetCurrentWindow();
@@ -1717,6 +1721,7 @@ namespace util
 
 	std::string SelectFileDialog(std::string defaultFilename, const char* filter)
 	{
+#ifdef _WIN32
 		CoInitializeEx(0, 0);
 		char curdir[100];
 		_getcwd(curdir, 100);
@@ -1744,10 +1749,15 @@ namespace util
 		}
 		_chdir(curdir);
 		return "";
+#else
+		std::cerr << "SelectFileDialog not implemented for this platform" << std::endl;
+		return "";
+#endif
 	}
 
 	std::string SaveAsDialog(const std::string& fileNameStr, const char* filter)
 	{
+#ifdef _WIN32
 		CoInitializeEx(0, 0);
 
 		char fileName[1024];
@@ -1778,8 +1788,13 @@ namespace util
 		}
 		_chdir(curdir);
 		return "";
+#else
+		std::cerr << "SaveAsDialog not implemented for this platform" << std::endl;
+		return "";
+#endif
 	}
 
+#ifdef _WIN32
 	int CALLBACK BrowseCallBackProc(HWND hwnd, UINT uMsg, LPARAM lParam, LPARAM lpData)
 	{
 		switch (uMsg)
@@ -1790,8 +1805,10 @@ namespace util
 		}
 		return 0;
 	}
+#endif
 	std::string SelectPathDialog(std::string path, std::string title)
 	{
+#ifdef _WIN32
 		CoInitializeEx(0, 0);
 		CHAR szDir[MAX_PATH];
 		BROWSEINFO bInfo;
@@ -1817,6 +1834,10 @@ namespace util
 			return retpath;
 		}
 		return "";
+#else
+		std::cerr << "SelectPathDialog not implemented for this platform" << std::endl;
+		return "";
+#endif
 	}
 
 	glm::quat RotationBetweenVectors(glm::vec3 start, glm::vec3 dest) {

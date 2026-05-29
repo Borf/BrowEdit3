@@ -1,6 +1,7 @@
 #include "Rsm.h"
 
 #include <browedit/util/Util.h>
+#include <stdexcept>
 #include <browedit/util/FileIO.h>
 #include <iostream>
 #include <fstream>
@@ -398,7 +399,7 @@ Rsm::Mesh::Mesh(Rsm* model, std::istream* rsmFile)
 		{
 			std::cerr << "There's an error in " << model->fileName << std::endl;
 			model->loaded = false;
-			throw std::exception("vertex out of bounds");
+			throw std::runtime_error("vertex out of bounds");
 		}
 	}
 

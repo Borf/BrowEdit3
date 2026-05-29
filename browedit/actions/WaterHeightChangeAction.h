@@ -4,7 +4,6 @@
 #include <browedit/components/Rsw.h>
 #include <map>
 
-struct Rsw::Water;
 
 class WaterHeightChangeAction : public Action
 {

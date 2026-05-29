@@ -1,7 +1,8 @@
 #include "Console.h"
 #include <iostream>
+#ifdef _WIN32
 #include <VersionHelpers.h>
-
+#endif
 ConsoleInject::ConsoleInject() :
 	#ifdef _WIN32
 		#ifdef ENABLE_VIRTUAL_TERMINAL_PROCESSING
@@ -64,10 +65,10 @@ ConsoleInject::Sink::Sink(bool ansiEscape) :
 	ansiEscape(ansiEscape),
 	newLine(true),
 
-	sink(),
+	sink()
 
 	#ifdef _WIN32
-		consoleAttributes(0),
+		, consoleAttributes(0),
 		consoleForgroundMask(FOREGROUND_RED | FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_INTENSITY),
 		consoleBackgroundMask(BACKGROUND_RED | BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_INTENSITY)
 	#endif

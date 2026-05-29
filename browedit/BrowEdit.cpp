@@ -2,7 +2,9 @@
 #include "Version.h"
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
+#ifdef _WIN32
 #include <BugTrap.h>
+#endif
 
 #include <iostream>
 #include <fstream>
@@ -43,12 +45,13 @@
 	extern "C" __declspec(dllexport) DWORD AmdPowerXpressRequestHighPerformance = 0x00000001;
 #endif
 
-#ifndef _DEBUG
+#if !defined(_DEBUG) && defined(_WIN32)
 #pragma comment(lib, "BugTrap-x64.lib") // Link to ANSI DLL
 #endif
 
 void fixEffectPreviews();
 
+#ifdef _WIN32
 static void SetupExceptionHandler()
 {
 	BT_InstallSehFilter();
@@ -57,10 +60,11 @@ static void SetupExceptionHandler()
 	BT_SetFlags(BTF_DETAILEDMODE | BTF_SCREENCAPTURE);
 	BT_SetSupportURL("https://discord.gg/bQaj5dKtbV");
 }
+#endif
 
 int main()
 {
-#ifndef _DEBUG
+#if !defined(_DEBUG) && defined(_WIN32)
 	SetupExceptionHandler();
 #endif
 
@@ -183,14 +187,14 @@ void BrowEdit::run()
 //		loadMap("data\\maze_new.rsw");
 
 		//loadModel("data\\model\\prontera_re\\streetlamp_01.rsm");
-	//	loadModel("data\\model\\Å©¸®½º¸¶½º¸¶À»\\xmas_³»ºÎÆ®¸®.rsm");
-	//	loadModel("data\\model\\ÀÎ´ø02\\ÀÎ´ø02bÁß¾ÓÀå½Ä01.rsm");
-		//loadModel("data\\model\\event\\3Â÷ÀüÁ÷_¼®»ó02.rsm"); //bigass statue
+	//	loadModel("data\\model\\í¬ë¦¬ìŠ¤ë§ˆìŠ¤ë§ˆì„\\xmas_ë‚´ë¶€íŠ¸ë¦¬.rsm");
+	//	loadModel("data\\model\\ì¸ë˜02\\ì¸ë˜02bì¤‘ì•™ì¥ì‹01.rsm");
+		//loadModel("data\\model\\event\\3ì°¨ì „ì§_ì„ìƒ02.rsm"); //bigass statue
 		//loadModel("data\\model\\para\\alchemy_01.rsm");
 		//loadModel("data\\model\\para\\mora_01.rsm");
 		//loadModel("data\\model\\para\\mora_02.rsm");
 		//loadModel("data\\model\\masin\\fire_land.rsm");
-		//loadModel("data\\modelÀÎ´ø02ÀÎ´ø02¹ÌÀÌ¶ó.rsm");
+		//loadModel("data\\modelì¸ë˜02ì¸ë˜02ë¯¸ì´ë¼.rsm");
 		//loadModel("data\\model\\pud\\stall_01.rsm");
 		//loadModel("data\\model\\pud\\stall_02.rsm");
 		//loadModel("data\\model\\pud\\stall_03.rsm");
@@ -198,7 +202,7 @@ void BrowEdit::run()
 		//loadModel("data\\model\\pud\\balloon_01.rsm");
 		//loadModel("data\\model\\plants_e_01.rsm2");
 	//	modelEditor.load("data\\model\\para\\mora_01.rsm");
-		//modelEditor.load("data\\model\\ÇÁ·ĞÅ×¶ó\\±³¿ª¼Ò.rsm");
+		//modelEditor.load("data\\model\\í”„ë¡ í…Œë¼\\êµì—­ì†Œ.rsm");
 		//modelEditor.load("data\\model\\ilusion\\goldberg_s_01.rsm2");
 		//modelEditor.load("data\\model\\job4for\\purifier_s_01.rsm2");
 #endif

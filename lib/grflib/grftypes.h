@@ -78,7 +78,7 @@
 	#define GRFEXTERN_BEGIN extern "C" {
 	#define GRFEXTERN_END }
 	#ifdef __GNUC__
-		#define GRFINLINE inline
+		#define GRFINLINE
 	#else /* __GNUC__ */
 		#define GRFINLINE
 	#endif /* __GNUC__ */
@@ -86,7 +86,7 @@
 	#define GRFEXTERN_BEGIN
 	#define GRFEXTERN_END
 	#ifdef __GNUC__
-		#define GRFINLINE inline
+		#define GRFINLINE
 	#else /* __GNUC__ */
 		#define GRFINLINE
 	#endif /* __GNUC__ */
@@ -141,6 +141,15 @@ GRFEXTERN_BEGIN
 /* Make sure we have NULL, because its used all the time */
 #ifndef NULL
 	#define NULL ((void *) 0)
+#endif
+
+#ifndef _WIN32
+	#include <stdint.h>
+	#ifndef __int64
+		#define __int64 int64_t
+	#endif
+	#define _fseeki64 fseeko
+	#define _ftelli64 ftello
 #endif
 
 

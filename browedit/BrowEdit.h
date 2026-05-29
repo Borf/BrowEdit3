@@ -4,6 +4,7 @@
 #include <json.hpp>
 #include <imgui.h>
 #include <string_view>
+#include <list>
 #include <mutex>
 #include <browedit/util/FileIO.h>
 #include <browedit/components/Gnd.h>

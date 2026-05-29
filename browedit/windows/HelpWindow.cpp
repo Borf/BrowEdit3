@@ -1,5 +1,7 @@
 #ifdef _WIN32
+    #ifdef _WIN32
     #include <Windows.h>
+    #endif
     #include <shellapi.h>
 #endif
 #include <browedit/BrowEdit.h>
@@ -19,7 +21,13 @@ void gotoPage(const std::string& f, bool recordHistory = true)
 {
     if (f.substr(0, 4) == "http")
     {
+#ifdef _WIN32
         ShellExecuteA(NULL, "open", f.c_str(), NULL, NULL, SW_SHOWNORMAL);
+#elif __APPLE__
+        system(("open " + f).c_str());
+#else
+        system(("xdg-open " + f).c_str());
+#endif
     }
     else
     {

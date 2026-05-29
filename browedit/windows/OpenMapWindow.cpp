@@ -1,4 +1,6 @@
+#ifdef _WIN32
 #include <windows.h>
+#endif
 #include <browedit/BrowEdit.h>
 #include <misc/cpp/imgui_stdlib.h>
 #include <browedit/util/FileIO.h>
@@ -74,7 +76,7 @@ void BrowEdit::openWindow()
 						if (filename.find("data\\") != std::string::npos)
 							filename = filename.substr(filename.find("data\\") + 5);
 
-						filename = "data\\texture\\유저인터페이스\\map\\" + filename + ".bmp";
+						filename = "data\\texture\\決\\map\\" + filename + ".bmp";
 						preview = util::ResourceManager<gl::Texture>::load(filename);
 					}
 					if (ImGui::IsItemClicked(0) && ImGui::IsMouseDoubleClicked(0))

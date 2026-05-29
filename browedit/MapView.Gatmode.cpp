@@ -1,5 +1,7 @@
 #define IMGUI_DEFINE_MATH_OPERATORS
+#ifdef _WIN32
 #include <Windows.h>
+#endif
 #include "MapView.h"
 
 #include <browedit/BrowEdit.h>
@@ -143,7 +145,7 @@ void MapView::postRenderGatMode(BrowEdit* browEdit)
 
 	if (browEdit->heightDoodle && hovered)
 	{
-		static std::map<Gat::Cube*, float[4]> originalHeights;
+		static std::map<Gat::Cube*, std::array<float, 4>> originalHeights;
 		static std::vector<glm::ivec2> tilesProcessed;
 
 		glm::vec2 tileHoveredOffset((mouse3D.x / 5) - tileHovered.x, tileHovered.y - (gat->height - mouse3D.z / 5) - 1);
@@ -229,7 +231,7 @@ void MapView::postRenderGatMode(BrowEdit* browEdit)
 		{
 			if (originalHeights.size() > 0)
 			{
-				std::map<Gat::Cube*, float[4]> newHeights;
+				std::map<Gat::Cube*, std::array<float, 4>> newHeights;
 				for(auto kv : originalHeights)
 					for (int i = 0; i < 4; i++)
 						newHeights[kv.first][i] = kv.first->heights[i];
@@ -354,7 +356,7 @@ void MapView::postRenderGatMode(BrowEdit* browEdit)
 				maxValues = glm::max(maxValues, s);
 				minValues = glm::min(minValues, s);
 			}
-			static std::map<Gat::Cube*, float[4]> originalValues;
+			static std::map<Gat::Cube*, std::array<float, 4>> originalValues;
 			static glm::vec3 originalCorners[4];
 
 			glm::vec3 pos[9];
@@ -426,7 +428,7 @@ void MapView::postRenderGatMode(BrowEdit* browEdit)
 					dragIndex = -1;
 					canSelect = false;
 
-					std::map<Gat::Cube*, float[4]> newValues;
+					std::map<Gat::Cube*, std::array<float, 4>> newValues;
 					for (auto& t : originalValues)
 						for (int ii = 0; ii < 4; ii++)
 							newValues[t.first][ii] = t.first->heights[ii];
@@ -538,7 +540,7 @@ void MapView::postRenderGatMode(BrowEdit* browEdit)
 								if (TriangleContainsPoint(pos[1], pos[3], pos[2], p))
 									gat->cubes[t.x][t.y]->heights[ii] = originalValues[gat->cubes[t.x][t.y]][ii] + (TriangleHeight(pos[1], pos[3], pos[2], p) - TriangleHeight(originalCorners[1], originalCorners[3], originalCorners[2], p));
 							}
-							else // \ 
+							else
 							{
 								if (TriangleContainsPoint(pos[0], pos[3], pos[2], p))
 									gat->cubes[t.x][t.y]->heights[ii] = originalValues[gat->cubes[t.x][t.y]][ii] + (TriangleHeight(pos[0], pos[3], pos[2], p) - TriangleHeight(originalCorners[0], originalCorners[3], originalCorners[2], p));
@@ -916,8 +918,8 @@ void MapView::postRenderGatMode(BrowEdit* browEdit)
 
 void MapView::gatEdit_adjustToGround(BrowEdit* browEdit)
 {
-	std::map<Gat::Cube*, float[4]> originalValues;
-	std::map<Gat::Cube*, float[4]> newValues;
+	std::map<Gat::Cube*, std::array<float, 4>> originalValues;
+	std::map<Gat::Cube*, std::array<float, 4>> newValues;
 	auto gnd = map->rootNode->getComponent<Gnd>();
 	auto gat = map->rootNode->getComponent<Gat>();
 	std::vector<glm::ivec2> selection;

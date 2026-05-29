@@ -1,8 +1,10 @@
+#ifdef _WIN32
 #include <Windows.h>
+#endif
 #include "MapView.h"
 
-#include <browedit/Components/Gnd.h>
-#include <browedit/Components/Rsw.h>
+#include <browedit/components/Gnd.h>
+#include <browedit/components/Rsw.h>
 #include <browedit/BrowEdit.h>
 #include <browedit/Map.h>
 #include <browedit/Node.h>

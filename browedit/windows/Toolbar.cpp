@@ -1,4 +1,6 @@
+#ifdef _WIN32
 #include <Windows.h>
+#endif
 #include <glad/gl.h>
 #include <browedit/Icons.h>
 #include <browedit/BrowEdit.h>
@@ -154,9 +156,9 @@ void BrowEdit::toolbar()
 
 	static char images[100];
 	if (util::ResourceManager<Image>::count() > 0)
-		sprintf_s(images, 100, "Images(%zu), ", util::ResourceManager<Image>::count());
+		snprintf(images, 100, "Images(%zu), ", util::ResourceManager<Image>::count());
 	else
-		sprintf_s(images, 100, "");
+		snprintf(images, 100, "");
 
 	std::string stats = std::format("Load: Tex({}), Models({}), {}Mem({:.3g} {} / {:.3g} {}), GPU({:.3g} {} / {:.3g} {})",
 		util::ResourceManager<gl::Texture>::count(), util::ResourceManager<Rsm>::count(), images,

@@ -1,4 +1,6 @@
+#ifdef _WIN32
 #include <Windows.h>
+#endif
 #include "TileSelectAction.h"
 
 #include <browedit/Map.h>

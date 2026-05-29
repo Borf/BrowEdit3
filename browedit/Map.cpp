@@ -1,5 +1,9 @@
+#ifdef _WIN32
 #include <Windows.h>
+#endif
+#ifdef _WIN32
 #include <shellapi.h>
+#endif
 #include <browedit/Map.h>
 #include <browedit/Node.h>
 #include <browedit/actions/Action.h>
@@ -809,13 +813,17 @@ void Map::exportMinimapWalkable(BrowEdit* browEdit)
 	if (ok)
 	{
 		std::cout << "Exported walkable minimap: " << outPath << std::endl;
+#ifdef _WIN32
 		std::string cmd = "/select,\"" + outPath + "\"";
 		ShellExecuteA(NULL, "open", "explorer.exe", cmd.c_str(), NULL, SW_SHOWNORMAL);
+#endif
 	}
 	else
 	{
 		std::cout << "ERROR: Failed to write " << outPath << std::endl;
+#ifdef _WIN32
 		MessageBoxA(NULL, ("Failed to write:\n" + outPath).c_str(), "Export Error", MB_OK | MB_ICONERROR);
+#endif
 	}
 }
 

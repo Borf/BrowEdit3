@@ -1,4 +1,6 @@
+#ifdef _WIN32
 #include <windows.h>
+#endif
 #include <browedit/BrowEdit.h>
 #include <misc/cpp/imgui_stdlib.h>
 #include <browedit/util/FileIO.h>

@@ -13,15 +13,7 @@
 
 #include <browedit/components/WaterRenderer.h>
 
-template bool util::DragIntMulti<Rsw::Water>(
-	BrowEdit* browEdit,
-	Map* map,
-	const std::vector<Rsw::Water*>& data,
-	const char* label,
-	const std::function<int* (Rsw::Water*)>& callback,
-	int v_speed,
-	int v_min,
-	int v_max);
+
 
 void BrowEdit::showWaterEditWindow()
 {

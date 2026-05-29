@@ -1,5 +1,7 @@
 #ifdef _WIN32
+	#ifdef _WIN32
 	#include <windows.h>
+	#endif
 	#include <mmsystem.h>
 #endif
 #include "Rsw.h"
@@ -119,7 +121,9 @@ void RswSound::play()
 		is->read(buffer, len);
 		delete is;
 
+#ifdef _WIN32
 		PlaySound(buffer, NULL, SND_MEMORY | SND_ASYNC);
+#endif
 		delete[] buffer;
 	}
 	else

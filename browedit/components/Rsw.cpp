@@ -1,5 +1,7 @@
 #ifdef _WIN32
+	#ifdef _WIN32
 	#include <Windows.h>
+	#endif
 #endif
 #include "Rsw.h"
 #include "Gnd.h"
@@ -81,6 +83,7 @@ void Rsw::load(const std::string& fileName, Map* map, BrowEdit* browEdit, bool l
 			}
 			out.close();
 
+#ifdef _WIN32
 			STARTUPINFO info = { sizeof(info) };
 			PROCESS_INFORMATION processInfo;
 			std::string cmd = browEdit->config.grfEditorPath + "GrfCL.exe -lub .\\tmp.lub .\\tmp.lua";
@@ -91,6 +94,10 @@ void Rsw::load(const std::string& fileName, Map* map, BrowEdit* browEdit, bool l
 				CloseHandle(processInfo.hProcess);
 				CloseHandle(processInfo.hThread);
 			}
+#else
+			std::string cmd = browEdit->config.grfEditorPath + "GrfCL -lub ./tmp.lub ./tmp.lua";
+			system(cmd.c_str());
+#endif
 			data = "";
 			std::ifstream lua("tmp.lua", std::ios_base::binary | std::ios_base::in);
 			if (lua.is_open())
@@ -769,7 +776,11 @@ void Rsw::buildImGui(BrowEdit* browEdit)
 {
 	ImGui::Text("RSW");
 	char versionStr[10];
+#ifdef _WIN32
 	sprintf_s(versionStr, 10, "%04x", version);
+#else
+	snprintf(versionStr, 10, "%04x", version);
+#endif
 	if (ImGui::BeginCombo("Version", versionStr))
 	{
 		if (ImGui::Selectable("0103", version == 0x0103))
@@ -1381,6 +1392,7 @@ void Rsw::KeyFrame::buildEditor()
 }
 
 
+template<>
 void Rsw::KeyFrameData<glm::vec3>::buildEditor()
 {
 	KeyFrame::buildEditor();
@@ -1388,6 +1400,7 @@ void Rsw::KeyFrameData<glm::vec3>::buildEditor()
 }
 
 
+template<>
 void Rsw::KeyFrameData<std::pair<glm::vec3, glm::vec3>>::buildEditor()
 {
 	KeyFrame::buildEditor();
@@ -1407,6 +1420,7 @@ void Rsw::KeyFrameData<std::pair<glm::vec3, glm::vec3>>::buildEditor()
 
 }
 
+template<>
 void Rsw::KeyFrameData<Rsw::CameraTarget>::buildEditor()
 {
 	KeyFrame::buildEditor();

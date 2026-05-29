@@ -1,5 +1,7 @@
 #define IMGUI_DEFINE_MATH_OPERATORS
+#ifdef _WIN32
 #include <Windows.h>
+#endif
 #include "MapView.h"
 
 #include <browedit/BrowEdit.h>
@@ -261,7 +263,7 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 
 	if (browEdit->heightDoodle && hovered)
 	{
-		static std::map<Gnd::Cube*, float[4]> originalHeights;
+		static std::map<Gnd::Cube*, std::array<float, 4>> originalHeights;
 		static std::vector<glm::ivec2> tilesProcessed;
 
 		glm::vec2 tileHoveredOffset((mouse3D.x / 10) - tileHovered.x, tileHovered.y - (gnd->height - mouse3D.z / 10));
@@ -346,7 +348,7 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 		{
 			if (originalHeights.size() > 0)
 			{
-				std::map<Gnd::Cube*, float[4]> newHeights;
+				std::map<Gnd::Cube*, std::array<float, 4>> newHeights;
 				for(auto kv : originalHeights)
 					for (int i = 0; i < 4; i++)
 						newHeights[kv.first][i] = kv.first->heights[i];
@@ -404,7 +406,7 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 				maxValues = glm::max(maxValues, s);
 				minValues = glm::min(minValues, s);
 			}
-			static std::map<Gnd::Cube*, float[4]> originalValues;
+			static std::map<Gnd::Cube*, std::array<float, 4>> originalValues;
 			static glm::vec3 originalCorners[4];
 
 			glm::vec3 pos[9];
@@ -523,7 +525,7 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 					dragIndex = -1;
 					canSelect = false;
 
-					std::map<Gnd::Cube*, float[4]> newValues;
+					std::map<Gnd::Cube*, std::array<float, 4>> newValues;
 					for (auto& t : originalValues)
 						for (int ii = 0; ii < 4; ii++)
 							newValues[t.first][ii] = t.first->heights[ii];
@@ -643,7 +645,7 @@ void MapView::postRenderHeightMode(BrowEdit* browEdit)
 								if (TriangleContainsPoint(pos[1], pos[3], pos[2], p))
 									gnd->cubes[t.x][t.y]->heights[ii] = originalValues[gnd->cubes[t.x][t.y]][ii] + (TriangleHeight(pos[1], pos[3], pos[2], p) - TriangleHeight(originalCorners[1], originalCorners[3], originalCorners[2], p));
 							}
-							else // \ 
+							else
 							{
 								if (TriangleContainsPoint(pos[0], pos[3], pos[2], p))
 									gnd->cubes[t.x][t.y]->heights[ii] = originalValues[gnd->cubes[t.x][t.y]][ii] + (TriangleHeight(pos[0], pos[3], pos[2], p) - TriangleHeight(originalCorners[0], originalCorners[3], originalCorners[2], p));

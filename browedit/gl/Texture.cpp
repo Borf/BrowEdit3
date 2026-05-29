@@ -1,4 +1,6 @@
+#ifdef _WIN32
 #include <Windows.h> //for warning
+#endif
 #include <glad/gl.h>
 #include "Texture.h"
 

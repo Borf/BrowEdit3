@@ -1,4 +1,6 @@
+#ifdef _WIN32
 #include <windows.h>
+#endif
 #include <browedit/MapView.h>
 #include <browedit/BrowEdit.h>
 #include <browedit/Map.h>

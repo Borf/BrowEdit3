@@ -26,6 +26,13 @@
 #  include <limits.h>
 #endif
 #include <fcntl.h>
+#ifndef _WIN32
+#include <unistd.h>
+#define _close close
+#define _open open
+#define _read read
+#define _write write
+#endif
 
 #ifdef _WIN32
 #  include <stddef.h>

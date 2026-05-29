@@ -110,6 +110,7 @@ void BrowEdit::showCinematicModeWindow()
 				path += videoFile;
 
 
+#ifdef _WIN32
 				HANDLE hPipeReadStdIn, hPipeWriteStdIn;
 				HANDLE hPipeReadStdOut, hPipeWriteStdOut;
 
@@ -192,6 +193,9 @@ void BrowEdit::showCinematicModeWindow()
 				CloseHandle(pi.hProcess);
 				CloseHandle(pi.hThread);
 				t.join();
+#else
+				std::cout << "Video recording is only supported on Windows currently." << std::endl;
+#endif
 				break;
 			}
 			ImGui::CloseCurrentPopup();

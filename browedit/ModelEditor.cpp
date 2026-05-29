@@ -494,7 +494,11 @@ void ModelEditor::run(BrowEdit* browEdit)
 		if (activeModelView.selectedMesh == nullptr)
 		{
 			char versionStr[10];
+#ifdef _WIN32
 			sprintf_s(versionStr, 10, "%04x", rsm->version);
+#else
+			snprintf(versionStr, 10, "%04x", rsm->version);
+#endif
 			if (ImGui::BeginCombo("Version", versionStr))
 			{
 				if (ImGui::Selectable("0101", rsm->version == 0x0101))

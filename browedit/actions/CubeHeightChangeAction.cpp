@@ -8,7 +8,7 @@
 #include <browedit/components/Gat.h>
 
 template<class T, class TC>
-CubeHeightChangeAction<T, TC>::CubeHeightChangeAction(const std::map<TC*, float[4]>& oldValues, const std::map<TC*, float[4]>& newValues, const std::vector<glm::ivec2>& selection)
+CubeHeightChangeAction<T, TC>::CubeHeightChangeAction(const std::map<TC*, std::array<float, 4>>& oldValues, const std::map<TC*, std::array<float, 4>>& newValues, const std::vector<glm::ivec2>& selection)
 {
 	this->selection = selection;
 	this->oldValues = oldValues;

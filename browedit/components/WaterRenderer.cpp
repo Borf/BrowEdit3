@@ -169,7 +169,7 @@ void WaterRenderer::reloadTextures()
 			if (type2textures.find(waterType) == type2textures.end()) {
 				for (int i = 0; i < 32; i++) {
 					char buf[128];
-					sprintf_s(buf, 128, "data/texture/워터/water%i%02i%s", rsw->water.zones[x][y].type, i, ".jpg");
+					snprintf(buf, 128, "data/texture/워터/water%i%02i%s", rsw->water.zones[x][y].type, i, ".jpg");
 					type2textures[waterType].push_back(util::ResourceManager<gl::Texture>::load(buf));
 				}
 			}

@@ -6,7 +6,7 @@
 #include <sstream>
 #include <filesystem>
 #include <algorithm>
-
+#include <stdexcept>
 
 namespace util
 {
@@ -345,7 +345,7 @@ namespace util
 		if (len < 0 || len > 1024)
 		{
 			std::cout << "Error offset " << is->tellg() << std::endl;
-			throw std::exception("Error loading string");
+			throw std::runtime_error("Error loading string");
 		}
 		char* buf = new char[len];
 		is->read(buf, len);
