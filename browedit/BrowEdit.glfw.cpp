@@ -74,8 +74,10 @@ bool BrowEdit::glfwBegin()
         return false;
     const char* glsl_version = "#version 130";
 #ifdef __APPLE__
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #else
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
@@ -138,15 +140,22 @@ bool BrowEdit::glfwBegin()
         GLFWimage image;
 
         std::istream* is = util::FileIO::open("data/dropper.png");
-        is->seekg(0, std::ios_base::end);
-        std::size_t len = is->tellg();
-        char* fileData = new char[len];
-        is->seekg(0, std::ios_base::beg);
-        is->read(fileData, len);
-        delete is;
-        int depth;
-        image.pixels = stbi_load_from_memory((stbi_uc*)fileData, (int)len, &image.width, &image.height, &depth, 4);
-        dropperCursor = glfwCreateCursor(&image, 1, 29);
+        if (is)
+        {
+            is->seekg(0, std::ios_base::end);
+            std::size_t len = is->tellg();
+            char* fileData = new char[len];
+            is->seekg(0, std::ios_base::beg);
+            is->read(fileData, len);
+            delete is;
+            int depth;
+            image.pixels = stbi_load_from_memory((stbi_uc*)fileData, (int)len, &image.width, &image.height, &depth, 4);
+            dropperCursor = glfwCreateCursor(&image, 1, 29);
+        }
+        else
+        {
+            std::cerr << "Warning: data/dropper.png not found" << std::endl;
+        }
     }
 
     glfwSetWindowCloseCallback(window, glfw_close_callback);

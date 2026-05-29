@@ -1,4 +1,4 @@
-#version 420
+#version 410
 
 uniform sampler2D s_texture;
 uniform vec4 color = vec4(1,1,1,1);
@@ -14,7 +14,7 @@ void main()
 		fragColor = selectionColor;
 	}
 	else {
-		vec4 outColor = texture2D(s_texture, texCoord);
+		vec4 outColor = texture(s_texture, texCoord);
 		outColor *= color;
 		outColor.a = alpha;
 		fragColor = outColor;

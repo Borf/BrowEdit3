@@ -1,4 +1,4 @@
-#version 420
+#version 410
 
 uniform sampler2D s_texture;
 
@@ -48,7 +48,7 @@ void main()
 		texCoord2 = vec2(texMat * vec4(texCoord2.x, texCoord2.y, 0, 1));
 	}
 	
-	vec4 color = texture2D(s_texture, texCoord2);
+	vec4 color = texture(s_texture, texCoord2);
 	
 	if (color.a < discardAlphaValue)
 		discard;

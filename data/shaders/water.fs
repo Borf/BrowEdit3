@@ -1,4 +1,4 @@
-#version 420
+#version 410
 out vec4 fragColor;
 in vec3 normal;
 in vec2 texCoord;
@@ -14,7 +14,7 @@ uniform vec4 fogColor = vec4(1,1,1,1);
 
 void main()
 {
-    vec4 color = texture2D(s_texture, texCoord);
+    vec4 color = texture(s_texture, texCoord);
     color.a = 0.564;
 
     if(fogEnabled)

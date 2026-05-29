@@ -486,7 +486,7 @@ void BrowEdit::configBegin()
 		{
 			windowData.configVisible = true;
 			util::FileIO::begin();
-			util::FileIO::addDirectory(".\\");
+			util::FileIO::addDirectory("./");
 			util::FileIO::end();
 		}
 		else
@@ -498,7 +498,7 @@ void BrowEdit::configBegin()
 		config.save(); // auto-create config.json with defaults
 		windowData.configVisible = true;
 		util::FileIO::begin();
-		util::FileIO::addDirectory(".\\");
+		util::FileIO::addDirectory("./");
 		util::FileIO::end();
 	}
 }

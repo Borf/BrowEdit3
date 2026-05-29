@@ -1,4 +1,4 @@
-#version 420
+#version 410
 out vec4 fragColor;
 in vec3 normal;
 in vec2 texCoord;
@@ -13,7 +13,7 @@ uniform int shadeType = 0;
 
 void main()
 {
-    vec4 c = mix(color, texture2D(s_texture, texCoord), textureFac) * colorMult;
+    vec4 c = mix(color, texture(s_texture, texCoord), textureFac) * colorMult;
 
     if (shadeType == 1) {
         fragColor = c;

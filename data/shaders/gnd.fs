@@ -1,4 +1,4 @@
-#version 420
+#version 410
 
 uniform sampler2D s_texture;
 uniform sampler2D s_lighting;
@@ -53,7 +53,7 @@ void main()
 {
 	vec4 texture = vec4(1,1,1,1);
 
-	vec4 texColor = texture2D(s_texture, texCoord);
+	vec4 texColor = texture(s_texture, texCoord);
 	texture = mix(vec4(1,1,1,texColor.a), texColor, viewTextures);
 	if(texture.a < 0.1)
 		discard;
@@ -65,17 +65,17 @@ void main()
 	
 	texture.rgb *= mult;
 	texture.rgb *= max(color, colorToggle).rgb;
-	texture.rgb *= max(texture2D(s_lighting, texCoord2).a, shadowMapToggle);
+	texture.rgb *= max(texture(s_lighting, texCoord2).a, shadowMapToggle);
 	
 	if (!hideOtherLights) {
-		texture.rgb += clamp(texture2D(s_lighting, texCoord2).rgb, 0.0, 1.0) * lightColorToggle;
+		texture.rgb += clamp(texture(s_lighting, texCoord2).rgb, 0.0, 1.0) * lightColorToggle;
 		texture.rgb += light.rgb;
 	}
 	else {		
 		if (lightCount > 0 && light.rgb != vec3(0, 0, 0))
 			texture.rgb += light.rgb;
 		else
-			texture.rgb += clamp(texture2D(s_lighting, texCoord2).rgb, 0.0, 1.0) * lightColorToggle;
+			texture.rgb += clamp(texture(s_lighting, texCoord2).rgb, 0.0, 1.0) * lightColorToggle;
 	}
 	
 	if(fogEnabled)
