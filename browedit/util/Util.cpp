@@ -1869,6 +1869,7 @@ namespace util
 		}
 		pclose(pipe);
 		if (!result.empty() && result[result.length()-1] == '\n') result.erase(result.length()-1);
+		if (!result.empty() && result[result.length()-1] != '/') result += '/';
 		return result;
 #else
 		std::cerr << "SelectPathDialog not implemented for this platform" << std::endl;

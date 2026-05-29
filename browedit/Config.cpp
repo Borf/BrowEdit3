@@ -35,8 +35,8 @@ std::string Config::isValid() const
 	if (!std::filesystem::exists(util::utf8_to_iso_8859_1(ropath)))
 		return "Ro path does not exist";
 
-	if (ropath[ropath.size() - 1] != '\\')
-		return "Ro path should end with a \\";
+	if (ropath[ropath.size() - 1] != '\\' && ropath[ropath.size() - 1] != '/')
+		return "Ro path should end with a \\ or /";
 
 	if (!std::filesystem::exists(util::utf8_to_iso_8859_1(ropath) + "data"))
 		return "Please create a data directory in your RO directory";
@@ -87,7 +87,7 @@ bool Config::showWindow(BrowEdit* browEdit)
 				{
 					std::string initial = util::utf8_to_iso_8859_1(grfs[i]);
 					if (initial.find(":") == std::string::npos)
-						initial = std::filesystem::current_path().string() + "\\" + initial;
+						initial = std::filesystem::current_path().string() + "/" + initial;
 
 					if (!std::filesystem::is_regular_file(initial))
 						initial = "";
