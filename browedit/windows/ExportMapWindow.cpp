@@ -112,7 +112,7 @@ void BrowEdit::exportMap(Map* map)
 		if (gnd)
 		{
 			for (const auto& t : gnd->textures)
-				windowData.exportToExport.push_back(WindowData::ExportInfo{ "data\\texture\\" + t->file,"gndTexture", util::FileIO::getSrc("data\\texture\\" + t->file), true});
+				windowData.exportToExport.push_back(WindowData::ExportInfo{ "data/texture\\" + t->file,"gndTexture", util::FileIO::getSrc("data/texture\\" + t->file), true});
 		}
 		auto rsm = n->getComponent<Rsm>();
 		if (rsm)
@@ -138,10 +138,10 @@ void BrowEdit::exportMap(Map* map)
 			//add textures
 			for (const auto& t : textures)
 			{
-				auto textureFound = std::find_if(windowData.exportToExport.begin(), windowData.exportToExport.end(), [t](const WindowData::ExportInfo& ei) { return ei.filename == "data\\model\\" + t; });
+				auto textureFound = std::find_if(windowData.exportToExport.begin(), windowData.exportToExport.end(), [t](const WindowData::ExportInfo& ei) { return ei.filename == "data/model\\" + t; });
 				if (textureFound == windowData.exportToExport.end())
 				{
-					windowData.exportToExport.push_back(WindowData::ExportInfo{ "data\\texture\\" + t, "rsmTexture", util::FileIO::getSrc("data\\texture\\" + t), true });
+					windowData.exportToExport.push_back(WindowData::ExportInfo{ "data/texture\\" + t, "rsmTexture", util::FileIO::getSrc("data/texture\\" + t), true });
 					windowData.exportToExport.back().linkedBackward.push_back(modelExport);
 					modelExport->linkedForward.push_back(&windowData.exportToExport.back());
 				}

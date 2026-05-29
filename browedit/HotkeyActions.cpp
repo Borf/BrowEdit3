@@ -99,8 +99,8 @@ void BrowEdit::registerActions()
 			return;
 		std::filesystem::path path(util::utf8_to_iso_8859_1(selected->fileName));
 		std::string dir = path.parent_path().string();
-		windowData.objectWindowSelectedTreeNode = util::FileIO::directoryNode("data\\model\\" + dir);
-		windowData.objectWindowScrollToModel = "data\\model\\" + util::utf8_to_iso_8859_1(selected->fileName);
+		windowData.objectWindowSelectedTreeNode = util::FileIO::directoryNode("data/model\\" + dir);
+		windowData.objectWindowScrollToModel = "data/model\\" + util::utf8_to_iso_8859_1(selected->fileName);
 
 
 	}, hasActiveMapViewObjectMode);

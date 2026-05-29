@@ -51,7 +51,7 @@ void RswModel::load(std::istream* is, int version, int buildNumber, bool loadMod
 	is->read(reinterpret_cast<char*>(glm::value_ptr(rswObject->scale)), sizeof(float) * 3);
 	if (loadModel)
 	{
-		node->addComponent(util::ResourceManager<Rsm>::load("data\\model\\" + fileNameRaw));
+		node->addComponent(util::ResourceManager<Rsm>::load("data/model\\" + fileNameRaw));
 		node->addComponent(new RsmRenderer());
 	}
 }
@@ -149,7 +149,7 @@ void RswModel::buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>& nod
 						auto removed = rswModel->node->removeComponent<Rsm>();
 						for (auto r : removed)
 							util::ResourceManager<Rsm>::unload(r);
-						rswModel->node->addComponent(util::ResourceManager<Rsm>::load("data\\model\\" + util::utf8_to_iso_8859_1(rswModel->fileName)));
+						rswModel->node->addComponent(util::ResourceManager<Rsm>::load("data/model\\" + util::utf8_to_iso_8859_1(rswModel->fileName)));
 						rswModel->node->getComponent<RsmRenderer>()->begin();
 						rswModel->node->getComponent<RswModelCollider>()->begin();
 					}

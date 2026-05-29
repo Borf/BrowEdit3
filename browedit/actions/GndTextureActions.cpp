@@ -23,7 +23,7 @@ void GndTextureAddAction::perform(Map* map, BrowEdit* browEdit)
 		if (t->file == fileName)
 			return;
 	gnd->textures.push_back(new Gnd::Texture(fileName, fileName));
-	gndRenderer->textures.push_back(util::ResourceManager<gl::Texture>::load("data\\texture\\" + fileName));
+	gndRenderer->textures.push_back(util::ResourceManager<gl::Texture>::load("data/texture\\" + fileName));
 	if (browEdit->activeMapView && browEdit->activeMapView->map == map)
 	{
 		browEdit->activeMapView->textureSelected = (int)gnd->textures.size() - 1;
@@ -103,7 +103,7 @@ void GndTextureDelAction::undo(Map* map, BrowEdit* browEdit)
 		return;
 
 	gnd->textures.insert(gnd->textures.begin() + index, new Gnd::Texture(fileName, fileName));
-	gndRenderer->textures.insert(gndRenderer->textures.begin() + index, util::ResourceManager<gl::Texture>::load("data\\texture\\" + fileName));
+	gndRenderer->textures.insert(gndRenderer->textures.begin() + index, util::ResourceManager<gl::Texture>::load("data/texture\\" + fileName));
 
 	for (int i = 0; i < gnd->tiles.size(); i++) {
 		auto& tile = gnd->tiles[i];
@@ -136,7 +136,7 @@ void GndTextureChangeAction::perform(Map* map, BrowEdit* browEdit)
 	gnd->textures[index]->file = newTexture;
 
 	util::ResourceManager<gl::Texture>::unload(gndRenderer->textures[index]);
-	gndRenderer->textures[index] = util::ResourceManager<gl::Texture>::load("data\\texture\\" + newTexture);
+	gndRenderer->textures[index] = util::ResourceManager<gl::Texture>::load("data/texture\\" + newTexture);
 }
 
 void GndTextureChangeAction::undo(Map* map, BrowEdit* browEdit)
@@ -146,7 +146,7 @@ void GndTextureChangeAction::undo(Map* map, BrowEdit* browEdit)
 	gnd->textures[index]->file = oldTexture;
 
 	util::ResourceManager<gl::Texture>::unload(gndRenderer->textures[index]);
-	gndRenderer->textures[index] = util::ResourceManager<gl::Texture>::load("data\\texture\\" + oldTexture);
+	gndRenderer->textures[index] = util::ResourceManager<gl::Texture>::load("data/texture\\" + oldTexture);
 }
 
 std::string GndTextureChangeAction::str()

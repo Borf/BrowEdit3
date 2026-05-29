@@ -17,7 +17,7 @@ GndRenderer::GndRenderer()
 {
 	renderContext = GndRenderContext::getInstance();
 
-	white = util::ResourceManager<gl::Texture>::load("data\\texture\\white.png");
+	white = util::ResourceManager<gl::Texture>::load("data/texture\\white.png");
 	gndShadowDirty = true;
 }
 
@@ -56,7 +56,7 @@ void GndRenderer::render(NodeRenderContext& context)
 	{ //TODO: check if the texture names match
 		std::size_t first = textures.size();
 		for (std::size_t i = first; i < gnd->textures.size(); i++)
-			textures.push_back(util::ResourceManager<gl::Texture>::load("data\\texture\\" + gnd->textures[i]->file));
+			textures.push_back(util::ResourceManager<gl::Texture>::load("data/texture\\" + gnd->textures[i]->file));
 	}
 
 	if (gndShadowDirty)

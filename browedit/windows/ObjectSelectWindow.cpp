@@ -127,7 +127,7 @@ void BrowEdit::showObjectWindow()
 			windowData.progressWindowProgres = 0;
 
 			std::map<int, std::vector<std::string>> effectFiles;
-			for (auto& f : util::FileIO::listFiles("data\\effects"))
+			for (auto& f : util::FileIO::listFiles("data/effects"))
 				if(f.rfind(".json") != std::string::npos)
 					effectFiles[util::FileIO::getJson(f)["id"]].push_back(f);
 
@@ -140,7 +140,7 @@ void BrowEdit::showObjectWindow()
 				rsw->load(fileName, nullptr, this, false, true);
 
 				std::string mapTag = fileName;
-				if (mapTag.substr(0, 5) == "data\\")
+				if (mapTag.substr(0, 5) == "data/")
 					mapTag = mapTag.substr(5);
 				if (mapTag.substr(mapTag.size() - 4, 4) == ".rsw")
 					mapTag = mapTag.substr(0, mapTag.size() - 4);
@@ -150,8 +150,8 @@ void BrowEdit::showObjectWindow()
 				auto gnd = node->getComponent<Gnd>();
 				for (auto t : gnd->textures)
 				{
-					if (std::find(newTagList[mapTag].begin(), newTagList[mapTag].end(), "data\\texture\\" + t->file) == newTagList[mapTag].end())
-						newTagList[mapTag].push_back("data\\texture\\" + util::iso_8859_1_to_utf8(t->file));
+					if (std::find(newTagList[mapTag].begin(), newTagList[mapTag].end(), "data/texture\\" + t->file) == newTagList[mapTag].end())
+						newTagList[mapTag].push_back("data/texture\\" + util::iso_8859_1_to_utf8(t->file));
 				}
 
 				node->traverse([&](Node* node)
@@ -159,8 +159,8 @@ void BrowEdit::showObjectWindow()
 						auto rswModel = node->getComponent<RswModel>();
 						if (rswModel)
 						{
-							if (std::find(newTagList[mapTag].begin(), newTagList[mapTag].end(), "data\\model\\" + rswModel->fileName) == newTagList[mapTag].end())
-								newTagList[mapTag].push_back("data\\model\\"+rswModel->fileName);
+							if (std::find(newTagList[mapTag].begin(), newTagList[mapTag].end(), "data/model\\" + rswModel->fileName) == newTagList[mapTag].end())
+								newTagList[mapTag].push_back("data/model\\"+rswModel->fileName);
 						}
 						auto rswEffect = node->getComponent<RswEffect>();
 						if (rswEffect)
@@ -172,8 +172,8 @@ void BrowEdit::showObjectWindow()
 						auto rswSound = node->getComponent<RswSound>();
 						if (rswSound)
 						{
-							if (std::find(newTagList[mapTag].begin(), newTagList[mapTag].end(), "data\\wav\\" + rswSound->fileName) == newTagList[mapTag].end())
-								newTagList[mapTag].push_back("data\\wav\\" + rswSound->fileName);
+							if (std::find(newTagList[mapTag].begin(), newTagList[mapTag].end(), "data/wav\\" + rswSound->fileName) == newTagList[mapTag].end())
+								newTagList[mapTag].push_back("data/wav\\" + rswSound->fileName);
 						}
 					});
 				delete node;
@@ -227,11 +227,11 @@ void BrowEdit::showObjectWindow()
 		else if (ImGui::IsItemClicked())
 			windowData.objectWindowSelectedTreeNode = root;
 	};
-	startTree("Models", "data\\model\\");
-	startTree("Sounds", "data\\wav\\");
-	startTree("Lights", "data\\lights\\");
-	startTree("Effects", "data\\effects\\");
-	startTree("Prefabs", "data\\prefabs\\");
+	startTree("Models", "data/model\\");
+	startTree("Sounds", "data/wav\\");
+	startTree("Lights", "data/lights\\");
+	startTree("Effects", "data/effects\\");
+	startTree("Prefabs", "data/prefabs\\");
 	ImGui::EndChild();
 	if(!verticalLayout)
 		ImGui::SameLine();
@@ -281,11 +281,11 @@ void BrowEdit::showObjectWindow()
 					texture = (ImTextureID)(long long)soundTexture->id();
 				else if (path.substr(path.size() - 5) == ".json")
 				{
-					if (path.find("data\\lights") != std::string::npos)
+					if (path.find("data/lights") != std::string::npos)
 						texture = (ImTextureID)(long long)lightTexture->id();
-					if (path.find("data\\prefabs") != std::string::npos)
+					if (path.find("data/prefabs") != std::string::npos)
 						texture = (ImTextureID)(long long)prefabTexture->id();
-					if (path.find("data\\effects") != std::string::npos)
+					if (path.find("data/effects") != std::string::npos)
 					{
 						static std::map<std::string, int> effectIds;
 						if (effectIds.find(path) == effectIds.end())
@@ -295,9 +295,9 @@ void BrowEdit::showObjectWindow()
 						}
 						int effectId = effectIds[path];
 						if (RswEffect::previews.find(effectId) == RswEffect::previews.end())
-							RswEffect::previews[effectId] = util::ResourceManager<gl::Texture>::load("data\\texture\\effect\\" + std::to_string(effectId) + ".gif.png");
+							RswEffect::previews[effectId] = util::ResourceManager<gl::Texture>::load("data/texture\\effect\\" + std::to_string(effectId) + ".gif.png");
 						if (RswEffect::previewAnim.find(effectId) == RswEffect::previewAnim.end())
-							RswEffect::previewAnim[effectId] = util::ResourceManager<gl::Texture>::load("data\\texture\\effect\\" + std::to_string(effectId) + ".gif");
+							RswEffect::previewAnim[effectId] = util::ResourceManager<gl::Texture>::load("data/texture\\effect\\" + std::to_string(effectId) + ".gif");
 
 						if (RswEffect::previewAnim[effectId]->loaded)
 							texture = (ImTextureID)(long long)RswEffect::previewAnim[effectId]->getAnimatedTextureId();
@@ -336,7 +336,7 @@ void BrowEdit::showObjectWindow()
 							newNodePlacement = BrowEdit::Ground;
 						}
 						else if (file.substr(file.size() - 5) == ".json" &&
-							path.find("data\\lights") != std::string::npos)
+							path.find("data/lights") != std::string::npos)
 						{
 							auto l = new RswLight();
 							try {
@@ -346,14 +346,14 @@ void BrowEdit::showObjectWindow()
 							Node* newNode = new Node(file);
 							newNode->addComponent(new RswObject());
 							newNode->addComponent(l);
-							newNode->addComponent(new BillboardRenderer("data\\light.png", "data\\light_selected.png"));
+							newNode->addComponent(new BillboardRenderer("data/light.png", "data/light_selected.png"));
 							newNode->addComponent(new CubeCollider(5));
 							newNodes.push_back(std::pair<Node*, glm::vec3>(newNode, glm::vec3(0, 0, 0)));
 							newNodesCenter = glm::vec3(0, 0, 0);
 							newNodePlacement = BrowEdit::Ground;
 						}
 						else if (file.substr(file.size() - 5) == ".json" &&
-							path.find("data\\effects") != std::string::npos)
+							path.find("data/effects") != std::string::npos)
 						{
 							auto e = new RswEffect();
 							try {
@@ -363,7 +363,7 @@ void BrowEdit::showObjectWindow()
 							Node* newNode = new Node(file);
 							newNode->addComponent(new RswObject());
 							newNode->addComponent(e);
-							newNode->addComponent(new BillboardRenderer("data\\effect.png", "data\\effect_selected.png"));
+							newNode->addComponent(new BillboardRenderer("data/effect.png", "data/effect_selected.png"));
 							newNode->addComponent(new CubeCollider(5));
 							
 							// Tokei: Effect 974 needs to have an LubEffect component attached
@@ -395,7 +395,7 @@ void BrowEdit::showObjectWindow()
 							newNodePlacement = BrowEdit::Ground;
 						}
 						else if (file.substr(file.size() - 5) == ".json" &&
-							path.find("data\\prefabs") != std::string::npos)
+							path.find("data/prefabs") != std::string::npos)
 						{
 							json clipboard = util::FileIO::getJson(path);
 							if (clipboard.size() > 0)
@@ -420,7 +420,7 @@ void BrowEdit::showObjectWindow()
 											auto rswModel = new RswModel();
 											from_json(c, *rswModel);
 											newNode->addComponent(rswModel);
-											newNode->addComponent(util::ResourceManager<Rsm>::load("data\\model\\" + util::utf8_to_iso_8859_1(rswModel->fileName)));
+											newNode->addComponent(util::ResourceManager<Rsm>::load("data/model\\" + util::utf8_to_iso_8859_1(rswModel->fileName)));
 											newNode->addComponent(new RsmRenderer());
 											newNode->addComponent(new RswModelCollider());
 										}
@@ -429,7 +429,7 @@ void BrowEdit::showObjectWindow()
 											auto rswLight = new RswLight();
 											from_json(c, *rswLight);
 											newNode->addComponent(rswLight);
-											newNode->addComponent(new BillboardRenderer("data\\light.png", "data\\light_selected.png"));
+											newNode->addComponent(new BillboardRenderer("data/light.png", "data/light_selected.png"));
 											newNode->addComponent(new CubeCollider(5));
 										}
 										if (c["type"] == "rsweffect")
@@ -437,7 +437,7 @@ void BrowEdit::showObjectWindow()
 											auto rswEffect = new RswEffect();
 											from_json(c, *rswEffect);
 											newNode->addComponent(rswEffect);
-											newNode->addComponent(new BillboardRenderer("data\\effect.png", "data\\effect_selected.png"));
+											newNode->addComponent(new BillboardRenderer("data/effect.png", "data/effect_selected.png"));
 											newNode->addComponent(new CubeCollider(5));
 										}
 										if (c["type"] == "lubeffect")
@@ -451,7 +451,7 @@ void BrowEdit::showObjectWindow()
 											auto rswSound = new RswSound();
 											from_json(c, *rswSound);
 											newNode->addComponent(rswSound);
-											newNode->addComponent(new BillboardRenderer("data\\sound.png", "data\\sound_selected.png"));
+											newNode->addComponent(new BillboardRenderer("data/sound.png", "data/sound_selected.png"));
 											newNode->addComponent(new CubeCollider(5));
 										}
 									}
@@ -474,7 +474,7 @@ void BrowEdit::showObjectWindow()
 							Node* newNode = new Node(file);
 							newNode->addComponent(new RswObject());
 							newNode->addComponent(s);
-							newNode->addComponent(new BillboardRenderer("data\\sound.png", "data\\sound_selected.png"));
+							newNode->addComponent(new BillboardRenderer("data/sound.png", "data/sound_selected.png"));
 							newNode->addComponent(new CubeCollider(5));
 							newNodes.push_back(std::pair<Node*, glm::vec3>(newNode, glm::vec3(0, 0, 0)));
 							newNodesCenter = glm::vec3(0, 0, 0);
@@ -576,7 +576,7 @@ void BrowEdit::showObjectWindow()
 						desc = "";
 						lastPopup = path;
 						if (path.substr(path.size() - 5) == ".json" &&
-							path.find("data\\effects") != std::string::npos)
+							path.find("data/effects") != std::string::npos)
 						{
 							auto data = util::FileIO::getJson(path);
 							if (data.find("desc") != data.end() && data["desc"].is_string())

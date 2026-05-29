@@ -64,7 +64,7 @@ void LubRenderer::render(NodeRenderContext& context)
 
 		if (lubEffect && lubEffect->texture != "")
 		{
-			texture = util::ResourceManager<gl::Texture>::load("data\\texture\\" + util::replace(lubEffect->texture, "\\\\", "\\"));
+			texture = util::ResourceManager<gl::Texture>::load("data/texture\\" + util::replace(lubEffect->texture, "\\\\", "\\"));
 		}
 		else
 			texture = nullptr;

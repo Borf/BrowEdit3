@@ -61,11 +61,11 @@ void Rsw::load(const std::string& fileName, Map* map, BrowEdit* browEdit, bool l
 	std::string mapName = fileName;
 	mapName = mapName.substr(0, mapName.size() - 4);
 	mapName = mapName.substr(mapName.rfind("\\") + 1);
-	auto lub = util::FileIO::open("data\\lua files\\effecttool\\" + mapName + ".lub");
+	auto lub = util::FileIO::open("data/lua files\\effecttool\\" + mapName + ".lub");
 	if (!lub)
-		lub = util::FileIO::open("data\\luafiles514\\lua files\\effecttool\\" + mapName + ".lub");
+		lub = util::FileIO::open("data/luafiles514\\lua files\\effecttool\\" + mapName + ".lub");
 	if (!lub)
-		lub = util::FileIO::open("data\\LuaFiles514\\Lua Files\\effecttool\\" + mapName + ".lub");
+		lub = util::FileIO::open("data/LuaFiles514\\Lua Files\\effecttool\\" + mapName + ".lub");
 	if (lub)
 	{
 		char c = lub->get();
@@ -450,7 +450,7 @@ void Rsw::load(const std::string& fileName, Map* map, BrowEdit* browEdit, bool l
 		return ret;
 	};
 
-	std::string fogTable = util::FileIO::getString("data\\fogParameterTable.txt");
+	std::string fogTable = util::FileIO::getString("data/fogParameterTable.txt");
 	auto lines = util::split(fogTable, "\n");
 	for (auto i = 0; i < lines.size(); i++)
 	{
@@ -625,7 +625,7 @@ void Rsw::save(const std::string& fileName, BrowEdit* browEdit)
 		if (mapName.find("\\") != std::string::npos)
 			mapName = mapName.substr(mapName.rfind("\\")+1);
 		std::string luaMapName = util::replace(mapName, "@", "");
-		std::string lubDirectory = browEdit->config.ropath + "data\\luafiles514\\lua files\\effecttool\\";
+		std::string lubDirectory = browEdit->config.ropath + "data/luafiles514\\lua files\\effecttool\\";
 
 		// Use the path from the fileName instead, in case the user exported the map elsewhere
 		if (fileName.find("\\") != std::string::npos)

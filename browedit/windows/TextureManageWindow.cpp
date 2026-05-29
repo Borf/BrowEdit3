@@ -62,7 +62,7 @@ void BrowEdit::showTextureManageWindow()
 		else if (ImGui::IsItemClicked())
 			windowData.textureManageWindowSelectedTreeNode = root;
 	};
-	startTree("Textures", "data\\texture\\");
+	startTree("Textures", "data/texture\\");
 	ImGui::EndChild();
 	ImGui::SameLine();
 

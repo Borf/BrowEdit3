@@ -111,7 +111,7 @@ void RswSound::buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>& nod
 
 void RswSound::play()
 {
-	auto is = util::FileIO::open("data\\wav\\" + fileName);
+	auto is = util::FileIO::open("data/wav\\" + fileName);
 	if (is != nullptr)
 	{
 		is->seekg(0, std::ios_base::end);

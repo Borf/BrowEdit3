@@ -161,7 +161,7 @@ void BrowEdit::menuBar()
 			Node* newNode = new Node("light");
 			newNode->addComponent(new RswObject());
 			newNode->addComponent(l);
-			newNode->addComponent(new BillboardRenderer("data\\light.png", "data\\light_selected.png"));
+			newNode->addComponent(new BillboardRenderer("data/light.png", "data/light_selected.png"));
 			newNode->addComponent(new CubeCollider(5));
 			newNodes.push_back(std::pair<Node*, glm::vec3>(newNode, glm::vec3(0, 0, 0)));
 			newNodesCenter = glm::vec3(0, -35, 0);
@@ -180,7 +180,7 @@ void BrowEdit::menuBar()
 			Node* newNode = new Node("sun");
 			newNode->addComponent(new RswObject());
 			newNode->addComponent(l);
-			newNode->addComponent(new BillboardRenderer("data\\light.png", "data\\light_selected.png"));
+			newNode->addComponent(new BillboardRenderer("data/light.png", "data/light_selected.png"));
 			newNode->addComponent(new CubeCollider(5));
 			newNodes.push_back(std::pair<Node*, glm::vec3>(newNode, glm::vec3(0, 0, 0)));
 			newNodesCenter = glm::vec3(0, 0, 0);
@@ -257,9 +257,9 @@ void BrowEdit::menuBar()
 		if (ImGui::MenuItem("Change Lightmap Resolution"))
 			activeMapView->map->rootNode->getComponent<Gnd>()->makeLightmapsDiffRes(s[0], s[1]);
 
-		if (activeMapView->map->name == "data\\effects_ro.rsw" && ImGui::MenuItem("Generate effects")) //speedrun map
+		if (activeMapView->map->name == "data/effects_ro.rsw" && ImGui::MenuItem("Generate effects")) //speedrun map
 		{
-			auto effectsFile = util::FileIO::open("data\\EffectTable.json");
+			auto effectsFile = util::FileIO::open("data/EffectTable.json");
 			int braces = 0;
 			bool singleQuote = false;
 			bool doubleQuote = false;
@@ -402,7 +402,7 @@ void BrowEdit::menuBar()
 					Node* newNode = new Node("Effect" + std::to_string(i));
 					newNode->addComponent(o);
 					newNode->addComponent(e);
-					newNode->addComponent(new BillboardRenderer("data\\effect.png", "data\\effect_selected.png"));
+					newNode->addComponent(new BillboardRenderer("data/effect.png", "data/effect_selected.png"));
 					newNode->addComponent(new CubeCollider(5));
 					newNode->setParent(activeMapView->map->rootNode);
 				}

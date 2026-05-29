@@ -73,8 +73,13 @@ bool BrowEdit::glfwBegin()
     if (!glfwInit())
         return false;
     const char* glsl_version = "#version 130";
+#ifdef __APPLE__
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+#else
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+#endif
     //#ifdef _DEBUG
         glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
     //#endif
@@ -132,7 +137,7 @@ bool BrowEdit::glfwBegin()
     {
         GLFWimage image;
 
-        std::istream* is = util::FileIO::open("data\\dropper.png");
+        std::istream* is = util::FileIO::open("data/dropper.png");
         is->seekg(0, std::ios_base::end);
         std::size_t len = is->tellg();
         char* fileData = new char[len];

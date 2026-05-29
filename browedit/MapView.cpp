@@ -64,13 +64,13 @@ MapView::MapView(Map* map, const std::string &viewName) : map(map), viewName(vie
 		cameraCenter.z = gnd->height * 5.0f;
 	}
 	billboardShader = util::ResourceManager<gl::Shader>::load<BillboardRenderer::BillboardShader>();
-	whiteTexture = util::ResourceManager<gl::Texture>::load("data\\texture\\white.png");
+	whiteTexture = util::ResourceManager<gl::Texture>::load("data/texture\\white.png");
 	if (!sphereMesh.vbo)
 		sphereMesh.init();
 	if (!cubeMesh.vbo)
 	{
 		cubeMesh.init();
-		cubeTexture = util::ResourceManager<gl::Texture>::load("data\\model\\cube2.png");
+		cubeTexture = util::ResourceManager<gl::Texture>::load("data/model\\cube2.png");
 	}
 	if (!skyBoxMesh.vbo)
 		skyBoxMesh.init();
@@ -161,7 +161,7 @@ void MapView::toolbar(BrowEdit* browEdit)
 			{
 				if (skyTextures.size() == 0)
 				{
-					std::vector<std::string> files = util::FileIO::listFiles("data\\texture\\skyboxes");
+					std::vector<std::string> files = util::FileIO::listFiles("data/texture\\skyboxes");
 					for (auto& f : files)
 						skyTextures.push_back(util::ResourceManager<gl::Texture>::load(f));
 				}

@@ -68,6 +68,11 @@ int main()
 	SetupExceptionHandler();
 #endif
 
+	if (!std::filesystem::exists("data") && std::filesystem::exists("../data"))
+	{
+		std::filesystem::current_path("..");
+	}
+
 	ConsoleInject consoleInjector;
 
 	std::cout << R"V0G0N(                                  ';cllllllc:,                                  
@@ -137,7 +142,7 @@ void BrowEdit::run()
 	HotkeyRegistry::init(config.hotkeys);
 	{
 		try {
-			tagList = util::FileIO::getJson("data\\tags.json").get<std::map<std::string, std::vector<std::string>>>();
+			tagList = util::FileIO::getJson("data/tags.json").get<std::map<std::string, std::vector<std::string>>>();
 			for (auto tag : tagList)
 				for (const auto& t : tag.second)
 					tagListReverse[util::tolower(util::utf8_to_iso_8859_1(t))].push_back(util::utf8_to_iso_8859_1(tag.first));
@@ -145,13 +150,13 @@ void BrowEdit::run()
 		catch (...) {}
 	}
 
-	backgroundTexture = util::ResourceManager<gl::Texture>::load("data\\background.png");
-	iconsTexture = util::ResourceManager<gl::Texture>::load("data\\icons.png");
-	lightTexture = util::ResourceManager<gl::Texture>::load("data\\light.png");
-	effectTexture = util::ResourceManager<gl::Texture>::load("data\\effect.png");
-	soundTexture = util::ResourceManager<gl::Texture>::load("data\\sound.png");
-	gatTexture = util::ResourceManager<gl::Texture>::load("data\\gat.png");
-	prefabTexture = util::ResourceManager<gl::Texture>::load("data\\prefab.png");
+	backgroundTexture = util::ResourceManager<gl::Texture>::load("data/background.png");
+	iconsTexture = util::ResourceManager<gl::Texture>::load("data/icons.png");
+	lightTexture = util::ResourceManager<gl::Texture>::load("data/light.png");
+	effectTexture = util::ResourceManager<gl::Texture>::load("data/effect.png");
+	soundTexture = util::ResourceManager<gl::Texture>::load("data/sound.png");
+	gatTexture = util::ResourceManager<gl::Texture>::load("data/gat.png");
+	prefabTexture = util::ResourceManager<gl::Texture>::load("data/prefab.png");
 
 
 	//fixEffectPreviews();
@@ -162,49 +167,49 @@ void BrowEdit::run()
 
 #ifdef _DEBUG
 	if(config.isValid() == "")
-//		loadMap("data\\aldebaran.rsw");
-//		loadMap("data\\prontera.rsw");
-//		loadMap("data\\amicit01.rsw"); //RSM2
-//		loadMap("data\\grademk.rsw"); //special effects
-//		loadMap("data\\noel02.rsw");
-//		loadMap("data\\icecastle.rsw");
-//		loadMap("data\\bl_ice.rsw");
-//		loadMap("data\\comodo.rsw");
-//		loadMap("data\\guild_vs1.rsw");
-//		loadMap("data\\effects_ro.rsw");
-//		loadMap("data\\prt_in.rsw");
-		loadMap("data\\wall_colour.rsw");
-//		loadMap("data\\untomb_05s.rsw");
-//		loadMap("data\\easter_la.rsw");
-//		loadMap("data\\2@alice_mad.rsw");
-//		loadMap("data\\prt_vilg01.rsw");
-//		loadMap("data\\dae_paysq.rsw");
-//		loadMap("data\\veins.rsw");
-//		loadMap("data\\rag_fes.rsw");
-//		loadMap("data\\justincase.rsw");
-//		loadMap("data\\market_xmas.rsw");
-//		loadMap("data\\arena2.rsw");
-//		loadMap("data\\maze_new.rsw");
+//		loadMap("data/aldebaran.rsw");
+//		loadMap("data/prontera.rsw");
+//		loadMap("data/amicit01.rsw"); //RSM2
+//		loadMap("data/grademk.rsw"); //special effects
+//		loadMap("data/noel02.rsw");
+//		loadMap("data/icecastle.rsw");
+//		loadMap("data/bl_ice.rsw");
+//		loadMap("data/comodo.rsw");
+//		loadMap("data/guild_vs1.rsw");
+//		loadMap("data/effects_ro.rsw");
+//		loadMap("data/prt_in.rsw");
+		loadMap("data/wall_colour.rsw");
+//		loadMap("data/untomb_05s.rsw");
+//		loadMap("data/easter_la.rsw");
+//		loadMap("data/2@alice_mad.rsw");
+//		loadMap("data/prt_vilg01.rsw");
+//		loadMap("data/dae_paysq.rsw");
+//		loadMap("data/veins.rsw");
+//		loadMap("data/rag_fes.rsw");
+//		loadMap("data/justincase.rsw");
+//		loadMap("data/market_xmas.rsw");
+//		loadMap("data/arena2.rsw");
+//		loadMap("data/maze_new.rsw");
 
-		//loadModel("data\\model\\prontera_re\\streetlamp_01.rsm");
-	//	loadModel("data\\model\\크리스마스마을\\xmas_내부트리.rsm");
-	//	loadModel("data\\model\\인던02\\인던02b중앙장식01.rsm");
-		//loadModel("data\\model\\event\\3차전직_석상02.rsm"); //bigass statue
-		//loadModel("data\\model\\para\\alchemy_01.rsm");
-		//loadModel("data\\model\\para\\mora_01.rsm");
-		//loadModel("data\\model\\para\\mora_02.rsm");
-		//loadModel("data\\model\\masin\\fire_land.rsm");
-		//loadModel("data\\model인던02인던02미이라.rsm");
-		//loadModel("data\\model\\pud\\stall_01.rsm");
-		//loadModel("data\\model\\pud\\stall_02.rsm");
-		//loadModel("data\\model\\pud\\stall_03.rsm");
-		//loadModel("data\\model\\pud\\swing_01.rsm");
-		//loadModel("data\\model\\pud\\balloon_01.rsm");
-		//loadModel("data\\model\\plants_e_01.rsm2");
-	//	modelEditor.load("data\\model\\para\\mora_01.rsm");
-		//modelEditor.load("data\\model\\프론테라\\교역소.rsm");
-		//modelEditor.load("data\\model\\ilusion\\goldberg_s_01.rsm2");
-		//modelEditor.load("data\\model\\job4for\\purifier_s_01.rsm2");
+		//loadModel("data/model\\prontera_re\\streetlamp_01.rsm");
+	//	loadModel("data/model\\크리스마스마을\\xmas_내부트리.rsm");
+	//	loadModel("data/model\\인던02\\인던02b중앙장식01.rsm");
+		//loadModel("data/model\\event\\3차전직_석상02.rsm"); //bigass statue
+		//loadModel("data/model\\para\\alchemy_01.rsm");
+		//loadModel("data/model\\para\\mora_01.rsm");
+		//loadModel("data/model\\para\\mora_02.rsm");
+		//loadModel("data/model\\masin\\fire_land.rsm");
+		//loadModel("data/model인던02인던02미이라.rsm");
+		//loadModel("data/model\\pud\\stall_01.rsm");
+		//loadModel("data/model\\pud\\stall_02.rsm");
+		//loadModel("data/model\\pud\\stall_03.rsm");
+		//loadModel("data/model\\pud\\swing_01.rsm");
+		//loadModel("data/model\\pud\\balloon_01.rsm");
+		//loadModel("data/model\\plants_e_01.rsm2");
+	//	modelEditor.load("data/model\\para\\mora_01.rsm");
+		//modelEditor.load("data/model\\프론테라\\교역소.rsm");
+		//modelEditor.load("data/model\\ilusion\\goldberg_s_01.rsm2");
+		//modelEditor.load("data/model\\job4for\\purifier_s_01.rsm2");
 #endif
 
 
@@ -490,6 +495,7 @@ void BrowEdit::configBegin()
 	else
 	{
 		config.defaultHotkeys();
+		config.save(); // auto-create config.json with defaults
 		windowData.configVisible = true;
 		util::FileIO::begin();
 		util::FileIO::addDirectory(".\\");
@@ -688,7 +694,7 @@ void BrowEdit::saveMap(Map* map)
 	std::string rswName = config.ropath + map->name;
 	std::string gndName = config.ropath + map->name.substr(0, map->name.size() - 4) + ".gnd";
 	std::string gatName = config.ropath + map->name.substr(0, map->name.size() - 4) + ".gat";
-	std::string lubName = config.ropath + "data\\luafiles514\\lua files\\effecttool\\" + mapName + ".lub";
+	std::string lubName = config.ropath + "data/luafiles514\\lua files\\effecttool\\" + mapName + ".lub";
 	if (fullPath)
 	{
 		rswName = map->name;
@@ -696,10 +702,10 @@ void BrowEdit::saveMap(Map* map)
 		//dunno what to do with lub
 	}
 
-	std::string backupRswName = "backups\\" + map->name;
-	std::string backupGndName = "backups\\" + map->name.substr(0, map->name.size() - 4) + ".gnd";
-	std::string backupGatName = "backups\\" + map->name.substr(0, map->name.size() - 4) + ".gat";
-	std::string backupLubName = "backups\\data\\luafiles514\\lua files\\effecttool\\" + mapName + ".lub";
+	std::string backupRswName = "backups/" + map->name;
+	std::string backupGndName = "backups/" + map->name.substr(0, map->name.size() - 4) + ".gnd";
+	std::string backupGatName = "backups/" + map->name.substr(0, map->name.size() - 4) + ".gat";
+	std::string backupLubName = "backups/data\\luafiles514\\lua files\\effecttool\\" + mapName + ".lub";
 	if (fullPath)
 	{
 		rswName = map->name;
@@ -762,12 +768,12 @@ void BrowEdit::saveAsMap(Map* map)
 	std::string rswName = directory + mapName + ".rsw";
 	std::string gndName = directory + mapName + ".gnd";
 	std::string gatName = directory + mapName + ".gat";
-	//	std::string lubName = config.ropath + "data\\luafiles514\\lua files\\effecttool\\" + mapName + ".lub"; //not sure where to store this
+	//	std::string lubName = config.ropath + "data/luafiles514\\lua files\\effecttool\\" + mapName + ".lub"; //not sure where to store this
 
-	std::string backupRswName = "backups\\" + map->name;
-	std::string backupGndName = "backups\\" + map->name.substr(0, map->name.size() - 4) + ".gnd";
-	std::string backupGatName = "backups\\" + map->name.substr(0, map->name.size() - 4) + ".gat";
-	std::string backupLubName = "backups\\data\\luafiles514\\lua files\\effecttool\\" + mapName + ".lub";
+	std::string backupRswName = "backups/" + map->name;
+	std::string backupGndName = "backups/" + map->name.substr(0, map->name.size() - 4) + ".gnd";
+	std::string backupGatName = "backups/" + map->name.substr(0, map->name.size() - 4) + ".gat";
+	std::string backupLubName = "backups/data\\luafiles514\\lua files\\effecttool\\" + mapName + ".lub";
 
 	if (config.backup)
 	{
@@ -981,7 +987,7 @@ void BrowEdit::pasteGat()
 void BrowEdit::saveTagList()
 {
 	json tagListJson = tagList;
-	std::ofstream tagListFile("data\\tags.json");
+	std::ofstream tagListFile("data/tags.json");
 	tagListFile << std::setw(2) << tagListJson;
 }
 
@@ -1024,9 +1030,9 @@ void BrowEdit::ShowNewMapPopup()
 		ImGui::InputText("Name", &windowData.newMapName);
 		if (ImGui::Button("Create"))
 		{
-			Map* map = new Map("data\\" + windowData.newMapName + ".rsw", windowData.newMapWidth, windowData.newMapHeight, this);
+			Map* map = new Map("data/" + windowData.newMapName + ".rsw", windowData.newMapWidth, windowData.newMapHeight, this);
 			maps.push_back(map);
-			mapViews.push_back(MapView(map, "data\\" + windowData.newMapName + ".rsw#0"));
+			mapViews.push_back(MapView(map, "data/" + windowData.newMapName + ".rsw#0"));
 			ImGui::CloseCurrentPopup();
 		}
 		ImGui::SameLine();
@@ -1045,7 +1051,7 @@ void fixEffectPreviews()
 {
 	try
 	{
-		for (auto entry : std::filesystem::directory_iterator("data\\texture\\effect", std::filesystem::directory_options::follow_directory_symlink | std::filesystem::directory_options::skip_permission_denied))
+		for (auto entry : std::filesystem::directory_iterator("data/texture\\effect", std::filesystem::directory_options::follow_directory_symlink | std::filesystem::directory_options::skip_permission_denied))
 		{
 			if (entry.path().string().find(".png") != std::string::npos)
 				continue;
@@ -1108,6 +1114,6 @@ void fixEffectPreviews()
 	}
 	catch (const std::system_error& exception)
 	{
-		std::cerr << "data\\texture\\effect: " << exception.what() << " (" << exception.code() << ")" << std::endl;
+		std::cerr << "data/texture\\effect: " << exception.what() << " (" << exception.code() << ")" << std::endl;
 	}
 }

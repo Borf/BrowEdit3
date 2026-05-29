@@ -34,7 +34,7 @@ void ModelEditor::load(const std::string& fileName)
 	models.push_back(mv);
 
 	simpleShader = util::ResourceManager<gl::Shader>::load<SimpleShader>();
-	gridTexture = util::ResourceManager<gl::Texture>::load("data\\grid.png");
+	gridTexture = util::ResourceManager<gl::Texture>::load("data/grid.png");
 	gridTexture->setWrapMode(GL_REPEAT);
 }
 

@@ -197,7 +197,7 @@ void Node::addComponentsFromJson(const nlohmann::json& data)
 			auto rswModel = new RswModel();
 			from_json(c, *rswModel);
 			this->addComponent(rswModel);
-			this->addComponent(util::ResourceManager<Rsm>::load("data\\model\\" + util::utf8_to_iso_8859_1(rswModel->fileName)));
+			this->addComponent(util::ResourceManager<Rsm>::load("data/model\\" + util::utf8_to_iso_8859_1(rswModel->fileName)));
 			this->addComponent(new RsmRenderer());
 			this->addComponent(new RswModelCollider());
 		}
@@ -206,7 +206,7 @@ void Node::addComponentsFromJson(const nlohmann::json& data)
 			auto rswLight = new RswLight();
 			from_json(c, *rswLight);
 			this->addComponent(rswLight);
-			this->addComponent(new BillboardRenderer("data\\light.png", "data\\light_selected.png"));
+			this->addComponent(new BillboardRenderer("data/light.png", "data/light_selected.png"));
 			this->addComponent(new CubeCollider(5));
 		}
 		if (c["type"] == "rsweffect")
@@ -214,7 +214,7 @@ void Node::addComponentsFromJson(const nlohmann::json& data)
 			auto rswEffect = new RswEffect();
 			from_json(c, *rswEffect);
 			this->addComponent(rswEffect);
-			this->addComponent(new BillboardRenderer("data\\effect.png", "data\\effect_selected.png"));
+			this->addComponent(new BillboardRenderer("data/effect.png", "data/effect_selected.png"));
 			this->addComponent(new CubeCollider(5));
 		}
 		if (c["type"] == "lubeffect")
@@ -229,7 +229,7 @@ void Node::addComponentsFromJson(const nlohmann::json& data)
 			auto rswSound = new RswSound();
 			from_json(c, *rswSound);
 			this->addComponent(rswSound);
-			this->addComponent(new BillboardRenderer("data\\sound.png", "data\\sound_selected.png"));
+			this->addComponent(new BillboardRenderer("data/sound.png", "data/sound_selected.png"));
 			this->addComponent(new CubeCollider(5));
 		}
 	}

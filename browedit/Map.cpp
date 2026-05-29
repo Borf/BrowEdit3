@@ -805,7 +805,7 @@ void Map::exportMinimapWalkable(BrowEdit* browEdit)
 	if (pos != std::string::npos)
 		mapName = mapName.substr(0, pos);
 
-	std::string outDir = browEdit->config.ropath + "data\\texture\\\xc0\xaf\xc0\xfa\xc0\xce\xc5\xcd\xc6\xe4\xc0\xcc\xbd\xba\\map";
+	std::string outDir = browEdit->config.ropath + "data/texture\\\xc0\xaf\xc0\xfa\xc0\xce\xc5\xcd\xc6\xe4\xc0\xcc\xbd\xba\\map";
 	std::filesystem::create_directories(outDir);
 	std::string outPath = outDir + "\\" + mapName + ".bmp";
 	int ok = stbi_write_bmp(outPath.c_str(), outW, outH, 3, img);
@@ -922,14 +922,14 @@ void Map::shrinkTileSelection(BrowEdit* browEdit)
 
 void Map::createPrefab(const std::string& fileName, BrowEdit* browEdit)
 {
-	std::filesystem::path filePath("data\\prefabs\\" + fileName);
+	std::filesystem::path filePath("data/prefabs\\" + fileName);
 	std::filesystem::create_directories(filePath.parent_path());
 	std::ofstream outFile(filePath);
 	json clipboard;
 	for (auto n : selectedNodes)
 		clipboard.push_back(*n);
 	outFile << clipboard;
-	util::FileIO::reload("data\\prefabs");
+	util::FileIO::reload("data/prefabs");
 }
 
 void WallCalculation::calcUV(const glm::ivec3& position, Gnd* gnd)

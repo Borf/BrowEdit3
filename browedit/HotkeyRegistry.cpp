@@ -8,7 +8,7 @@
 
 void HotkeyRegistry::init(const std::map<std::string, Hotkey> &config)
 {
-	defaultHotkeys = util::FileIO::getJson("data\\defaulthotkeys.json").get< std::map<std::string, Hotkey>>();
+	defaultHotkeys = util::FileIO::getJson("data/defaulthotkeys.json").get< std::map<std::string, Hotkey>>();
 
 	for (auto& c : config)
 	{

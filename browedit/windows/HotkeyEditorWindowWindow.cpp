@@ -69,7 +69,7 @@ void BrowEdit::showHotkeyEditorWindow()
 	{
 		HotkeyRegistry::defaultHotkeys = windowData.hotkeys;
 		json j = HotkeyRegistry::defaultHotkeys;
-		std::ofstream out("data\\defaulthotkeys.json");
+		std::ofstream out("data/defaulthotkeys.json");
 		out << j;
 	}
 	ImGui::SameLine();

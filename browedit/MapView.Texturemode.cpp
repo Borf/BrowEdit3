@@ -435,7 +435,7 @@ void MapView::postRenderTextureMode(BrowEdit* browEdit)
 									{
 										textureStampLookup[t->textureIndex] = (int)gnd->textures.size();
 										gnd->textures.push_back(new Gnd::Texture(tx, tx));
-										gndRenderer->textures.push_back(util::ResourceManager<gl::Texture>::load("data\\texture\\" + tx));
+										gndRenderer->textures.push_back(util::ResourceManager<gl::Texture>::load("data/texture\\" + tx));
 										ga->addAction(new GndTextureAddAction(tx));
 									}
 								}

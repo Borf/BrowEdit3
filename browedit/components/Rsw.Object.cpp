@@ -40,7 +40,7 @@ void RswObject::load(std::istream* is, int version, int buildNumber, bool loadMo
 //		std::cout << "Loading light" << std::endl;
 		node->addComponent(new RswLight());
 		node->getComponent<RswLight>()->load(is);
-		node->addComponent(new BillboardRenderer("data\\light.png", "data\\light_selected.png"));
+		node->addComponent(new BillboardRenderer("data/light.png", "data/light_selected.png"));
 		node->addComponent(new CubeCollider(5));
 	}
 	else if (type == 3)
@@ -48,7 +48,7 @@ void RswObject::load(std::istream* is, int version, int buildNumber, bool loadMo
 //		std::cout << "Loading sound" << std::endl;
 		node->addComponent(new RswSound());
 		node->getComponent<RswSound>()->load(is, version);
-		node->addComponent(new BillboardRenderer("data\\sound.png", "data\\sound_selected.png"));
+		node->addComponent(new BillboardRenderer("data/sound.png", "data/sound_selected.png"));
 		node->addComponent(new CubeCollider(5));
 	}
 	else if (type == 4)
@@ -56,7 +56,7 @@ void RswObject::load(std::istream* is, int version, int buildNumber, bool loadMo
 //		std::cout << "Loading effect" << std::endl;
 		node->addComponent(new RswEffect());
 		node->getComponent<RswEffect>()->load(is);
-		node->addComponent(new BillboardRenderer("data\\effect.png", "data\\effect_selected.png"));
+		node->addComponent(new BillboardRenderer("data/effect.png", "data/effect_selected.png"));
 		node->addComponent(new CubeCollider(5));
 	}
 	else

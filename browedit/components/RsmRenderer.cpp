@@ -17,7 +17,7 @@ RsmRenderer::RsmRenderer()
 {
 	renderContext = RsmRenderContext::getInstance();
 	if (errorModel == nullptr)
-		errorModel = new Rsm("data\\model\\box_error_01.rsm");
+		errorModel = new Rsm("data/model\\box_error_01.rsm");
 	begin();
 }
 
@@ -54,7 +54,7 @@ void RsmRenderer::render(NodeRenderContext& context)
 		if (this->rsm && this->rsm->loaded)
 		{//init
 			for (const auto& textureFilename : rsm->textures)
-				textures.push_back(util::ResourceManager<gl::Texture>::load("data\\texture\\" + textureFilename));
+				textures.push_back(util::ResourceManager<gl::Texture>::load("data/texture\\" + textureFilename));
 			
 			renderInfo.resize(rsm->meshCount);
 			for (int i = 0; i < rsm->meshCount; i++) {
@@ -81,7 +81,7 @@ void RsmRenderer::render(NodeRenderContext& context)
 	{
 		this->rsm = RsmRenderer::errorModel;
 		for (const auto& textureFilename : rsm->textures)
-			textures.push_back(util::ResourceManager<gl::Texture>::load("data\\texture\\" + textureFilename));
+			textures.push_back(util::ResourceManager<gl::Texture>::load("data/texture\\" + textureFilename));
 		renderInfo.resize(rsm->meshCount);
 		for (int i = 0; i < rsm->meshCount; i++) {
 			renderInfo[i].vbo.resize(renderContext->phases);
@@ -105,7 +105,7 @@ void RsmRenderer::render(NodeRenderContext& context)
 		}
 		if (textures.size() == 0) {
 			for (const auto& textureFilename : rsm->textures)
-				textures.push_back(util::ResourceManager<gl::Texture>::load("data\\texture\\" + textureFilename));
+				textures.push_back(util::ResourceManager<gl::Texture>::load("data/texture\\" + textureFilename));
 		}
 		initMeshInfo(rsm->rootMesh);
 	}
@@ -325,7 +325,7 @@ void RsmRenderer::renderMesh(Rsm::Mesh* mesh, const glm::mat4& matrix, bool sele
 	if (textures.empty())
 	{
 		for (const auto& textureFilename : rsm->textures)
-			textures.push_back(util::ResourceManager<gl::Texture>::load("data\\texture\\" + textureFilename));
+			textures.push_back(util::ResourceManager<gl::Texture>::load("data/texture\\" + textureFilename));
 	}
 
 	if (phase == 0 && mesh && mesh->isAnimated)

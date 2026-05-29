@@ -82,7 +82,7 @@ void RswEffect::buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>& no
 
 	int id = rswEffects[0]->id;
 	if (previews.find(id) == previews.end())
-		previews[id] = util::ResourceManager<gl::Texture>::load("data\\texture\\effect\\" + std::to_string(id) + ".gif");
+		previews[id] = util::ResourceManager<gl::Texture>::load("data/texture\\effect\\" + std::to_string(id) + ".gif");
 	ImGui::Image((ImTextureID)(long long)previews[id]->getAnimatedTextureId(), ImVec2(200, 200));
 
 	util::DragFloatMulti<RswEffect>(browEdit, browEdit->activeMapView->map, rswEffects, "Loop", [](RswEffect* e) {return &e->loop; }, 0.01f, 0.0f, 100.0f);
