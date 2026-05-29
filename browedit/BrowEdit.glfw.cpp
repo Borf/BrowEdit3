@@ -87,7 +87,7 @@ bool BrowEdit::glfwBegin()
     //#endif
     if (config.startMaximizedWindow)
         glfwWindowHint(GLFW_MAXIMIZED, GLFW_TRUE);
-    window = glfwCreateWindow(1920, 1080, "BrowEdit V3." QUOTE(VERSION), NULL, NULL);
+    window = glfwCreateWindow(2560, 1440, "BrowEdit V3." QUOTE(VERSION), NULL, NULL);
 
     if (window == nullptr)
     {
