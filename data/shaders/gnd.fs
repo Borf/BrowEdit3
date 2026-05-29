@@ -51,11 +51,11 @@ vec3 CalcPointLight(Light light, vec3 normal, vec3 inFragPos);
 
 void main()
 {
-	vec4 texture = vec4(1,1,1,1);
+	vec4 textureColor = vec4(1,1,1,1);
 
 	vec4 texColor = texture(s_texture, texCoord);
-	texture = mix(vec4(1,1,1,texColor.a), texColor, viewTextures);
-	if(texture.a < 0.1)
+	textureColor = mix(vec4(1,1,1,texColor.a), texColor, viewTextures);
+	if(textureColor.a < 0.1)
 		discard;
 	
 	vec3 light = vec3(0, 0, 0);
@@ -63,29 +63,29 @@ void main()
 	for (int i = 0; i < lightCount; i++)
         light.rgb += CalcPointLight(lights[i], normalize(normal), fragPos);
 	
-	texture.rgb *= mult;
-	texture.rgb *= max(color, colorToggle).rgb;
-	texture.rgb *= max(texture(s_lighting, texCoord2).a, shadowMapToggle);
+	textureColor.rgb *= mult;
+	textureColor.rgb *= max(color, colorToggle).rgb;
+	textureColor.rgb *= max(texture(s_lighting, texCoord2).a, shadowMapToggle);
 	
 	if (!hideOtherLights) {
-		texture.rgb += clamp(texture(s_lighting, texCoord2).rgb, 0.0, 1.0) * lightColorToggle;
-		texture.rgb += light.rgb;
+		textureColor.rgb += clamp(texture(s_lighting, texCoord2).rgb, 0.0, 1.0) * lightColorToggle;
+		textureColor.rgb += light.rgb;
 	}
 	else {		
 		if (lightCount > 0 && light.rgb != vec3(0, 0, 0))
-			texture.rgb += light.rgb;
+			textureColor.rgb += light.rgb;
 		else
-			texture.rgb += clamp(texture(s_lighting, texCoord2).rgb, 0.0, 1.0) * lightColorToggle;
+			textureColor.rgb += clamp(texture(s_lighting, texCoord2).rgb, 0.0, 1.0) * lightColorToggle;
 	}
 	
 	if(fogEnabled)
 	{
 		float depth = gl_FragCoord.z / gl_FragCoord.w;
 		float fogAmount = smoothstep(fogNear, fogFar, depth);
-		texture = mix(texture, fogColor, fogAmount);
+		textureColor = mix(textureColor, fogColor, fogAmount);
 	}	
 	
-	fragColor = texture;
+	fragColor = textureColor;
 }
 
 // calculates the color when using a point light.
