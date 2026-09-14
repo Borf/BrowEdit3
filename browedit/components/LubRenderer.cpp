@@ -41,7 +41,7 @@ int d3dToOpenGlBlend(int d3d)
 	case 12:	return GL_SRC_ALPHA;
 	case 13:	return GL_ONE_MINUS_SRC_ALPHA;
 	}
-	return GL_ONE;
+	return GL_ZERO;
 }
 
 void LubRenderer::render(NodeRenderContext& context)
@@ -109,7 +109,7 @@ void LubRenderer::render(NodeRenderContext& context)
 		p->position = p->startPosition + p->dir * lubEffect->speed * t + lubEffect->gravity * glm::vec3(1, -1, 1) * lubEffect->speed * t * t * 0.5f;
 
 		if (lubEffect->eternity)
-			p->alpha = 1;
+			p->alpha = lubEffect->color.w;
 		else if (p->duration > 1) {
 			float tRemaining = p->tickStart + p->duration - time;
 			if (t < 1)

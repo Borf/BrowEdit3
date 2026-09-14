@@ -132,6 +132,7 @@ void WaterRenderer::render(NodeRenderContext& context)
 			auto water = &rsw->water.zones[x][y];
 
 			shader->setUniform(WaterShader::Uniforms::waterHeight, -water->height);
+			shader->setUniform(WaterShader::Uniforms::alpha, water->type == 4 ? 1.0f : 0.564f);
 
 			if (gnd && gnd->version <= 0x108) {
 				water = &rsw->water.zones[0][0];

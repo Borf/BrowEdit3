@@ -22,6 +22,7 @@ public:
 			fogColor,
 			fogNear,
 			fogFar,
+			alpha,
 			//fogExp,
 			End
 		};
@@ -41,6 +42,7 @@ public:
 		bindUniform(Uniforms::fogColor, "fogColor");
 		bindUniform(Uniforms::fogNear, "fogNear");
 		bindUniform(Uniforms::fogFar, "fogFar");
+		bindUniform(Uniforms::alpha, "alpha");
 		//bindUniform(Uniforms::fogExp, "fogExp");
 		
 	}
