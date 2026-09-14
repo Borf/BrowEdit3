@@ -10,12 +10,12 @@ uniform float fogNear = 0;
 uniform float fogFar = 1;
 uniform float fogExp = 0.5;
 uniform vec4 fogColor = vec4(1,1,1,1);
-
+uniform float alpha = 0.564;
 
 void main()
 {
     vec4 color = texture2D(s_texture, texCoord);
-    color.a = 0.564;
+    color.a = alpha;
 
     if(fogEnabled)
 	{
