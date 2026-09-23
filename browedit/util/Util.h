@@ -9,6 +9,7 @@ class Node;
 #include <string>
 #include <vector>
 #include <imgui.h>
+#include <sol.hpp>
 
 constexpr uint64_t operator""_KB(uint64_t x)
 {
@@ -136,6 +137,8 @@ namespace util
 
 	std::string callstack();
 	void decompose(glm::mat4 m, glm::vec3& euler, glm::vec3& scale, glm::vec3& translation);
+
+	int d3dToOpenGlBlend(int d3d);
 }
 
 namespace glm
@@ -158,6 +161,13 @@ namespace glm
 	void to_json(nlohmann::json& j, const glm::quat& v);
 	void from_json(const nlohmann::json& j, glm::quat& v);
 
+	void from_lua(const sol::table& j, glm::vec4& v);
+	void from_lua(const sol::table& j, glm::vec3& v);
+	void from_lua(const sol::table& j, glm::vec2& v);
+	void from_lua(const sol::table& j, glm::ivec4& v);
+	void from_lua(const sol::table& j, glm::ivec2& v);
+	void from_lua(const sol::table& j, glm::lowp_i8vec4& v);
+	void from_lua(const sol::table& j, glm::quat& v);
 }
 
 void to_json(nlohmann::json& j, const ImVec4& v);

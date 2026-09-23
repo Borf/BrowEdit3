@@ -27,7 +27,7 @@ public:
 		SimpleShader* shader = nullptr;
 		gl::Texture* texture = nullptr;
 		GatRenderContext();
-		virtual void preFrame(Node* rootNode, NodeRenderContext& context) override;
+		virtual void preFrame(Node* rootNode, NodeRenderContext& context, std::vector<Renderer*>& renderers) override;
 	};
 
 	class Chunk

@@ -187,7 +187,7 @@ WaterRenderer::WaterRenderContext::WaterRenderContext() : shader(util::ResourceM
 }
 
 
-void WaterRenderer::WaterRenderContext::preFrame(Node* rootNode, NodeRenderContext& context)
+void WaterRenderer::WaterRenderContext::preFrame(Node* rootNode, NodeRenderContext& context, std::vector<Renderer*>& renderers)
 {
 	shader->use();
 	shader->setUniform(WaterShader::Uniforms::ProjectionMatrix, context.projectionMatrix);

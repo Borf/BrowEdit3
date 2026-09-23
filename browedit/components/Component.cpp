@@ -18,6 +18,7 @@ void to_json(nlohmann::json& j, const Component& c)
 	TO_JSON_HELP(RswLight, rswLight, "rswlight");
 	TO_JSON_HELP(RswEffect, rswEffect, "rsweffect");
 	TO_JSON_HELP(LubEffect, lubEffect, "lubeffect");
+	TO_JSON_HELP(StrEffect, strEffect, "streffect");
 	TO_JSON_HELP(RswSound, rswSound, "rswsound");
 	//auto rswModel = dynamic_cast<const RswModel*>(&c);
 	//if (rswModel)

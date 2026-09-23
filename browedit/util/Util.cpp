@@ -559,6 +559,7 @@ namespace util
 	template bool InputTextMulti<RswLight>(BrowEdit* browEdit, Map* map, const std::vector<RswLight*>& data, const char* label, const std::function<std::string* (RswLight*)>& getProp, const std::function<void(Node* node, std::string* ptr, std::string* startValue, const std::string& action)>& editAction);
 	template bool InputTextMulti<RswEffect>(BrowEdit* browEdit, Map* map, const std::vector<RswEffect*>& data, const char* label, const std::function<std::string* (RswEffect*)>& getProp, const std::function<void(Node* node, std::string* ptr, std::string* startValue, const std::string& action)>& editAction);
 	template bool InputTextMulti<LubEffect>(BrowEdit* browEdit, Map* map, const std::vector<LubEffect*>& data, const char* label, const std::function<std::string* (LubEffect*)>& getProp, const std::function<void(Node* node, std::string* ptr, std::string* startValue, const std::string& action)>& editAction);
+	template bool InputTextMulti<StrEffect>(BrowEdit* browEdit, Map* map, const std::vector<StrEffect*>& data, const char* label, const std::function<std::string* (StrEffect*)>& getProp, const std::function<void(Node* node, std::string* ptr, std::string* startValue, const std::string& action)>& editAction);
 	template bool InputTextMulti<RswSound>(BrowEdit* browEdit, Map* map, const std::vector<RswSound*>& data, const char* label, const std::function<std::string* (RswSound*)>& getProp, const std::function<void(Node* node, std::string* ptr, std::string* startValue, const std::string& action)>& editAction);
 	template bool InputTextMulti<RswModel>(BrowEdit* browEdit, Map* map, const std::vector<RswModel*>& data, const char* label, const std::function<std::string* (RswModel*)>& getProp, const std::function<void(Node* node, std::string* ptr, std::string* startValue, const std::string& action)>& editAction);
 
@@ -626,6 +627,7 @@ namespace util
 	template bool InputTextMulti<RswLight>(BrowEdit* browEdit, Map* map, const std::vector<RswLight*>& data, const char* label, const std::function<std::string* (RswLight*)>& getProp);
 	template bool InputTextMulti<RswEffect>(BrowEdit* browEdit, Map* map, const std::vector<RswEffect*>& data, const char* label, const std::function<std::string* (RswEffect*)>& getProp);
 	template bool InputTextMulti<LubEffect>(BrowEdit* browEdit, Map* map, const std::vector<LubEffect*>& data, const char* label, const std::function<std::string* (LubEffect*)>& getProp);
+	template bool InputTextMulti<StrEffect>(BrowEdit* browEdit, Map* map, const std::vector<StrEffect*>& data, const char* label, const std::function<std::string* (StrEffect*)>& getProp);
 	template bool InputTextMulti<RswSound>(BrowEdit* browEdit, Map* map, const std::vector<RswSound*>& data, const char* label, const std::function<std::string* (RswSound*)>& getProp);
 	template bool InputTextMulti<RswModel>(BrowEdit* browEdit, Map* map, const std::vector<RswModel*>& data, const char* label, const std::function<std::string* (RswModel*)>& getProp);
 
@@ -727,6 +729,7 @@ namespace util
 	template bool DragFloatMulti<RswLight>(BrowEdit* browEdit, Map* map, const std::vector<RswLight*>& data, const char* label, const std::function<float* (RswLight*)>& getProp, float v_speed, float v_min, float v_max);
 	template bool DragFloatMulti<RswEffect>(BrowEdit* browEdit, Map* map, const std::vector<RswEffect*>& data, const char* label, const std::function<float* (RswEffect*)>& getProp, float v_speed, float v_min, float v_max);
 	template bool DragFloatMulti<LubEffect>(BrowEdit* browEdit, Map* map, const std::vector<LubEffect*>& data, const char* label, const std::function<float* (LubEffect*)>& getProp, float v_speed, float v_min, float v_max);
+	template bool DragFloatMulti<StrEffect>(BrowEdit* browEdit, Map* map, const std::vector<StrEffect*>& data, const char* label, const std::function<float* (StrEffect*)>& getProp, float v_speed, float v_min, float v_max);
 	template bool DragFloatMulti<RswSound>(BrowEdit* browEdit, Map* map, const std::vector<RswSound*>& data, const char* label, const std::function<float* (RswSound*)>& getProp, float v_speed, float v_min, float v_max);
 	template bool DragFloatMulti<RswModel>(BrowEdit* browEdit, Map* map, const std::vector<RswModel*>& data, const char* label, const std::function<float* (RswModel*)>& getProp, float v_speed, float v_min, float v_max);
 	template bool DragFloatMulti<Rsw::Water>(BrowEdit* browEdit, Map* map, const std::vector<Rsw::Water*>& data, const char* label, const std::function<float* (Rsw::Water*)>& getProp, float v_speed, float v_min, float v_max);
@@ -794,6 +797,7 @@ namespace util
 	template bool DragIntMulti<RswLight>(BrowEdit* browEdit, Map* map, const std::vector<RswLight*>& data, const char* label, const std::function<int* (RswLight*)>& getProp, int v_speed, int v_min, int v_max);
 	template bool DragIntMulti<RswEffect>(BrowEdit* browEdit, Map* map, const std::vector<RswEffect*>& data, const char* label, const std::function<int* (RswEffect*)>& getProp, int v_speed, int v_min, int v_max);
 	template bool DragIntMulti<LubEffect>(BrowEdit* browEdit, Map* map, const std::vector<LubEffect*>& data, const char* label, const std::function<int* (LubEffect*)>& getProp, int v_speed, int v_min, int v_max);
+	template bool DragIntMulti<StrEffect>(BrowEdit* browEdit, Map* map, const std::vector<StrEffect*>& data, const char* label, const std::function<int* (StrEffect*)>& getProp, int v_speed, int v_min, int v_max);
 	template bool DragIntMulti<RswSound>(BrowEdit* browEdit, Map* map, const std::vector<RswSound*>& data, const char* label, const std::function<int* (RswSound*)>& getProp, int v_speed, int v_min, int v_max);
 	template bool DragIntMulti<RswModel>(BrowEdit* browEdit, Map* map, const std::vector<RswModel*>& data, const char* label, const std::function<int* (RswModel*)>& getProp, int v_speed, int v_min, int v_max);
 	template bool DragIntMulti<Rsw::Water>(BrowEdit* browEdit, Map* map, const std::vector<Rsw::Water*>& data, const char* label, const std::function<int* (Rsw::Water*)>& getProp, int v_speed, int v_min, int v_max);
@@ -861,6 +865,7 @@ namespace util
 	template bool DragCharMulti<RswLight>(BrowEdit* browEdit, Map* map, const std::vector<RswLight*>& data, const char* label, const std::function<char* (RswLight*)>& getProp, int v_speed, int v_min, int v_max);
 	template bool DragCharMulti<RswEffect>(BrowEdit* browEdit, Map* map, const std::vector<RswEffect*>& data, const char* label, const std::function<char* (RswEffect*)>& getProp, int v_speed, int v_min, int v_max);
 	template bool DragCharMulti<LubEffect>(BrowEdit* browEdit, Map* map, const std::vector<LubEffect*>& data, const char* label, const std::function<char* (LubEffect*)>& getProp, int v_speed, int v_min, int v_max);
+	template bool DragCharMulti<StrEffect>(BrowEdit* browEdit, Map* map, const std::vector<StrEffect*>& data, const char* label, const std::function<char* (StrEffect*)>& getProp, int v_speed, int v_min, int v_max);
 	template bool DragCharMulti<RswSound>(BrowEdit* browEdit, Map* map, const std::vector<RswSound*>& data, const char* label, const std::function<char* (RswSound*)>& getProp, int v_speed, int v_min, int v_max);
 	template bool DragCharMulti<RswModel>(BrowEdit* browEdit, Map* map, const std::vector<RswModel*>& data, const char* label, const std::function<char* (RswModel*)>& getProp, int v_speed, int v_min, int v_max);
 
@@ -954,6 +959,7 @@ namespace util
 	template bool DragFloat3Multi<RswModel>(BrowEdit* browEdit, Map* map, const std::vector<RswModel*>& data, const char* label, const std::function<glm::vec3* (RswModel*)>& getProp, float v_speed, float v_min, float v_max, bool moveTogether);
 	template bool DragFloat3Multi<RswEffect>(BrowEdit* browEdit, Map* map, const std::vector<RswEffect*>& data, const char* label, const std::function<glm::vec3* (RswEffect*)>& getProp, float v_speed, float v_min, float v_max, bool moveTogether);
 	template bool DragFloat3Multi<LubEffect>(BrowEdit* browEdit, Map* map, const std::vector<LubEffect*>& data, const char* label, const std::function<glm::vec3* (LubEffect*)>& getProp, float v_speed, float v_min, float v_max, bool moveTogether);
+	template bool DragFloat3Multi<StrEffect>(BrowEdit* browEdit, Map* map, const std::vector<StrEffect*>& data, const char* label, const std::function<glm::vec3* (StrEffect*)>& getProp, float v_speed, float v_min, float v_max, bool moveTogether);
 	template bool DragFloat3Multi<RswSound>(BrowEdit* browEdit, Map* map, const std::vector<RswSound*>& data, const char* label, const std::function<glm::vec3* (RswSound*)>& getProp, float v_speed, float v_min, float v_max, bool moveTogether);
 	template bool DragFloat3Multi<RswLight>(BrowEdit* browEdit, Map* map, const std::vector<RswLight*>& data, const char* label, const std::function<glm::vec3* (RswLight*)>& getProp, float v_speed, float v_min, float v_max, bool moveTogether);
 
@@ -1040,6 +1046,7 @@ namespace util
 	template bool DragFloat2Multi<RswModel>(BrowEdit* browEdit, Map* map, const std::vector<RswModel*>& data, const char* label, const std::function<glm::vec2* (RswModel*)>& getProp, float v_speed, float v_min, float v_max, bool moveTogether);
 	template bool DragFloat2Multi<RswEffect>(BrowEdit* browEdit, Map* map, const std::vector<RswEffect*>& data, const char* label, const std::function<glm::vec2* (RswEffect*)>& getProp, float v_speed, float v_min, float v_max, bool moveTogether);
 	template bool DragFloat2Multi<LubEffect>(BrowEdit* browEdit, Map* map, const std::vector<LubEffect*>& data, const char* label, const std::function<glm::vec2* (LubEffect*)>& getProp, float v_speed, float v_min, float v_max, bool moveTogether);
+	template bool DragFloat2Multi<StrEffect>(BrowEdit* browEdit, Map* map, const std::vector<StrEffect*>& data, const char* label, const std::function<glm::vec2* (StrEffect*)>& getProp, float v_speed, float v_min, float v_max, bool moveTogether);
 	template bool DragFloat2Multi<RswSound>(BrowEdit* browEdit, Map* map, const std::vector<RswSound*>& data, const char* label, const std::function<glm::vec2* (RswSound*)>& getProp, float v_speed, float v_min, float v_max, bool moveTogether);
 	template bool DragFloat2Multi<RswLight>(BrowEdit* browEdit, Map* map, const std::vector<RswLight*>& data, const char* label, const std::function<glm::vec2* (RswLight*)>& getProp, float v_speed, float v_min, float v_max, bool moveTogether);
 
@@ -1110,6 +1117,7 @@ namespace util
 	template bool ColorEdit3Multi<RswModel>(BrowEdit* browEdit, Map* map, const std::vector<RswModel*>& data, const char* label, const std::function<glm::vec3* (RswModel*)>& getProp);
 	template bool ColorEdit3Multi<RswEffect>(BrowEdit* browEdit, Map* map, const std::vector<RswEffect*>& data, const char* label, const std::function<glm::vec3* (RswEffect*)>& getProp);
 	template bool ColorEdit3Multi<LubEffect>(BrowEdit* browEdit, Map* map, const std::vector<LubEffect*>& data, const char* label, const std::function<glm::vec3* (LubEffect*)>& getProp);
+	template bool ColorEdit3Multi<StrEffect>(BrowEdit* browEdit, Map* map, const std::vector<StrEffect*>& data, const char* label, const std::function<glm::vec3* (StrEffect*)>& getProp);
 	template bool ColorEdit3Multi<RswSound>(BrowEdit* browEdit, Map* map, const std::vector<RswSound*>& data, const char* label, const std::function<glm::vec3* (RswSound*)>& getProp);
 	template bool ColorEdit3Multi<RswLight>(BrowEdit* browEdit, Map* map, const std::vector<RswLight*>& data, const char* label, const std::function<glm::vec3* (RswLight*)>& getProp);
 
@@ -1182,6 +1190,7 @@ namespace util
 	template bool ColorEdit4Multi<RswModel>(BrowEdit* browEdit, Map* map, const std::vector<RswModel*>& data, const char* label, const std::function<glm::vec4* (RswModel*)>& getProp);
 	template bool ColorEdit4Multi<RswEffect>(BrowEdit* browEdit, Map* map, const std::vector<RswEffect*>& data, const char* label, const std::function<glm::vec4* (RswEffect*)>& getProp);
 	template bool ColorEdit4Multi<LubEffect>(BrowEdit* browEdit, Map* map, const std::vector<LubEffect*>& data, const char* label, const std::function<glm::vec4* (LubEffect*)>& getProp);
+	template bool ColorEdit4Multi<StrEffect>(BrowEdit* browEdit, Map* map, const std::vector<StrEffect*>& data, const char* label, const std::function<glm::vec4* (StrEffect*)>& getProp);
 	template bool ColorEdit4Multi<RswSound>(BrowEdit* browEdit, Map* map, const std::vector<RswSound*>& data, const char* label, const std::function<glm::vec4* (RswSound*)>& getProp);
 	template bool ColorEdit4Multi<RswLight>(BrowEdit* browEdit, Map* map, const std::vector<RswLight*>& data, const char* label, const std::function<glm::vec4* (RswLight*)>& getProp);
 
@@ -1250,6 +1259,7 @@ namespace util
 	template bool CheckboxMulti<RswLight>(BrowEdit* browEdit, Map* map, const std::vector<RswLight*>& data, const char* label, const std::function<bool* (RswLight*)>& getProp);
 	template bool CheckboxMulti<RswEffect>(BrowEdit* browEdit, Map* map, const std::vector<RswEffect*>& data, const char* label, const std::function<bool* (RswEffect*)>& getProp);
 	template bool CheckboxMulti<LubEffect>(BrowEdit* browEdit, Map* map, const std::vector<LubEffect*>& data, const char* label, const std::function<bool* (LubEffect*)>& getProp);
+	template bool CheckboxMulti<StrEffect>(BrowEdit* browEdit, Map* map, const std::vector<StrEffect*>& data, const char* label, const std::function<bool* (StrEffect*)>& getProp);
 	template bool CheckboxMulti<RswSound>(BrowEdit* browEdit, Map* map, const std::vector<RswSound*>& data, const char* label, const std::function<bool* (RswSound*)>& getProp);
 	template bool CheckboxMulti<RswModel>(BrowEdit* browEdit, Map* map, const std::vector<RswModel*>& data, const char* label, const std::function<bool* (RswModel*)>& getProp);
 
@@ -1331,6 +1341,7 @@ namespace util
 	template bool ComboBoxMulti<RswLight>(BrowEdit* browEdit, Map* map, const std::vector<RswLight*>& data, const char* label, const char* items, const std::function<int* (RswLight*)>& getProp);
 	template bool ComboBoxMulti<RswEffect>(BrowEdit* browEdit, Map* map, const std::vector<RswEffect*>& data, const char* label, const char* items, const std::function<int* (RswEffect*)>& getProp);
 	template bool ComboBoxMulti<LubEffect>(BrowEdit* browEdit, Map* map, const std::vector<LubEffect*>& data, const char* label, const char* items, const std::function<int* (LubEffect*)>& getProp);
+	template bool ComboBoxMulti<StrEffect>(BrowEdit* browEdit, Map* map, const std::vector<StrEffect*>& data, const char* label, const char* items, const std::function<int* (StrEffect*)>& getProp);
 	template bool ComboBoxMulti<RswSound>(BrowEdit* browEdit, Map* map, const std::vector<RswSound*>& data, const char* label, const char* items, const std::function<int* (RswSound*)>& getProp);
 	template bool ComboBoxMulti<RswModel>(BrowEdit* browEdit, Map* map, const std::vector<RswModel*>& data, const char* label, const char* items, const std::function<int* (RswModel*)>& getProp);
 
@@ -1993,6 +2004,26 @@ namespace util
 		euler = glm::degrees(euler);
 	}
 
+	int d3dToOpenGlBlend(int d3d)
+	{
+		switch (d3d)
+		{
+		case 1:		return GL_ZERO;
+		case 2:		return GL_ONE;
+		case 3:		return GL_SRC_COLOR;
+		case 4:		return GL_ONE_MINUS_SRC_COLOR;
+		case 5:		return GL_SRC_ALPHA;
+		case 6:		return GL_ONE_MINUS_SRC_ALPHA;
+		case 7:		return GL_DST_ALPHA;
+		case 8:		return GL_ONE_MINUS_DST_ALPHA;
+		case 9:		return GL_DST_COLOR;
+		case 10:	return GL_ONE_MINUS_DST_COLOR;
+		case 11:	return GL_SRC_ALPHA_SATURATE;
+		case 12:	return GL_SRC_ALPHA;
+		case 13:	return GL_ONE_MINUS_SRC_ALPHA;
+		}
+		return GL_ZERO;
+	}
 }
 
 
@@ -2032,7 +2063,6 @@ namespace glm
 		j[2].get_to(v.z);
 		j[3].get_to(v.w);
 	}
-
 	void to_json(nlohmann::json& j, const glm::ivec2& v) {
 		j = nlohmann::json{ v.x, v.y };
 	}
@@ -2058,9 +2088,45 @@ namespace glm
 		j[2].get_to(v.z);
 		j[3].get_to(v.w);
 	}
+
+	void from_lua(const sol::table& j, glm::vec4& v) {
+		v.x = j.get_or(1, 0.0f);
+		v.y = j.get_or(2, 0.0f);
+		v.z = j.get_or(3, 0.0f);
+		v.w = j.get_or(4, 0.0f);
+	}
+	void from_lua(const sol::table& j, glm::vec3& v) {
+		v.x = j.get_or(1, 0.0f);
+		v.y = j.get_or(2, 0.0f);
+		v.z = j.get_or(3, 0.0f);
+	}
+	void from_lua(const sol::table& j, glm::vec2& v) {
+		v.x = j.get_or(1, 0.0f);
+		v.y = j.get_or(2, 0.0f);
+	}
+	void from_lua(const sol::table& j, glm::ivec4& v) {
+		v.x = j.get_or(1, 0);
+		v.y = j.get_or(2, 0);
+		v.z = j.get_or(3, 0);
+		v.w = j.get_or(4, 0);
+	}
+	void from_lua(const sol::table& j, glm::ivec2& v) {
+		v.x = j.get_or(1, 0);
+		v.y = j.get_or(2, 0);
+	}
+	void from_lua(const sol::table& j, glm::lowp_i8vec4& v) {
+		v.x = j.get_or(1, 0);
+		v.y = j.get_or(2, 0);
+		v.z = j.get_or(3, 0);
+		v.w = j.get_or(4, 0);
+	}
+	void from_lua(const sol::table& j, glm::quat& v) {
+		v.x = j.get_or(1, 0.0f);
+		v.y = j.get_or(2, 0.0f);
+		v.z = j.get_or(3, 0.0f);
+		v.w = j.get_or(4, 0.0f);
+	}
 }
-
-
 
 void to_json(nlohmann::json& j, const ImVec4& v) {
 	j = nlohmann::json{ v.x, v.y, v.z, v.w };

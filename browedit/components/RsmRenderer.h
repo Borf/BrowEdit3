@@ -30,7 +30,7 @@ public:
 		int counter = 0;
 
 		RsmRenderContext();
-		virtual void preFrame(Node* rootNode, NodeRenderContext& context) override;
+		virtual void preFrame(Node* rootNode, NodeRenderContext& context, std::vector<Renderer*>& renderers) override;
 		virtual void postFrame(NodeRenderContext& context) override;
 	};
 	class VboIndex

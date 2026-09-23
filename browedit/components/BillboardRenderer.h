@@ -53,7 +53,7 @@ public:
 		bool viewLighting = true;
 
 		BillboardRenderContext();
-		virtual void preFrame(Node* rootNode, NodeRenderContext& context) override;
+		virtual void preFrame(Node* rootNode, NodeRenderContext& context, std::vector<Renderer*>& renderers) override;
 	};
 
 	BillboardRenderer(const std::string& texture, const std::string& texture_selected = "");

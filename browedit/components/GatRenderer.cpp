@@ -66,7 +66,7 @@ GatRenderer::GatRenderContext::GatRenderContext() : shader(util::ResourceManager
 }
 
 
-void GatRenderer::GatRenderContext::preFrame(Node* rootNode, NodeRenderContext& context)
+void GatRenderer::GatRenderContext::preFrame(Node* rootNode, NodeRenderContext& context, std::vector<Renderer*>& renderers)
 {
 	texture->bind();
 	shader->use();

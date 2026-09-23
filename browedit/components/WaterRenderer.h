@@ -25,7 +25,7 @@ public:
 		WaterShader* shader = nullptr;
 
 		WaterRenderContext();
-		virtual void preFrame(Node* rootNode, NodeRenderContext& context) override;
+		virtual void preFrame(Node* rootNode, NodeRenderContext& context, std::vector<Renderer*>& renderers) override;
 	};
 
 	class VboIndex

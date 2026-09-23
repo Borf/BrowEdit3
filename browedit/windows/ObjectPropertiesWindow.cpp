@@ -9,6 +9,7 @@
 void BrowEdit::showObjectProperties()
 {
 	ImGui::Begin("Properties");
+
 	if (activeMapView && activeMapView->map->selectedNodes.size() == 1)
 	{
 		if (util::InputText(this, activeMapView->map, activeMapView->map->selectedNodes[0], "Name", &activeMapView->map->selectedNodes[0]->name, 0, "Renaming"))
@@ -32,9 +33,9 @@ void BrowEdit::showObjectProperties()
 		RswModel::buildImGuiMulti(this, activeMapView->map->selectedNodes);
 		RswEffect::buildImGuiMulti(this, activeMapView->map->selectedNodes);
 		LubEffect::buildImGuiMulti(this, activeMapView->map->selectedNodes);
+		StrEffect::buildImGuiMulti(this, activeMapView->map->selectedNodes);
 		RswSound::buildImGuiMulti(this, activeMapView->map->selectedNodes);
 	}
-
 
 	ImGui::End();
 }

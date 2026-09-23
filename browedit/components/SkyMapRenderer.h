@@ -1,0 +1,89 @@
+#pragma once
+
+#include "Renderer.h"
+#include <browedit/gl/Shader.h>
+#include <browedit/util/Singleton.h>
+
+namespace gl { class Texture; }
+class RswObject;
+class Gnd;
+class LubEffect;
+class BillboardRenderer;
+
+class SkyMapRenderer : public Renderer
+{
+public:
+	class LubShader : public gl::Shader
+	{
+	public:
+		LubShader() : gl::Shader("data/shaders/skymap", Uniforms::End) { bindUniforms(); }
+		struct Uniforms
+		{
+			enum
+			{
+				projectionMatrix,
+				cameraMatrix,
+				modelMatrix,
+				s_texture,
+				color,
+				billboard_off,
+				scale,
+				selection,
+				End
+			};
+		};
+		void bindUniforms() override
+		{
+			bindUniform(Uniforms::projectionMatrix, "projectionMatrix");
+			bindUniform(Uniforms::cameraMatrix, "cameraMatrix");
+			bindUniform(Uniforms::s_texture, "s_texture");
+			bindUniform(Uniforms::modelMatrix, "modelMatrix");
+			bindUniform(Uniforms::color, "color");
+			bindUniform(Uniforms::billboard_off, "billboard_off");
+			bindUniform(Uniforms::scale, "scale");
+			bindUniform(Uniforms::selection, "selection");
+		}
+	};
+private:
+	bool dirty = true;
+	RswObject* rswObject = nullptr;
+	LubEffect* lubEffect = nullptr;
+	BillboardRenderer* billboardRenderer = nullptr;
+
+	gl::Texture* texture = nullptr;
+
+	float lastTime;
+	float nextEmitTime = 0;
+	class Particle
+	{
+	public:
+		glm::vec3 startPosition;
+		glm::vec3 position;
+		glm::vec3 speed;
+		glm::vec3 dir;
+		float size;
+		float alpha;
+		float duration;
+		float tickStart;
+		bool toDelete;
+	};
+	std::vector<Particle> particles;
+
+public:
+	Gnd* gnd;
+	class LubRenderContext : public Renderer::RenderContext, public util::Singleton<LubRenderContext>
+	{
+	public:
+		LubShader* shader = nullptr;
+		glm::mat4 viewMatrix = glm::mat4(1.0f);
+
+		LubRenderContext();
+		virtual void preFrame(Node* rootNode, NodeRenderContext& context) override;
+	};
+
+	SkyMapRenderer();
+	~SkyMapRenderer();
+	virtual void render(NodeRenderContext& context);
+	bool selected = false;
+	void setDirty() { this->dirty = true; }
+};

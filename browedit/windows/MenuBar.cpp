@@ -11,6 +11,8 @@
 #include <browedit/components/Gnd.h>
 #include <browedit/components/GndRenderer.h>
 #include <browedit/components/RsmRenderer.h>
+#include <browedit/components/LubRenderer.h>
+#include <browedit/components/StrRenderer.h>
 #include <browedit/components/Rsw.h>
 #include <browedit/components/BillboardRenderer.h>
 #include <browedit/util/ResourceManager.h>
@@ -150,8 +152,67 @@ void BrowEdit::menuBar()
 
 		ImGui::EndMenu();
 	}
-	if (editMode == EditMode::Object && activeMapView && ImGui::BeginMenu("Light Edit"))
+	if (editMode == EditMode::Object && activeMapView && ImGui::BeginMenu("Object Edit"))
 	{
+		if (ImGui::MenuItem("Add new lub effect")) {
+			auto e = new RswEffect();
+			e->id = 974;
+			e->loop = 1.0f;
+			Node* newNode = new Node("effect");
+			newNode->addComponent(new RswObject());
+			newNode->addComponent(e);
+			newNode->addComponent(new BillboardRenderer("data\\effect.png", "data\\effect_selected.png"));
+			newNode->addComponent(new CubeCollider(5));
+
+			auto lubEffect = new LubEffect();
+			newNode->addComponent(lubEffect);
+			// Add dummy data to show something
+			lubEffect->texture = "smoke2.bmp";
+			lubEffect->gravity = glm::vec3(0, -5, 0);
+			lubEffect->color = glm::vec4(1);
+			lubEffect->rate = glm::vec2(5, 15);
+			lubEffect->size = glm::vec2(3, 8);
+			lubEffect->life = glm::vec2(1, 5);
+			lubEffect->scale = glm::vec2(1, 1);
+			lubEffect->speed = 0.5f;
+			lubEffect->srcmode = 10;
+			lubEffect->destmode = 2;
+			lubEffect->maxcount = 30;
+			lubEffect->zenable = 1;
+			lubEffect->eternity = 0;
+
+			newNode->addComponent(new LubRenderer());
+
+			newNodes.push_back(std::pair<Node*, glm::vec3>(newNode, glm::vec3(0, 0, 0)));
+			newNodesCenter = glm::vec3(0, 0, 0);
+			newNodePlacement = BrowEdit::Ground;
+		}
+
+		if (ImGui::MenuItem("Add new str effect")) {
+			auto e = new RswEffect();
+			e->id = 1412;
+			e->loop = 1.0f;
+			Node* newNode = new Node("effect");
+			newNode->addComponent(new RswObject());
+			newNode->addComponent(e);
+			newNode->addComponent(new BillboardRenderer("data\\effect.png", "data\\effect_selected.png"));
+			newNode->addComponent(new CubeCollider(5));
+
+			auto strEffect = new StrEffect();
+			newNode->addComponent(strEffect);
+			// Add dummy data to show something
+			strEffect->str = "magnificat.str";
+			strEffect->alpharatio = 1.0f;
+			strEffect->scaleratio = 1.0f;
+			strEffect->renderflag = 37;
+
+			newNode->addComponent(new StrRenderer());
+
+			newNodes.push_back(std::pair<Node*, glm::vec3>(newNode, glm::vec3(0, 0, 0)));
+			newNodesCenter = glm::vec3(0, 0, 0);
+			newNodePlacement = BrowEdit::Ground;
+		}
+
 		if (ImGui::MenuItem("Add new light")) {
 			auto l = new RswLight();
 			l->range = 60.0f;

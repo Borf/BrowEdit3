@@ -78,7 +78,7 @@ public:
 		glm::mat4 viewMatrix = glm::mat4(1.0f);
 
 		LubRenderContext();
-		virtual void preFrame(Node* rootNode, NodeRenderContext& context) override;
+		virtual void preFrame(Node* rootNode, NodeRenderContext& context, std::vector<Renderer*>& renderers) override;
 	};
 
 	LubRenderer();
