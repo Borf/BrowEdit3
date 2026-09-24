@@ -10,12 +10,18 @@
 #include <browedit/util/Tree.h>
 #include <browedit/math/AABB.h>
 #include <json.hpp>
+#include <sol.hpp>
 
 class RsmRenderer;
 class Gnd;
 class Map;
 class BrowEdit;
 namespace gl { class Texture; }
+
+struct LubEffectTableData {
+	std::map<int, sol::table> emitters;
+	std::map<int, sol::table> ez2str;
+};
 
 class Rsw : public Component, public ImguiProps
 {
@@ -170,6 +176,9 @@ public:
 	void buildImGui(BrowEdit* browEdit) override;
 	void recalculateQuadtree(QuadTreeNode* node = nullptr);
 	glm::vec3 rayCastWater(const math::Ray& ray, Gnd* gnd, bool emptyTiles = false, int xMin = 0, int yMin = 0, int xMax = -1, int yMax = -1, float offset = 0.0f);
+private:
+	std::string loadLubToLua(std::istream* lub, BrowEdit* browEdit);
+	bool loadLubEffectFile(const std::string& mapName, BrowEdit* browEdit, sol::state& lua, LubEffectTableData& outData);
 };
 
 
@@ -292,9 +301,23 @@ public:
 	glm::vec3 rotate_angle; // v3
 	bool dirty;
 
-	void load(const nlohmann::json& data);
+	void load(const sol::table& data);
 	static void buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>&);
 	NLOHMANN_DEFINE_TYPE_INTRUSIVE(LubEffect, dir1, dir2, gravity, pos, radius, color, rate, size, life, scale, texture, speed, srcmode, destmode, maxcount, zenable, billboard_off, eternity, rotate_angle);
+};
+
+class StrEffect : public Component
+{
+public:
+	std::string str;
+	int renderflag;
+	float scaleratio;
+	float alpharatio;
+	bool dirty;
+
+	void load(const sol::table& data);
+	static void buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>&);
+	NLOHMANN_DEFINE_TYPE_INTRUSIVE(StrEffect, str, renderflag, scaleratio, alpharatio);
 };
 
 class RswEffect : public Component

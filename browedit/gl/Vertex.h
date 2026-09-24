@@ -187,3 +187,14 @@
 			set(alpha, index);
 		}
 	};
+
+	class VertexP2T2 : public Vert<3 + 2>
+	{
+	public:
+		VertexP2T2(const glm::vec2& pos, const glm::vec2& t)
+		{
+			int index = 0;
+			set(pos, index);
+			set(t, index);
+		}
+	};

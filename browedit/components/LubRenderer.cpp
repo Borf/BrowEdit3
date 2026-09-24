@@ -22,28 +22,6 @@ LubRenderer::~LubRenderer()
 		util::ResourceManager<gl::Texture>::unload(texture);
 }
 
-
-int d3dToOpenGlBlend(int d3d)
-{
-	switch (d3d)
-	{
-	case 1:		return GL_ZERO;
-	case 2:		return GL_ONE;
-	case 3:		return GL_SRC_COLOR;
-	case 4:		return GL_ONE_MINUS_SRC_COLOR;
-	case 5:		return GL_SRC_ALPHA;
-	case 6:		return GL_ONE_MINUS_SRC_ALPHA;
-	case 7:		return GL_DST_ALPHA;
-	case 8:		return GL_ONE_MINUS_DST_ALPHA;
-	case 9:		return GL_DST_COLOR;
-	case 10:	return GL_ONE_MINUS_DST_COLOR;
-	case 11:	return GL_SRC_ALPHA_SATURATE;
-	case 12:	return GL_SRC_ALPHA;
-	case 13:	return GL_ONE_MINUS_SRC_ALPHA;
-	}
-	return GL_ZERO;
-}
-
 void LubRenderer::render(NodeRenderContext& context)
 {
 	if (!rswObject)
@@ -64,7 +42,7 @@ void LubRenderer::render(NodeRenderContext& context)
 
 		if (lubEffect && lubEffect->texture != "")
 		{
-			texture = util::ResourceManager<gl::Texture>::load("data\\texture\\" + util::replace(lubEffect->texture, "\\\\", "\\"));
+			texture = util::ResourceManager<gl::Texture>::load("data\\texture\\" + util::utf8_to_iso_8859_1(util::replace(lubEffect->texture, "\\\\", "\\")));
 		}
 		else
 			texture = nullptr;
@@ -158,8 +136,8 @@ void LubRenderer::render(NodeRenderContext& context)
 	else
 		glDisable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
-	int src = d3dToOpenGlBlend(lubEffect->srcmode);
-	int dst = d3dToOpenGlBlend(lubEffect->destmode);
+	int src = util::d3dToOpenGlBlend(lubEffect->srcmode);
+	int dst = util::d3dToOpenGlBlend(lubEffect->destmode);
 	glBlendFuncSeparate(src, dst, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 	glDepthMask(0);
 
@@ -220,7 +198,7 @@ LubRenderer::LubRenderContext::LubRenderContext() : shader(util::ResourceManager
 	order = 4;
 }
 
-void LubRenderer::LubRenderContext::preFrame(Node* rootNode, NodeRenderContext& context)
+void LubRenderer::LubRenderContext::preFrame(Node* rootNode, NodeRenderContext& context, std::vector<Renderer*>& renderers)
 {
 	glEnable(GL_DEPTH_TEST);
 	shader->use();

@@ -377,7 +377,7 @@ RsmRenderer::RsmRenderContext::RsmRenderContext() : shader(util::ResourceManager
 	shader->setUniform(RsmShader::Uniforms::s_texture, 0);
 }
 
-void RsmRenderer::RsmRenderContext::preFrame(Node* rootNode, NodeRenderContext& context)
+void RsmRenderer::RsmRenderContext::preFrame(Node* rootNode, NodeRenderContext& context, std::vector<Renderer*>& renderers)
 {
 	shader->use();
 

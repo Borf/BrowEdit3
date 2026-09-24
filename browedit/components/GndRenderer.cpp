@@ -189,7 +189,7 @@ GndRenderer::GndRenderContext::GndRenderContext() : shader(util::ResourceManager
 }
 
 
-void GndRenderer::GndRenderContext::preFrame(Node* rootNode, NodeRenderContext& context)
+void GndRenderer::GndRenderContext::preFrame(Node* rootNode, NodeRenderContext& context, std::vector<Renderer*>& renderers)
 {
 	shader->use();
 	shader->setUniform(GndShader::Uniforms::ProjectionMatrix, context.projectionMatrix);

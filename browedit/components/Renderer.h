@@ -16,7 +16,7 @@ public:
 		int order = 0;
 		int phases = 1;
 		int phase = 0;
-		virtual void preFrame(Node* rootNode, NodeRenderContext& context) = 0;
+		virtual void preFrame(Node* rootNode, NodeRenderContext& context, std::vector<Renderer*>& renderers) = 0;
 		virtual void postFrame(NodeRenderContext& context) { }
 	};
 

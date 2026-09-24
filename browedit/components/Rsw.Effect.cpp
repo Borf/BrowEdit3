@@ -12,6 +12,7 @@
 #include <browedit/actions/AddComponentAction.h>
 #include <browedit/actions/RemoveComponentAction.h>
 #include <browedit/actions/LubChangeTextureAction.h>
+#include <browedit/actions/StrChangeSourceAction.h>
 
 #include <iostream>
 #include <fstream>
@@ -92,43 +93,44 @@ void RswEffect::buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>& no
 
 
 
-void LubEffect::load(const json& data)
+void LubEffect::load(const sol::table& data)
 {
-	if (data.is_null())
+	if (!data.valid())
 		return;
-	from_json(data["dir1"], dir1);
-	from_json(data["dir2"], dir2);
-	from_json(data["gravity"], gravity);
-	from_json(data["pos"], pos);
-	from_json(data["radius"], radius);
-	if(data["color"].size() == 4)
-		from_json(data["color"], color);
+	from_lua(data["dir1"], dir1);
+	from_lua(data["dir2"], dir2);
+	from_lua(data["gravity"], gravity);
+	from_lua(data["pos"], pos);
+	from_lua(data["radius"], radius);
+	sol::table color_tbl = data["color"];
+	if(color_tbl.size() == 4)
+		from_lua(data["color"], color);
 	else
 	{
-		color.r = data["color"][0].get<float>();
-		color.g = data["color"][1].get<float>();
-		color.b = data["color"][2].get<float>();
+		color.r = color_tbl[1].get<float>();
+		color.g = color_tbl[2].get<float>();
+		color.b = color_tbl[3].get<float>();
 		color.a = 255;
 	}
 	color /= 255.0f;
-	from_json(data["rate"], rate);
-	from_json(data["size"], size);
-	from_json(data["life"], life);
-	texture = util::replace(data["texture"], "\\\\", "\\");
-	speed = data["speed"][0];
-	srcmode = data["srcmode"][0];
-	destmode = data["destmode"][0];
-	maxcount = data["maxcount"][0];
-	zenable = data["zenable"][0];
+	from_lua(data["rate"], rate);
+	from_lua(data["size"], size);
+	from_lua(data["life"], life);
+	texture = util::iso_8859_1_to_utf8(util::replace(data["texture"], "\\\\", "\\"));
+	speed = data["speed"][1];
+	srcmode = data["srcmode"][1];
+	destmode = data["destmode"][1];
+	maxcount = data["maxcount"][1];
+	zenable = data["zenable"][1];
 	
-	if (data.find("billboard_off") != data.end())
-		billboard_off = data["billboard_off"][0];
-	if (data.find("eternity") != data.end())
-		eternity = data["eternity"][0];
-	if (data.find("scale") != data.end())
-		from_json(data["scale"], scale);
-	if (data.find("rotate_angle") != data.end())
-		from_json(data["rotate_angle"], rotate_angle);
+	if (data["billboard_off"].valid())
+		billboard_off = data["billboard_off"][1];
+	if (data["eternity"].valid())
+		eternity = data["eternity"][1];
+	if (data["scale"].valid())
+		from_lua(data["scale"], scale);
+	if (data["rotate_angle"].valid())
+		from_lua(data["rotate_angle"], rotate_angle);
 }
 
 void LubEffect::buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>& nodes)
@@ -190,8 +192,8 @@ void LubEffect::buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>& no
 			browEdit->activeMapView->map->doAction(new LubChangeTextureAction(node->getComponent<LubEffect>(), *startValue, *ptr), browEdit);
 		});
 		util::DragFloatMulti<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "speed", [](LubEffect* e) {return &e->speed; }, 0.1f, 0, 0);
-		util::DragIntMulti<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "srcmode", [](LubEffect* e) {return &e->srcmode; }, 1, 0, 0);
-		util::DragIntMulti<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "destmode", [](LubEffect* e) {return &e->destmode; }, 1, 0, 20);
+		util::ComboBoxMulti<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "Src Blend", "Zero\0Zero\0One\0SrcColor\0iSrcColor\0SrcAlpha\0iSrcAlpha\0DstAlpha\0iDstAlpha\0DstColor\0iDstColor\0SrcAlphaSat\0BothSrcAlpha\0BothInverseSrcAlpha\0", [](LubEffect* e) { return (int*)&e->srcmode - 1; });
+		util::ComboBoxMulti<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "Dst Blend", "Zero\0Zero\0One\0SrcColor\0iSrcColor\0SrcAlpha\0iSrcAlpha\0DstAlpha\0iDstAlpha\0DstColor\0iDstColor\0SrcAlphaSat\0BothSrcAlpha\0BothInverseSrcAlpha\0", [](LubEffect* e) { return (int*)&e->destmode - 1; });
 		util::DragIntMulti<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "maxcount", [](LubEffect* e) {return &e->maxcount; }, 1, 0, 20);
 		util::DragIntMulti<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "zenable", [](LubEffect* e) {return &e->zenable; }, 1, 0, 1);
 		util::DragIntMulti<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "billboard_off ", [](LubEffect* e) {return &e->billboard_off; }, 1, 0, 1);
@@ -199,4 +201,69 @@ void LubEffect::buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>& no
 		util::DragIntMulti<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "eternity", [](LubEffect* e) {return &e->eternity; }, 1, 0, 1);
 	}
 
+}
+
+void StrEffect::load(const sol::table& data)
+{
+	if (!data.valid())
+		return;
+	str = util::iso_8859_1_to_utf8(util::replace(data["str"], "\\\\", "\\"));
+	renderflag = std::stoi(data.get_or<std::string>("rednerflag", ""));
+	scaleratio = std::stof(data.get_or<std::string>("scaleratio", ""));
+	alpharatio = std::stof(data.get_or<std::string>("alpharatio", ""));
+}
+
+void StrEffect::buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>& nodes)
+{
+	std::vector<StrEffect*> strEffects;
+	std::ranges::copy(nodes | std::ranges::views::transform([](Node* n) { return n->getComponent<StrEffect>(); }) | std::ranges::views::filter([](StrEffect* r) { return r != nullptr; }), std::back_inserter(strEffects));
+	
+	if (strEffects.size() == 0)
+		return;
+
+	ImGui::Text("Str Effect");
+	if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0))
+	{
+		json clipboard;
+		to_json(clipboard, *strEffects[0]);
+		ImGui::SetClipboardText(clipboard.dump(1).c_str());
+	}
+
+	ImGui::PushID("StrEffect");
+	if (ImGui::BeginPopupContextItem("CopyPaste"))
+	{
+		try {
+			if (ImGui::MenuItem("Copy"))
+			{
+				json clipboard;
+				to_json(clipboard, *strEffects[0]);
+				ImGui::SetClipboardText(clipboard.dump(1).c_str());
+			}
+			if (ImGui::MenuItem("Paste (no undo)"))
+			{
+				auto cb = ImGui::GetClipboardText();
+				if (cb)
+					for (auto strEffect : strEffects)
+					{
+						from_json(json::parse(std::string(cb)), *strEffect);
+					}
+			}
+		}
+		catch (...) {}
+		ImGui::EndPopup();
+	}
+	ImGui::PopID();
+
+	if (browEdit->config.grfEditorPath == "")
+		ImGui::Text("Please set up grf editor to edit str effects, then reload the map");
+	else
+	{
+		util::InputTextMulti<StrEffect>(browEdit, browEdit->activeMapView->map, strEffects, "str", [](StrEffect* e) { return &e->str; }, [&](Node* node, std::string* ptr, std::string* startValue, const std::string& action) {
+			browEdit->activeMapView->map->doAction(new StrChangeSourceAction(node->getComponent<StrEffect>(), *startValue, *ptr), browEdit);
+		});
+		util::DragIntMulti<StrEffect>(browEdit, browEdit->activeMapView->map, strEffects, "renderflag", [](StrEffect* e) { return &e->renderflag; }, 1, 0, 99);
+		ImGui::Text("Use 37 to draw above the character, 45 to draw below.");
+		util::DragFloatMulti<StrEffect>(browEdit, browEdit->activeMapView->map, strEffects, "scaleratio", [](StrEffect* e) { return &e->scaleratio; }, 0.1f, 0, 5.0f);
+		util::DragFloatMulti<StrEffect>(browEdit, browEdit->activeMapView->map, strEffects, "alpharatio", [](StrEffect* e) { return &e->alpharatio; }, 0.1f, 0, 1.0f);
+	}
 }

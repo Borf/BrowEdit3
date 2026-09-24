@@ -47,7 +47,7 @@ void NodeRenderer::render(Node* rootNode, NodeRenderContext& context)
 	{
 		for (int phase = 0; phase < r->phases; phase++) {
 			r->phase = phase;
-			r->preFrame(rootNode, context);
+			r->preFrame(rootNode, context, renderers[r]);
 			for (auto renderer : renderers[r])
 				if (renderer->enabled && renderer->shouldRender(phase))
 					renderer->render(context);

@@ -5,10 +5,12 @@
 #include "Gnd.h"
 #include "Gat.h"
 #include "Rsm.h"
+#include "Str.h"
 #include "GndRenderer.h"
 #include "RsmRenderer.h"
 #include "GatRenderer.h"
 #include "LubRenderer.h"
+#include "StrRenderer.h"
 #include "WaterRenderer.h"
 
 #include <imgui.h>
@@ -28,6 +30,7 @@
 #include <imGuIZMOquat.h>
 #include <browedit/actions/GroupAction.h>
 #include <browedit/actions/WaterSplitChangeAction.h>
+#include <format>
 
 
 Rsw::Rsw()
@@ -40,6 +43,119 @@ Rsw::~Rsw()
 		delete quadtree;
 }
 
+
+
+std::string Rsw::loadLubToLua(std::istream *lub, BrowEdit* browEdit)
+{
+	char c = lub->get();
+	lub->seekg(0, std::ios_base::beg);
+	std::string data = "";
+	if (c == 0x1b)
+	{
+		std::ofstream out("tmp.lub", std::ios_base::binary | std::ios_base::out);
+		char buf[1024];
+		while (!lub->eof())
+		{
+			lub->read(buf, 1024);
+			auto count = lub->gcount();
+			out.write(buf, count);
+		}
+		out.close();
+
+		STARTUPINFO info = { sizeof(info) };
+		PROCESS_INFORMATION processInfo;
+		std::string cmd = browEdit->config.grfEditorPath + "GrfCL.exe -lub .\\tmp.lub .\\tmp.lua";
+
+		if (CreateProcess(nullptr, (LPSTR)cmd.c_str(), nullptr, nullptr, TRUE, 0, nullptr, nullptr, &info, &processInfo))
+		{
+			WaitForSingleObject(processInfo.hProcess, INFINITE);
+			CloseHandle(processInfo.hProcess);
+			CloseHandle(processInfo.hThread);
+		}
+		data = "";
+		std::ifstream lua("tmp.lua", std::ios_base::binary | std::ios_base::in);
+		if (lua.is_open())
+		{
+			char buf[1024];
+			while (!lua.eof())
+			{
+				lua.read(buf, 1024);
+				data += std::string(buf, lua.gcount());
+			}
+			lua.close();
+		}
+		std::filesystem::remove("tmp.lub");
+		std::filesystem::remove("tmp.lua");
+	}
+	else //this is a nasty renamed lua file to lub. Shame on you mappers!
+	{
+		char buf[1024];
+		while (!lub->eof())
+		{
+			lub->read(buf, 1024);
+			data += std::string(buf, lub->gcount());
+		}
+	}
+
+	return data;
+}
+
+bool Rsw::loadLubEffectFile(const std::string& mapName, BrowEdit* browEdit, sol::state& lua, LubEffectTableData& outData)
+{
+	auto lub = util::FileIO::open("data\\lua files\\effecttool\\" + mapName + ".lub");
+	if (!lub)
+		lub = util::FileIO::open("data\\luafiles514\\lua files\\effecttool\\" + mapName + ".lub");
+	if (!lub)
+		lub = util::FileIO::open("data\\LuaFiles514\\Lua Files\\effecttool\\" + mapName + ".lub");
+	if (!lub)
+		return false;
+
+	std::string data = loadLubToLua(lub, browEdit);
+	delete lub;
+
+	try {
+		auto load_result = lua.load(data);
+
+		if (!load_result.valid()) {
+			sol::error err = load_result;
+			std::cerr << "Syntax error in decompiled data: " << err.what() << "\n";
+			return false;
+		}
+
+		auto run_result = load_result();
+		if (!run_result.valid()) {
+			sol::error err = run_result;
+			std::cerr << "Runtime error executing decompiled data: " << err.what() << "\n";
+			return false;
+		}
+
+		std::string luaMapName = util::replace(mapName, "@", "");
+
+		lubVersion = lua.get_or("_" + luaMapName + "_effect_version", 0);
+
+		sol::object obj = lua["_" + luaMapName + "_emitterInfo"];
+		if (obj.is<sol::table>()) {
+			for (auto const& [key, value] : obj.as<sol::table>()) {
+				outData.emitters[key.as<int>()] = value.as<sol::table>();
+			}
+		}
+
+		obj = lua["_" + luaMapName + "_ez2strInfo"];
+		if (obj.is<sol::table>()) {
+			for (auto const& [key, value] : obj.as<sol::table>()) {
+				outData.ez2str[key.as<int>()] = value.as<sol::table>();
+			}
+		}
+
+		return true;
+	}
+	catch (const std::exception& e)
+	{
+		std::cerr << "Error loading lub effect data: " << e.what() << std::endl;
+		std::cout << data << std::endl;
+		return false;
+	}
+}
 
 
 void Rsw::load(const std::string& fileName, Map* map, BrowEdit* browEdit, bool loadModels, bool loadGnd)
@@ -55,142 +171,16 @@ void Rsw::load(const std::string& fileName, Map* map, BrowEdit* browEdit, bool l
 
 	json lubInfo = json::array();
 	std::map<int, json> lubInfoMap;
+	std::map<int, json> strInfoMap;
 
 	std::string mapName = fileName;
 	mapName = mapName.substr(0, mapName.size() - 4);
 	mapName = mapName.substr(mapName.rfind("\\") + 1);
-	auto lub = util::FileIO::open("data\\lua files\\effecttool\\" + mapName + ".lub");
-	if (!lub)
-		lub = util::FileIO::open("data\\luafiles514\\lua files\\effecttool\\" + mapName + ".lub");
-	if (!lub)
-		lub = util::FileIO::open("data\\LuaFiles514\\Lua Files\\effecttool\\" + mapName + ".lub");
-	if (lub)
-	{
-		char c = lub->get();
-		lub->seekg(0, std::ios_base::beg);
-		std::string data = "";
-		if (c == 0x1b)
-		{
-			std::ofstream out("tmp.lub", std::ios_base::binary | std::ios_base::out);
-			char buf[1024];
-			while (!lub->eof())
-			{
-				lub->read(buf, 1024);
-				auto count = lub->gcount();
-				out.write(buf, count);
-			}
-			out.close();
 
-			STARTUPINFO info = { sizeof(info) };
-			PROCESS_INFORMATION processInfo;
-			std::string cmd = browEdit->config.grfEditorPath + "GrfCL.exe -lub .\\tmp.lub .\\tmp.lua";
-
-			if (CreateProcess(nullptr, (LPSTR)cmd.c_str(), nullptr, nullptr, TRUE, 0, nullptr, nullptr, &info, &processInfo))
-			{
-				WaitForSingleObject(processInfo.hProcess, INFINITE);
-				CloseHandle(processInfo.hProcess);
-				CloseHandle(processInfo.hThread);
-			}
-			data = "";
-			std::ifstream lua("tmp.lua", std::ios_base::binary | std::ios_base::in);
-			if (lua.is_open())
-			{
-				char buf[1024];
-				while (!lua.eof())
-				{
-					lua.read(buf, 1024);
-					data += std::string(buf, lua.gcount());
-				}
-				lua.close();
-			}
-			std::filesystem::remove("tmp.lub");
-			std::filesystem::remove("tmp.lua");
-		}
-		else //this is a nasty renamed lua file to lub. Shame on you mappers!
-		{
-			char buf[1024];
-			while (!lub->eof())
-			{
-				lub->read(buf, 1024);
-				data += std::string(buf, lub->gcount());
-			}
-		}
-		delete lub;
-		
-		if (data != "" && data.find("{") != std::string::npos && data.find("version =") != std::string::npos)
-		{
-			std::string ver = data;
-			ver = ver.substr(ver.find("version ="));
-			ver = ver.substr(0, ver.find("\n"));
-			if (ver.find("\r"))
-				ver = ver.substr(0, ver.find("\r"));
-			ver = ver.substr(ver.rfind("=")+1);
-			ver = util::trim(ver);
-			lubVersion = std::stoi(ver);
-			//this is a dirty hack to change the main lua array into a json structure for automatic parsing...I'm wondering if it's not easier to just write a lua parser
-			data = data.substr(data.find("{")); // strip beginning;
-			data = util::replace(data, "\r\n", "\n");
-			while (data.find("\t\n") != std::string::npos)//omg mina, clean up your newlines
-				data = util::replace(data, "\t\n", "\n");
-			while (data.find(" \n") != std::string::npos)
-				data = util::replace(data, " \n", "\n");
-			while (data.find("\n\n") != std::string::npos)
-				data = util::replace(data, "\n\n", "\n");
-			data = util::replace(data, "\\", "\\\\");
-			data = util::replace(data, "[[", "\"");
-			data = util::replace(data, "]]", "\"");
-			std::replace(data.begin(), data.end(), '[', '\"');
-			std::replace(data.begin(), data.end(), ']', '\"');
-			data = util::replace(data, "\"\"", "");
-			std::replace(data.begin(), data.end(), '=', ':');
-			auto lines = util::split(data, "\n");
-			bool done = false;
-			for (auto i = 0; i < lines.size(); i++)
-			{
-				if (lines[i].find("--") != std::string::npos)
-					lines[i] = util::rtrim(lines[i].substr(0, lines[i].find("--")));//remove comments
-				if (lines[i].size() > 3 && lines[i][0] == '\t' && lines[i][1] == '\t' && lines[i][2] != '\t')
-				{
-					lines[i] = "\t\t\"" + lines[i].substr(2, lines[i].find(" ") - 2) + "\"" + lines[i].substr(lines[i].find(" ") + 1);
-					std::replace(lines[i].begin(), lines[i].end(), '{', '[');
-					std::replace(lines[i].begin(), lines[i].end(), '}', ']');
-				}
-				auto trimmed = util::trim(lines[i]); // why you do this to me mina? remove comma at end of list
-				if (i < lines.size() - 1 && trimmed.size() > 0 && trimmed[trimmed.size() - 1] == ',' && (util::trim(lines[i + 1]) == "}," || util::trim(lines[i + 1]) == "}"))
-					lines[i] = lines[i].substr(0, lines[i].rfind(",")) + lines[i].substr(lines[i].rfind(",") + 1);
-
-				if (done)
-					lines[i] = "";
-				if (util::rtrim(lines[i]) == "}")
-					done = true;
-			}
-
-			std::string jsondata = util::combine(lines, "\n");
-			while (jsondata.find("\n\n") != std::string::npos)
-				jsondata = util::replace(jsondata, "\n\n", "\n");
-
-			jsondata = util::trim(jsondata);
-
-			try
-			{
-				lubInfo = json::parse(jsondata);
-				
-				for (auto& it : lubInfo.items()) {
-					lubInfoMap[atoi(it.key().c_str())] = it.value();
-				}
-			}
-			catch (const std::exception& e)
-			{
-				std::cerr << "Error loading json from lub data: " << e.what() << std::endl;
-				std::cout << jsondata << std::endl;
-			}
-		}
-		else
-		{
-			std::cerr << "Error loading lua" << std::endl << data << std::endl;
-		}
-	}
-
+	sol::state lua;
+	lua.open_libraries(sol::lib::base);
+	LubEffectTableData lubTables;
+	loadLubEffectFile(mapName, browEdit, lua, lubTables);
 
 	json extraProperties;
 	try {
@@ -375,6 +365,7 @@ void Rsw::load(const std::string& fileName, Map* map, BrowEdit* browEdit, bool l
 			lightLookup[l["id"]] = l;
 
 	int lubIndex = 0;
+	int strIndex = 0;
 	for (int i = 0; i < objectCount; i++)
 	{
 		Node* object = new Node("");
@@ -395,14 +386,24 @@ void Rsw::load(const std::string& fileName, Map* map, BrowEdit* browEdit, bool l
 				object->getComponent<RswModel>()->loadExtra(extra->second);
 		}
 		auto rswEffect = object->getComponent<RswEffect>();
-		if (rswEffect && rswEffect->id == 974)
+		if (rswEffect)
 		{
-			auto lubEffect = new LubEffect();
-			if (lubInfoMap.find(lubIndex) != lubInfoMap.end())
-				lubEffect->load(lubInfoMap[lubIndex]);
-			object->addComponent(lubEffect);
-			object->addComponent(new LubRenderer());
-			lubIndex++;
+			if (rswEffect->id == 974) {
+				auto effect = new LubEffect();
+				if (lubTables.emitters.find(lubIndex) != lubTables.emitters.end())
+					effect->load(lubTables.emitters[lubIndex]);
+				object->addComponent(effect);
+				object->addComponent(new LubRenderer());
+				lubIndex++;
+			}
+			else if (rswEffect->id == 1412) {
+				auto effect = new StrEffect();
+				if (lubTables.ez2str.find(strIndex) != lubTables.ez2str.end())
+					effect->load(lubTables.ez2str[strIndex]);
+				object->addComponent(effect);
+				object->addComponent(new StrRenderer());
+				strIndex++;
+			}
 		}
 
 		std::string objPath = object->name;
@@ -577,6 +578,7 @@ void Rsw::save(const std::string& fileName, BrowEdit* browEdit)
 	int objectCount = (int)objects.size();
 	file.write(reinterpret_cast<char*>(&objectCount), sizeof(int));
 	std::vector<LubEffect*> lubEffects;
+	std::vector<StrEffect*> strEffects;
 	for (auto i = 0; i < objects.size(); i++)
 	{
 		objects[i]->getComponent<RswObject>()->save(file, this);
@@ -597,6 +599,9 @@ void Rsw::save(const std::string& fileName, BrowEdit* browEdit)
 		auto lubEffect = objects[i]->getComponent<LubEffect>();
 		if (lubEffect)
 			lubEffects.push_back(lubEffect);
+		auto strEffect = objects[i]->getComponent<StrEffect>();
+		if (strEffect)
+			strEffects.push_back(strEffect);
 	}
 	quadtree->foreach([&file](QuadTreeNode* n)
 	{
@@ -610,7 +615,7 @@ void Rsw::save(const std::string& fileName, BrowEdit* browEdit)
 	extraFile << std::setw(2)<<extraProperties;
 	extraFile.close();
 
-	if (lubEffects.size() > 0)
+	if (lubEffects.size() > 0 || strEffects.size() > 0)
 	{
 		std::string mapName = fileName;
 		if (mapName.find(".rsw") != std::string::npos)
@@ -633,46 +638,67 @@ void Rsw::save(const std::string& fileName, BrowEdit* browEdit)
 
 		std::ofstream lubFile(lubPath.c_str(), std::ios_base::out | std::ios_base::binary);
 		lubFile << "_" << luaMapName << "_effect_version = "<<lubVersion<<".0" << std::endl;
-		lubFile << "_" << luaMapName << "_emitterInfo =" << std::endl;
-		lubFile << "{" << std::endl;
 
-#define SAVEPROP0(x,y) lubFile<<"\t\t[\""<<x<<"\"] = { "<<y<<" }"
-#define SAVEPROP2(x,y) lubFile<<"\t\t[\""<<x<<"\"] = { "<<y[0]<<", "<<y[1]<<" }"
-#define SAVEPROP3(x,y) lubFile<<"\t\t[\""<<x<<"\"] = { "<<y[0]<<", "<<y[1]<<", "<<y[2]<<" }"
-#define SAVEPROP4(x,y) lubFile<<"\t\t[\""<<x<<"\"] = { "<<y[0]<<", "<<y[1]<<", "<<y[2]<<", "<<y[3]<<" }"
-#define SAVEPROPS(x,y) lubFile<<"\t\t[\""<<x<<"\"] = \""<<y<<"\""
+		if (lubEffects.size() > 0) {
+			lubFile << "_" << luaMapName << "_emitterInfo = {" << std::endl;
 
-		for (auto i = 0; i < lubEffects.size(); i++)
-		{
-			lubFile << "\t[" << i << "] = " << std::endl;
-			lubFile << "\t{" << std::endl;
-			SAVEPROP3("dir1", lubEffects[i]->dir1) << "," << std::endl;
-			SAVEPROP3("dir2", lubEffects[i]->dir2) << "," << std::endl;
-			SAVEPROP3("gravity", lubEffects[i]->gravity) << "," << std::endl;
-			SAVEPROP3("pos", lubEffects[i]->pos) << "," << std::endl;
-			SAVEPROP3("radius", lubEffects[i]->radius) << "," << std::endl;
-			SAVEPROP4("color", glm::round(lubEffects[i]->color * 255.0f)) << "," << std::endl;
-			SAVEPROP2("rate", lubEffects[i]->rate) << "," << std::endl;
-			SAVEPROP2("size", lubEffects[i]->size) << "," << std::endl;
-			SAVEPROP2("scale", lubEffects[i]->scale) << "," << std::endl;
-			SAVEPROP2("life", lubEffects[i]->life) << "," << std::endl;
-			SAVEPROPS("texture", util::replace(util::replace(lubEffects[i]->texture, "\\\\", "\\"), "\\", "\\\\")) << "," << std::endl;
-			SAVEPROP0("speed", lubEffects[i]->speed) << "," << std::endl;
-			SAVEPROP0("srcmode", lubEffects[i]->srcmode) << "," << std::endl;
-			SAVEPROP0("destmode", lubEffects[i]->destmode) << "," << std::endl;
-			SAVEPROP0("maxcount", lubEffects[i]->maxcount) << "," << std::endl;
-			SAVEPROP0("zenable", lubEffects[i]->zenable) << "," << std::endl;
-			SAVEPROP0("billboard_off", lubEffects[i]->billboard_off) << "," << std::endl;
-			SAVEPROP3("rotate_angle", lubEffects[i]->rotate_angle) << "," << std::endl;
-			SAVEPROP0("eternity", lubEffects[i]->eternity) << std::endl;
+#define SAVEPROP0(x,y) lubFile<<"\t\t"<<x<<" = { "<<y<<" }"
+#define SAVEPROP2(x,y) lubFile<<"\t\t"<<x<<" = { "<<y[0]<<", "<<y[1]<<" }"
+#define SAVEPROP3(x,y) lubFile<<"\t\t"<<x<<" = { "<<y[0]<<", "<<y[1]<<", "<<y[2]<<" }"
+#define SAVEPROP4(x,y) lubFile<<"\t\t"<<x<<" = { "<<y[0]<<", "<<y[1]<<", "<<y[2]<<", "<<y[3]<<" }"
+#define SAVEPROPS(x,y) lubFile<<"\t\t"<<x<<" = \""<<y<<"\""
 
+			for (auto i = 0; i < lubEffects.size(); i++)
+			{
+				lubFile << "\t[" << i << "] = {" << std::endl;
+				SAVEPROP3("dir1", lubEffects[i]->dir1) << "," << std::endl;
+				SAVEPROP3("dir2", lubEffects[i]->dir2) << "," << std::endl;
+				SAVEPROP3("gravity", lubEffects[i]->gravity) << "," << std::endl;
+				SAVEPROP3("pos", lubEffects[i]->pos) << "," << std::endl;
+				SAVEPROP3("radius", lubEffects[i]->radius) << "," << std::endl;
+				SAVEPROP4("color", glm::round(lubEffects[i]->color * 255.0f)) << "," << std::endl;
+				SAVEPROP2("rate", lubEffects[i]->rate) << "," << std::endl;
+				SAVEPROP2("size", lubEffects[i]->size) << "," << std::endl;
+				SAVEPROP2("scale", lubEffects[i]->scale) << "," << std::endl;
+				SAVEPROP2("life", lubEffects[i]->life) << "," << std::endl;
+				SAVEPROPS("texture", util::utf8_to_iso_8859_1(util::replace(util::replace(lubEffects[i]->texture, "\\\\", "\\"), "\\", "\\\\"))) << "," << std::endl;
+				SAVEPROP0("speed", lubEffects[i]->speed) << "," << std::endl;
+				SAVEPROP0("srcmode", lubEffects[i]->srcmode) << "," << std::endl;
+				SAVEPROP0("destmode", lubEffects[i]->destmode) << "," << std::endl;
+				SAVEPROP0("maxcount", lubEffects[i]->maxcount) << "," << std::endl;
+				SAVEPROP0("zenable", lubEffects[i]->zenable) << "," << std::endl;
+				SAVEPROP0("billboard_off", lubEffects[i]->billboard_off) << "," << std::endl;
+				SAVEPROP3("rotate_angle", lubEffects[i]->rotate_angle) << "," << std::endl;
+				SAVEPROP0("eternity", lubEffects[i]->eternity) << std::endl;
 
-			lubFile << "\t}";
-			if (i < lubEffects.size() - 1)
-				lubFile << ",";
-			lubFile << std::endl;
+				lubFile << "\t}";
+				if (i < lubEffects.size() - 1)
+					lubFile << ",";
+				lubFile << std::endl;
+			}
+			lubFile << "}" << std::endl;
 		}
-		lubFile << "}" << std::endl;
+
+		if (strEffects.size() > 0) {
+			lubFile << "_" << luaMapName << "_ez2strInfo = {" << std::endl;
+
+			for (auto i = 0; i < strEffects.size(); i++)
+			{
+				lubFile << "\t[" << i << "] = {" << std::endl;
+				SAVEPROP3("pos", glm::vec3(0.0f)) << "," << std::endl;
+				SAVEPROPS("str", util::utf8_to_iso_8859_1(util::replace(util::replace(strEffects[i]->str, "\\\\", "\\"), "\\", "\\\\"))) << "," << std::endl;
+				SAVEPROPS("rednerflag", strEffects[i]->renderflag) << "," << std::endl;
+				SAVEPROPS("scaleratio", strEffects[i]->scaleratio << (strEffects[i]->scaleratio == (int)strEffects[i]->scaleratio ? ".0" : "")) << "," << std::endl;
+				SAVEPROPS("alpharatio", strEffects[i]->alpharatio << (strEffects[i]->alpharatio == (int)strEffects[i]->alpharatio ? ".0" : "")) << std::endl;
+
+				lubFile << "\t}";
+				if (i < strEffects.size() - 1)
+					lubFile << ",";
+				lubFile << std::endl;
+			}
+			lubFile << "}" << std::endl;
+		}
+
 		lubFile.close();
 	}
 

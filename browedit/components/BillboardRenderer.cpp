@@ -80,10 +80,10 @@ BillboardRenderer::BillboardRenderContext::BillboardRenderContext() : shader(uti
 {
 	shader->use();
 	shader->setUniform(BillboardShader::Uniforms::s_texture, 0);
-	order = 3;
+	order = 6;
 }
 
-void BillboardRenderer::BillboardRenderContext::preFrame(Node* rootNode, NodeRenderContext& context)
+void BillboardRenderer::BillboardRenderContext::preFrame(Node* rootNode, NodeRenderContext& context, std::vector<Renderer*>& renderers)
 {
 	glEnable(GL_BLEND);
 	glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA,GL_ONE,GL_ONE_MINUS_SRC_ALPHA);

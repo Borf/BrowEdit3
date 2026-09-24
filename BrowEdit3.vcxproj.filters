@@ -65,6 +65,27 @@
     <Filter Include="lib\glad">
       <UniqueIdentifier>{30eef2f8-2b2d-4913-97b5-7e7d692deb17}</UniqueIdentifier>
     </Filter>
+    <Filter Include="lib\lua">
+      <UniqueIdentifier>{e9a30923-5a68-4461-b54a-a24cdc5d51d4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\sol">
+      <UniqueIdentifier>{b2cd7658-3526-4e97-b4a9-66fb87af6ee5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\sol\compatibility">
+      <UniqueIdentifier>{1cc557b2-8d13-4090-89b6-1a4eb68e5fb6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\sol\detail">
+      <UniqueIdentifier>{c548f69d-a832-408a-962f-d437f41dc4e1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\sol\stack">
+      <UniqueIdentifier>{a6e5f99d-af1f-43ca-9469-74424fe0941d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\sol\utility">
+      <UniqueIdentifier>{215d2679-535d-4f0b-8965-8956464ced07}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\sol\stack\detail">
+      <UniqueIdentifier>{f60ec4a1-dff5-49c6-bb79-3f6c5dc44557}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="lib\imgui\imgui.cpp">
@@ -460,6 +481,111 @@
     <ClCompile Include="browedit\actions\WaterHeightChangeAction.cpp">
       <Filter>browedit\actions</Filter>
     </ClCompile>
+    <ClCompile Include="browedit\components\Str.cpp">
+      <Filter>browedit\components</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\lua\lapi.c">
+      <Filter>lib\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\lua\lauxlib.c">
+      <Filter>lib\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\lua\lbaselib.c">
+      <Filter>lib\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\lua\lbitlib.c">
+      <Filter>lib\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\lua\lcode.c">
+      <Filter>lib\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\lua\lcorolib.c">
+      <Filter>lib\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\lua\lctype.c">
+      <Filter>lib\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\lua\ldblib.c">
+      <Filter>lib\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\lua\ldebug.c">
+      <Filter>lib\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\lua\ldo.c">
+      <Filter>lib\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\lua\ldump.c">
+      <Filter>lib\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\lua\lfunc.c">
+      <Filter>lib\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\lua\lgc.c">
+      <Filter>lib\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\lua\linit.c">
+      <Filter>lib\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\lua\liolib.c">
+      <Filter>lib\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\lua\llex.c">
+      <Filter>lib\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\lua\lmathlib.c">
+      <Filter>lib\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\lua\lmem.c">
+      <Filter>lib\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\lua\loadlib.c">
+      <Filter>lib\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\lua\lobject.c">
+      <Filter>lib\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\lua\lopcodes.c">
+      <Filter>lib\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\lua\loslib.c">
+      <Filter>lib\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\lua\lparser.c">
+      <Filter>lib\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\lua\lstate.c">
+      <Filter>lib\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\lua\lstring.c">
+      <Filter>lib\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\lua\lstrlib.c">
+      <Filter>lib\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\lua\ltable.c">
+      <Filter>lib\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\lua\ltablib.c">
+      <Filter>lib\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\lua\ltm.c">
+      <Filter>lib\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\lua\lundump.c">
+      <Filter>lib\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\lua\lvm.c">
+      <Filter>lib\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\lua\lzio.c">
+      <Filter>lib\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="browedit\components\StrRenderer.cpp">
+      <Filter>browedit\components</Filter>
+    </ClCompile>
+    <ClCompile Include="browedit\actions\StrChangeSourceAction.cpp">
+      <Filter>browedit\actions</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="lib\imgui\imgui.h">
@@ -795,6 +921,441 @@
     <ClInclude Include="browedit\shaders\OutlineShader.h">
       <Filter>browedit\shaders</Filter>
     </ClInclude>
+    <ClInclude Include="browedit\components\Str.h">
+      <Filter>browedit\components</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\lua\lapi.h">
+      <Filter>lib\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\lua\lauxlib.h">
+      <Filter>lib\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\lua\lcode.h">
+      <Filter>lib\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\lua\lctype.h">
+      <Filter>lib\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\lua\ldebug.h">
+      <Filter>lib\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\lua\ldo.h">
+      <Filter>lib\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\lua\lfunc.h">
+      <Filter>lib\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\lua\lgc.h">
+      <Filter>lib\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\lua\llex.h">
+      <Filter>lib\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\lua\llimits.h">
+      <Filter>lib\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\lua\lmem.h">
+      <Filter>lib\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\lua\lobject.h">
+      <Filter>lib\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\lua\lopcodes.h">
+      <Filter>lib\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\lua\lparser.h">
+      <Filter>lib\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\lua\lstate.h">
+      <Filter>lib\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\lua\lstring.h">
+      <Filter>lib\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\lua\ltable.h">
+      <Filter>lib\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\lua\ltm.h">
+      <Filter>lib\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\lua\luaconf.h">
+      <Filter>lib\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\lua\lualib.h">
+      <Filter>lib\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\lua\lundump.h">
+      <Filter>lib\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\lua\lvm.h">
+      <Filter>lib\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\lua\lzio.h">
+      <Filter>lib\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\lua\lua.hpp">
+      <Filter>lib\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\compatibility\compat-5.3.h">
+      <Filter>lib\sol\compatibility</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\compatibility\compat-5.4.h">
+      <Filter>lib\sol\compatibility</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\compatibility\lua_version.hpp">
+      <Filter>lib\sol\compatibility</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\compatibility\compat-5.3.c.h">
+      <Filter>lib\sol\compatibility</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\detail\build_version.hpp">
+      <Filter>lib\sol\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\stack\detail\pairs.hpp">
+      <Filter>lib\sol\stack\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\utility\to_string.hpp">
+      <Filter>lib\sol\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\utility\is_integer.hpp">
+      <Filter>lib\sol\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\abort.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\as_args.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\as_returns.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\assert.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\base_traits.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\bind_traits.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\bytecode.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\call.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\compatibility.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\config.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\coroutine.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\debug.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\demangle.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\deprecate.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\dump_handler.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\ebco.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\environment.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\epilogue.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\error.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\error_handler.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\forward.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\forward_as.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\forward_detail.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\function.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\function_result.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\function_types.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\function_types_core.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\function_types_overloaded.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\function_types_stateful.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\function_types_stateless.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\function_types_templated.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\in_place.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\inheritance.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\load_result.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\lua_table.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\lua_value.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\make_reference.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\metatable.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\object.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\object_base.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\optional.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\optional_implementation.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\overload.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\packaged_coroutine.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\pairs_iterator.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\pointer_like.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\policies.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\prologue.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\property.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\protect.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\protected_function.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\protected_function_result.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\protected_handler.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\proxy_base.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\raii.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\reference.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\resolve.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\sol.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\stack.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\stack_check.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\stack_check_get.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\stack_check_get_qualified.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\stack_check_get_unqualified.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\stack_check_qualified.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\stack_check_unqualified.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\stack_core.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\stack_field.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\stack_get.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\stack_get_qualified.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\stack_get_unqualified.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\stack_guard.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\stack_iterator.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\stack_pop.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\stack_probe.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\stack_proxy.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\stack_proxy_base.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\stack_push.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\stack_reference.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\state.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\state_handling.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\state_view.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\string_view.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\table.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\table_core.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\table_iterator.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\table_proxy.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\thread.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\tie.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\traits.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\trampoline.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\tuple.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\types.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\unicode.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\unique_usertype_traits.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\unreachable.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\unsafe_function.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\unsafe_function_result.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\userdata.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\usertype.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\usertype_container.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\usertype_container_launch.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\usertype_core.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\usertype_proxy.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\usertype_storage.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\usertype_traits.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\variadic_args.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\variadic_results.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\version.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\sol\wrapper.hpp">
+      <Filter>lib\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\lua\lua.h">
+      <Filter>lib\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="browedit\components\StrRenderer.h">
+      <Filter>browedit\components</Filter>
+    </ClInclude>
+    <ClInclude Include="browedit\actions\StrChangeSourceAction.h">
+      <Filter>browedit\actions</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="BrowEdit3.rc">
@@ -873,6 +1434,9 @@
     </None>
     <None Include="data\shaders\outline.vs">
       <Filter>data\shaders</Filter>
+    </None>
+    <None Include="lib\lua\Makefile">
+      <Filter>lib\lua</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
