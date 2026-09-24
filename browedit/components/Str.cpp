@@ -47,15 +47,16 @@ Str::Str(const std::string& fileName)
 		layers.push_back(std::make_unique<Layer>(this, file));
 	}
 
-	if (maxKeyFrame == 0x6d617246) {
-		maxKeyFrame = 0;
+	// Apparently, the client doesn't use the maxKeyFrame value but calculates it from latest frame time.
+	//if (maxKeyFrame == 0x6d617246) {
+	maxKeyFrame = 0;
 
-		for (auto& layer : layers) {
-			for (auto& frame : layer->frames) {
-				maxKeyFrame = glm::max(maxKeyFrame, frame.time);
-			}
+	for (auto& layer : layers) {
+		for (auto& frame : layer->frames) {
+			maxKeyFrame = glm::max(maxKeyFrame, frame.time);
 		}
 	}
+	//}
 
 	delete file;
 }
