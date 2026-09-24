@@ -877,7 +877,7 @@ grf_callback_open (const char *fname, const char *mode, GrfError *error, GrfOpen
 
 	/* Check the header */
 	if (memcmp(buf, GRF_HEADER_MASTER_OF_MAGIC, GRF_HEADER_LEN) != 0 &&
-		strncmp(buf, GRF_HEADER_EVENT_HORIZON, 14) != 0) {
+		memcmp(buf, GRF_HEADER_EVENT_HORIZON, 14) != 0) {
 		grf_free(grf);
 		GRF_SETERR(error,GE_INVALID,grf_callback_open);
 		return NULL;
