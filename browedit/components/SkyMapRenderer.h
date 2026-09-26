@@ -31,7 +31,6 @@ public:
 				s_texture,
 				cameraMatrix,
 				projectionMatrix,
-				vp,
 				uTime,
 				color,
 				aForcedDir,
@@ -43,7 +42,6 @@ public:
 			bindUniform(Uniforms::s_texture, "s_texture");
 			bindUniform(Uniforms::cameraMatrix, "cameraMatrix");
 			bindUniform(Uniforms::projectionMatrix, "projectionMatrix");
-			bindUniform(Uniforms::vp, "vp");
 			bindUniform(Uniforms::uTime, "uTime");
 			bindUniform(Uniforms::color, "color");
 		}
@@ -125,6 +123,7 @@ public:
 	gl::Texture* starAtlas = nullptr;
 	gl::Texture* fogAtlas = nullptr;
 	bool atlasLoaded = false;
+	bool enabled = true;
 	float time = 0.0f;
 
 	SkyMapRenderer();

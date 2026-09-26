@@ -232,6 +232,7 @@ public:
 	bool viewGatGat = true;
 	float gatOpacity = 0.5f;
 	bool viewFog = false;
+	bool viewSkyMap = true;
 
 	bool viewModels = true;
 	bool viewEffects = true;

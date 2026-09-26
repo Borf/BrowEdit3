@@ -140,6 +140,7 @@ enum class HotkeyAction
 	View_EmptyTiles,
 	View_GatTiles,
 	View_Fog,
+	View_SkyMap,
 	
 	View_Models,
 	View_Effects,

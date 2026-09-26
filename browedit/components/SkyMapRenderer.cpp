@@ -175,7 +175,7 @@ void SkyMapRenderer::render(NodeRenderContext& context)
 	if (!this->gnd)
 		this->gnd = node->getComponent<Gnd>();
 
-	if (!lubSkyMap || !rsw || !gnd || !lubSkyMap->isEnabled)
+	if (!lubSkyMap || !rsw || !gnd || !lubSkyMap->isEnabled || !enabled)
 		return;
 
 	// Ensure atlas are created

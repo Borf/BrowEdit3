@@ -235,6 +235,7 @@ void BrowEdit::registerActions()
 	HotkeyRegistry::registerAction(HotkeyAction::View_Lights,						[this]() { activeMapView->viewLights= !activeMapView->viewLights; }, hasActiveMapView);
 	HotkeyRegistry::registerAction(HotkeyAction::View_Water,						[this]() { activeMapView->viewWater = !activeMapView->viewWater; }, hasActiveMapView);
 	HotkeyRegistry::registerAction(HotkeyAction::View_Fog,							[this]() { activeMapView->viewFog = !activeMapView->viewFog; }, hasActiveMapView);
+	HotkeyRegistry::registerAction(HotkeyAction::View_SkyMap,						[this]() { activeMapView->viewSkyMap = !activeMapView->viewSkyMap; }, hasActiveMapView);
 
 
 

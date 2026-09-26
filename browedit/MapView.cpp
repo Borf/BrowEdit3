@@ -15,6 +15,7 @@
 #include "components/LubRenderer.h"
 #include "components/WaterRenderer.h"
 #include "components/BillboardRenderer.h"
+#include "components/SkyMapRenderer.h"
 
 #include "shaders/GndShader.h"
 #include "shaders/WaterShader.h"
@@ -136,6 +137,8 @@ void MapView::toolbar(BrowEdit* browEdit)
 				browEdit->toolBarToggleButton("viewGat", viewGat ? ICON_GAT_ON : ICON_GAT_OFF, viewGat, "View GAT tiles", HotkeyAction::View_GatTiles, browEdit->config.toolbarButtonsViewOptions);
 			ImGui::SameLine();
 			browEdit->toolBarToggleButton("viewFog", viewFog ? ICON_VIEW_FOG_ON: ICON_VIEW_FOG_OFF, viewFog, "View Fog", HotkeyAction::View_Fog, browEdit->config.toolbarButtonsViewOptions);
+			ImGui::SameLine();
+			browEdit->toolBarToggleButton("viewSkyMap", viewSkyMap ? ICON_VIEW_FOG_ON: ICON_VIEW_FOG_OFF, viewSkyMap, "View SkyMap", HotkeyAction::View_SkyMap, browEdit->config.toolbarButtonsViewOptions);
 
 			if (browEdit->editMode == BrowEdit::EditMode::Gat ? viewGatGat : viewGat)
 				ImGui::DragFloat("Gat Opacity", &gatOpacity, 0.025f, 0.0f, 1.0f);
@@ -527,6 +530,7 @@ void MapView::render(BrowEdit* browEdit)
 	map->rootNode->getComponent<GatRenderer>()->cameraDistance = cameraDistance;
 	map->rootNode->getComponent<GatRenderer>()->enabled = browEdit->editMode == BrowEdit::EditMode::Gat ? viewGatGat : viewGat;
 	map->rootNode->getComponent<GatRenderer>()->opacity = gatOpacity;
+	map->rootNode->getComponent<SkyMapRenderer>()->enabled = viewSkyMap;
 
 
 	//TODO: this does not seem so efficient
