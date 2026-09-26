@@ -111,7 +111,7 @@ Str::Layer::Layer(Str* str, std::istream* file)
 
 	// Simplify layer format by marking frames as interpolated and removing the extra duplicate frame.
 	for (int i = count - 1; i >= 0; i--) {
-		if (frames[i].type == 1 && i - 1 > 0 && frames[i - 1].type == 0 && frames[i - 1].time == frames[i].time) {
+		if (frames[i].type == 1 && i - 1 >= 0 && frames[i - 1].type == 0 && frames[i - 1].time == frames[i].time) {
 			frames[i - 1].isInterpolated = true;
 		}
 	}
