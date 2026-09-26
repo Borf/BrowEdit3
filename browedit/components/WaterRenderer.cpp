@@ -125,6 +125,7 @@ void WaterRenderer::render(NodeRenderContext& context)
 
 	glDepthMask(0);
 	glEnable(GL_BLEND);
+	glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 	vbo->bind();
 
 	for (int y = 0; y < rsw->water.splitHeight; y++) {
