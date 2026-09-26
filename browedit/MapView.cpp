@@ -8,6 +8,7 @@
 #include "Gadget.h"
 #include "components/Rsw.h"
 #include "components/Gnd.h"
+#include "components/LubSkyMap.h"
 #include "components/GndRenderer.h"
 #include "components/RsmRenderer.h"
 #include "components/GatRenderer.h"
@@ -364,6 +365,9 @@ void MapView::render(BrowEdit* browEdit)
 	auto rsw = map->rootNode->getComponent<Rsw>();
 	if(rsw && viewFog)
 		glClearColor(rsw->fog.color.r, rsw->fog.color.g, rsw->fog.color.b, 1.0f);
+	auto lubSkyMap = map->rootNode->getComponent<LubSkyMap>();
+	if (lubSkyMap && lubSkyMap->isEnabled)
+		glClearColor(lubSkyMap->BG_Color.r, lubSkyMap->BG_Color.g, lubSkyMap->BG_Color.b, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glDisable(GL_CULL_FACE);

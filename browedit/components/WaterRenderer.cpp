@@ -181,7 +181,7 @@ void WaterRenderer::reloadTextures()
 
 WaterRenderer::WaterRenderContext::WaterRenderContext() : shader(util::ResourceManager<gl::Shader>::load<WaterShader>())
 {
-	order = 2;
+	order = RendererDrawPriority::Water;
 	shader->use();
 	shader->setUniform(WaterShader::Uniforms::s_texture, 0);
 }

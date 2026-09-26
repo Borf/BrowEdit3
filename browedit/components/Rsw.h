@@ -166,6 +166,7 @@ public:
 	QuadTreeNode* quadtree = nullptr;
 	std::map<std::string, std::map<std::string, glm::vec4>> colorPresets;
 	WaterData water;
+	std::string rswMapName;
 
 	Rsw();
 	~Rsw();
@@ -177,7 +178,6 @@ public:
 	void recalculateQuadtree(QuadTreeNode* node = nullptr);
 	glm::vec3 rayCastWater(const math::Ray& ray, Gnd* gnd, bool emptyTiles = false, int xMin = 0, int yMin = 0, int xMax = -1, int yMax = -1, float offset = 0.0f);
 private:
-	std::string loadLubToLua(std::istream* lub, BrowEdit* browEdit);
 	bool loadLubEffectFile(const std::string& mapName, BrowEdit* browEdit, sol::state& lua, LubEffectTableData& outData);
 };
 

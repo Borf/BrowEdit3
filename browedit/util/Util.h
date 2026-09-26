@@ -134,11 +134,11 @@ namespace util
 	glm::quat RotationBetweenVectors(glm::vec3 start, glm::vec3 dest);
 	glm::quat RotateTowards(glm::quat q1, const glm::quat &q2, float maxAngle);
 
-
 	std::string callstack();
 	void decompose(glm::mat4 m, glm::vec3& euler, glm::vec3& scale, glm::vec3& translation);
-
 	int d3dToOpenGlBlend(int d3d);
+	std::string loadLubFileToString(std::istream* lub);
+	void imageDitherAndPinkRemove(std::string fileName, unsigned char* data, int width, int height);
 }
 
 namespace glm

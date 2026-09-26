@@ -129,6 +129,7 @@ enum class HotkeyAction
 	EditMode_Sprite,
 	EditMode_Cinematic,
 	EditMode_Water,
+	EditMode_SkyMap,
 
 	View_ShadowMap,
 	View_ColorMap,
