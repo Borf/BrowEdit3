@@ -129,7 +129,9 @@ void MapView::toolbar(BrowEdit* browEdit)
 			ImGui::SameLine();
 			browEdit->toolBarToggleButton("smoothColors", smoothColors ? ICON_SMOOTH_COLOR_ON : ICON_SMOOTH_COLOR_OFF, smoothColors, "Smooth colormap", HotkeyAction::View_SmoothColormap, browEdit->config.toolbarButtonsViewOptions);
 			ImGui::SameLine();
-			browEdit->toolBarToggleButton("viewEmptyTiles", viewEmptyTiles ? ICON_EMPTYTILE_ON : ICON_EMPTYTILE_OFF, viewEmptyTiles, "View empty tiles", HotkeyAction::View_EmptyTiles, browEdit->config.toolbarButtonsViewOptions);
+			if (browEdit->toolBarToggleButton("viewEmptyTiles", browEdit->config.viewEmptyTiles ? ICON_EMPTYTILE_ON : ICON_EMPTYTILE_OFF, browEdit->config.viewEmptyTiles, "View empty tiles", HotkeyAction::View_EmptyTiles, browEdit->config.toolbarButtonsViewOptions)) {
+				browEdit->config.save();
+			}
 			ImGui::SameLine();
 			if(browEdit->editMode == BrowEdit::EditMode::Gat)
 				browEdit->toolBarToggleButton("viewGat", viewGatGat ? ICON_GAT_ON : ICON_GAT_OFF, viewGatGat, "View GAT tiles", HotkeyAction::View_GatTiles, browEdit->config.toolbarButtonsViewOptions);
@@ -506,9 +508,9 @@ void MapView::render(BrowEdit* browEdit)
 	gndRenderer->viewTextures = viewTextures;
 	gndRenderer->viewFog = viewFog;
 
-	if (gndRenderer->viewEmptyTiles != viewEmptyTiles)
+	if (gndRenderer->viewEmptyTiles != browEdit->config.viewEmptyTiles)
 	{
-		gndRenderer->viewEmptyTiles = viewEmptyTiles;
+		gndRenderer->viewEmptyTiles = browEdit->config.viewEmptyTiles;
 		auto gnd = map->rootNode->getComponent<Gnd>();
 		for (int x = 0; x < gnd->width; x++)
 			for (int y = 0; y < gnd->height; y++)
@@ -827,7 +829,7 @@ void MapView::update(BrowEdit* browEdit, const ImVec2 &size, float deltaTime)
 						* glm::rotate(glm::mat4(1.0f), glm::radians(cameraRot.y), glm::vec3(0, 1, 0)));
 				}
 
-				auto rayCast = map->rootNode->getComponent<Gnd>()->rayCast(math::Ray(cameraCenter + glm::vec3(0,9999,0), glm::vec3(0,-1,0)), viewEmptyTiles);
+				auto rayCast = map->rootNode->getComponent<Gnd>()->rayCast(math::Ray(cameraCenter + glm::vec3(0,9999,0), glm::vec3(0,-1,0)), browEdit->config.viewEmptyTiles);
 				if (rayCast != glm::vec3(std::numeric_limits<float>().max()))
 					cameraCenter.y = 0.95f * cameraCenter.y + 0.05f * rayCast.y;
 			}

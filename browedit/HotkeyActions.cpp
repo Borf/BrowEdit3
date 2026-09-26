@@ -226,7 +226,10 @@ void BrowEdit::registerActions()
 	HotkeyRegistry::registerAction(HotkeyAction::View_Lighting,						[this]() { activeMapView->viewLighting = !activeMapView->viewLighting; }, hasActiveMapView);
 	HotkeyRegistry::registerAction(HotkeyAction::View_Textures,						[this]() { activeMapView->viewTextures = !activeMapView->viewTextures; }, hasActiveMapView);
 	HotkeyRegistry::registerAction(HotkeyAction::View_SmoothColormap,				[this]() { activeMapView->smoothColors = !activeMapView->smoothColors; }, hasActiveMapView);
-	HotkeyRegistry::registerAction(HotkeyAction::View_EmptyTiles,					[this]() { activeMapView->viewEmptyTiles = !activeMapView->viewEmptyTiles; }, hasActiveMapView);
+	HotkeyRegistry::registerAction(HotkeyAction::View_EmptyTiles,					[this]() {
+		config.viewEmptyTiles = !config.viewEmptyTiles;
+		config.save();
+	}, hasActiveMapView);
 	HotkeyRegistry::registerAction(HotkeyAction::View_GatTiles,						[this]() { if (editMode == BrowEdit::EditMode::Gat) { activeMapView->viewGatGat = !activeMapView->viewGatGat; } else { activeMapView->viewGat = !activeMapView->viewGat; } }, hasActiveMapView);
 	HotkeyRegistry::registerAction(HotkeyAction::View_Models,						[this]() { activeMapView->viewModels = !activeMapView->viewModels; }, hasActiveMapView);
 	HotkeyRegistry::registerAction(HotkeyAction::View_Effects,						[this]() { activeMapView->viewEffects = !activeMapView->viewEffects; }, hasActiveMapView);

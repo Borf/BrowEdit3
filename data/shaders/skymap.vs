@@ -12,7 +12,6 @@ layout (location = 8) in float aUVStart;
 
 uniform mat4 cameraMatrix;
 uniform mat4 projectionMatrix;
-uniform mat4 vp;
 
 layout(std140, binding = 0) uniform ParticleParams
 {

@@ -23,9 +23,8 @@ namespace gl
 			element = NULL;
 			glGenBuffers(1, &ubo);
 
-			glBindBuffer(GL_UNIFORM_BUFFER, ubo);
+			bind();
 			glBufferData(GL_UNIFORM_BUFFER, sizeof(T), nullptr, GL_DYNAMIC_DRAW);
-			glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo);
 		}
 		~UBO()
 		{
@@ -41,6 +40,7 @@ namespace gl
 		void bind()
 		{
 			glBindBuffer(GL_UNIFORM_BUFFER, ubo);
+			glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo);
 		}
 
 		void unBind()

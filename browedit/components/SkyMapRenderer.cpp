@@ -90,6 +90,8 @@ gl::Texture* SkyMapRenderer::createTextureAtlas(std::initializer_list<std::strin
 		util::imageDitherAndPinkRemove(texture_i, data, width, height);
 	
 		tex->setSubImage((char*)data, 0, 256 * index, 256, 256);
+		stbi_image_free(data);
+
 		index++;
 	}
 
