@@ -39,7 +39,7 @@ void MapView::postRenderColorMode(BrowEdit* browEdit)
 	glDepthMask(0);
 
 
-	auto mouse3D = gnd->rayCast(mouseRay, viewEmptyTiles);
+	auto mouse3D = gnd->rayCast(mouseRay, browEdit->config.viewEmptyTiles);
 	glm::ivec2 tileHovered((int)glm::floor(mouse3D.x / 10), (gnd->height - (int)glm::floor(mouse3D.z) / 10));
 
 	ImGui::Begin("Statusbar");

@@ -192,8 +192,8 @@ void LubEffect::buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>& no
 			browEdit->activeMapView->map->doAction(new LubChangeTextureAction(node->getComponent<LubEffect>(), *startValue, *ptr), browEdit);
 		});
 		util::DragFloatMulti<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "speed", [](LubEffect* e) {return &e->speed; }, 0.1f, 0, 0);
-		util::ComboBoxMulti<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "Src Blend", "Zero\0Zero\0One\0SrcColor\0iSrcColor\0SrcAlpha\0iSrcAlpha\0DstAlpha\0iDstAlpha\0DstColor\0iDstColor\0SrcAlphaSat\0BothSrcAlpha\0BothInverseSrcAlpha\0", [](LubEffect* e) { return (int*)&e->srcmode - 1; });
-		util::ComboBoxMulti<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "Dst Blend", "Zero\0Zero\0One\0SrcColor\0iSrcColor\0SrcAlpha\0iSrcAlpha\0DstAlpha\0iDstAlpha\0DstColor\0iDstColor\0SrcAlphaSat\0BothSrcAlpha\0BothInverseSrcAlpha\0", [](LubEffect* e) { return (int*)&e->destmode - 1; });
+		util::DragIntMulti<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "srcmode", [](LubEffect* e) {return &e->srcmode; }, 1, 0, 0);
+		util::DragIntMulti<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "destmode", [](LubEffect* e) {return &e->destmode; }, 1, 0, 20);
 		util::DragIntMulti<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "maxcount", [](LubEffect* e) {return &e->maxcount; }, 1, 0, 20);
 		util::DragIntMulti<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "zenable", [](LubEffect* e) {return &e->zenable; }, 1, 0, 1);
 		util::DragIntMulti<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "billboard_off ", [](LubEffect* e) {return &e->billboard_off; }, 1, 0, 1);

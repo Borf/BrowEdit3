@@ -94,7 +94,7 @@ void MapView::postRenderWaterMode(BrowEdit* browEdit)
 	bool canSelect = true;
 	glm::vec3 n(0, -1, 0);
 
-	auto mouse3D = rsw->rayCastWater(mouseRay, gnd, viewEmptyTiles);
+	auto mouse3D = rsw->rayCastWater(mouseRay, gnd, browEdit->config.viewEmptyTiles);
 	glm::ivec2 tileHovered;
 
 	if (mouse3D == glm::vec3(std::numeric_limits<float>::max())) {

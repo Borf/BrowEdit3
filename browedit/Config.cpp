@@ -119,6 +119,7 @@ bool Config::showWindow(BrowEdit* browEdit)
 
 		ImGui::DragFloat("Field of View", &fov, 0.1f, 1.0f, 180.0f);
 		ImGui::DragFloat("Camera Mouse Speed", &cameraMouseSpeed, 0.05f, 0.01f, 3.0f);
+		ImGui::Checkbox("Camera Smoothing", &cameraSmoothing);
 
 		if (ImGui::Combo("Skin", &style, "Dark\0Light\0Classic\0Tarq\0Mina's Hot Fudge 1.2\0"))
 		{

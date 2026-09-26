@@ -228,6 +228,7 @@ public:
 		Sprite,
 		Cinematic,
 		Water,
+		SkyMap,
 	} editMode = EditMode::Gat;
 	
 	enum class SelectTool
@@ -292,6 +293,7 @@ public:
 	float rotateDistance = 45.0f;
 	bool useGridForNudge = true;
 	bool statusText = false;
+	ImGuiID dockspaceId = 0;
 
 	glm::vec4	colorEditBrushColor = glm::vec4(1);
 	int			colorEditBrushSize = 1;
@@ -354,6 +356,7 @@ public:
 	void showShadowEditWindow();
 	void showCinematicModeWindow();
 	void showWaterEditWindow();
+	void showSkyMapEditWindow();
 
 	void copyTiles();
 	void copyGat();

@@ -195,7 +195,7 @@ LubRenderer::LubRenderContext::LubRenderContext() : shader(util::ResourceManager
 {
 	shader->use();
 	shader->setUniform(LubShader::Uniforms::s_texture, 0);
-	order = 4;
+	order = RendererDrawPriority::Lub;
 }
 
 void LubRenderer::LubRenderContext::preFrame(Node* rootNode, NodeRenderContext& context, std::vector<Renderer*>& renderers)

@@ -8,12 +8,14 @@
 #include "Gadget.h"
 #include "components/Rsw.h"
 #include "components/Gnd.h"
+#include "components/LubSkyMap.h"
 #include "components/GndRenderer.h"
 #include "components/RsmRenderer.h"
 #include "components/GatRenderer.h"
 #include "components/LubRenderer.h"
 #include "components/WaterRenderer.h"
 #include "components/BillboardRenderer.h"
+#include "components/SkyMapRenderer.h"
 
 #include "shaders/GndShader.h"
 #include "shaders/WaterShader.h"
@@ -127,7 +129,9 @@ void MapView::toolbar(BrowEdit* browEdit)
 			ImGui::SameLine();
 			browEdit->toolBarToggleButton("smoothColors", smoothColors ? ICON_SMOOTH_COLOR_ON : ICON_SMOOTH_COLOR_OFF, smoothColors, "Smooth colormap", HotkeyAction::View_SmoothColormap, browEdit->config.toolbarButtonsViewOptions);
 			ImGui::SameLine();
-			browEdit->toolBarToggleButton("viewEmptyTiles", viewEmptyTiles ? ICON_EMPTYTILE_ON : ICON_EMPTYTILE_OFF, viewEmptyTiles, "View empty tiles", HotkeyAction::View_EmptyTiles, browEdit->config.toolbarButtonsViewOptions);
+			if (browEdit->toolBarToggleButton("viewEmptyTiles", browEdit->config.viewEmptyTiles ? ICON_EMPTYTILE_ON : ICON_EMPTYTILE_OFF, browEdit->config.viewEmptyTiles, "View empty tiles", HotkeyAction::View_EmptyTiles, browEdit->config.toolbarButtonsViewOptions)) {
+				browEdit->config.save();
+			}
 			ImGui::SameLine();
 			if(browEdit->editMode == BrowEdit::EditMode::Gat)
 				browEdit->toolBarToggleButton("viewGat", viewGatGat ? ICON_GAT_ON : ICON_GAT_OFF, viewGatGat, "View GAT tiles", HotkeyAction::View_GatTiles, browEdit->config.toolbarButtonsViewOptions);
@@ -135,6 +139,8 @@ void MapView::toolbar(BrowEdit* browEdit)
 				browEdit->toolBarToggleButton("viewGat", viewGat ? ICON_GAT_ON : ICON_GAT_OFF, viewGat, "View GAT tiles", HotkeyAction::View_GatTiles, browEdit->config.toolbarButtonsViewOptions);
 			ImGui::SameLine();
 			browEdit->toolBarToggleButton("viewFog", viewFog ? ICON_VIEW_FOG_ON: ICON_VIEW_FOG_OFF, viewFog, "View Fog", HotkeyAction::View_Fog, browEdit->config.toolbarButtonsViewOptions);
+			ImGui::SameLine();
+			browEdit->toolBarToggleButton("viewSkyMap", viewSkyMap ? ICON_VIEW_FOG_ON: ICON_VIEW_FOG_OFF, viewSkyMap, "View SkyMap", HotkeyAction::View_SkyMap, browEdit->config.toolbarButtonsViewOptions);
 
 			if (browEdit->editMode == BrowEdit::EditMode::Gat ? viewGatGat : viewGat)
 				ImGui::DragFloat("Gat Opacity", &gatOpacity, 0.025f, 0.0f, 1.0f);
@@ -364,6 +370,9 @@ void MapView::render(BrowEdit* browEdit)
 	auto rsw = map->rootNode->getComponent<Rsw>();
 	if(rsw && viewFog)
 		glClearColor(rsw->fog.color.r, rsw->fog.color.g, rsw->fog.color.b, 1.0f);
+	auto lubSkyMap = map->rootNode->getComponent<LubSkyMap>();
+	if (lubSkyMap && lubSkyMap->isEnabled)
+		glClearColor(lubSkyMap->BG_Color.r, lubSkyMap->BG_Color.g, lubSkyMap->BG_Color.b, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glDisable(GL_CULL_FACE);
@@ -440,11 +449,54 @@ void MapView::render(BrowEdit* browEdit)
 	}
 	else
 	{
+		if (browEdit->config.cameraSmoothing) {
+			if (deltaCameraMove.lastTime <= 0.0f)
+				deltaCameraMove.lastTime = nodeRenderContext.time;
+
+			float deltaTime = nodeRenderContext.time - deltaCameraMove.lastTime;
+			deltaCameraMove.renderTimePerFrame += 2 * deltaTime * 1000.0f;
+
+			if (deltaCameraMove.renderTimePerFrame > 2.5f) {
+				int iterations = (int)glm::ceil((deltaCameraMove.renderTimePerFrame - 2.5f) / 5.0f);
+				float decay = (float)glm::pow(deltaCameraMove.decayPosition, iterations);
+
+				cameraCenter += deltaCameraMove.position * (1.0f - decay) / 0.1f;
+				deltaCameraMove.position *= decay;
+
+				for (int i = 0; i < 3; i++)
+					if (glm::abs(deltaCameraMove.position[i]) < 0.0001f)
+						deltaCameraMove.position[i] = 0.0f;
+
+				decay = (float)glm::pow(deltaCameraMove.decayDistance, iterations);
+
+				cameraDistance += deltaCameraMove.distance * (1.0f - decay) / 0.1f;
+				deltaCameraMove.distance *= decay;
+
+				if (glm::abs(deltaCameraMove.distance) < 0.0001f)
+					deltaCameraMove.distance = 0.0f;
+
+				decay = (float)glm::pow(deltaCameraMove.decayRotation, iterations);
+
+				cameraRot += deltaCameraMove.rotation * (1.0f - decay) / 0.1f;
+				deltaCameraMove.rotation *= decay;
+
+				for (int i = 0; i < 2; i++)
+					if (glm::abs(deltaCameraMove.rotation[i]) < 0.0001f)
+						deltaCameraMove.rotation[i] = 0.0f;
+
+				deltaCameraMove.renderTimePerFrame -= iterations * 5.0f;
+			}
+
+			cameraRot.x = glm::clamp(cameraRot.x, 0.0f, 90.0f);
+		}
+
 		nodeRenderContext.viewMatrix = glm::mat4(1.0f);
 		nodeRenderContext.viewMatrix = glm::translate(nodeRenderContext.viewMatrix, glm::vec3(0, 0, -cameraDistance));
 		nodeRenderContext.viewMatrix = glm::rotate(nodeRenderContext.viewMatrix, glm::radians(cameraRot.x), glm::vec3(1, 0, 0));
 		nodeRenderContext.viewMatrix = glm::rotate(nodeRenderContext.viewMatrix, glm::radians(cameraRot.y), glm::vec3(0, 1, 0));
 		nodeRenderContext.viewMatrix = glm::translate(nodeRenderContext.viewMatrix, -cameraCenter);
+
+		deltaCameraMove.lastTime = nodeRenderContext.time;
 	}
 
 	//TODO: fix this, don't want to individually set settings
@@ -456,9 +508,9 @@ void MapView::render(BrowEdit* browEdit)
 	gndRenderer->viewTextures = viewTextures;
 	gndRenderer->viewFog = viewFog;
 
-	if (gndRenderer->viewEmptyTiles != viewEmptyTiles)
+	if (gndRenderer->viewEmptyTiles != browEdit->config.viewEmptyTiles)
 	{
-		gndRenderer->viewEmptyTiles = viewEmptyTiles;
+		gndRenderer->viewEmptyTiles = browEdit->config.viewEmptyTiles;
 		auto gnd = map->rootNode->getComponent<Gnd>();
 		for (int x = 0; x < gnd->width; x++)
 			for (int y = 0; y < gnd->height; y++)
@@ -480,6 +532,7 @@ void MapView::render(BrowEdit* browEdit)
 	map->rootNode->getComponent<GatRenderer>()->cameraDistance = cameraDistance;
 	map->rootNode->getComponent<GatRenderer>()->enabled = browEdit->editMode == BrowEdit::EditMode::Gat ? viewGatGat : viewGat;
 	map->rootNode->getComponent<GatRenderer>()->opacity = gatOpacity;
+	map->rootNode->getComponent<SkyMapRenderer>()->enabled = viewSkyMap;
 
 
 	//TODO: this does not seem so efficient
@@ -683,7 +736,6 @@ void MapView::render(BrowEdit* browEdit)
 	fbo->unbind();
 }
 
-
 //update just fixes the camera
 void MapView::update(BrowEdit* browEdit, const ImVec2 &size, float deltaTime)
 {
@@ -733,28 +785,64 @@ void MapView::update(BrowEdit* browEdit, const ImVec2 &size, float deltaTime)
 			}
 			else if (ImGui::GetIO().KeyShift)
 			{
-				cameraRot.x += (mouseState.position.y - prevMouseState.position.y) * 0.25f * browEdit->config.cameraMouseSpeed;
-				cameraRot.y += (mouseState.position.x - prevMouseState.position.x) * 0.25f * browEdit->config.cameraMouseSpeed;
-				cameraRot.x = glm::clamp(cameraRot.x, 0.0f, 90.0f);
+				if (browEdit->config.cameraSmoothing) {
+					float deltaX = (mouseState.position.x - prevMouseState.position.x) * 0.25f * browEdit->config.cameraMouseSpeed;
+					float deltaZ = (mouseState.position.y - prevMouseState.position.y) * 0.25f * browEdit->config.cameraMouseSpeed;
+
+					glm::vec2 diff = glm::vec2(deltaZ, deltaX) * (1 - deltaCameraMove.decayRotation);
+					deltaCameraMove.rotation += diff;
+				}
+				else {
+					cameraRot.x += (mouseState.position.y - prevMouseState.position.y) * 0.25f * browEdit->config.cameraMouseSpeed;
+					cameraRot.y += (mouseState.position.x - prevMouseState.position.x) * 0.25f * browEdit->config.cameraMouseSpeed;
+					cameraRot.x = glm::clamp(cameraRot.x, 0.0f, 90.0f);
+				}
 			}
 			else if (ImGui::GetIO().KeyCtrl)
 			{
-				cameraCenter.y += (mouseState.position.y - prevMouseState.position.y);
+				if (browEdit->config.cameraSmoothing) {
+					float deltaY = mouseState.position.y - prevMouseState.position.y;
+					float distY = cameraDistance * 0.0015f * deltaY * (1 - deltaCameraMove.decayPosition);
+					deltaCameraMove.position += glm::vec3(0, distY, 0);
+				}
+				else {
+					cameraCenter.y += (mouseState.position.y - prevMouseState.position.y);
+				}
 			}
 			else
 			{
-				cameraCenter -= glm::vec3(glm::vec4(
-					(mouseState.position.x - prevMouseState.position.x) * browEdit->config.cameraMouseSpeed,
-					0,
-					(mouseState.position.y - prevMouseState.position.y) * browEdit->config.cameraMouseSpeed, 0)
-					* glm::rotate(glm::mat4(1.0f), glm::radians(cameraRot.y), glm::vec3(0, 1, 0)));
+				if (browEdit->config.cameraSmoothing) {
+					float deltaX = mouseState.position.x - prevMouseState.position.x;
+					float deltaZ = mouseState.position.y - prevMouseState.position.y;
+					float distX = cameraDistance * 0.0013f * deltaX * browEdit->config.cameraMouseSpeed;
+					float distZ = cameraDistance * 0.0013f * deltaZ * browEdit->config.cameraMouseSpeed;
 
-				auto rayCast = map->rootNode->getComponent<Gnd>()->rayCast(math::Ray(cameraCenter + glm::vec3(0,9999,0), glm::vec3(0,-1,0)), viewEmptyTiles);
+					glm::vec3 diff = glm::vec3(glm::vec4(distX, 0, distZ, 0) * glm::rotate(glm::mat4(1.0f), glm::radians(cameraRot.y), glm::vec3(0, 1, 0)));
+
+					deltaCameraMove.position -= diff * (1 - deltaCameraMove.decayPosition);
+				}
+				else {
+					cameraCenter -= glm::vec3(glm::vec4(
+						(mouseState.position.x - prevMouseState.position.x) * browEdit->config.cameraMouseSpeed,
+						0,
+						(mouseState.position.y - prevMouseState.position.y) * browEdit->config.cameraMouseSpeed, 0)
+						* glm::rotate(glm::mat4(1.0f), glm::radians(cameraRot.y), glm::vec3(0, 1, 0)));
+				}
+
+				auto rayCast = map->rootNode->getComponent<Gnd>()->rayCast(math::Ray(cameraCenter + glm::vec3(0,9999,0), glm::vec3(0,-1,0)), browEdit->config.viewEmptyTiles);
 				if (rayCast != glm::vec3(std::numeric_limits<float>().max()))
 					cameraCenter.y = 0.95f * cameraCenter.y + 0.05f * rayCast.y;
 			}
 		}
-		cameraDistance *= (1 - (ImGui::GetIO().MouseWheel * 0.1f));
+
+		if (browEdit->config.cameraSmoothing) {
+			float multMouseWheel = (1 - (ImGui::GetIO().MouseWheel * 0.1f));
+			deltaCameraMove.distance += ((cameraDistance * multMouseWheel) - cameraDistance) * 0.1f;
+		}
+		else {
+			cameraDistance *= (1 - (ImGui::GetIO().MouseWheel * 0.1f));
+		}
+
 		cameraDistance = glm::clamp(0.0f, 4000.0f, cameraDistance);
 	}
 

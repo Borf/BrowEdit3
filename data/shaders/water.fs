@@ -23,6 +23,7 @@ void main()
 		float fogAmount = smoothstep(fogNear, fogFar, depth);
 		color = mix(color, fogColor, fogAmount);
 	}
+	
     fragColor = color;
 
 }

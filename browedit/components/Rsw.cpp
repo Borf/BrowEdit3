@@ -30,6 +30,7 @@
 #include <imGuIZMOquat.h>
 #include <browedit/actions/GroupAction.h>
 #include <browedit/actions/WaterSplitChangeAction.h>
+#include <browedit/actions/ObjectChangeAction.h>
 #include <format>
 
 
@@ -42,121 +43,6 @@ Rsw::~Rsw()
 	if (quadtree)
 		delete quadtree;
 }
-
-
-
-std::string Rsw::loadLubToLua(std::istream *lub, BrowEdit* browEdit)
-{
-	char c = lub->get();
-	lub->seekg(0, std::ios_base::beg);
-	std::string data = "";
-	if (c == 0x1b)
-	{
-		std::ofstream out("tmp.lub", std::ios_base::binary | std::ios_base::out);
-		char buf[1024];
-		while (!lub->eof())
-		{
-			lub->read(buf, 1024);
-			auto count = lub->gcount();
-			out.write(buf, count);
-		}
-		out.close();
-
-		STARTUPINFO info = { sizeof(info) };
-		PROCESS_INFORMATION processInfo;
-		std::string cmd = browEdit->config.grfEditorPath + "GrfCL.exe -lub .\\tmp.lub .\\tmp.lua";
-
-		if (CreateProcess(nullptr, (LPSTR)cmd.c_str(), nullptr, nullptr, TRUE, 0, nullptr, nullptr, &info, &processInfo))
-		{
-			WaitForSingleObject(processInfo.hProcess, INFINITE);
-			CloseHandle(processInfo.hProcess);
-			CloseHandle(processInfo.hThread);
-		}
-		data = "";
-		std::ifstream lua("tmp.lua", std::ios_base::binary | std::ios_base::in);
-		if (lua.is_open())
-		{
-			char buf[1024];
-			while (!lua.eof())
-			{
-				lua.read(buf, 1024);
-				data += std::string(buf, lua.gcount());
-			}
-			lua.close();
-		}
-		std::filesystem::remove("tmp.lub");
-		std::filesystem::remove("tmp.lua");
-	}
-	else //this is a nasty renamed lua file to lub. Shame on you mappers!
-	{
-		char buf[1024];
-		while (!lub->eof())
-		{
-			lub->read(buf, 1024);
-			data += std::string(buf, lub->gcount());
-		}
-	}
-
-	return data;
-}
-
-bool Rsw::loadLubEffectFile(const std::string& mapName, BrowEdit* browEdit, sol::state& lua, LubEffectTableData& outData)
-{
-	auto lub = util::FileIO::open("data\\lua files\\effecttool\\" + mapName + ".lub");
-	if (!lub)
-		lub = util::FileIO::open("data\\luafiles514\\lua files\\effecttool\\" + mapName + ".lub");
-	if (!lub)
-		lub = util::FileIO::open("data\\LuaFiles514\\Lua Files\\effecttool\\" + mapName + ".lub");
-	if (!lub)
-		return false;
-
-	std::string data = loadLubToLua(lub, browEdit);
-	delete lub;
-
-	try {
-		auto load_result = lua.load(data);
-
-		if (!load_result.valid()) {
-			sol::error err = load_result;
-			std::cerr << "Syntax error in decompiled data: " << err.what() << "\n";
-			return false;
-		}
-
-		auto run_result = load_result();
-		if (!run_result.valid()) {
-			sol::error err = run_result;
-			std::cerr << "Runtime error executing decompiled data: " << err.what() << "\n";
-			return false;
-		}
-
-		std::string luaMapName = util::replace(mapName, "@", "");
-
-		lubVersion = lua.get_or("_" + luaMapName + "_effect_version", 0);
-
-		sol::object obj = lua["_" + luaMapName + "_emitterInfo"];
-		if (obj.is<sol::table>()) {
-			for (auto const& [key, value] : obj.as<sol::table>()) {
-				outData.emitters[key.as<int>()] = value.as<sol::table>();
-			}
-		}
-
-		obj = lua["_" + luaMapName + "_ez2strInfo"];
-		if (obj.is<sol::table>()) {
-			for (auto const& [key, value] : obj.as<sol::table>()) {
-				outData.ez2str[key.as<int>()] = value.as<sol::table>();
-			}
-		}
-
-		return true;
-	}
-	catch (const std::exception& e)
-	{
-		std::cerr << "Error loading lub effect data: " << e.what() << std::endl;
-		std::cout << data << std::endl;
-		return false;
-	}
-}
-
 
 void Rsw::load(const std::string& fileName, Map* map, BrowEdit* browEdit, bool loadModels, bool loadGnd)
 {
@@ -173,14 +59,14 @@ void Rsw::load(const std::string& fileName, Map* map, BrowEdit* browEdit, bool l
 	std::map<int, json> lubInfoMap;
 	std::map<int, json> strInfoMap;
 
-	std::string mapName = fileName;
-	mapName = mapName.substr(0, mapName.size() - 4);
-	mapName = mapName.substr(mapName.rfind("\\") + 1);
+	rswMapName = fileName;
+	rswMapName = rswMapName.substr(0, rswMapName.size() - 4);
+	rswMapName = rswMapName.substr(rswMapName.rfind("\\") + 1);
 
 	sol::state lua;
 	lua.open_libraries(sol::lib::base);
 	LubEffectTableData lubTables;
-	loadLubEffectFile(mapName, browEdit, lua, lubTables);
+	loadLubEffectFile(rswMapName, browEdit, lua, lubTables);
 
 	json extraProperties;
 	try {
@@ -449,7 +335,7 @@ void Rsw::load(const std::string& fileName, Map* map, BrowEdit* browEdit, bool l
 	for (auto i = 0; i < lines.size(); i++)
 	{
 		auto line = cleanLine(lines[i]);
-		if (line == mapName + ".rsw")
+		if (line == rswMapName + ".rsw")
 		{
 			fog.nearPlane = std::stof(cleanLine(lines[i + 1]));
 			fog.farPlane = std::stof(cleanLine(lines[i + 2]));
@@ -461,6 +347,62 @@ void Rsw::load(const std::string& fileName, Map* map, BrowEdit* browEdit, bool l
 	}
 }
 
+bool Rsw::loadLubEffectFile(const std::string& mapName, BrowEdit* browEdit, sol::state& lua, LubEffectTableData& outData)
+{
+	auto lub = util::FileIO::open("data\\lua files\\effecttool\\" + mapName + ".lub");
+	if (!lub)
+		lub = util::FileIO::open("data\\luafiles514\\lua files\\effecttool\\" + mapName + ".lub");
+	if (!lub)
+		lub = util::FileIO::open("data\\LuaFiles514\\Lua Files\\effecttool\\" + mapName + ".lub");
+	if (!lub)
+		return false;
+
+	std::string data = util::loadLubFileToString(lub);
+	delete lub;
+
+	try {
+		auto load_result = lua.load(data);
+
+		if (!load_result.valid()) {
+			sol::error err = load_result;
+			std::cerr << "Syntax error in decompiled data: " << err.what() << std::endl;
+			return false;
+		}
+
+		auto run_result = load_result();
+		if (!run_result.valid()) {
+			sol::error err = run_result;
+			std::cerr << "Runtime error executing decompiled data: " << err.what() << std::endl;
+			return false;
+		}
+
+		std::string luaMapName = util::replace(mapName, "@", "");
+
+		lubVersion = lua.get_or("_" + luaMapName + "_effect_version", 0);
+
+		sol::object obj = lua["_" + luaMapName + "_emitterInfo"];
+		if (obj.is<sol::table>()) {
+			for (auto const& [key, value] : obj.as<sol::table>()) {
+				outData.emitters[key.as<int>()] = value.as<sol::table>();
+			}
+		}
+
+		obj = lua["_" + luaMapName + "_ez2strInfo"];
+		if (obj.is<sol::table>()) {
+			for (auto const& [key, value] : obj.as<sol::table>()) {
+				outData.ez2str[key.as<int>()] = value.as<sol::table>();
+			}
+		}
+
+		return true;
+	}
+	catch (const std::exception& e)
+	{
+		std::cerr << "Error loading lub effect data: " << e.what() << std::endl;
+		std::cout << data << std::endl;
+		return false;
+	}
+}
 
 void Rsw::save(const std::string& fileName, BrowEdit* browEdit)
 {
@@ -631,7 +573,7 @@ void Rsw::save(const std::string& fileName, BrowEdit* browEdit)
 
 		std::string lubPath = lubDirectory + mapName + ".lub";
 
-		std::cout << "LUB: " + lubPath << std::endl;
+		std::cout << "LUB (effect): " + lubPath << std::endl;
 		if (!std::filesystem::exists(lubDirectory)) {
 			std::filesystem::create_directories(lubDirectory);
 		}
@@ -798,6 +740,7 @@ void Rsw::buildImGui(BrowEdit* browEdit)
 	sprintf_s(versionStr, 10, "%04x", version);
 	if (ImGui::BeginCombo("Version", versionStr))
 	{
+		int prevVersion = version;
 		if (ImGui::Selectable("0103", version == 0x0103))
 			version = 0x0103;
 		if (ImGui::Selectable("0104", version == 0x0104))
@@ -820,6 +763,10 @@ void Rsw::buildImGui(BrowEdit* browEdit)
 			version = 0x0206;
 		if (ImGui::Selectable("0207", version == 0x0207))
 			version = 0x0207;
+		if (prevVersion != version) {
+			auto action = new ObjectChangeAction<short>(node, &version, (short)prevVersion, "RSW version changed");
+			browEdit->activeMapView->map->doAction(action, browEdit);
+		}
 		ImGui::EndCombo();
 	}
 	
@@ -827,12 +774,17 @@ void Rsw::buildImGui(BrowEdit* browEdit)
 	
 	if (ImGui::BeginCombo("LubEffect Version", std::to_string(lubVersion).c_str()))
 	{
+		int prevVersion = lubVersion;
 		if (ImGui::Selectable("1", version == 1))
 			lubVersion = 1;
 		if (ImGui::Selectable("2", version == 2))
 			lubVersion = 2;
 		if (ImGui::Selectable("3", version == 3))
 			lubVersion = 3;
+		if (prevVersion != version) {
+			auto action = new ObjectChangeAction<int>(node, &lubVersion, prevVersion, "LUB version changed");
+			browEdit->activeMapView->map->doAction(action, browEdit);
+		}
 		ImGui::EndCombo();
 	}
 	

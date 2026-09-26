@@ -26,6 +26,7 @@
 #include <browedit/components/Gat.h>
 #include <browedit/components/Gnd.h>
 #include <browedit/components/RsmRenderer.h>
+#include <browedit/components/LubSkyMap.h>
 #include <browedit/util/FileIO.h>
 #include <browedit/util/Util.h>
 #include <browedit/util/Console.h>
@@ -278,6 +279,10 @@ void BrowEdit::run()
 			showCinematicModeWindow();
 		if (editMode == EditMode::Water)
 			showWaterEditWindow();
+		if (editMode == EditMode::Shadow)
+			showShadowEditWindow();
+		if (editMode == EditMode::SkyMap)
+			showSkyMapEditWindow();
 
 		if (windowData.hotkeyEditWindowVisible)
 			showHotkeyEditorWindow();
@@ -559,6 +564,8 @@ bool BrowEdit::toolBarToggleButton(const std::string_view& name, int icon, bool 
 }
 void BrowEdit::showMapWindow(MapView& mapView, float deltaTime)
 {
+	ImGui::SetNextWindowDockID(dockspaceId, ImGuiCond_FirstUseEver);
+
 	ImGui::SetNextWindowSizeConstraints(ImVec2(300, 300), ImVec2(2048, 2048));
 	int flags = 0;
 	if (mapView.map->changed)
@@ -685,6 +692,7 @@ void BrowEdit::saveMap(Map* map)
 	std::string gndName = config.ropath + map->name.substr(0, map->name.size() - 4) + ".gnd";
 	std::string gatName = config.ropath + map->name.substr(0, map->name.size() - 4) + ".gat";
 	std::string lubName = config.ropath + "data\\luafiles514\\lua files\\effecttool\\" + mapName + ".lub";
+	std::string skyMapName = config.ropath + "data\\luafiles514\\lua files\\mapskydata\\mapskydata.lub";
 	if (fullPath)
 	{
 		rswName = map->name;
@@ -696,6 +704,7 @@ void BrowEdit::saveMap(Map* map)
 	std::string backupGndName = "backups\\" + map->name.substr(0, map->name.size() - 4) + ".gnd";
 	std::string backupGatName = "backups\\" + map->name.substr(0, map->name.size() - 4) + ".gat";
 	std::string backupLubName = "backups\\data\\luafiles514\\lua files\\effecttool\\" + mapName + ".lub";
+	std::string backupSkyMapName = "backups\\data\\luafiles514\\lua files\\mapskydata\\mapskydata.lub";
 	if (fullPath)
 	{
 		rswName = map->name;
@@ -711,11 +720,13 @@ void BrowEdit::saveMap(Map* map)
 		fixBackup(gndName, backupGndName);
 		fixBackup(gatName, backupGatName);
 		fixBackup(lubName, backupLubName);
+		fixBackup(skyMapName, backupSkyMapName);
 	}
 
 	map->rootNode->getComponent<Rsw>()->save(rswName, this);
 	map->rootNode->getComponent<Gnd>()->save(gndName, map->rootNode->getComponent<Rsw>());
 	map->rootNode->getComponent<Gat>()->save(gatName);
+	map->rootNode->getComponent<LubSkyMap>()->save(mapName, this);
 
 	map->changed = false;
 }

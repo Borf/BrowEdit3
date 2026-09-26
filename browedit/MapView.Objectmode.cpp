@@ -717,7 +717,7 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 							glm::vec3 wPosition(gnd->width * 5.0f + originalPosition.x, -originalPosition.y, gnd->height * 5.0f - originalPosition.z + 10.0f);
 							
 							math::Ray ray(wPosition, glm::vec3(0, -1, 0));
-							auto rayCast = gnd->rayCast(ray, viewEmptyTiles);
+							auto rayCast = gnd->rayCast(ray, browEdit->config.viewEmptyTiles);
 
 							if (rayCast != glm::vec3(std::numeric_limits<float>().max())) {
 								originalHeightFromGround = rayCast.y - wPosition.y;
@@ -735,7 +735,7 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 		}
 		if (ImGui::IsMouseDown(0))
 		{
-			auto rayCast = gnd->rayCast(mouseRay, viewEmptyTiles);
+			auto rayCast = gnd->rayCast(mouseRay, browEdit->config.viewEmptyTiles);
 			if (justPressed && rayCast != glm::vec3(std::numeric_limits<float>().max()))
 			{
 				if (map->selectedNodes.size() == 1 && ImGui::IsMouseDragging(0))
