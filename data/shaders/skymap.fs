@@ -13,5 +13,4 @@ void main()
 	outColor.a *= alpha;
 	
 	fragColor = outColor;
-	//fragColor = vec4(1, 0, 0, 1);
 }

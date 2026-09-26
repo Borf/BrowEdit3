@@ -23,6 +23,7 @@ public:
 	std::vector<std::string> grfs;
 	float fov = 45;
 	float cameraMouseSpeed = 1.0f;
+	bool cameraSmoothing = true;
 	int style = 0;
 	glm::vec3 backgroundColor = glm::vec3(0.1f, 0.1f, 0.15f);
 	glm::vec3 wallEditSelectionColor = glm::vec3(1.0f, 1.0f, 1.0f);
@@ -67,6 +68,7 @@ public:
 		grfs,
 		fov,
 		cameraMouseSpeed,
+		cameraSmoothing,
 		style,
 		backgroundColor,
 		wallEditSelectionColor,

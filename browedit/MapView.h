@@ -95,6 +95,17 @@ public:
 	float cameraDistance = 500;
 	bool hovered = false;
 
+	struct {
+		glm::vec3 position = glm::vec3(0.0f);
+		glm::vec2 rotation = glm::vec2(0.0f);
+		float distance = 0.0f;
+		float lastTime = 0.0f;
+		float renderTimePerFrame = 0.0f;
+		float decayPosition = 0.8f;
+		float decayRotation = 0.9f;
+		float decayDistance = 0.9f;
+	} deltaCameraMove;
+
 	bool cameraAnimating = false;
 	glm::vec2 cameraTargetRot;
 	glm::vec3 cameraTargetPos;
