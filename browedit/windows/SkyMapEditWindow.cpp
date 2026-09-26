@@ -38,6 +38,7 @@ void BrowEdit::showSkyMapEditWindow()
 	
 	if (util::Checkbox(this, map, lubSkyMap->node, "Star effect", &lubSkyMap->Star_Effect)) {
 		skyMapRenderer->setDirty();
+		lubSkyMap->isEnabled = true;
 	}
 
 	if (ImGui::TreeNodeEx("Custom clouds", ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed))
@@ -117,6 +118,7 @@ void BrowEdit::showSkyMapEditWindow()
 			cloud->Num = (int)(cloud->NumPerSquared * gnd->width * gnd->height * 100.0f);
 
 			map->doAction(new AddCustomCloudAction(cloud), this);
+			lubSkyMap->isEnabled = true;
 		}
 
 		ImGui::TreePop();
@@ -171,6 +173,7 @@ void BrowEdit::showSkyMapEditWindow()
 			newValues.push_back(1);
 
 			map->doAction(new SkyMapOldCloudListChangedAction(oldValues, newValues), this);
+			lubSkyMap->isEnabled = true;
 		}
 
 		ImGui::TreePop();

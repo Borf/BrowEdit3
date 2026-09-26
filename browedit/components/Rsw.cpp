@@ -573,7 +573,7 @@ void Rsw::save(const std::string& fileName, BrowEdit* browEdit)
 
 		std::string lubPath = lubDirectory + mapName + ".lub";
 
-		std::cout << "LUB: " + lubPath << std::endl;
+		std::cout << "LUB (effect): " + lubPath << std::endl;
 		if (!std::filesystem::exists(lubDirectory)) {
 			std::filesystem::create_directories(lubDirectory);
 		}

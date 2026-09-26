@@ -121,6 +121,7 @@ bool LubSkyMap::save(const std::string& mapName, BrowEdit* browEdit)
 	std::string lubPath = browEdit->config.ropath + mapskyFileName;
 	std::string lubDirectory = lubPath.substr(0, lubPath.rfind("\\"));
 
+	std::cout << "LUB (skymap): " + lubPath << std::endl;
 	if (!std::filesystem::exists(lubDirectory)) {
 		std::filesystem::create_directories(lubDirectory);
 	}
@@ -245,7 +246,7 @@ std::string LubSkyMap::createSkyMapTable(std::string mapIdentifier)
 				ss << ", ";
 		}
 
-		ss << "\t\t}";
+		ss << " }";
 	}
 
 	ss << std::endl << "\t}";
