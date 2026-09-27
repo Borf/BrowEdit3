@@ -21,6 +21,7 @@
     <ClCompile Include="browedit\actions\LightmapChangeAction.cpp" />
     <ClCompile Include="browedit\actions\LightmapNewAction.cpp" />
     <ClCompile Include="browedit\actions\LubChangeTextureAction.cpp" />
+    <ClCompile Include="browedit\actions\LubWindChangeTextureAction.cpp" />
     <ClCompile Include="browedit\actions\ModelChangeAction.cpp" />
     <ClCompile Include="browedit\actions\NewObjectAction.cpp" />
     <ClCompile Include="browedit\actions\ObjectChangeAction.cpp" />
@@ -47,6 +48,7 @@
     <ClCompile Include="browedit\components\GndRenderer.cpp" />
     <ClCompile Include="browedit\components\LubRenderer.cpp" />
     <ClCompile Include="browedit\components\LubSkyMap.cpp" />
+    <ClCompile Include="browedit\components\LubWindRenderer.cpp" />
     <ClCompile Include="browedit\components\Rsm.cpp" />
     <ClCompile Include="browedit\components\RsmRenderer.cpp" />
     <ClCompile Include="browedit\components\Rsw.cpp" />
@@ -194,6 +196,7 @@
     <ClInclude Include="browedit\actions\LightmapChangeAction.h" />
     <ClInclude Include="browedit\actions\LightmapNewAction.h" />
     <ClInclude Include="browedit\actions\LubChangeTextureAction.h" />
+    <ClInclude Include="browedit\actions\LubWindChangeTextureAction.h" />
     <ClInclude Include="browedit\actions\ModelChangeAction.h" />
     <ClInclude Include="browedit\actions\NewObjectAction.h" />
     <ClInclude Include="browedit\actions\ObjectChangeAction.h" />
@@ -220,6 +223,7 @@
     <ClInclude Include="browedit\components\ImguiProps.h" />
     <ClInclude Include="browedit\components\LubRenderer.h" />
     <ClInclude Include="browedit\components\LubSkyMap.h" />
+    <ClInclude Include="browedit\components\LubWindRenderer.h" />
     <ClInclude Include="browedit\components\Renderer.h" />
     <ClInclude Include="browedit\components\Rsm.h" />
     <ClInclude Include="browedit\components\RsmRenderer.h" />

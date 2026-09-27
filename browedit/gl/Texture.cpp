@@ -9,7 +9,7 @@
 
 namespace gl
 {
-	Texture::Texture(const std::string& fileName, bool flipSelection) : fileName(fileName), flipSelection(flipSelection)
+	Texture::Texture(const std::string& fileName, bool flipSelection, bool powerOfTwo) : fileName(fileName), flipSelection(flipSelection), powerOfTwo(powerOfTwo)
 	{
 		ids = nullptr;
 		if (fileName.find(".tga") == fileName.length() - 4)
@@ -103,6 +103,35 @@ namespace gl
 
 			util::imageDitherAndPinkRemove(fileName, data, width, height);
 
+			int imWidth = width;
+			int imHeight = height;
+
+			if (powerOfTwo) {
+				// Get power-of-two dimensions.
+				potWidth = 1;
+				while (potWidth < imWidth)
+					potWidth <<= 1;
+
+				potHeight = 1;
+				while (potHeight < imHeight)
+					potHeight <<= 1;
+
+				if (potWidth != imWidth || potHeight != imHeight)
+				{
+					unsigned char* padded = new unsigned char[potWidth * potHeight * 4]();
+
+					for (int y = 0; y < imHeight; ++y)
+					{
+						memcpy(padded + y * potWidth * 4, data + y * imWidth * 4, imWidth * 4);
+					}
+
+					stbi_image_free(data);
+					data = padded;
+					imWidth = potWidth;
+					imHeight = potHeight;
+				}
+			}
+
 			if (ids == nullptr)
 			{
 				frameCount = 1;
@@ -110,7 +139,7 @@ namespace gl
 				glGenTextures(frameCount, ids);
 			}
 			glBindTexture(GL_TEXTURE_2D, ids[0]);
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imWidth, imHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 			stbi_image_free(data);
 			//std::cout << "Texture: loaded " << fileName << std::endl;;
 			glGenerateMipmap(GL_TEXTURE_2D);
@@ -163,5 +192,9 @@ namespace gl
 			else
 				glBindTexture(GL_TEXTURE_2D, ids[0]);
 		}
+	}
+
+	TexturePoT::TexturePoT(const std::string& fileName, bool flipSelection) : Texture(fileName, flipSelection, true)
+	{
 	}
 }

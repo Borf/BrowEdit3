@@ -10,6 +10,7 @@
 #include "RsmRenderer.h"
 #include "GatRenderer.h"
 #include "LubRenderer.h"
+#include "LubWindRenderer.h"
 #include "StrRenderer.h"
 #include "WaterRenderer.h"
 
@@ -251,6 +252,7 @@ void Rsw::load(const std::string& fileName, Map* map, BrowEdit* browEdit, bool l
 			lightLookup[l["id"]] = l;
 
 	int lubIndex = 0;
+	int lubWindIndex = 0;
 	int strIndex = 0;
 	for (int i = 0; i < objectCount; i++)
 	{
@@ -274,20 +276,25 @@ void Rsw::load(const std::string& fileName, Map* map, BrowEdit* browEdit, bool l
 		auto rswEffect = object->getComponent<RswEffect>();
 		if (rswEffect)
 		{
+			if (rswEffect->isLubEffect())
+				rswEffect->setEffectNode(nullptr, object);
+
 			if (rswEffect->id == 974) {
-				auto effect = new LubEffect();
+				auto effect = object->getComponent<LubEffect>();
 				if (lubTables.emitters.find(lubIndex) != lubTables.emitters.end())
 					effect->load(lubTables.emitters[lubIndex]);
-				object->addComponent(effect);
-				object->addComponent(new LubRenderer());
 				lubIndex++;
 			}
+			else if (rswEffect->id == 2343) {
+				auto effect = object->getComponent<LubWindEffect>();
+				if (lubTables.winds.find(lubWindIndex) != lubTables.winds.end())
+					effect->load(lubTables.winds[lubWindIndex]);
+				lubWindIndex++;
+			}
 			else if (rswEffect->id == 1412) {
-				auto effect = new StrEffect();
+				auto effect = object->getComponent<StrEffect>();
 				if (lubTables.ez2str.find(strIndex) != lubTables.ez2str.end())
 					effect->load(lubTables.ez2str[strIndex]);
-				object->addComponent(effect);
-				object->addComponent(new StrRenderer());
 				strIndex++;
 			}
 		}
@@ -391,6 +398,13 @@ bool Rsw::loadLubEffectFile(const std::string& mapName, BrowEdit* browEdit, sol:
 		if (obj.is<sol::table>()) {
 			for (auto const& [key, value] : obj.as<sol::table>()) {
 				outData.ez2str[key.as<int>()] = value.as<sol::table>();
+			}
+		}
+
+		obj = lua["_" + luaMapName + "_windEffectInfo"];
+		if (obj.is<sol::table>()) {
+			for (auto const& [key, value] : obj.as<sol::table>()) {
+				outData.winds[key.as<int>()] = value.as<sol::table>();
 			}
 		}
 
@@ -519,11 +533,13 @@ void Rsw::save(const std::string& fileName, BrowEdit* browEdit)
 	});
 	int objectCount = (int)objects.size();
 	file.write(reinterpret_cast<char*>(&objectCount), sizeof(int));
-	std::vector<LubEffect*> lubEffects;
-	std::vector<StrEffect*> strEffects;
+	std::vector<RswLubEffectPair> lubEffects;
+	std::vector<RswLubEffectPair> strEffects;
+	std::vector<RswLubEffectPair> lubWindEffects;
 	for (auto i = 0; i < objects.size(); i++)
 	{
-		objects[i]->getComponent<RswObject>()->save(file, this);
+		auto rswObject = objects[i]->getComponent<RswObject>();
+		rswObject->save(file, this);
 		auto light = objects[i]->getComponent<RswLight>();
 		if (light)
 		{
@@ -540,10 +556,13 @@ void Rsw::save(const std::string& fileName, BrowEdit* browEdit)
 		}
 		auto lubEffect = objects[i]->getComponent<LubEffect>();
 		if (lubEffect)
-			lubEffects.push_back(lubEffect);
+			lubEffects.push_back(RswLubEffectPair(rswObject, lubEffect));
 		auto strEffect = objects[i]->getComponent<StrEffect>();
 		if (strEffect)
-			strEffects.push_back(strEffect);
+			strEffects.push_back(RswLubEffectPair(rswObject, strEffect));
+		auto lubWindEffect = objects[i]->getComponent<LubWindEffect>();
+		if (lubWindEffect)
+			lubWindEffects.push_back(RswLubEffectPair(rswObject, lubWindEffect));
 	}
 	quadtree->foreach([&file](QuadTreeNode* n)
 	{
@@ -557,7 +576,7 @@ void Rsw::save(const std::string& fileName, BrowEdit* browEdit)
 	extraFile << std::setw(2)<<extraProperties;
 	extraFile.close();
 
-	if (lubEffects.size() > 0 || strEffects.size() > 0)
+	if (lubEffects.size() > 0 || strEffects.size() > 0 || lubWindEffects.size() > 0)
 	{
 		std::string mapName = fileName;
 		if (mapName.find(".rsw") != std::string::npos)
@@ -589,29 +608,33 @@ void Rsw::save(const std::string& fileName, BrowEdit* browEdit)
 #define SAVEPROP3(x,y) lubFile<<"\t\t"<<x<<" = { "<<y[0]<<", "<<y[1]<<", "<<y[2]<<" }"
 #define SAVEPROP4(x,y) lubFile<<"\t\t"<<x<<" = { "<<y[0]<<", "<<y[1]<<", "<<y[2]<<", "<<y[3]<<" }"
 #define SAVEPROPS(x,y) lubFile<<"\t\t"<<x<<" = \""<<y<<"\""
+#define SAVEPROPN(x,y) lubFile<<"\t\t"<<x<<" = "<<y<<""
 
 			for (auto i = 0; i < lubEffects.size(); i++)
 			{
+				auto rswObject = lubEffects[i].rswObject;
+				auto e = dynamic_cast<LubEffect*>(lubEffects[i].effect);
+
 				lubFile << "\t[" << i << "] = {" << std::endl;
-				SAVEPROP3("dir1", lubEffects[i]->dir1) << "," << std::endl;
-				SAVEPROP3("dir2", lubEffects[i]->dir2) << "," << std::endl;
-				SAVEPROP3("gravity", lubEffects[i]->gravity) << "," << std::endl;
-				SAVEPROP3("pos", lubEffects[i]->pos) << "," << std::endl;
-				SAVEPROP3("radius", lubEffects[i]->radius) << "," << std::endl;
-				SAVEPROP4("color", glm::round(lubEffects[i]->color * 255.0f)) << "," << std::endl;
-				SAVEPROP2("rate", lubEffects[i]->rate) << "," << std::endl;
-				SAVEPROP2("size", lubEffects[i]->size) << "," << std::endl;
-				SAVEPROP2("scale", lubEffects[i]->scale) << "," << std::endl;
-				SAVEPROP2("life", lubEffects[i]->life) << "," << std::endl;
-				SAVEPROPS("texture", util::utf8_to_iso_8859_1(util::replace(util::replace(lubEffects[i]->texture, "\\\\", "\\"), "\\", "\\\\"))) << "," << std::endl;
-				SAVEPROP0("speed", lubEffects[i]->speed) << "," << std::endl;
-				SAVEPROP0("srcmode", lubEffects[i]->srcmode) << "," << std::endl;
-				SAVEPROP0("destmode", lubEffects[i]->destmode) << "," << std::endl;
-				SAVEPROP0("maxcount", lubEffects[i]->maxcount) << "," << std::endl;
-				SAVEPROP0("zenable", lubEffects[i]->zenable) << "," << std::endl;
-				SAVEPROP0("billboard_off", lubEffects[i]->billboard_off) << "," << std::endl;
-				SAVEPROP3("rotate_angle", lubEffects[i]->rotate_angle) << "," << std::endl;
-				SAVEPROP0("eternity", lubEffects[i]->eternity) << std::endl;
+				SAVEPROP3("dir1", e->dir1) << "," << std::endl;
+				SAVEPROP3("dir2", e->dir2) << "," << std::endl;
+				SAVEPROP3("gravity", e->gravity) << "," << std::endl;
+				SAVEPROP3("pos", rswObject->position) << "," << std::endl;
+				SAVEPROP3("radius", e->radius) << "," << std::endl;
+				SAVEPROP4("color", glm::round(e->color * 255.0f)) << "," << std::endl;
+				SAVEPROP2("rate", e->rate) << "," << std::endl;
+				SAVEPROP2("size", e->size) << "," << std::endl;
+				SAVEPROP2("scale", e->scale) << "," << std::endl;
+				SAVEPROP2("life", e->life) << "," << std::endl;
+				SAVEPROPS("texture", util::utf8_to_iso_8859_1(util::replace(util::replace(e->texture, "\\\\", "\\"), "\\", "\\\\"))) << "," << std::endl;
+				SAVEPROP0("speed", e->speed) << "," << std::endl;
+				SAVEPROP0("srcmode", e->srcmode) << "," << std::endl;
+				SAVEPROP0("destmode", e->destmode) << "," << std::endl;
+				SAVEPROP0("maxcount", e->maxcount) << "," << std::endl;
+				SAVEPROP0("zenable", e->zenable) << "," << std::endl;
+				SAVEPROP0("billboard_off", e->billboard_off) << "," << std::endl;
+				SAVEPROP3("rotate_angle", e->rotate_angle) << "," << std::endl;
+				SAVEPROP0("eternity", e->eternity) << std::endl;
 
 				lubFile << "\t}";
 				if (i < lubEffects.size() - 1)
@@ -626,12 +649,46 @@ void Rsw::save(const std::string& fileName, BrowEdit* browEdit)
 
 			for (auto i = 0; i < strEffects.size(); i++)
 			{
+				auto rswObject = strEffects[i].rswObject;
+				auto e = dynamic_cast<StrEffect*>(strEffects[i].effect);
+
 				lubFile << "\t[" << i << "] = {" << std::endl;
-				SAVEPROP3("pos", glm::vec3(0.0f)) << "," << std::endl;
-				SAVEPROPS("str", util::utf8_to_iso_8859_1(util::replace(util::replace(strEffects[i]->str, "\\\\", "\\"), "\\", "\\\\"))) << "," << std::endl;
-				SAVEPROPS("rednerflag", strEffects[i]->renderflag) << "," << std::endl;
-				SAVEPROPS("scaleratio", strEffects[i]->scaleratio << (strEffects[i]->scaleratio == (int)strEffects[i]->scaleratio ? ".0" : "")) << "," << std::endl;
-				SAVEPROPS("alpharatio", strEffects[i]->alpharatio << (strEffects[i]->alpharatio == (int)strEffects[i]->alpharatio ? ".0" : "")) << std::endl;
+				SAVEPROP3("pos", rswObject->position) << "," << std::endl;
+				SAVEPROPS("str", util::utf8_to_iso_8859_1(util::replace(util::replace(e->str, "\\\\", "\\"), "\\", "\\\\"))) << "," << std::endl;
+				SAVEPROPS("rednerflag", e->renderflag) << "," << std::endl;
+				SAVEPROPS("scaleratio", e->scaleratio << (e->scaleratio == (int)e->scaleratio ? ".0" : "")) << "," << std::endl;
+				SAVEPROPS("alpharatio", e->alpharatio << (e->alpharatio == (int)e->alpharatio ? ".0" : "")) << std::endl;
+
+				lubFile << "\t}";
+				if (i < strEffects.size() - 1)
+					lubFile << ",";
+				lubFile << std::endl;
+			}
+			lubFile << "}" << std::endl;
+		}
+
+		if (lubWindEffects.size() > 0) {
+			lubFile << "_" << luaMapName << "_windEffectInfo = {" << std::endl;
+
+			for (auto i = 0; i < lubWindEffects.size(); i++)
+			{
+				auto rswObject = lubWindEffects[i].rswObject;
+				auto e = dynamic_cast<LubWindEffect*>(lubWindEffects[i].effect);
+
+				lubFile << "\t[" << i << "] = {" << std::endl;
+				SAVEPROP3("pos", rswObject->position) << "," << std::endl;
+				SAVEPROPN("particleNum", e->particleNum) << "," << std::endl;
+				// the lub color format is argb (???), so need to convert argb
+				SAVEPROP4("color", glm::round(glm::vec4(e->color[3], e->color[0], e->color[1], e->color[2]) * 255.0f)) << "," << std::endl;
+				SAVEPROPN("radius", e->radius) << "," << std::endl;
+				SAVEPROPN("thickness", e->thickness) << "," << std::endl;
+				SAVEPROPN("height", e->height) << "," << std::endl;
+				SAVEPROPN("speed", e->speed) << "," << std::endl;
+				SAVEPROPN("fullAngle", e->fullAngle) << "," << std::endl;
+				SAVEPROP2("rotateVector", e->rotateVector) << "," << std::endl;
+				SAVEPROPN("srcMode", e->srcmode) << "," << std::endl;
+				SAVEPROPN("destMode", e->destmode) << "," << std::endl;
+				SAVEPROPS("texture", util::utf8_to_iso_8859_1(util::replace(util::replace(e->texture, "\\\\", "\\"), "\\", "\\\\"))) << std::endl;
 
 				lubFile << "\t}";
 				if (i < strEffects.size() - 1)

@@ -14,6 +14,7 @@ enum class RendererDrawPriority {
 	SkyMap,
 	Gat,
 	Water,
+	LubWind,
 	Lub,
 	Str,
 	Billboard,

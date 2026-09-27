@@ -8,8 +8,8 @@ namespace gl
 {
 	class Texture
 	{
-	private:
-		Texture(const std::string& fileName, bool flipSelection = false);
+	protected:
+		Texture(const std::string& fileName, bool flipSelection = false, bool powerOfTwo = false);
 		GLuint* ids = nullptr;
 	public:
 		inline GLuint id() {
@@ -24,6 +24,10 @@ namespace gl
 		bool flipSelection;
 		bool semiTransparent = false;
 
+		bool powerOfTwo = false;
+		int potWidth = -1;
+		int potHeight = -1;
+
 		Texture(int width, int height);
 		~Texture();
 		void bind();
@@ -34,5 +38,17 @@ namespace gl
 		GLuint getAnimatedTextureId();
 
 		friend class util::ResourceManager<gl::Texture>;
+	};
+
+	// Power-of-two textures set the dimensions to the nearest multiple of two. For example:
+	// A texture of 70x70 would be changed into a 128x128 texture.
+	// A texture of 64x128 would be changed into a 64x128 texture.
+	// It uses its own class to prevent mixing textures with the ResourceManager (whether they should all be power-of-two is another story).
+	class TexturePoT : public Texture
+	{
+	protected:
+		TexturePoT(const std::string& fileName, bool flipSelection = false);
+	public:
+		friend class util::ResourceManager<gl::TexturePoT>;
 	};
 }

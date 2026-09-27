@@ -8,7 +8,7 @@
 #include <browedit/components/Str.h>
 #include <vector>
 
-namespace gl { class Texture; }
+namespace gl { class TexturePoT; }
 class RswModel;
 class RswObject;
 class Gnd;
@@ -67,7 +67,7 @@ public:
 	int phase = 0;
 	bool dirty = true;
 
-	std::vector<std::vector<gl::Texture*>> textures;
+	std::vector<std::vector<gl::TexturePoT*>> textures;
 	std::vector<VertexP2T2> verts;
 public:
 	StrRenderer();

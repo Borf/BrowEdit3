@@ -512,6 +512,12 @@ void BrowEdit::showObjectWindow()
 											from_json(c, *strEffect);
 											newNode->addComponent(strEffect);
 										}
+										if (c["type"] == "lubwindeffect")
+										{
+											auto lubEffect = new LubWindEffect();
+											from_json(c, *lubEffect);
+											newNode->addComponent(lubEffect);
+										}
 										if (c["type"] == "rswsound")
 										{
 											auto rswSound = new RswSound();

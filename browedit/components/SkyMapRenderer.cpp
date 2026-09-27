@@ -160,14 +160,6 @@ void SkyMapRenderer::reload()
 	}
 }
 
-void checkGLErrors() {
-	GLenum err;
-	while ((err = glGetError()) != GL_NO_ERROR) {
-		std::cerr << "OpenGL Error encountered: " << err << std::endl;
-		// Optionally map the error code to a string for readability
-	}
-}
-
 void SkyMapRenderer::render(NodeRenderContext& context)
 {
 	if (!this->lubSkyMap)

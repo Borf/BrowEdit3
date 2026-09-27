@@ -14,6 +14,7 @@
 #include "components/StrRenderer.h"
 #include "components/GatRenderer.h"
 #include "components/LubRenderer.h"
+#include "components/LubWindRenderer.h"
 #include "components/WaterRenderer.h"
 #include "components/BillboardRenderer.h"
 #include "components/SkyMapRenderer.h"
@@ -672,6 +673,12 @@ void MapView::render(BrowEdit* browEdit)
 				auto strRenderer = newNode.first->getComponent<StrRenderer>();
 				if (strRenderer)
 					strRenderer->gnd = gnd;
+				auto lubWindRenderer = newNode.first->getComponent<LubWindRenderer>();
+				if (lubWindRenderer)
+					lubWindRenderer->gnd = gnd;
+				auto lubRenderer = newNode.first->getComponent<LubRenderer>();
+				if (lubRenderer)
+					lubRenderer->gnd = gnd;
 				if (newNode.first->getComponent<BillboardRenderer>())
 					newNode.first->getComponent<BillboardRenderer>()->gnd = gnd;
 
