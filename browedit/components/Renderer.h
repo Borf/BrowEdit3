@@ -5,6 +5,20 @@
 
 class NodeRenderContext;
 
+// Drawing order priority for the renderers
+// For example, Billboards is last so it will be drawn last, on top of everything else.
+enum class RendererDrawPriority {
+	Default,
+	Gnd,
+	Rsm,
+	SkyMap,
+	Gat,
+	Water,
+	Lub,
+	Str,
+	Billboard,
+};
+
 class Renderer : public Component
 {
 public:
@@ -13,7 +27,7 @@ public:
 	class RenderContext
 	{
 	public:
-		int order = 0;
+		RendererDrawPriority order = RendererDrawPriority::Default;
 		int phases = 1;
 		int phase = 0;
 		virtual void preFrame(Node* rootNode, NodeRenderContext& context, std::vector<Renderer*>& renderers) = 0;

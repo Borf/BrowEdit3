@@ -48,6 +48,8 @@ void BrowEdit::toolbar()
 		ImGui::Text("Cinematic");
 	else if (editMode == EditMode::Water)
 			ImGui::Text("Water");
+	else if (editMode == EditMode::SkyMap)
+			ImGui::Text("SkyMap");
 	else
 		ImGui::Text("???");
 	ImGui::SameLine();
@@ -72,8 +74,10 @@ void BrowEdit::toolbar()
 	toolBarToggleButton("cinematic", ICON_EDIT_CINEMATIC, editMode == EditMode::Cinematic, "Cinematic Mode", HotkeyAction::EditMode_Cinematic, config.toolbarButtonsWallEdit);
 	ImGui::SameLine();
 	toolBarToggleButton("watermode", ICON_VIEW_WATER_ON, editMode == EditMode::Water, "Water edit mode", HotkeyAction::EditMode_Water, config.toolbarButtonsWallEdit);
+	ImGui::SameLine();
+	toolBarToggleButton("skymapmode", ICON_VIEW_FOG_ON, editMode == EditMode::SkyMap, "SkyMap edit mode", HotkeyAction::EditMode_SkyMap, config.toolbarButtonsWallEdit);
 	ImGuiContext& g = *GImGui;
-	ImGui::SameLine(125 + 10 * (config.toolbarButtonSize + g.Style.ItemSpacing.x));
+	ImGui::SameLine(125 + 11 * (config.toolbarButtonSize + g.Style.ItemSpacing.x));
 
 	if (editMode == EditMode::Object)
 	{

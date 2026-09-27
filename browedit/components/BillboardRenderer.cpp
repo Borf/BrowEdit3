@@ -80,7 +80,7 @@ BillboardRenderer::BillboardRenderContext::BillboardRenderContext() : shader(uti
 {
 	shader->use();
 	shader->setUniform(BillboardShader::Uniforms::s_texture, 0);
-	order = 6;
+	order = RendererDrawPriority::Billboard;
 }
 
 void BillboardRenderer::BillboardRenderContext::preFrame(Node* rootNode, NodeRenderContext& context, std::vector<Renderer*>& renderers)

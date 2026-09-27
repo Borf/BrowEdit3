@@ -586,6 +586,18 @@
     <ClCompile Include="browedit\actions\StrChangeSourceAction.cpp">
       <Filter>browedit\actions</Filter>
     </ClCompile>
+    <ClCompile Include="browedit\components\LubSkyMap.cpp">
+      <Filter>browedit\components</Filter>
+    </ClCompile>
+    <ClCompile Include="browedit\components\SkyMapRenderer.cpp">
+      <Filter>browedit\components</Filter>
+    </ClCompile>
+    <ClCompile Include="browedit\windows\SkyMapEditWindow.cpp">
+      <Filter>browedit\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="browedit\actions\SkyMapChangeAction.cpp">
+      <Filter>browedit\actions</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="lib\imgui\imgui.h">
@@ -1354,6 +1366,21 @@
       <Filter>browedit\components</Filter>
     </ClInclude>
     <ClInclude Include="browedit\actions\StrChangeSourceAction.h">
+      <Filter>browedit\actions</Filter>
+    </ClInclude>
+    <ClInclude Include="browedit\components\LubSkyMap.h">
+      <Filter>browedit\components</Filter>
+    </ClInclude>
+    <ClInclude Include="browedit\components\SkyMapRenderer.h">
+      <Filter>browedit\components</Filter>
+    </ClInclude>
+    <ClInclude Include="browedit\gl\EBO.h">
+      <Filter>browedit\gl</Filter>
+    </ClInclude>
+    <ClInclude Include="browedit\gl\UBO.h">
+      <Filter>browedit\gl</Filter>
+    </ClInclude>
+    <ClInclude Include="browedit\actions\SkyMapChangeAction.h">
       <Filter>browedit\actions</Filter>
     </ClInclude>
   </ItemGroup>

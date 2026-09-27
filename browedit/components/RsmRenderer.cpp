@@ -371,7 +371,7 @@ void RsmRenderer::setMeshesDirty() {
 
 RsmRenderer::RsmRenderContext::RsmRenderContext() : shader(util::ResourceManager<gl::Shader>::load<RsmShader>())
 {
-	order = 1;
+	order = RendererDrawPriority::Rsm;
 	phases = 4;
 	shader->use();
 	shader->setUniform(RsmShader::Uniforms::s_texture, 0);

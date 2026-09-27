@@ -42,7 +42,7 @@ void MapView::postRenderShadowMode(BrowEdit* browEdit)
 	glEnable(GL_BLEND);
 	glDepthMask(0);
 
-	auto mouse3D = gnd->rayCast(mouseRay, viewEmptyTiles);
+	auto mouse3D = gnd->rayCast(mouseRay, browEdit->config.viewEmptyTiles);
 	glm::ivec2 tileHovered((int)glm::floor(mouse3D.x / 10), (gnd->height - (int)glm::floor(mouse3D.z) / 10));
 	glm::ivec2 subTileHovered((int)glm::floor(glm::fract(mouse3D.x / 10) * gnd->lightmapWidth), gnd->lightmapHeight - (int)glm::floor(glm::fract(mouse3D.z / 10) * gnd->lightmapHeight));
 	glm::ivec2 shadowHoveredOffset((int)glm::floor(mouse3D.x / 10 * gnd->lightmapWidth), (int)((gnd->height - (mouse3D.z - 10) / 10) * gnd->lightmapHeight));

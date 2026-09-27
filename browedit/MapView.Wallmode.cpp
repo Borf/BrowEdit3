@@ -23,7 +23,7 @@ void MapView::postRenderWallMode(BrowEdit* browEdit)
 
 	auto gnd = map->rootNode->getComponent<Gnd>();
 	auto gndRenderer = map->rootNode->getComponent<GndRenderer>();
-	auto mouse3D = gnd->rayCast(mouseRay, viewEmptyTiles);
+	auto mouse3D = gnd->rayCast(mouseRay, browEdit->config.viewEmptyTiles);
 	glm::ivec2 tileHovered((int)glm::floor(mouse3D.x / 10), (gnd->height - (int)glm::floor(mouse3D.z) / 10));
 
 	glm::vec2 tileHoveredOffset((mouse3D.x / 10) - tileHovered.x, tileHovered.y - (gnd->height - mouse3D.z / 10));

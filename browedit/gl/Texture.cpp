@@ -101,21 +101,7 @@ namespace gl
 				return;
 			}
 
-			for (int x = 0; x < width; x++)
-			{
-				for (int y = 0; y < height; y++)
-				{
-					if (data[4 * (x + width * y) + 0] > 247 &&
-						data[4 * (x + width * y) + 1] < 8 &&
-						data[4 * (x + width * y) + 2] > 247)
-					{
-						data[4 * (x + width * y) + 0] = 0;
-						data[4 * (x + width * y) + 1] = 0;
-						data[4 * (x + width * y) + 2] = 0;
-						data[4 * (x + width * y) + 3] = 0;
-					}
-				}
-			}
+			util::imageDitherAndPinkRemove(fileName, data, width, height);
 
 			if (ids == nullptr)
 			{

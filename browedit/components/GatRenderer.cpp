@@ -60,7 +60,7 @@ void GatRenderer::render(NodeRenderContext& context)
 
 GatRenderer::GatRenderContext::GatRenderContext() : shader(util::ResourceManager<gl::Shader>::load<SimpleShader>())
 {
-	order = 2;
+	order = RendererDrawPriority::Gat;
 	shader->use();
 	shader->setUniform(SimpleShader::Uniforms::s_texture, 0);
 }

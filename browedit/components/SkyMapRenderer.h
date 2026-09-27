@@ -2,88 +2,137 @@
 
 #include "Renderer.h"
 #include <browedit/gl/Shader.h>
+#include <browedit/gl/Vertex.h>
+#include <browedit/gl/VBO.h>
+#include <browedit/gl/EBO.h>
+#include <browedit/gl/VAO.h>
+#include <browedit/gl/UBO.h>
 #include <browedit/util/Singleton.h>
+#include "LubSkyMap.h"
 
 namespace gl { class Texture; }
 class RswObject;
 class Gnd;
+class Rsw;
 class LubEffect;
 class BillboardRenderer;
 
 class SkyMapRenderer : public Renderer
 {
 public:
-	class LubShader : public gl::Shader
+	class SkyMapShader : public gl::Shader
 	{
 	public:
-		LubShader() : gl::Shader("data/shaders/skymap", Uniforms::End) { bindUniforms(); }
+		SkyMapShader() : gl::Shader("data/shaders/skymap", Uniforms::End) { bindUniforms(); }
 		struct Uniforms
 		{
 			enum
 			{
-				projectionMatrix,
-				cameraMatrix,
-				modelMatrix,
 				s_texture,
+				cameraMatrix,
+				projectionMatrix,
+				uTime,
 				color,
-				billboard_off,
-				scale,
-				selection,
+				aForcedDir,
 				End
 			};
 		};
 		void bindUniforms() override
 		{
-			bindUniform(Uniforms::projectionMatrix, "projectionMatrix");
-			bindUniform(Uniforms::cameraMatrix, "cameraMatrix");
 			bindUniform(Uniforms::s_texture, "s_texture");
-			bindUniform(Uniforms::modelMatrix, "modelMatrix");
+			bindUniform(Uniforms::cameraMatrix, "cameraMatrix");
+			bindUniform(Uniforms::projectionMatrix, "projectionMatrix");
+			bindUniform(Uniforms::uTime, "uTime");
 			bindUniform(Uniforms::color, "color");
-			bindUniform(Uniforms::billboard_off, "billboard_off");
-			bindUniform(Uniforms::scale, "scale");
-			bindUniform(Uniforms::selection, "selection");
 		}
 	};
+
+	struct alignas(16) ParticleParams
+	{
+	public:
+		float Size;
+		float Size_Extra;
+		float Height;
+		float Height_Extra;
+		float Alpha_Inc_Time;
+		float Alpha_Inc_Time_Extra;
+		float Alpha_Inc_Speed;
+		float Alpha_Dec_Time;
+		float Alpha_Dec_Time_Extra;
+		float Alpha_Dec_Speed;
+		float Expand_Rate;
+		float uvSplit;
+		float uvCycleSpeed;
+		float scaleX;
+		float scaleY;
+		int dirMode;
+		glm::vec4 forcedDir;
+	};
+
+	struct Particle
+	{
+	public:
+		glm::vec3 position;
+		float seed;
+		float lifeStart;
+		float lifeEnd;
+		float alphaDecTime;
+		float expandDelay;
+		float uvStart;
+	};
+
+	class RenderInfo
+	{
+	public:
+		gl::VBO<VertexP3T2>* vbo = nullptr;
+		gl::VBO<Particle>* instance_vbo = nullptr;
+		gl::EBO* ebo = nullptr;
+		gl::VAO* vao = nullptr;
+	};
+
+	struct CloudInstance {
+		const LubSkyMap::CloudEffect* source;
+
+		ParticleParams params;
+		gl::Texture* textureAtlas;
+		RenderInfo* renderInfo = nullptr;
+		std::vector<Particle> particles;
+	};
+
+	gl::UBO<ParticleParams>* ubo = nullptr;
+	std::vector<CloudInstance> cloudInstances;
 private:
 	bool dirty = true;
-	RswObject* rswObject = nullptr;
-	LubEffect* lubEffect = nullptr;
-	BillboardRenderer* billboardRenderer = nullptr;
-
-	gl::Texture* texture = nullptr;
-
-	float lastTime;
-	float nextEmitTime = 0;
-	class Particle
-	{
-	public:
-		glm::vec3 startPosition;
-		glm::vec3 position;
-		glm::vec3 speed;
-		glm::vec3 dir;
-		float size;
-		float alpha;
-		float duration;
-		float tickStart;
-		bool toDelete;
-	};
-	std::vector<Particle> particles;
-
 public:
-	Gnd* gnd;
-	class LubRenderContext : public Renderer::RenderContext, public util::Singleton<LubRenderContext>
+	class SkyMapRenderContext : public Renderer::RenderContext, public util::Singleton<SkyMapRenderContext>
 	{
 	public:
-		LubShader* shader = nullptr;
+		SkyMapShader* shader = nullptr;
 		glm::mat4 viewMatrix = glm::mat4(1.0f);
 
-		LubRenderContext();
-		virtual void preFrame(Node* rootNode, NodeRenderContext& context) override;
+		SkyMapRenderContext();
+		virtual void preFrame(Node* rootNode, NodeRenderContext& context, std::vector<Renderer*>& renderers) override;
+		virtual void postFrame(NodeRenderContext& context) override;
 	};
+
+	Gnd* gnd = nullptr;
+	Rsw* rsw = nullptr;
+	LubSkyMap* lubSkyMap = nullptr;
+
+	gl::Texture* cloudAtlas = nullptr;
+	gl::Texture* starAtlas = nullptr;
+	gl::Texture* fogAtlas = nullptr;
+	bool atlasLoaded = false;
+	bool enabled = true;
+	float time = 0.0f;
 
 	SkyMapRenderer();
 	~SkyMapRenderer();
 	virtual void render(NodeRenderContext& context);
 	bool selected = false;
 	void setDirty() { this->dirty = true; }
+
+	gl::Texture* createTextureAtlas(std::initializer_list<std::string> textures);
+	void updateParticle(SkyMapRenderer::CloudInstance& cloudInstance, SkyMapRenderer::Particle& particle, int i);
+	void reload();
 };

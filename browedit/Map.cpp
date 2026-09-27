@@ -14,6 +14,8 @@
 #include <browedit/components/Rsw.h>
 #include <browedit/components/Gnd.h>
 #include <browedit/components/Gat.h>
+#include <browedit/components/LubSkyMap.h>
+#include <browedit/components/SkyMapRenderer.h>
 #include <browedit/components/GndRenderer.h>
 #include <browedit/components/BillboardRenderer.h>
 #include <browedit/BrowEdit.h>
@@ -38,6 +40,10 @@ Map::Map(const std::string& name, BrowEdit* browEdit) : name(name)
 	auto rsw = new Rsw();
 	rootNode->addComponent(rsw);	
 	rsw->load(name, this, browEdit);
+	auto lubSkyMap = new LubSkyMap();
+	rootNode->addComponent(lubSkyMap);
+	lubSkyMap->load(rsw->rswMapName);
+	rootNode->addComponent(new SkyMapRenderer());
 	changed = false;
 }
 
@@ -47,6 +53,10 @@ Map::Map(const std::string& name, int width, int height, BrowEdit* browEdit) : n
 	auto rsw = new Rsw();
 	rootNode->addComponent(rsw);
 	rsw->newMap(name, width, height, this, browEdit);
+	auto lubSkyMap = new LubSkyMap();
+	rootNode->addComponent(lubSkyMap);
+	lubSkyMap->load(rsw->rswMapName);
+	rootNode->addComponent(new SkyMapRenderer());
 	changed = true;
 }
 

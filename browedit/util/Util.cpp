@@ -7,6 +7,7 @@
 #include <misc/cpp/imgui_stdlib.h>
 #include <imgui_internal.h>
 #include <iostream>
+#include <fstream>
 #include <ShlObj_core.h>
 
 #include <browedit/Map.h>
@@ -178,10 +179,15 @@ namespace util
 	bool ColorEdit3(BrowEdit* browEdit, Map* map, Node* node, const char* label, glm::vec3* ptr, const std::string& action)
 	{
 		static glm::vec3 startValue;
+
+		bool hovered = ImGui::IsItemHovered();
+		bool mouseDown = ImGui::IsMouseClicked(ImGuiMouseButton_Left);
+
+		if (hovered && mouseDown)
+			startValue = *ptr;
+
 		bool ret = ImGui::ColorEdit3(label, glm::value_ptr(*ptr));
 
-		if (ImGui::IsItemActivated())
-			startValue = *ptr;
 		if (ImGui::IsItemDeactivatedAfterEdit())
 			map->doAction(new ObjectChangeAction(node, ptr, startValue, action == "" ? label : action), browEdit);
 		ImGui::PushID(label);
@@ -2023,6 +2029,105 @@ namespace util
 		case 13:	return GL_ONE_MINUS_SRC_ALPHA;
 		}
 		return GL_ZERO;
+	}
+
+	std::string loadLubFileToString(std::istream* lub)
+	{
+		char c = lub->get();
+		lub->seekg(0, std::ios_base::beg);
+		std::string data = "";
+		if (c == 0x1b)
+		{
+			std::ofstream out("tmp.lub", std::ios_base::binary | std::ios_base::out);
+			char buf[1024];
+			while (!lub->eof())
+			{
+				lub->read(buf, 1024);
+				auto count = lub->gcount();
+				out.write(buf, count);
+			}
+			out.close();
+
+			STARTUPINFO info = { sizeof(info) };
+			PROCESS_INFORMATION processInfo;
+			std::string cmd = browEdit->config.grfEditorPath + "GrfCL.exe -lub .\\tmp.lub .\\tmp.lua";
+
+			if (CreateProcess(nullptr, (LPSTR)cmd.c_str(), nullptr, nullptr, TRUE, 0, nullptr, nullptr, &info, &processInfo))
+			{
+				WaitForSingleObject(processInfo.hProcess, INFINITE);
+				CloseHandle(processInfo.hProcess);
+				CloseHandle(processInfo.hThread);
+			}
+			data = "";
+			std::ifstream lua("tmp.lua", std::ios_base::binary | std::ios_base::in);
+			if (lua.is_open())
+			{
+				char buf[1024];
+				while (!lua.eof())
+				{
+					lua.read(buf, 1024);
+					data += std::string(buf, lua.gcount());
+				}
+				lua.close();
+			}
+			std::filesystem::remove("tmp.lub");
+			std::filesystem::remove("tmp.lua");
+		}
+		else //this is a nasty renamed lua file to lub. Shame on you mappers!
+		{
+			char buf[1024];
+			while (!lub->eof())
+			{
+				lub->read(buf, 1024);
+				data += std::string(buf, lub->gcount());
+			}
+		}
+
+		return data;
+	}
+
+	void imageDitherAndPinkRemove(std::string fileName, unsigned char* data, int width, int height)
+	{
+		int ditherDivider = 8;
+		int ditherDividerShift = 3;
+		float ditherMultiplier = 8.25f;
+
+		if (fileName.find(".tga") == fileName.length() - 4 ||
+			fileName.find(".png") == fileName.length() - 4) {
+			ditherDividerShift = 4;
+			ditherDivider = 16;
+			ditherMultiplier = 17;
+		}
+
+		unsigned char rT = (unsigned char)(glm::ceil(ditherDivider / ditherMultiplier * 255) - 1);
+		unsigned char gT = (unsigned char)(255 - rT);
+		unsigned char bT = rT;
+
+		int ditherMultiplierInt = (int)(ditherMultiplier * 1024);
+		unsigned char lut[256];
+
+		for (int i = 0; i < 256; i++) {
+			int r = ((i >> ditherDividerShift) * ditherMultiplierInt) >> 10;
+			lut[i] = (unsigned char)(r > 255 ? 255 : r);
+		}
+
+		unsigned int* pPixels = (unsigned int*)data;
+		unsigned int* pPixelsEnd = (unsigned int*)(data + 4 * width * height);
+
+		while (pPixels < pPixelsEnd) {
+			unsigned int px = *pPixels;
+
+			if (((px >> 16) & 0xFF) > rT && ((px >> 8) & 0xFF) < gT && (px & 0xFF) > bT) {
+				*pPixels++ = 0;
+			}
+			else {
+				*pPixels++ =
+					((unsigned int)lut[(px >> 24) & 0xFF] << 24) |
+					((unsigned int)lut[(px >> 16) & 0xFF] << 16) |
+					((unsigned int)lut[(px >> 8) & 0xFF] << 8) |
+					(unsigned int)lut[px & 0xFF];
+			}
+		}
 	}
 }
 

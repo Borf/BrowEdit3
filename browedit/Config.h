@@ -23,6 +23,7 @@ public:
 	std::vector<std::string> grfs;
 	float fov = 45;
 	float cameraMouseSpeed = 1.0f;
+	bool cameraSmoothing = true;
 	int style = 0;
 	glm::vec3 backgroundColor = glm::vec3(0.1f, 0.1f, 0.15f);
 	glm::vec3 wallEditSelectionColor = glm::vec3(1.0f, 1.0f, 1.0f);
@@ -55,6 +56,7 @@ public:
 	int lightmapperThreadCount = 4;
 	int lightmapperRefreshTimer = 2;
 	bool additiveShadow = true;
+	bool viewEmptyTiles = true;
 	std::string isValid() const;
 	bool showWindow(BrowEdit* browEdit);
 	void setupFileIO();
@@ -67,6 +69,7 @@ public:
 		grfs,
 		fov,
 		cameraMouseSpeed,
+		cameraSmoothing,
 		style,
 		backgroundColor,
 		wallEditSelectionColor,
@@ -94,5 +97,6 @@ public:
 		lightmapperThreadCount,
 		lightmapperRefreshTimer,
 		additiveShadow,
+		viewEmptyTiles,
 		startMaximizedWindow);
 };

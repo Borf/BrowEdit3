@@ -28,6 +28,7 @@
     <ClCompile Include="browedit\actions\SelectAction.cpp" />
     <ClCompile Include="browedit\actions\CubeHeightChangeAction.cpp" />
     <ClCompile Include="browedit\actions\SelectWallAction.cpp" />
+    <ClCompile Include="browedit\actions\SkyMapChangeAction.cpp" />
     <ClCompile Include="browedit\actions\StrChangeSourceAction.cpp" />
     <ClCompile Include="browedit\actions\TileDeleteAction.cpp" />
     <ClCompile Include="browedit\actions\TileNewAction.cpp" />
@@ -45,6 +46,7 @@
     <ClCompile Include="browedit\components\Gnd.cpp" />
     <ClCompile Include="browedit\components\GndRenderer.cpp" />
     <ClCompile Include="browedit\components\LubRenderer.cpp" />
+    <ClCompile Include="browedit\components\LubSkyMap.cpp" />
     <ClCompile Include="browedit\components\Rsm.cpp" />
     <ClCompile Include="browedit\components\RsmRenderer.cpp" />
     <ClCompile Include="browedit\components\Rsw.cpp" />
@@ -53,6 +55,7 @@
     <ClCompile Include="browedit\components\Rsw.Model.cpp" />
     <ClCompile Include="browedit\components\Rsw.Object.cpp" />
     <ClCompile Include="browedit\components\Rsw.Sound.cpp" />
+    <ClCompile Include="browedit\components\SkyMapRenderer.cpp" />
     <ClCompile Include="browedit\components\Str.cpp" />
     <ClCompile Include="browedit\components\StrRenderer.cpp" />
     <ClCompile Include="browedit\components\WaterRenderer.cpp" />
@@ -105,6 +108,7 @@
     <ClCompile Include="browedit\windows\ObjectTreeWindow.cpp" />
     <ClCompile Include="browedit\windows\OpenMapWindow.cpp" />
     <ClCompile Include="browedit\windows\ShadowEditWindow.cpp" />
+    <ClCompile Include="browedit\windows\SkyMapEditWindow.cpp" />
     <ClCompile Include="browedit\windows\TextureBrushWindow.cpp" />
     <ClCompile Include="browedit\windows\TextureManageWindow.cpp" />
     <ClCompile Include="browedit\windows\Toolbar.cpp" />
@@ -197,6 +201,7 @@
     <ClInclude Include="browedit\actions\SelectAction.h" />
     <ClInclude Include="browedit\actions\CubeHeightChangeAction.h" />
     <ClInclude Include="browedit\actions\SelectWallAction.h" />
+    <ClInclude Include="browedit\actions\SkyMapChangeAction.h" />
     <ClInclude Include="browedit\actions\StrChangeSourceAction.h" />
     <ClInclude Include="browedit\actions\TileDeleteAction.h" />
     <ClInclude Include="browedit\actions\TileNewAction.h" />
@@ -214,18 +219,22 @@
     <ClInclude Include="browedit\components\GndRenderer.h" />
     <ClInclude Include="browedit\components\ImguiProps.h" />
     <ClInclude Include="browedit\components\LubRenderer.h" />
+    <ClInclude Include="browedit\components\LubSkyMap.h" />
     <ClInclude Include="browedit\components\Renderer.h" />
     <ClInclude Include="browedit\components\Rsm.h" />
     <ClInclude Include="browedit\components\RsmRenderer.h" />
     <ClInclude Include="browedit\components\Rsw.h" />
+    <ClInclude Include="browedit\components\SkyMapRenderer.h" />
     <ClInclude Include="browedit\components\Str.h" />
     <ClInclude Include="browedit\components\StrRenderer.h" />
     <ClInclude Include="browedit\components\WaterRenderer.h" />
     <ClInclude Include="browedit\Config.h" />
     <ClInclude Include="browedit\Gadget.h" />
+    <ClInclude Include="browedit\gl\EBO.h" />
     <ClInclude Include="browedit\gl\FBO.h" />
     <ClInclude Include="browedit\gl\Shader.h" />
     <ClInclude Include="browedit\gl\Texture.h" />
+    <ClInclude Include="browedit\gl\UBO.h" />
     <ClInclude Include="browedit\gl\VAO.h" />
     <ClInclude Include="browedit\gl\VBO.h" />
     <ClInclude Include="browedit\gl\Vertex.h" />

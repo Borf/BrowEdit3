@@ -142,7 +142,7 @@ void StrRenderer::render(NodeRenderContext& context)
 		// Calculate interpolation for the current frame
 		float stime = 0.0f;
 		
-		if (frame1->time > frame0->time)
+		if (frame1->time > frame0->time && frame0->isInterpolated)
 			stime = 1.0f / (frame1->time - frame0->time) * (time - frame0->time);
 
 		float angle = EASE(frame0->angle, frame1->angle, stime);
@@ -258,7 +258,7 @@ StrRenderer::StrRenderContext::StrRenderContext() : shader(util::ResourceManager
 {
 	shader->use();
 	shader->setUniform(StrShader::Uniforms::s_texture, 0);
-	order = 5;
+	order = RendererDrawPriority::Str;
 }
 
 void StrRenderer::StrRenderContext::preFrame(Node* rootNode, NodeRenderContext& context, std::vector<Renderer*>& renderers)

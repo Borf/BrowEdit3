@@ -60,7 +60,7 @@ void MapView::postRenderTextureMode(BrowEdit* browEdit)
 		textureGridVbo->unBind();
 	}
 
-	auto mouse3D = gnd->rayCast(mouseRay, viewEmptyTiles);
+	auto mouse3D = gnd->rayCast(mouseRay, browEdit->config.viewEmptyTiles);
 	glm::vec2 uvSize = textureEditUv2 - textureEditUv1;
 	glm::vec2 uv1(0,0);
 	glm::vec2 uv4(1,1);
@@ -454,7 +454,7 @@ void MapView::postRenderTextureMode(BrowEdit* browEdit)
 	}
 	else if (browEdit->textureBrushMode == BrowEdit::TextureBrushMode::Select)
 	{
-		auto mouse3D = gnd->rayCast(mouseRay, viewEmptyTiles);
+		auto mouse3D = gnd->rayCast(mouseRay, browEdit->config.viewEmptyTiles);
 		glm::ivec2 tileHovered((int)glm::floor(mouse3D.x / 10), (gnd->height - (int)glm::floor(mouse3D.z) / 10));
 
 		//draw selection
@@ -908,7 +908,7 @@ void MapView::postRenderTextureMode(BrowEdit* browEdit)
 	}
 	else if (browEdit->textureBrushMode == BrowEdit::TextureBrushMode::Fill)
 	{
-		auto mouse3D = gnd->rayCast(mouseRay, viewEmptyTiles);
+		auto mouse3D = gnd->rayCast(mouseRay, browEdit->config.viewEmptyTiles);
 		glm::ivec2 tileHovered((int)glm::floor(mouse3D.x / 10), (gnd->height - (int)glm::floor(mouse3D.z) / 10));
 
 		std::vector<glm::ivec2> tilesToFill;

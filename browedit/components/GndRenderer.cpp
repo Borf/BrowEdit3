@@ -183,6 +183,7 @@ void GndRenderer::render(NodeRenderContext& context)
 
 GndRenderer::GndRenderContext::GndRenderContext() : shader(util::ResourceManager<gl::Shader>::load<GndShader>())
 {
+	order = RendererDrawPriority::Gnd;
 	shader->use();
 	shader->setUniform(GndShader::Uniforms::s_texture, 0);
 	shader->setUniform(GndShader::Uniforms::s_lighting, 1);

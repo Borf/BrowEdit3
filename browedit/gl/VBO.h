@@ -90,7 +90,6 @@ namespace gl
 			return element[index];
 		}
 
-
 		void setPointer()
 		{
 			T::setPointer(T::getSize());
@@ -100,6 +99,10 @@ namespace gl
 			T::unsetPointer();
 		}
 
+		GLuint getBufferId()
+		{
+			return vbo;
+		}
 	};
 }
 
