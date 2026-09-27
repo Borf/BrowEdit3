@@ -19,7 +19,7 @@ LubRenderer::LubRenderer()
 LubRenderer::~LubRenderer()
 {
 	if(texture)
-		util::ResourceManager<gl::Texture>::unload(texture);
+		util::ResourceManager<gl::TexturePoT>::unload(texture);
 }
 
 void LubRenderer::render(NodeRenderContext& context)
@@ -36,13 +36,13 @@ void LubRenderer::render(NodeRenderContext& context)
 		dirty = false;
 
 		if (texture != nullptr) {
-			util::ResourceManager<gl::Texture>::unload(texture);
+			util::ResourceManager<gl::TexturePoT>::unload(texture);
 			texture = nullptr;
 		}
 
 		if (lubEffect && lubEffect->texture != "")
 		{
-			texture = util::ResourceManager<gl::Texture>::load("data\\texture\\" + util::utf8_to_iso_8859_1(util::replace(lubEffect->texture, "\\\\", "\\")));
+			texture = util::ResourceManager<gl::TexturePoT>::load("data\\texture\\" + util::utf8_to_iso_8859_1(util::replace(lubEffect->texture, "\\\\", "\\")));
 		}
 		else
 			texture = nullptr;
@@ -136,8 +136,8 @@ void LubRenderer::render(NodeRenderContext& context)
 	else
 		glDisable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
-	int src = util::d3dToOpenGlBlend(lubEffect->srcmode);
-	int dst = util::d3dToOpenGlBlend(lubEffect->destmode);
+	int src = util::d3dToOpenGlSrcBlend(lubEffect->srcmode);
+	int dst = util::d3dToOpenGlDstBlend(lubEffect->destmode);
 	glBlendFuncSeparate(src, dst, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 	glDepthMask(0);
 

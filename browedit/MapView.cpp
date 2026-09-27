@@ -11,8 +11,10 @@
 #include "components/LubSkyMap.h"
 #include "components/GndRenderer.h"
 #include "components/RsmRenderer.h"
+#include "components/StrRenderer.h"
 #include "components/GatRenderer.h"
 #include "components/LubRenderer.h"
+#include "components/LubWindRenderer.h"
 #include "components/WaterRenderer.h"
 #include "components/BillboardRenderer.h"
 #include "components/SkyMapRenderer.h"
@@ -668,6 +670,15 @@ void MapView::render(BrowEdit* browEdit)
 					if (rswObject->scale.x * rswObject->scale.y * rswObject->scale.z * (rsm->version >= 0x202 ? -1 : 1) < 0)
 						rsmRenderer->reverseCullFace = true;
 				}
+				auto strRenderer = newNode.first->getComponent<StrRenderer>();
+				if (strRenderer)
+					strRenderer->gnd = gnd;
+				auto lubWindRenderer = newNode.first->getComponent<LubWindRenderer>();
+				if (lubWindRenderer)
+					lubWindRenderer->gnd = gnd;
+				auto lubRenderer = newNode.first->getComponent<LubRenderer>();
+				if (lubRenderer)
+					lubRenderer->gnd = gnd;
 				if (newNode.first->getComponent<BillboardRenderer>())
 					newNode.first->getComponent<BillboardRenderer>()->gnd = gnd;
 

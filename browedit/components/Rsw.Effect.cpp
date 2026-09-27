@@ -9,9 +9,13 @@
 #include <browedit/util/ResourceManager.h>
 #include <browedit/gl/Texture.h>
 #include <browedit/components/BillboardRenderer.h>
+#include <browedit/components/LubRenderer.h>
+#include <browedit/components/LubWindRenderer.h>
+#include <browedit/components/StrRenderer.h>
 #include <browedit/actions/AddComponentAction.h>
 #include <browedit/actions/RemoveComponentAction.h>
 #include <browedit/actions/LubChangeTextureAction.h>
+#include <browedit/actions/LubWindChangeTextureAction.h>
 #include <browedit/actions/StrChangeSourceAction.h>
 
 #include <iostream>
@@ -48,9 +52,70 @@ void RswEffect::save(std::ofstream& file)
 	file.write(reinterpret_cast<char*>(&param4), sizeof(float));
 }
 
+bool RswEffect::isLubEffect()
+{
+	return id == 974 || id == 2343 || id == 1412;
+}
 
+void RswEffect::setEffectNode(BrowEdit* browEdit, Node* node)
+{
+	switch (id) {
+	case 974:
+		safeAddComponent<LubEffect>(browEdit, node);
+		safeAddComponent<LubRenderer>(browEdit, node);
+		break;
+	case 2343:
+		safeAddComponent<LubWindEffect>(browEdit, node);
+		safeAddComponent<LubWindRenderer>(browEdit, node);
+		break;
+	case 1412:
+		safeAddComponent<StrEffect>(browEdit, node);
+		safeAddComponent<StrRenderer>(browEdit, node);
+		break;
+	}
 
+	clearEffectNode(browEdit, node);
+}
 
+template <typename T>
+void RswEffect::safeAddComponent(BrowEdit* browEdit, Node* node)
+{
+	if (node->getComponent<T>())
+		return;
+
+	if (browEdit)
+		browEdit->activeMapView->map->doAction(new AddComponentAction(node, new T()), browEdit);
+	else
+		node->addComponent(new T());
+}
+
+void RswEffect::clearEffectNode(BrowEdit* browEdit, Node* node)
+{
+	if (id != 974) {
+		safeRemoveComponent<LubEffect>(browEdit, node);
+		safeRemoveComponent<LubRenderer>(browEdit, node);
+	}
+	if (id != 2343) {
+		safeRemoveComponent<LubWindEffect>(browEdit, node);
+		safeRemoveComponent<LubWindRenderer>(browEdit, node);
+	}
+	if (id != 1412) {
+		safeRemoveComponent<StrEffect>(browEdit, node);
+		safeRemoveComponent<StrRenderer>(browEdit, node);
+	}
+}
+
+template <typename T>
+void RswEffect::safeRemoveComponent(BrowEdit* browEdit, Node* node)
+{
+	if (!node->getComponent<T>())
+		return;
+
+	if (browEdit)
+		browEdit->activeMapView->map->doAction(new RemoveComponentAction<T>(node), browEdit);
+	else
+		node->removeComponent<T>();
+}
 
 void RswEffect::buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>& nodes)
 {
@@ -64,25 +129,29 @@ void RswEffect::buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>& no
 	util::DragIntMulti<RswEffect>(browEdit, browEdit->activeMapView->map, rswEffects, "Type", [](RswEffect* e) {return &e->id; }, 1, 0, 500);
 	if (ImGui::IsItemDeactivatedAfterEdit())
 	{
-		if (rswEffects[0]->id == 974)
-		{
-			for (auto n : nodes)
-				if (!n->getComponent<LubEffect>())
-					browEdit->activeMapView->map->doAction(new AddComponentAction(n, new LubEffect()), browEdit);
+		if (rswEffects[0]->isLubEffect()) {
+			for (auto n : nodes) {
+				auto rswEffect = n->getComponent<RswEffect>();
+				rswEffect->setEffectNode(browEdit, n);
+			}
 		}
-		else
-		{
-			for (auto n : nodes)
-				if (n->getComponent<LubEffect>())
-					browEdit->activeMapView->map->doAction(new RemoveComponentAction<LubEffect>(n), browEdit);
+		else {
+			for (auto n : nodes) {
+				auto rswEffect = n->getComponent<RswEffect>();
+				rswEffect->clearEffectNode(browEdit, n);
+			}
 		}
 	}
 	browEdit->activeMapView->map->endGroupAction(browEdit);
 
-	int id = rswEffects[0]->id;
-	if (previews.find(id) == previews.end())
-		previews[id] = util::ResourceManager<gl::Texture>::load("data\\texture\\effect\\" + std::to_string(id) + ".gif");
-	ImGui::Image((ImTextureID)(long long)previews[id]->getAnimatedTextureId(), ImVec2(200, 200));
+
+	if (!rswEffects[0]->isLubEffect()) {
+		int id = rswEffects[0]->id;
+
+		if (previews.find(id) == previews.end())
+			previews[id] = util::ResourceManager<gl::Texture>::load("data\\texture\\effect\\" + std::to_string(id) + ".gif");
+		ImGui::Image((ImTextureID)(long long)previews[id]->getAnimatedTextureId(), ImVec2(200, 200));
+	}
 
 	util::DragFloatMulti<RswEffect>(browEdit, browEdit->activeMapView->map, rswEffects, "Loop", [](RswEffect* e) {return &e->loop; }, 0.01f, 0.0f, 100.0f);
 	util::DragFloatMulti<RswEffect>(browEdit, browEdit->activeMapView->map, rswEffects, "Param 1", [](RswEffect* e) {return &e->param1; }, 0.01f, 0.0f, 100.0f);
@@ -97,40 +166,47 @@ void LubEffect::load(const sol::table& data)
 {
 	if (!data.valid())
 		return;
-	from_lua(data["dir1"], dir1);
-	from_lua(data["dir2"], dir2);
-	from_lua(data["gravity"], gravity);
-	from_lua(data["pos"], pos);
-	from_lua(data["radius"], radius);
-	sol::table color_tbl = data["color"];
-	if(color_tbl.size() == 4)
-		from_lua(data["color"], color);
-	else
-	{
-		color.r = color_tbl[1].get<float>();
-		color.g = color_tbl[2].get<float>();
-		color.b = color_tbl[3].get<float>();
-		color.a = 255;
+
+	try {
+		from_lua(data["dir1"], dir1);
+		from_lua(data["dir2"], dir2);
+		from_lua(data["gravity"], gravity);
+		from_lua(data["pos"], pos);
+		from_lua(data["radius"], radius);
+		sol::table color_tbl = data["color"];
+		if (color_tbl.size() == 4)
+			from_lua(data["color"], color);
+		else
+		{
+			color.r = color_tbl[1].get<float>();
+			color.g = color_tbl[2].get<float>();
+			color.b = color_tbl[3].get<float>();
+			color.a = 255;
+		}
+		color /= 255.0f;
+		from_lua(data["rate"], rate);
+		from_lua(data["size"], size);
+		from_lua(data["life"], life);
+		texture = util::iso_8859_1_to_utf8(util::replace(data["texture"], "\\\\", "\\"));
+		speed = data["speed"][1];
+		srcmode = data["srcmode"][1];
+		destmode = data["destmode"][1];
+		maxcount = data["maxcount"][1];
+		zenable = data["zenable"][1];
+
+		if (data["billboard_off"].valid())
+			billboard_off = data["billboard_off"][1];
+		if (data["eternity"].valid())
+			eternity = data["eternity"][1];
+		if (data["scale"].valid())
+			from_lua(data["scale"], scale);
+		if (data["rotate_angle"].valid())
+			from_lua(data["rotate_angle"], rotate_angle);
 	}
-	color /= 255.0f;
-	from_lua(data["rate"], rate);
-	from_lua(data["size"], size);
-	from_lua(data["life"], life);
-	texture = util::iso_8859_1_to_utf8(util::replace(data["texture"], "\\\\", "\\"));
-	speed = data["speed"][1];
-	srcmode = data["srcmode"][1];
-	destmode = data["destmode"][1];
-	maxcount = data["maxcount"][1];
-	zenable = data["zenable"][1];
-	
-	if (data["billboard_off"].valid())
-		billboard_off = data["billboard_off"][1];
-	if (data["eternity"].valid())
-		eternity = data["eternity"][1];
-	if (data["scale"].valid())
-		from_lua(data["scale"], scale);
-	if (data["rotate_angle"].valid())
-		from_lua(data["rotate_angle"], rotate_angle);
+	catch (const std::exception& e)
+	{
+		std::cerr << "Error loading lub effect data: " << e.what() << std::endl;
+	}
 }
 
 void LubEffect::buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>& nodes)
@@ -181,7 +257,7 @@ void LubEffect::buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>& no
 		util::DragFloat3Multi<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "dir1", [](LubEffect* e) {return &e->dir1; }, 0.1f, 0, 0);
 		util::DragFloat3Multi<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "dir2", [](LubEffect* e) {return &e->dir2; }, 0.1f, 0, 0);
 		util::DragFloat3Multi<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "gravity", [](LubEffect* e) {return &e->gravity; }, 0.1f, 0, 0);
-		util::DragFloat3Multi<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "pos", [](LubEffect* e) {return &e->pos; }, 0.1f, 0, 0);
+		//util::DragFloat3Multi<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "pos", [](LubEffect* e) {return &e->pos; }, 0.1f, 0, 0);
 		util::DragFloat3Multi<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "radius", [](LubEffect* e) {return &e->radius; }, 0.1f, 0, 0);
 		util::ColorEdit4Multi<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "color", [](LubEffect* e) {return &e->color; });
 		util::DragFloat2Multi<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "rate", [](LubEffect* e) {return &e->rate; }, 0.1f, 0, 0);
@@ -200,17 +276,112 @@ void LubEffect::buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>& no
 		util::DragFloat3Multi<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "rotate_angle", [](LubEffect* e) {return &e->rotate_angle; }, 1.0f, 0, 360);
 		util::DragIntMulti<LubEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "eternity", [](LubEffect* e) {return &e->eternity; }, 1, 0, 1);
 	}
+}
 
+void LubWindEffect::load(const sol::table& data)
+{
+	if (!data.valid())
+		return;
+
+	try {
+		particleNum = data.get<int>("particleNum");
+		from_lua(data["color"], color);
+		radius = data.get<float>("radius");
+		thickness = data.get<float>("thickness");
+		height = data.get<float>("height");
+		speed = data.get<float>("speed");
+		fullAngle = data.get<float>("fullAngle");
+		from_lua(data["rotateVector"], rotateVector);
+		srcmode = data.get<int>("srcMode");
+		destmode = data.get<int>("destMode");
+		texture = util::iso_8859_1_to_utf8(util::replace(data["texture"], "\\\\", "\\"));
+
+		// the lub color format is argb (???), so need to convert rgba
+		color = glm::vec4(color[1], color[2], color[3], color[0]);
+		color /= 255.0f;
+	}
+	catch (const std::exception& e)
+	{
+		std::cerr << "Error loading lub wind effect data: " << e.what() << std::endl;
+	}
+}
+
+void LubWindEffect::buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>& nodes)
+{
+	std::vector<LubWindEffect*> lubEffects;
+	std::ranges::copy(nodes | std::ranges::views::transform([](Node* n) { return n->getComponent<LubWindEffect>(); }) | std::ranges::views::filter([](LubWindEffect* r) { return r != nullptr; }), std::back_inserter(lubEffects));
+	if (lubEffects.size() == 0)
+		return;
+
+
+	ImGui::Text("Lub Wind Effect");
+	if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0))
+	{
+		json clipboard;
+		to_json(clipboard, *lubEffects[0]);
+		ImGui::SetClipboardText(clipboard.dump(1).c_str());
+	}
+	ImGui::PushID("LubWindEffect");
+	if (ImGui::BeginPopupContextItem("CopyPaste"))
+	{
+		try {
+			if (ImGui::MenuItem("Copy"))
+			{
+				json clipboard;
+				to_json(clipboard, *lubEffects[0]);
+				ImGui::SetClipboardText(clipboard.dump(1).c_str());
+			}
+			if (ImGui::MenuItem("Paste (no undo)"))
+			{
+				auto cb = ImGui::GetClipboardText();
+				if (cb)
+					for (auto lubEffect : lubEffects)
+					{
+						from_json(json::parse(std::string(cb)), *lubEffect);
+						//lubEffect->node->getComponent<LubRenderer>()->begin();
+					}
+			}
+		}
+		catch (...) {}
+		ImGui::EndPopup();
+	}
+	ImGui::PopID();
+
+	if (browEdit->config.grfEditorPath == "")
+		ImGui::Text("Please set up grf editor to edit lub effects, then reload the map");
+	else
+	{
+		//util::DragFloat3Multi<LubWindEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "pos", [](LubWindEffect* e) {return &e->pos; }, 0.1f, 0, 0);
+		util::InputTextMulti<LubWindEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "texture", [](LubWindEffect* e) {return &e->texture; }, [&](Node* node, std::string* ptr, std::string* startValue, const std::string& action) {
+			browEdit->activeMapView->map->doAction(new LubWindChangeTextureAction(node->getComponent<LubWindEffect>(), *startValue, *ptr), browEdit);
+			});
+		util::DragIntMulti<LubWindEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "particleNum", [](LubWindEffect* e) {return &e->particleNum; }, 1, 2, 200);
+		util::ColorEdit4Multi<LubWindEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "color", [](LubWindEffect* e) {return &e->color; });
+		util::DragFloatMulti<LubWindEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "radius", [](LubWindEffect* e) {return &e->radius; }, 0.1f, 0, 0);
+		util::DragFloatMulti<LubWindEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "thickness", [](LubWindEffect* e) {return &e->thickness; }, 0.1f, 0, 0);
+		util::DragFloatMulti<LubWindEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "height", [](LubWindEffect* e) {return &e->height; }, 0.1f, 0, 0);
+		util::DragFloatMulti<LubWindEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "speed", [](LubWindEffect* e) {return &e->speed; }, 0.1f, 0, 0);
+		util::DragFloatMulti<LubWindEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "fullAngle", [](LubWindEffect* e) {return &e->fullAngle; }, 0.1f, 0, 0);
+		util::DragFloat2Multi<LubWindEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "rotateVector", [](LubWindEffect* e) {return &e->rotateVector; }, 0.1f, 0, 0);
+		util::DragIntMulti<LubWindEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "srcmode", [](LubWindEffect* e) {return &e->srcmode; }, 1, 0, 0);
+		util::DragIntMulti<LubWindEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "destmode", [](LubWindEffect* e) {return &e->destmode; }, 1, 0, 20);
+	}
 }
 
 void StrEffect::load(const sol::table& data)
 {
-	if (!data.valid())
-		return;
-	str = util::iso_8859_1_to_utf8(util::replace(data["str"], "\\\\", "\\"));
-	renderflag = std::stoi(data.get_or<std::string>("rednerflag", ""));
-	scaleratio = std::stof(data.get_or<std::string>("scaleratio", ""));
-	alpharatio = std::stof(data.get_or<std::string>("alpharatio", ""));
+	try {
+		if (!data.valid())
+			return;
+		str = util::iso_8859_1_to_utf8(util::replace(data["str"], "\\\\", "\\"));
+		renderflag = std::stoi(data.get_or<std::string>("rednerflag", ""));
+		scaleratio = std::stof(data.get_or<std::string>("scaleratio", ""));
+		alpharatio = std::stof(data.get_or<std::string>("alpharatio", ""));
+	}
+	catch (const std::exception& e)
+	{
+		std::cerr << "Error loading str effect data: " << e.what() << std::endl;
+	}
 }
 
 void StrEffect::buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>& nodes)

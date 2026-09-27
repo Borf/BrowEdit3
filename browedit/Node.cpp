@@ -3,6 +3,7 @@
 #include "components/Renderer.h"
 #include "components/Collider.h"
 #include "components/LubRenderer.h"
+#include "components/LubWindRenderer.h"
 #include "components/StrRenderer.h"
 #include "components/Rsm.h"
 #include "components/Str.h"
@@ -232,6 +233,13 @@ void Node::addComponentsFromJson(const nlohmann::json& data)
 			from_json(c, *strEffect);
 			this->addComponent(strEffect);
 			this->addComponent(new StrRenderer());
+		}
+		if (c["type"] == "lubwindeffect")
+		{
+			auto lubEffect = new LubWindEffect();
+			from_json(c, *lubEffect);
+			this->addComponent(lubEffect);
+			this->addComponent(new LubWindRenderer());
 		}
 		if (c["type"] == "rswsound")
 		{

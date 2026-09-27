@@ -33,6 +33,7 @@ void BrowEdit::showObjectProperties()
 		RswModel::buildImGuiMulti(this, activeMapView->map->selectedNodes);
 		RswEffect::buildImGuiMulti(this, activeMapView->map->selectedNodes);
 		LubEffect::buildImGuiMulti(this, activeMapView->map->selectedNodes);
+		LubWindEffect::buildImGuiMulti(this, activeMapView->map->selectedNodes);
 		StrEffect::buildImGuiMulti(this, activeMapView->map->selectedNodes);
 		RswSound::buildImGuiMulti(this, activeMapView->map->selectedNodes);
 	}

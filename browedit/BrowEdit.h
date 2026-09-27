@@ -343,6 +343,7 @@ public:
 	void showObjectProperties();
 	void showUndoWindow();
 	void showObjectWindow();
+	void showStrPickerWindow();
 	void showHeightWindow();
 	void showGatWindow();
 	void showWallWindow();

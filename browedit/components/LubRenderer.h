@@ -4,7 +4,7 @@
 #include <browedit/gl/Shader.h>
 #include <browedit/util/Singleton.h>
 
-namespace gl { class Texture; }
+namespace gl { class TexturePoT; }
 class RswObject;
 class Gnd;
 class LubEffect;
@@ -50,7 +50,7 @@ private:
 	LubEffect* lubEffect = nullptr;
 	BillboardRenderer* billboardRenderer = nullptr;
 
-	gl::Texture* texture = nullptr;
+	gl::TexturePoT* texture = nullptr;
 
 	float lastTime;
 	float nextEmitTime = 0;

@@ -12,6 +12,7 @@
 #include <browedit/components/GndRenderer.h>
 #include <browedit/components/RsmRenderer.h>
 #include <browedit/components/LubRenderer.h>
+#include <browedit/components/LubWindRenderer.h>
 #include <browedit/components/StrRenderer.h>
 #include <browedit/components/Rsw.h>
 #include <browedit/components/BillboardRenderer.h>
@@ -164,8 +165,8 @@ void BrowEdit::menuBar()
 			newNode->addComponent(new BillboardRenderer("data\\effect.png", "data\\effect_selected.png"));
 			newNode->addComponent(new CubeCollider(5));
 
-			auto lubEffect = new LubEffect();
-			newNode->addComponent(lubEffect);
+			e->setEffectNode(nullptr, newNode);
+			auto lubEffect = newNode->getComponent<LubEffect>();
 			// Add dummy data to show something
 			lubEffect->texture = "smoke2.bmp";
 			lubEffect->gravity = glm::vec3(0, -5, 0);
@@ -181,7 +182,21 @@ void BrowEdit::menuBar()
 			lubEffect->zenable = 1;
 			lubEffect->eternity = 0;
 
-			newNode->addComponent(new LubRenderer());
+			newNodes.push_back(std::pair<Node*, glm::vec3>(newNode, glm::vec3(0, 0, 0)));
+			newNodesCenter = glm::vec3(0, 0, 0);
+			newNodePlacement = BrowEdit::Ground;
+		}
+
+		if (ImGui::MenuItem("Add new wind effect")) {
+			auto e = new RswEffect();
+			e->id = 2343;
+			e->loop = 1.0f;
+			Node* newNode = new Node("effect");
+			newNode->addComponent(new RswObject());
+			newNode->addComponent(e);
+			newNode->addComponent(new BillboardRenderer("data\\effect.png", "data\\effect_selected.png"));
+			newNode->addComponent(new CubeCollider(5));
+			e->setEffectNode(nullptr, newNode);
 
 			newNodes.push_back(std::pair<Node*, glm::vec3>(newNode, glm::vec3(0, 0, 0)));
 			newNodesCenter = glm::vec3(0, 0, 0);
@@ -197,16 +212,7 @@ void BrowEdit::menuBar()
 			newNode->addComponent(e);
 			newNode->addComponent(new BillboardRenderer("data\\effect.png", "data\\effect_selected.png"));
 			newNode->addComponent(new CubeCollider(5));
-
-			auto strEffect = new StrEffect();
-			newNode->addComponent(strEffect);
-			// Add dummy data to show something
-			strEffect->str = "magnificat.str";
-			strEffect->alpharatio = 1.0f;
-			strEffect->scaleratio = 1.0f;
-			strEffect->renderflag = 37;
-
-			newNode->addComponent(new StrRenderer());
+			e->setEffectNode(nullptr, newNode);
 
 			newNodes.push_back(std::pair<Node*, glm::vec3>(newNode, glm::vec3(0, 0, 0)));
 			newNodesCenter = glm::vec3(0, 0, 0);

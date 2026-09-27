@@ -598,6 +598,12 @@
     <ClCompile Include="browedit\actions\SkyMapChangeAction.cpp">
       <Filter>browedit\actions</Filter>
     </ClCompile>
+    <ClCompile Include="browedit\actions\LubWindChangeTextureAction.cpp">
+      <Filter>browedit\actions</Filter>
+    </ClCompile>
+    <ClCompile Include="browedit\components\LubWindRenderer.cpp">
+      <Filter>browedit\components</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="lib\imgui\imgui.h">
@@ -1382,6 +1388,12 @@
     </ClInclude>
     <ClInclude Include="browedit\actions\SkyMapChangeAction.h">
       <Filter>browedit\actions</Filter>
+    </ClInclude>
+    <ClInclude Include="browedit\actions\LubWindChangeTextureAction.h">
+      <Filter>browedit\actions</Filter>
+    </ClInclude>
+    <ClInclude Include="browedit\components\LubWindRenderer.h">
+      <Filter>browedit\components</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

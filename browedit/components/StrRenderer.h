@@ -8,7 +8,7 @@
 #include <browedit/components/Str.h>
 #include <vector>
 
-namespace gl { class Texture; }
+namespace gl { class TexturePoT; }
 class RswModel;
 class RswObject;
 class Gnd;
@@ -53,11 +53,6 @@ public:
 	public:
 		StrShader* shader = nullptr;
 		glm::mat4 viewMatrix = glm::mat4(1.0f);
-		bool viewLighting = true;
-		bool viewTextures = true;
-		bool viewFog = true;
-		bool enableFaceCulling = true;
-		int counter = 0;
 
 		StrRenderContext();
 		virtual void preFrame(Node* rootNode, NodeRenderContext& context, std::vector<Renderer*>& renderers) override;
@@ -72,7 +67,7 @@ public:
 	int phase = 0;
 	bool dirty = true;
 
-	std::vector<std::vector<gl::Texture*>> textures;
+	std::vector<std::vector<gl::TexturePoT*>> textures;
 	std::vector<VertexP2T2> verts;
 public:
 	StrRenderer();

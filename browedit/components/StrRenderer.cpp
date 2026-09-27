@@ -33,7 +33,7 @@ void StrRenderer::begin()
 	gnd = nullptr;
 	for (auto layerTextures : textures)
 		for (auto t : layerTextures)
-			util::ResourceManager<gl::Texture>::unload(t);
+			util::ResourceManager<gl::TexturePoT>::unload(t);
 	textures.clear();
 
 	// Setup dummy data
@@ -80,24 +80,24 @@ void StrRenderer::render(NodeRenderContext& context)
 		// Reload all textures
 		for (auto layerTextures : textures)
 			for (auto t : layerTextures)
-				util::ResourceManager<gl::Texture>::unload(t);
+				util::ResourceManager<gl::TexturePoT>::unload(t);
 		textures.clear();
 
 		std::filesystem::path strFolder = std::filesystem::path(str->fileName).parent_path();
 
 		for (auto& layer : str->layers) {
-			std::vector<gl::Texture*> layerTextures;
+			std::vector<gl::TexturePoT*> layerTextures;
 
 			for (auto& textureFilename : layer->textures) {
 				std::filesystem::path finalPath = strFolder / textureFilename;
-				layerTextures.push_back(util::ResourceManager<gl::Texture>::load(finalPath.string()));
+				layerTextures.push_back(util::ResourceManager<gl::TexturePoT>::load(finalPath.string()));
 			}
 
 			textures.push_back(layerTextures);
 		}
 	}
 
-	if (!rswObject || !strEffect || !gnd || !str)
+	if (!strEffect || !str)
 		return;
 
 	// STR files always use 60 fps, regardless of what the str file itself says.
@@ -105,8 +105,11 @@ void StrRenderer::render(NodeRenderContext& context)
 	auto shader = dynamic_cast<StrRenderContext*>(renderContext)->shader;
 
 	glm::mat4 instanceMatrix(1.0f);
-	instanceMatrix = glm::scale(instanceMatrix, glm::vec3(1, 1, -1));
-	instanceMatrix = glm::translate(instanceMatrix, glm::vec3(5 * gnd->width + rswObject->position.x, -rswObject->position.y, -10 - 5 * gnd->height + rswObject->position.z));
+
+	if (rswObject && gnd) {
+		instanceMatrix = glm::scale(instanceMatrix, glm::vec3(1, 1, -1));
+		instanceMatrix = glm::translate(instanceMatrix, glm::vec3(5 * gnd->width + rswObject->position.x, -rswObject->position.y, -10 - 5 * gnd->height + rswObject->position.z));
+	}
 	
 	shader->setUniform(StrShader::Uniforms::alpha, strEffect->alpharatio);
 
@@ -208,6 +211,13 @@ void StrRenderer::render(NodeRenderContext& context)
 
 		float delay = frame0->delay;
 
+		int textureIndex_i = (int)textureIndex;
+
+		if (textureIndex_i < 0 || textureIndex_i >= textures[layerIdx].size())
+			continue;
+
+		auto texture = textures[layerIdx][textureIndex_i];
+
 		// Calculate UVs
 		float uv0x = uvs[0];
 		float uv0y = uvs[1];
@@ -216,24 +226,21 @@ void StrRenderer::render(NodeRenderContext& context)
 
 		// TODO: power of two textures handling
 		// The client uses a power of two texture buffer, so we should emulate that.
-		//float sx = texture.width / (float)texture.PotWidth;
-		//float sy = texture.height / (float)texture.PotHeight;
-		//uv0x *= sx;
-		//uv0y *= sy;
-		//uv1x *= sx;
-		//uv1y *= sy;
+		if (texture->powerOfTwo) {
+			float sx = texture->width / (float)texture->potWidth;
+			float sy = texture->height / (float)texture->potHeight;
+			uv0x *= sx;
+			uv0y *= sy;
+			uv1x *= sx;
+			uv1y *= sy;
+		}
 
 		verts[0] = VertexP2T2(glm::vec2(positions[2], -positions[6]), glm::vec2(uv0x + uv1x, uv1y + uv0y));
 		verts[1] = VertexP2T2(glm::vec2(positions[1], -positions[5]), glm::vec2(uv0x + uv1x, uv0y));
 		verts[2] = VertexP2T2(glm::vec2(positions[0], -positions[4]), glm::vec2(uv0x, uv0y));
 		verts[3] = VertexP2T2(glm::vec2(positions[3], -positions[7]), glm::vec2(uv0x, uv1y + uv0y));
 
-		int textureIndex_i = (int)textureIndex;
-
-		if (textureIndex_i < 0 || textureIndex_i >= textures[layerIdx].size())
-			continue;
-
-		textures[layerIdx][textureIndex_i]->bind();
+		texture->bind();
 
 		glVertexAttribPointer(0, 2, GL_FLOAT, false, sizeof(VertexP2T2), verts[0].data);
 		glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexP2T2), verts[0].data + 2);
@@ -248,7 +255,7 @@ void StrRenderer::render(NodeRenderContext& context)
 		shader->setUniform(StrShader::Uniforms::modelPosition, glm::vec3(instanceMatrix[3]));
 		shader->setUniform(StrShader::Uniforms::color, color);
 
-		glBlendFuncSeparate(util::d3dToOpenGlBlend(frame0->blendSrc), util::d3dToOpenGlBlend(frame0->blendDst), GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+		glBlendFuncSeparate(util::d3dToOpenGlSrcBlend(frame0->blendSrc), util::d3dToOpenGlDstBlend(frame0->blendDst), GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 		glDrawArrays(GL_QUADS, 0, 4);
 	}
 #undef EASE
@@ -277,7 +284,7 @@ void StrRenderer::StrRenderContext::preFrame(Node* rootNode, NodeRenderContext& 
 	glDepthMask(0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-	if (phase == 0) {
+	if (phase == 0 && context.mapView) {
 		// Order str effect renderers. This is only done for renderflag & 1, but it's expected to be a default flag.
 		auto gnd = context.mapView->map->rootNode->getComponent<Gnd>();
 

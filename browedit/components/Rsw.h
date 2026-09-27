@@ -16,11 +16,20 @@ class RsmRenderer;
 class Gnd;
 class Map;
 class BrowEdit;
+class RswObject;
 namespace gl { class Texture; }
 
 struct LubEffectTableData {
 	std::map<int, sol::table> emitters;
 	std::map<int, sol::table> ez2str;
+	std::map<int, sol::table> winds;
+};
+
+struct RswLubEffectPair {
+	RswObject* rswObject;
+	Component* effect;
+
+	RswLubEffectPair(RswObject* rO, Component* e) : rswObject(rO), effect(e) {}
 };
 
 class Rsw : public Component, public ImguiProps
@@ -306,14 +315,36 @@ public:
 	NLOHMANN_DEFINE_TYPE_INTRUSIVE(LubEffect, dir1, dir2, gravity, pos, radius, color, rate, size, life, scale, texture, speed, srcmode, destmode, maxcount, zenable, billboard_off, eternity, rotate_angle);
 };
 
+class LubWindEffect : public Component
+{
+public:
+	glm::vec3 pos;
+	int particleNum = 4;
+	glm::vec4 color = glm::vec4(1.0f);
+	float radius = 20;
+	float thickness = 5;
+	float height = 10;
+	float speed = 5;
+	float fullAngle = 200;
+	glm::vec2 rotateVector = glm::vec2(0.0f);
+	int srcmode = 5;
+	int destmode = 2;
+	std::string texture = "effect\\smoke3.bmp";
+	bool dirty;
+
+	void load(const sol::table& data);
+	static void buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>&);
+	NLOHMANN_DEFINE_TYPE_INTRUSIVE(LubWindEffect, pos, particleNum, color, radius, thickness, height, speed, fullAngle, rotateVector, srcmode, destmode, texture);
+};
+
 class StrEffect : public Component
 {
 public:
-	std::string str;
-	int renderflag;
-	float scaleratio;
-	float alpharatio;
-	bool dirty;
+	std::string str = "magnificat.str";
+	int renderflag = 37;
+	float scaleratio = 1.0f;
+	float alpharatio = 1.0f;
+	bool dirty = true;
 
 	void load(const sol::table& data);
 	static void buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>&);
@@ -333,6 +364,16 @@ public:
 	RswEffect() {}
 	void load(std::istream* is);
 	void save(std::ofstream& file);
+	bool isLubEffect();
+	void setEffectNode(BrowEdit* browEdit, Node* node);
+	void clearEffectNode(BrowEdit* browEdit, Node* node);
+
+	template <typename T>
+	void safeAddComponent(BrowEdit* browEdit, Node* node);
+
+	template <typename T>
+	void safeRemoveComponent(BrowEdit* browEdit, Node* node);
+
 	static void buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>&);
 	static inline std::map<int, gl::Texture*> previews;
 	static inline std::map<int, gl::Texture*> previewAnim;

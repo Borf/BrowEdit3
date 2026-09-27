@@ -179,7 +179,7 @@ glm::vec3 Map::getSelectionCenter()
 			center += n->getComponent<RswObject>()->position;
 			count++;
 		}
-	center /= count;
+	center /= glm::max(1, count);
 	return center;
 }
 
