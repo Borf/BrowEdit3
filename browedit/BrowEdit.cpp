@@ -249,8 +249,10 @@ void BrowEdit::run()
 		showExportWindow();
 		if (windowData.undoVisible)
 			showUndoWindow();
-		if (windowData.objectWindowVisible && editMode == EditMode::Object)
+		if (windowData.objectWindowVisible && editMode == EditMode::Object) {
+			showStrPickerWindow();
 			showObjectWindow();
+		}
 		if (editMode == EditMode::Object)
 			showObjectEditToolsWindow();
 		if (windowData.demoWindowVisible)

@@ -136,7 +136,8 @@ namespace util
 
 	std::string callstack();
 	void decompose(glm::mat4 m, glm::vec3& euler, glm::vec3& scale, glm::vec3& translation);
-	int d3dToOpenGlBlend(int d3d);
+	int d3dToOpenGlSrcBlend(int d3d);
+	int d3dToOpenGlDstBlend(int d3d);
 	std::string loadLubFileToString(std::istream* lub);
 	void imageDitherAndPinkRemove(std::string fileName, unsigned char* data, int width, int height);
 }

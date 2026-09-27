@@ -97,7 +97,7 @@ void StrRenderer::render(NodeRenderContext& context)
 		}
 	}
 
-	if (!rswObject || !strEffect || !gnd || !str)
+	if (!strEffect || !str)
 		return;
 
 	// STR files always use 60 fps, regardless of what the str file itself says.
@@ -105,8 +105,11 @@ void StrRenderer::render(NodeRenderContext& context)
 	auto shader = dynamic_cast<StrRenderContext*>(renderContext)->shader;
 
 	glm::mat4 instanceMatrix(1.0f);
-	instanceMatrix = glm::scale(instanceMatrix, glm::vec3(1, 1, -1));
-	instanceMatrix = glm::translate(instanceMatrix, glm::vec3(5 * gnd->width + rswObject->position.x, -rswObject->position.y, -10 - 5 * gnd->height + rswObject->position.z));
+
+	if (rswObject && gnd) {
+		instanceMatrix = glm::scale(instanceMatrix, glm::vec3(1, 1, -1));
+		instanceMatrix = glm::translate(instanceMatrix, glm::vec3(5 * gnd->width + rswObject->position.x, -rswObject->position.y, -10 - 5 * gnd->height + rswObject->position.z));
+	}
 	
 	shader->setUniform(StrShader::Uniforms::alpha, strEffect->alpharatio);
 
@@ -248,7 +251,7 @@ void StrRenderer::render(NodeRenderContext& context)
 		shader->setUniform(StrShader::Uniforms::modelPosition, glm::vec3(instanceMatrix[3]));
 		shader->setUniform(StrShader::Uniforms::color, color);
 
-		glBlendFuncSeparate(util::d3dToOpenGlBlend(frame0->blendSrc), util::d3dToOpenGlBlend(frame0->blendDst), GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+		glBlendFuncSeparate(util::d3dToOpenGlSrcBlend(frame0->blendSrc), util::d3dToOpenGlDstBlend(frame0->blendDst), GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 		glDrawArrays(GL_QUADS, 0, 4);
 	}
 #undef EASE
@@ -277,7 +280,7 @@ void StrRenderer::StrRenderContext::preFrame(Node* rootNode, NodeRenderContext& 
 	glDepthMask(0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-	if (phase == 0) {
+	if (phase == 0 && context.mapView) {
 		// Order str effect renderers. This is only done for renderflag & 1, but it's expected to be a default flag.
 		auto gnd = context.mapView->map->rootNode->getComponent<Gnd>();
 

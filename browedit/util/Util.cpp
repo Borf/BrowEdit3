@@ -2010,7 +2010,7 @@ namespace util
 		euler = glm::degrees(euler);
 	}
 
-	int d3dToOpenGlBlend(int d3d)
+	int d3dToOpenGlSrcBlend(int d3d)
 	{
 		switch (d3d)
 		{
@@ -2027,6 +2027,27 @@ namespace util
 		case 11:	return GL_SRC_ALPHA_SATURATE;
 		case 12:	return GL_SRC_ALPHA;
 		case 13:	return GL_ONE_MINUS_SRC_ALPHA;
+		}
+		return GL_ZERO;
+	}
+
+	int d3dToOpenGlDstBlend(int d3d)
+	{
+		switch (d3d)
+		{
+		case 1:		return GL_ZERO;
+		case 2:		return GL_ONE;
+		case 3:		return GL_SRC_COLOR;
+		case 4:		return GL_ONE_MINUS_SRC_COLOR;
+		case 5:		return GL_SRC_ALPHA;
+		case 6:		return GL_ONE_MINUS_SRC_ALPHA;
+		case 7:		return GL_DST_ALPHA;
+		case 8:		return GL_ONE_MINUS_DST_ALPHA;
+		case 9:		return GL_DST_COLOR;
+		case 10:	return GL_ONE_MINUS_DST_COLOR;
+		case 11:	return GL_SRC_ALPHA_SATURATE;
+		case 12:	return GL_ONE_MINUS_SRC_ALPHA;
+		case 13:	return GL_SRC_ALPHA;
 		}
 		return GL_ZERO;
 	}

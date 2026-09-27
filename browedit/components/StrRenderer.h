@@ -53,11 +53,6 @@ public:
 	public:
 		StrShader* shader = nullptr;
 		glm::mat4 viewMatrix = glm::mat4(1.0f);
-		bool viewLighting = true;
-		bool viewTextures = true;
-		bool viewFog = true;
-		bool enableFaceCulling = true;
-		int counter = 0;
 
 		StrRenderContext();
 		virtual void preFrame(Node* rootNode, NodeRenderContext& context, std::vector<Renderer*>& renderers) override;

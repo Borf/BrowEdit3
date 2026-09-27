@@ -310,10 +310,10 @@ class StrEffect : public Component
 {
 public:
 	std::string str;
-	int renderflag;
-	float scaleratio;
-	float alpharatio;
-	bool dirty;
+	int renderflag = 37;
+	float scaleratio = 1.0f;
+	float alpharatio = 1.0f;
+	bool dirty = true;
 
 	void load(const sol::table& data);
 	static void buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>&);

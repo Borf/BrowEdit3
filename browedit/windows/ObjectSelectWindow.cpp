@@ -7,8 +7,10 @@
 #include <browedit/MapView.h>
 #include <browedit/Map.h>
 #include <browedit/components/RsmRenderer.h>
+#include <browedit/components/StrRenderer.h>
 #include <browedit/components/BillboardRenderer.h>
 #include <browedit/components/Rsm.h>
+#include <browedit/components/Str.h>
 #include <browedit/components/Rsw.h>
 #include <browedit/components/LubRenderer.h>
 #include <browedit/gl/FBO.h>
@@ -26,10 +28,17 @@
 #include <iostream>
 
 //TODO: this file is a mess
+//Tokei: yes, yes it is (and I made it worse!)
 
 class ObjectWindowObject
 {
 public:
+	enum ObjectType {
+		Object_Rsm,
+		Object_Str,
+		Object_Lub
+	} objectType = ObjectType::Object_Rsm;
+
 	Node* node;
 	gl::FBO* fbo;
 	NodeRenderContext nodeRenderContext;
@@ -40,15 +49,31 @@ public:
 	{
 		fbo = new gl::FBO((int)browEdit->config.thumbnailSize.x, (int)browEdit->config.thumbnailSize.y, true); //TODO: resolution?
 		node = new Node();
-		node->addComponent(util::ResourceManager<Rsm>::load(fileName));
-		node->addComponent(new RsmRenderer());
+
+		if (fileName.rfind(".rsm") != std::string::npos ||
+			fileName.rfind(".rsm2") != std::string::npos) {
+			objectType = ObjectType::Object_Rsm;
+		}
+		else if (fileName.rfind(".str") != std::string::npos) {
+			objectType = ObjectType::Object_Str;
+		}
+
+		switch (objectType) {
+		case ObjectType::Object_Rsm:
+			node->addComponent(util::ResourceManager<Rsm>::load(fileName));
+			node->addComponent(new RsmRenderer());
+			break;
+		case ObjectType::Object_Str:
+			auto strEffect = new StrEffect();
+			strEffect->str = fileName.substr(20); // remove data\texture\effect\ 
+			node->addComponent(strEffect);
+			node->addComponent(new StrRenderer());
+			break;
+		}
 	}
 
 	void draw()
 	{
-		auto rsm = node->getComponent<Rsm>();
-		if (!rsm->loaded)
-			return;
 		fbo->bind();
 		glViewport(0, 0, fbo->getWidth(), fbo->getHeight());
 		glClearColor(browEdit->config.backgroundColor.r, browEdit->config.backgroundColor.g, browEdit->config.backgroundColor.b, 1.0f);
@@ -59,23 +84,54 @@ public:
 		glEnable(GL_BLEND);
 		glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
-		float distance = 2.5f * glm::max(rsm->drawnbbrange.x, glm::max(rsm->drawnbbrange.y, rsm->drawnbbrange.z));
+		switch (objectType) {
+		case ObjectType::Object_Rsm: {
+			auto rsm = node->getComponent<Rsm>();
+			if (!rsm->loaded)
+				return;
 
-		float ratio = fbo->getWidth() / (float)fbo->getHeight();
-		nodeRenderContext.projectionMatrix = glm::perspective(glm::radians(45.0f), ratio, 0.1f, 5000.0f);
-		nodeRenderContext.viewMatrix = glm::lookAt(glm::vec3(-distance * glm::sin(glm::radians(rotation)), -distance, -distance * glm::cos(glm::radians(rotation))), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-		nodeRenderContext.time = (float)glfwGetTime();
-		nodeRenderContext.fbo = fbo;
-		RsmRenderer::RsmRenderContext::getInstance()->viewLighting = false;
-		glm::mat4 mat = glm::mat4(1.0f);
-		if (rsm->version >= 0x202) {
-			mat = glm::scale(mat, glm::vec3(1, -1, 1));
-			node->getComponent<RsmRenderer>()->reverseCullFace = true;
+			float distance = 2.5f * glm::max(rsm->drawnbbrange.x, glm::max(rsm->drawnbbrange.y, rsm->drawnbbrange.z));
+
+			float ratio = fbo->getWidth() / (float)fbo->getHeight();
+			nodeRenderContext.projectionMatrix = glm::perspective(glm::radians(45.0f), ratio, 0.1f, 5000.0f);
+			nodeRenderContext.viewMatrix = glm::lookAt(glm::vec3(-distance * glm::sin(glm::radians(rotation)), -distance, -distance * glm::cos(glm::radians(rotation))), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+			nodeRenderContext.time = (float)glfwGetTime();
+			nodeRenderContext.fbo = fbo;
+			RsmRenderer::RsmRenderContext::getInstance()->viewLighting = false;
+			glm::mat4 mat = glm::mat4(1.0f);
+			if (rsm->version >= 0x202) {
+				mat = glm::scale(mat, glm::vec3(1, -1, 1));
+				node->getComponent<RsmRenderer>()->reverseCullFace = true;
+			}
+			mat = glm::translate(mat, glm::vec3(-rsm->realbbrange.x, rsm->realbbrange.y, -rsm->realbbrange.z));
+			node->getComponent<RsmRenderer>()->matrixCache = mat;
+			node->getComponent<RsmRenderer>()->matrixCached = true;
+			NodeRenderer::render(node, nodeRenderContext);
 		}
-		mat = glm::translate(mat, glm::vec3(-rsm->realbbrange.x, rsm->realbbrange.y, -rsm->realbbrange.z));
-		node->getComponent<RsmRenderer>()->matrixCache = mat;
-		node->getComponent<RsmRenderer>()->matrixCached = true;
-		NodeRenderer::render(node, nodeRenderContext);
+			break;
+		case ObjectType::Object_Str: {
+			auto str = node->getComponent<Str>();
+			
+			// Str coordinates are scaled to the world coordinates system (so divided by 5).
+			// There's also... the weirdo 0.7f constant that seems to be what Gravity does for some reason.
+			const float strScaling = 0.2f * 0.7f;
+
+			// Ideally, centering around around the dimensions of the animation would be best, but that would require rendering each frame one by one and that's just too much.
+			// Instead, approximate to 500x500, it's "close enough".
+			float distance = 500.0f * strScaling;
+			float ratio = fbo->getWidth() / (float)fbo->getHeight();
+
+			nodeRenderContext.projectionMatrix = glm::ortho(-distance / 2 * ratio, distance / 2 * ratio, distance / 2, -distance / 2, -100.0f, 100.0f);
+			nodeRenderContext.viewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0, -60 * strScaling, 0));
+
+			nodeRenderContext.time = (float)glfwGetTime();
+			nodeRenderContext.fbo = fbo;
+
+			NodeRenderer::render(node, nodeRenderContext);
+		}
+			break;
+		}
+		
 		fbo->unbind();
 	}
 };
@@ -186,8 +242,8 @@ void BrowEdit::showObjectWindow()
 	ImGui::SameLine();
 	ImGui::Checkbox("##vertical", &verticalLayout);
 
-	std::function<void(util::FileIO::Node*)> buildTreeNodes;
-	buildTreeNodes = [&](util::FileIO::Node* node)
+	std::function<void(util::FileIO::Node*, std::string parent)> buildTreeNodes;
+	buildTreeNodes = [&](util::FileIO::Node* node, std::string parent)
 	{
 		for (auto f : node->directories)
 		{
@@ -197,13 +253,15 @@ void BrowEdit::showObjectWindow()
 			if (f.second == windowData.objectWindowSelectedTreeNode)
 				flags |= ImGuiTreeNodeFlags_Selected;
 
-			if (ImGui::TreeNodeEx(f.second->name.c_str(), flags))
-			{
-				buildTreeNodes(f.second);
-				ImGui::TreePop();
-			}
+			bool open = ImGui::TreeNodeEx((f.second->name + "##" + parent + f.second->name).c_str(), flags);
+
 			if (ImGui::IsItemClicked())
 				windowData.objectWindowSelectedTreeNode = f.second;
+
+			if (open) {
+				buildTreeNodes(f.second, parent + f.second->name + "\\");
+				ImGui::TreePop();
+			}
 		}
 	};
 
@@ -219,7 +277,7 @@ void BrowEdit::showObjectWindow()
 		{
 			if (ImGui::IsItemClicked())
 				windowData.objectWindowSelectedTreeNode = root;
-			buildTreeNodes(root);
+			buildTreeNodes(root, std::string(nodeName));
 			ImGui::TreePop();
 		}
 		else if (ImGui::IsItemClicked())
@@ -236,7 +294,6 @@ void BrowEdit::showObjectWindow()
 
 	ImGuiStyle& style = ImGui::GetStyle();
 	float window_visible_x2 = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
-
 
 	auto buildBox = [&](const std::string& file, bool fullPath) {
 		std::string path = util::utf8_to_iso_8859_1(file);
@@ -316,6 +373,11 @@ void BrowEdit::showObjectWindow()
 				}
 				if (ImGui::ImageButtonEx(ImGui::GetID(path.c_str()), texture, config.thumbnailSize, ImVec2(0, 0), ImVec2(1, 1), ImVec2(0, 0), ImVec4(0, 0, 0, 0), ImVec4(1, 1, 1, 1)))
 				{
+					// A new item is selected, clear the clipboard
+					for (auto n : newNodes)
+						delete n.first;
+					newNodes.clear();
+
 					if (activeMapView && newNodes.size() == 0)
 					{
 						if (file.substr(file.size() - 4) == ".rsm" ||
@@ -669,3 +731,273 @@ void BrowEdit::showObjectWindow()
 	ImGui::End();
 }
 
+void BrowEdit::showStrPickerWindow()
+{
+	if (!ImGui::Begin("Str Picker", &windowData.objectWindowVisible))
+	{
+		ImGui::End();
+		return;
+	}
+	static bool verticalLayout = ImGui::GetContentRegionAvail().x < 300;
+
+	static std::string filter;
+	ImGui::SetNextItemWidth(ImGui::GetWindowSize().x * 0.65f - 50);
+	ImGui::InputText("Filter", &filter);
+	ImGui::SameLine();
+	ImGui::Checkbox("##vertical", &verticalLayout);
+
+	std::function<void(util::FileIO::Node*, std::string parent)> buildTreeNodes;
+	buildTreeNodes = [&](util::FileIO::Node* node, std::string parent)
+		{
+			for (auto f : node->directories)
+			{
+				int flags = ImGuiTreeNodeFlags_OpenOnDoubleClick;
+				if (f.second->directories.size() == 0)
+					flags |= ImGuiTreeNodeFlags_Bullet;
+				if (f.second == windowData.objectWindowSelectedTreeNode)
+					flags |= ImGuiTreeNodeFlags_Selected;
+
+				bool open = ImGui::TreeNodeEx((f.second->name + "##" + parent + f.second->name).c_str(), flags);
+				
+				if (ImGui::IsItemClicked())
+					windowData.objectWindowSelectedTreeNode = f.second;
+				
+				if (open) {
+					buildTreeNodes(f.second, parent + f.second->name + "\\");
+					ImGui::TreePop();
+				}
+			}
+		};
+
+
+	ImGui::BeginChild("left pane", ImVec2(verticalLayout ? 0.0f : 250.0f, verticalLayout ? 200.0f : 0.0f), true);
+
+	auto startTree = [&](const char* nodeName, const std::string& path)
+		{
+			auto root = util::FileIO::directoryNode(path);
+			if (!root)
+				return;
+			if (ImGui::TreeNodeEx(nodeName, ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_OpenOnDoubleClick))
+			{
+				if (ImGui::IsItemClicked())
+					windowData.objectWindowSelectedTreeNode = root;
+				buildTreeNodes(root, std::string(nodeName) + "\\");
+				ImGui::TreePop();
+			}
+			else if (ImGui::IsItemClicked())
+				windowData.objectWindowSelectedTreeNode = root;
+		};
+	startTree("Str", "data\\texture\\effect\\");
+	ImGui::EndChild();
+	if (!verticalLayout)
+		ImGui::SameLine();
+
+	ImGuiStyle& style = ImGui::GetStyle();
+	float window_visible_x2 = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
+
+	auto buildBox = [&](const std::string& file, bool fullPath) {
+		std::string path = util::utf8_to_iso_8859_1(file);
+		if (!fullPath)
+		{
+			auto n = windowData.objectWindowSelectedTreeNode;
+			while (n)
+			{
+				if (n->name != "")
+					path = util::utf8_to_iso_8859_1(n->name) + "\\" + path;
+				n = n->parent;
+			}
+		}
+
+		if (path == windowData.objectWindowScrollToModel)
+		{
+			windowData.objectWindowScrollToModel = "";
+			ImGui::SetScrollHereY();
+		}
+		if (ImGui::BeginChild(file.c_str(), ImVec2(config.thumbnailSize.x, config.thumbnailSize.y + 50), true, ImGuiWindowFlags_NoScrollbar))
+		{
+			auto g = ImGui::GetCurrentContext();
+			if (g->CurrentWindow->ParentWindow->ClipRect.Overlaps(g->CurrentWindow->ClipRect))
+			{
+				ImTextureID texture = 0;
+				gl::Texture* textureOrigin = nullptr;
+				if (path.substr(path.size() - 4) == ".str")
+				{
+					auto it = objectWindowObjects.find(path);
+					if (it == objectWindowObjects.end())
+					{
+						objectWindowObjects[path] = new ObjectWindowObject(path, this);
+						it = objectWindowObjects.find(path);
+						it->second->draw();
+					}
+					texture = (ImTextureID)(long long)it->second->fbo->texid[0];
+				}
+				if (ImGui::ImageButtonEx(ImGui::GetID(path.c_str()), texture, config.thumbnailSize, ImVec2(0, 0), ImVec2(1, 1), ImVec2(0, 0), ImVec4(0, 0, 0, 0), ImVec4(1, 1, 1, 1)))
+				{
+					// A new item is selected, clear the clipboard
+					for (auto n : newNodes)
+						delete n.first;
+					newNodes.clear();
+
+					if (activeMapView && newNodes.size() == 0)
+					{
+						if (file.substr(file.size() - 4) == ".str")
+						{
+							std::string name = path.substr(0, path.rfind(".")); //remove .str
+							name = name.substr(20); // remove data\texture\effect\ 
+							Node* newNode = new Node(util::iso_8859_1_to_utf8(name));
+							auto strEffect = new StrEffect();
+							strEffect->str = util::iso_8859_1_to_utf8(name + ".str");
+							auto e = new RswEffect();
+							e->id = 1412;
+							newNode->addComponent(strEffect);
+							newNode->addComponent(new StrRenderer());
+							newNode->addComponent(new RswObject());
+							newNode->addComponent(e);
+							newNode->addComponent(new BillboardRenderer("data\\effect.png", "data\\effect_selected.png"));
+							newNode->addComponent(new CubeCollider(5));
+							newNodes.push_back(std::pair<Node*, glm::vec3>(newNode, glm::vec3(0, 0, 0)));
+							newNodesCenter = glm::vec3(0, 0, 0);
+							newNodePlacement = BrowEdit::Ground;
+						}
+					}
+					std::cout << "Click on " << file << std::endl;
+				}
+				if (ImGui::BeginPopupContextWindow("Object Tags"))
+				{
+					if (ImGui::CollapsingHeader("Actions", ImGuiTreeNodeFlags_DefaultOpen))
+					{
+						if (ImGui::Button("Add to map"))
+							std::cout << "Just click the thing" << std::endl;
+						ImGui::SameLine();
+						if (ImGui::Button("Select this STR") && activeMapView)
+						{
+							bool first = true;
+							auto ga = new GroupAction();
+							activeMapView->map->rootNode->traverse([&](Node* n)
+								{
+									auto str = n->getComponent<Str>();
+									if (str && str->fileName == util::iso_8859_1_to_utf8(path))
+									{
+										auto sa = new SelectAction(activeMapView->map, n, !first, false);
+										ga->addAction(sa);
+										first = false;
+									}
+								});
+							activeMapView->map->doAction(ga, this);
+						}
+					}
+					// Do we need tags for STRs...?
+					if (ImGui::CollapsingHeader("Tags", ImGuiTreeNodeFlags_DefaultOpen))
+					{
+						static std::string newTag;
+						ImGui::SetNextItemWidth(100);
+						ImGui::InputText("Add Tag", &newTag);
+						ImGui::SameLine();
+						if (ImGui::Button("Add"))
+						{
+							tagList[newTag].push_back(util::iso_8859_1_to_utf8(path)); //remove data\model\ prefix
+							tagListReverse[path].push_back(newTag);
+							saveTagList();
+						}
+						ImGui::Separator();
+						ImGui::Text("Current tags on this model");
+						for (auto tag : tagListReverse[path])
+						{
+							ImGui::BulletText(tag.c_str());
+							ImGui::SameLine();
+							if (ImGui::Button("Remove"))
+							{
+								tagList[tag].erase(std::remove_if(tagList[tag].begin(), tagList[tag].end(), [&](const std::string& m) { return m == util::iso_8859_1_to_utf8(path); }), tagList[tag].end());
+								tagListReverse[path].erase(std::remove_if(tagListReverse[path].begin(), tagListReverse[path].end(), [&](const std::string& t) { return t == tag; }), tagListReverse[path].end());
+								saveTagList();
+							}
+
+						}
+					}
+
+					ImGui::EndPopup();
+				}
+				else if (ImGui::IsItemHovered())
+				{
+					if (textureOrigin && !textureOrigin->tryLoaded)
+						textureOrigin->reload();
+					auto it = objectWindowObjects.find(path);
+					if (it != objectWindowObjects.end())
+					{
+						it->second->draw();
+					}
+				}
+				ImGui::Text(file.c_str());
+			}
+		}
+		ImGui::EndChild();
+
+		float last_button_x2 = ImGui::GetItemRectMax().x;
+		float next_button_x2 = last_button_x2 + style.ItemSpacing.x + config.thumbnailSize.x; // Expected position if next button was on same line
+		if (next_button_x2 < window_visible_x2)
+			ImGui::SameLine();
+		};
+	if (ImGui::BeginChild("right pane", ImVec2(verticalLayout ? 0 : ImGui::GetContentRegionAvail().x, 0), true))
+	{
+		if (windowData.objectWindowSelectedTreeNode != nullptr && filter == "")
+		{
+			window_visible_x2 = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
+			for (auto file : windowData.objectWindowSelectedTreeNode->files)
+			{
+				if (file.find(".str") == std::string::npos)
+					continue;
+				buildBox(file, false);
+			}
+		}
+		else if (filter != "")
+		{
+			static std::string currentFilterText = "";
+			static std::vector<std::string> filteredFiles;
+			std::string filter8859 = util::utf8_to_iso_8859_1(filter);
+			util::tolowerInPlace(filter8859);
+			if (currentFilterText != filter8859)
+			{
+				currentFilterText = filter8859;
+				std::vector<std::string> filterTags = util::split(filter8859, " ");
+				filteredFiles.clear();
+
+				for (auto t : tagListReverse)
+				{
+					bool match = true;
+					for (auto tag : filterTags)
+					{
+						bool tagOk = false;
+						if (t.first.find(tag) != std::string::npos)
+							tagOk = true;
+						for (auto fileTag : t.second)
+							if (fileTag.find(tag) != std::string::npos)
+							{
+								tagOk = true;
+								break;
+							}
+						if (!tagOk)
+						{
+							match = false;
+							break;
+						}
+					}
+					if (match)
+					{
+						if (t.first.find(".bmp") == std::string::npos &&
+							t.first.find(".tga") == std::string::npos &&
+							t.first.find(".png") == std::string::npos &&
+							t.first.find(".gif") == std::string::npos)
+							filteredFiles.push_back(util::iso_8859_1_to_utf8(t.first));
+					}
+				}
+			}
+			for (const auto& file : filteredFiles)
+			{
+				buildBox(file, true);
+			}
+
+		}
+	}
+	ImGui::EndChild();
+	ImGui::End();
+}
