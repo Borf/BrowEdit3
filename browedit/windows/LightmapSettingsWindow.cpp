@@ -43,6 +43,8 @@ void BrowEdit::showLightmapSettingsWindow()
 		ImGui::SameLine();
 		if (ImGui::Button("Cancel"))
 		{
+			delete lightmapper;
+			lightmapper = nullptr;
 			ImGui::CloseCurrentPopup();
 		}
 
