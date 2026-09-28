@@ -239,6 +239,22 @@ void BrowEdit::registerActions()
 	HotkeyRegistry::registerAction(HotkeyAction::View_Water,						[this]() { activeMapView->viewWater = !activeMapView->viewWater; }, hasActiveMapView);
 	HotkeyRegistry::registerAction(HotkeyAction::View_Fog,							[this]() { activeMapView->viewFog = !activeMapView->viewFog; }, hasActiveMapView);
 	HotkeyRegistry::registerAction(HotkeyAction::View_SkyMap,						[this]() { activeMapView->viewSkyMap = !activeMapView->viewSkyMap; }, hasActiveMapView);
+	HotkeyRegistry::registerAction(HotkeyAction::View_Mipmap,						[this]() {
+		gl::Texture::defaultEnableMipmap = !gl::Texture::defaultEnableMipmap;
+
+		auto textures = util::ResourceManager< gl::Texture>::getAll();
+
+		for (auto& texture : textures)
+			texture->setMipmap(gl::Texture::defaultEnableMipmap);
+
+		auto texturesPot = util::ResourceManager< gl::TexturePoT>::getAll();
+
+		for (auto& texture : texturesPot)
+			texture->setMipmap(gl::Texture::defaultEnableMipmap);
+
+		config.enableMipmaping = gl::Texture::defaultEnableMipmap;
+		config.save();
+	}, hasActiveMapView);
 
 
 

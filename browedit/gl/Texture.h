@@ -28,6 +28,8 @@ namespace gl
 		int potWidth = -1;
 		int potHeight = -1;
 
+		static inline bool defaultEnableMipmap = true;
+
 		Texture(int width, int height);
 		~Texture();
 		void bind();
@@ -35,6 +37,7 @@ namespace gl
 		void reload();
 		void resize(int width, int height);
 		void setWrapMode(GLuint mode);
+		void setMipmap(bool value);
 		GLuint getAnimatedTextureId();
 
 		friend class util::ResourceManager<gl::Texture>;

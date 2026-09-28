@@ -4,12 +4,14 @@
 #include <stb/stb_image_write.h>
 #include <thread>
 #include <sstream>
+#include <iostream>
 
 namespace gl
 {
 
-	FBO::FBO(int width, int height, bool depth /*= false*/, int textureCount, bool hasDepthTexture)
+	FBO::FBO(int width, int height, bool depth /*= false*/, int textureCount, bool hasDepthTexture, int samples)
 	{
+		this->samples = samples;
 		this->depthTexture = 0;
 		glGetIntegerv(GL_FRAMEBUFFER_BINDING, &oldFBO);
 		this->textureCount = textureCount;
@@ -24,52 +26,80 @@ namespace gl
 
 		for (int i = 0; i < textureCount; i++)
 		{
-			glGenTextures(1, &texid[i]);
-			glBindTexture(GL_TEXTURE_2D, texid[i]);
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+			if (samples > 1) {
+				glGenTextures(1, &texid[i]);
+				glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, texid[i]);
+				glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, GL_RGBA8, width, height, GL_TRUE);
+				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D_MULTISAMPLE, texid[i], 0);
+			}
+			else {
+				glGenTextures(1, &texid[i]);
+				glBindTexture(GL_TEXTURE_2D, texid[i]);
+				glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-
-			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, texid[i], 0);
+				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, texid[i], 0);
+			}
 		}
-
-
-
 
 		if (depth)
 		{
 			glGenRenderbuffers(1, &depthBuffer);
 			glBindRenderbuffer(GL_RENDERBUFFER, depthBuffer);
-			glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width, height);
+			if (samples > 1)
+				glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, GL_DEPTH_COMPONENT24, width, height);
+			else
+				glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width, height);
+
 			glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthBuffer);
 		}
 
 		if (hasDepthTexture)
 		{
-			glGenTextures(1, &texid[textureCount]);
-			glBindTexture(GL_TEXTURE_2D, texid[textureCount]);
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
+			if (samples > 1) {
+				glGenTextures(1, &texid[textureCount]);
+				glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, texid[textureCount]);
+				glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, GL_DEPTH_COMPONENT24, width, height, GL_TRUE);
 
-			float color[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-			glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, color);
+				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D_MULTISAMPLE, texid[textureCount], 0);
+			}
+			else {
+				glGenTextures(1, &texid[textureCount]);
+				glBindTexture(GL_TEXTURE_2D, texid[textureCount]);
+				glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
 
-			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, texid[textureCount], 0);
+				float color[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+				glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, color);
+
+				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, texid[textureCount], 0);
+			}
+
 			if (textureCount == 0)
 				glDrawBuffer(GL_NONE); // No color buffer is drawn to.
 
 			depthTexture = texid[textureCount];
 		}
 
+		glBindFramebuffer(GL_FRAMEBUFFER, fboId);
+
+		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+			std::cout << "ERROR: Framebuffer is not complete!" << std::endl;
+		}
+
 		unbind();
-		glBindTexture(GL_TEXTURE_2D, 0);
+
+		if (samples > 1)
+			glBindTexture(GL_TEXTURE_2D, 0);
+		else
+			glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, 0);
 	}
 
 
@@ -190,7 +220,13 @@ namespace gl
 			glBindRenderbuffer(GL_RENDERBUFFER, depthBuffer);
 		//if (textureCount == 0)
 		glDrawBuffer(GL_COLOR_ATTACHMENT0); // No color buffer is drawn to.
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + index, texid[0], 0); //TODO: texid[0] should be the right texid
+		if (samples > 1) {
+			//
+		}
+		else {
+			// Tokei: hm, but... why is it attaching to a cube map texture by default...?
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + index, texid[0], 0); //TODO: texid[0] should be the right texid
+		}
 	}
 
 	void FBO::unbind()
@@ -243,8 +279,14 @@ namespace gl
 		unbind();
 		for (int i = 0; i < textureCount; i++)
 		{
-			glBindTexture(GL_TEXTURE_2D, texid[i]);
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+			if (samples > 1) {
+				glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, texid[i]);
+				glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, GL_RGBA8, width, height, GL_TRUE);
+			}
+			else {
+				glBindTexture(GL_TEXTURE_2D, texid[i]);
+				glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+			}
 		}
 
 		if (depthBuffer != 0)
@@ -255,11 +297,20 @@ namespace gl
 		}
 		if (depthTexture != 0)
 		{
-			glBindTexture(GL_TEXTURE_2D, depthTexture);
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+			if (samples > 1) {
+				glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, depthTexture);
+				glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, GL_DEPTH_COMPONENT24, width, height, GL_TRUE);
+			}
+			else {
+				glBindTexture(GL_TEXTURE_2D, depthTexture);
+				glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+			}
 		}
-		glBindTexture(GL_TEXTURE_2D, 0);
 
+		if (samples > 1)
+			glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, 0);
+		else
+			glBindTexture(GL_TEXTURE_2D, 0);
 	}
 
 	void FBO::saveAsFile(const std::string& fileName)

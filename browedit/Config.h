@@ -58,6 +58,7 @@ public:
 	bool additiveShadow = true;
 	bool ignoreBacksideTexture = true;
 	bool viewEmptyTiles = true;
+	bool enableMipmaping = true;
 	std::string isValid() const;
 	bool showWindow(BrowEdit* browEdit);
 	void setupFileIO();
@@ -100,5 +101,6 @@ public:
 		additiveShadow,
 		ignoreBacksideTexture,
 		viewEmptyTiles,
+		enableMipmaping,
 		startMaximizedWindow);
 };

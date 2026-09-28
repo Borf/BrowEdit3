@@ -498,6 +498,8 @@ void BrowEdit::configBegin()
 		util::FileIO::addDirectory(".\\");
 		util::FileIO::end();
 	}
+
+	gl::Texture::defaultEnableMipmap = config.enableMipmaping;
 }
 
 

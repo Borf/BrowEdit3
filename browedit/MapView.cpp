@@ -143,6 +143,8 @@ void MapView::toolbar(BrowEdit* browEdit)
 			browEdit->toolBarToggleButton("viewFog", viewFog ? ICON_VIEW_FOG_ON: ICON_VIEW_FOG_OFF, viewFog, "View Fog", HotkeyAction::View_Fog, browEdit->config.toolbarButtonsViewOptions);
 			ImGui::SameLine();
 			browEdit->toolBarToggleButton("viewSkyMap", viewSkyMap ? ICON_VIEW_FOG_ON: ICON_VIEW_FOG_OFF, viewSkyMap, "View SkyMap", HotkeyAction::View_SkyMap, browEdit->config.toolbarButtonsViewOptions);
+			ImGui::SameLine();
+			browEdit->toolBarToggleButton("enableMipmap", gl::Texture::defaultEnableMipmap ? ICON_WALL_ADD_REMOVE : ICON_EDIT_WALL, viewSkyMap, "Enable texture mipmap", HotkeyAction::View_Mipmap, browEdit->config.toolbarButtonsViewOptions);
 
 			if (browEdit->editMode == BrowEdit::EditMode::Gat ? viewGatGat : viewGat)
 				ImGui::DragFloat("Gat Opacity", &gatOpacity, 0.025f, 0.0f, 1.0f);

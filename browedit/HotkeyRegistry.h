@@ -141,6 +141,7 @@ enum class HotkeyAction
 	View_GatTiles,
 	View_Fog,
 	View_SkyMap,
+	View_Mipmap,
 	
 	View_Models,
 	View_Effects,
