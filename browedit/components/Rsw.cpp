@@ -1171,58 +1171,49 @@ bool RswModelCollider::collidesTexture(Rsm::Mesh* mesh, const math::Ray& ray, co
 	float t;
 
 	std::vector<glm::vec3>* verts;
+	auto rsm = mesh->model;
 
 	for (size_t i = 0; i < mesh->faces.size(); i++)
 	{
 		verts = &(*faces)[i];
-		
-		if (ray.LineIntersectPolygon(*verts, t) && t > 0)
+		float u, v;
+
+		if (ray.LineIntersectPolygon(*verts, t, 0.001f, &u, &v) && t > 0)
 		{
+			if (t < minDistance || t > maxDistance)
+				continue;
+
 			Image* img = nullptr;
-			auto rsmMesh = dynamic_cast<Rsm::Mesh*>(mesh);
-			if (rsmMesh)
-			{
-				auto rsm = dynamic_cast<Rsm*>(rsmMesh->model);
-				if (rsm && mesh->faces[i].texId < rsm->textures.size() && mesh->textures[mesh->faces[i].texId] < rsm->textures.size())
-					img = util::ResourceManager<Image>::load("data/texture/" + rsm->textures[mesh->textures[mesh->faces[i].texId]]);
+
+			if (rsm && mesh->faces[i].texId < rsm->textures.size() && mesh->textures[mesh->faces[i].texId] < rsm->textures.size()) {
+				img = util::ResourceManager<Image>::load("data/texture/" + rsm->textures[mesh->textures[mesh->faces[i].texId]]);
 			}
-			glm::vec3 hitPoint = ray.origin + ray.dir * t;
+
 			if (img && img->hasAlpha)
 			{
-				if (glm::distance(hitPoint, ray.origin) >= minDistance && maxDistance - t > 0)
+				glm::vec2 uv1 = mesh->texCoords[mesh->faces[i].texCoordIds[0]];
+				glm::vec2 uv2 = mesh->texCoords[mesh->faces[i].texCoordIds[1]];
+				glm::vec2 uv3 = mesh->texCoords[mesh->faces[i].texCoordIds[2]];
+
+				glm::vec2 uv = uv1 * (1 - u - v) + uv2 * u + uv3 * v;
+
+				if (uv.x > 1 || uv.x < 0)
+					uv.x -= glm::floor(uv.x);
+				if (uv.y > 1 || uv.y < 0)
+					uv.y -= glm::floor(uv.y);
+
+				if (std::isnan(uv.x))
 				{
-					auto f1 = (*verts)[0] - hitPoint;
-					auto f2 = (*verts)[1] - hitPoint;
-					auto f3 = (*verts)[2] - hitPoint;
-
-					float a = glm::length(glm::cross((*verts)[0] - (*verts)[1], (*verts)[0] - (*verts)[2]));
-					float a1 = glm::length(glm::cross(f2, f3)) / a;
-					float a2 = glm::length(glm::cross(f3, f1)) / a;
-					float a3 = glm::length(glm::cross(f1, f2)) / a;
-
-					glm::vec2 uv1 = mesh->texCoords[mesh->faces[i].texCoordIds[0]];
-					glm::vec2 uv2 = mesh->texCoords[mesh->faces[i].texCoordIds[1]];
-					glm::vec2 uv3 = mesh->texCoords[mesh->faces[i].texCoordIds[2]];
-
-					glm::vec2 uv = uv1 * a1 + uv2 * a2 + uv3 * a3;
-
-					if (uv.x > 1 || uv.x < 0)
-						uv.x -= glm::floor(uv.x);
-					if (uv.y > 1 || uv.y < 0)
-						uv.y -= glm::floor(uv.y);
-
-					if (std::isnan(uv.x))
-					{
-						std::cerr << "Error calculating lightmap for model " << node->name << ", " << rswModel->fileName << std::endl;
-						return false;
-					}
-
-					if (img && img->get(uv) > 0.01)
-						return true;
+					std::cerr << "Error calculating lightmap for model " << node->name << ", " << rswModel->fileName << std::endl;
+					return false;
 				}
+
+				if (img && img->get(uv) > 0.01)
+					return true;
 			}
-			else if (glm::distance(hitPoint, ray.origin) >= minDistance && maxDistance - t > 0) //remove the if condition here????
+			else {
 				return true;
+			}
 		}
 	}
 

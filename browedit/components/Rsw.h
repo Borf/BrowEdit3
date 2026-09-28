@@ -151,10 +151,11 @@ public:
 		bool shadows = true;
 		bool heightSelectionOnly = false;
 		bool additiveShadow = true;
+		bool ignoreBacksideTexture = true;
 		glm::ivec2 rangeX;
 		glm::ivec2 rangeY;
 
-		NLOHMANN_DEFINE_TYPE_INTRUSIVE(LightmapSettings, quality, shadows, heightSelectionOnly, additiveShadow, rangeX, rangeY);
+		NLOHMANN_DEFINE_TYPE_INTRUSIVE(LightmapSettings, quality, shadows, heightSelectionOnly, additiveShadow, ignoreBacksideTexture, rangeX, rangeY);
 	} lightmapSettings;
 
 	class CropSettings

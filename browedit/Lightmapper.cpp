@@ -114,6 +114,8 @@ void Lightmapper::run()
 		}
 	}
 
+	int rswModelCount = 0;
+
 	map->rootNode->traverse([&](Node* n) {
 		if (n->getComponent<RswLight>()) {
 			struct Lightmapper::light_data l;
@@ -122,14 +124,25 @@ void Lightmapper::run()
 			l.rswObject = n->getComponent<RswObject>();
 			lights.push_back(l);
 		}
+
+		if (RswModel* m = n->getComponent<RswModel>())
+			rswModelCount++;
+	});
+
+	// Need to know the size first since we use the models vector for the light_model memory allocation and the array may be resized when using push_back
+	models.resize(rswModelCount);
+	rswModelCount = 0;
+
+	map->rootNode->traverse([&](Node* n) {
 		if (RswModel* m = n->getComponent<RswModel>())
 			if (m->shadowStrength > 0) {
-				struct Lightmapper::light_model nmodel = {};
+				auto& nmodel = models[rswModelCount++];
+
 				nmodel.node = n;
 				nmodel.rswModel = m;
 				nmodel.collider = n->getComponent<RswModelCollider>();
-				models.push_back(nmodel);
 				nmodel.collider->calculateWorldFaces();
+				nmodel.id = rswModelCount - 1;
 
 				// Adds the model to all zones where it collides in the quadtree, on the XZ plane (the Y axis is not used)
 				int xMin = glm::max(0, (int)(m->aabb.bounds[0].x / 10.0f));
@@ -139,7 +152,7 @@ void Lightmapper::run()
 
 				for (int x = xMin; x <= xMax; x++) {
 					for (int y = yMin; y <= yMax; y++) {
-						quadtree[x][y].models.push_back(nmodel);
+						quadtree[x][y].models.push_back(&nmodel);
 					}
 				}
 			}
@@ -148,6 +161,15 @@ void Lightmapper::run()
 	std::cout << "Lightmapper: Complexity " << rsw->lightmapSettings.quality << "*"<< rsw->lightmapSettings.quality<<"*" << gnd->width << "*" << gnd->height << "*" << lights.size() << "*" << models.size() << "=" << rsw->lightmapSettings.quality * rsw->lightmapSettings.quality * gnd->width * gnd->height * lights.size() * models.size() << std::endl;
 
 	auto& settings = rsw->lightmapSettings;
+	
+	ignoredTextureIdx.resize(gnd->textures.size());
+	ignoredTextureIdx.clear();
+
+	if (settings.ignoreBacksideTexture) {
+		for (int i = 0; i < gnd->textures.size(); i++)
+			if (_stricmp(gnd->textures[i]->file.c_str(), "backside.bmp") == 0)
+				ignoredTextureIdx[i] = true;
+	}
 
 	glm::mat4 rot = glm::mat4(1.0f);
 	rot = glm::rotate(rot, glm::radians(-(float)rsw->light.latitude), glm::vec3(1, 0, 0));
@@ -284,6 +306,12 @@ std::pair<glm::vec3, int> Lightmapper::calculateLight(const glm::vec3& groundPos
 	glm::vec3 colorInc(0.0f);
 	auto rsw = map->rootNode->getComponent<Rsw>();
 	auto& settings = rsw->lightmapSettings;
+	thread_local uint32_t currentStamp = 0;
+	thread_local std::vector<uint32_t> visitedStamp;
+
+	if (models.size() > 0 && visitedStamp.size() == 0) {
+		visitedStamp.resize(models.size());
+	}
 
 	if (settings.additiveShadow) {
 		intensity = 0;
@@ -299,10 +327,9 @@ std::pair<glm::vec3, int> Lightmapper::calculateLight(const glm::vec3& groundPos
 		if (!rswLight->enabled)
 			continue;
 		glm::vec3 lightPosition(5 * gnd->width + rswObject->position.x, -rswObject->position.y, 5 * gnd->height - rswObject->position.z+10);
-		//glm::vec3 lightDirection2 = glm::normalize(lightPosition - groundPos);
-		glm::vec3 lightDirection2 = normalize_fast(lightPosition - groundPos);
+		glm::vec3 lightDirection2 = glm::normalize(lightPosition - groundPos);
 		if (rswLight->lightType == RswLight::Type::Sun && !rswLight->sunMatchRswDirection)
-			lightDirection2 = rswLight->direction; //TODO: should this be -direction?
+			lightDirection2 = rswLight->direction;
 		else if (rswLight->lightType == RswLight::Type::Sun && rswLight->sunMatchRswDirection)
 			lightDirection2 = lightDirection;
 		auto dotproduct = rswLight->noTerrainShading ? 1.0f : glm::dot(normal, lightDirection2);
@@ -381,56 +408,39 @@ std::pair<glm::vec3, int> Lightmapper::calculateLight(const glm::vec3& groundPos
 		if (settings.shadows)
 		{
 			math::Ray ray(groundPos, lightDirection2);
-			if (rswLight->givesShadow && attenuation > 0)
-			{
-				// Find all models that are on the path of the ray, using the quadtree
-				int qx = (int)(ray.origin.x / 10.0f);
-				int qy = (int)(ray.origin.z / 10.0f);
-				
-				glm::ivec2 dir(ray.dir.x < 0 ? -1 : (ray.dir.x > 0 ? 1 : 0), ray.dir.z < 0 ? -1 : (ray.dir.z > 0 ? 1 : 0));
-				glm::ivec2 dirs[3] = { glm::ivec2(dir.x, 0), glm::ivec2(0, dir.y), glm::ivec2(dir.x, dir.y) };
-				
-				std::unordered_set<light_model, light_modelHash, light_modelEqual> quadtree_models;
-				
-				while (qx >= 0 && qx < quadtree.size() && qy >= 0 && qy < quadtree[0].size()) {
-					for (int i = 0; i < quadtree[qx][qy].models.size(); i++)
-						quadtree_models.insert(quadtree[qx][qy].models[i]);
 
-					int j = 0;
-				
-					for (; j < 3; j++) {
-						int qqx = qx + dirs[j].x;
-						int qqy = qy + dirs[j].y;
-				
-						if ((qqx == qx && qqy == qy) || qqx < 0 || qqx >= quadtree.size() || qqy < 0 || qqy >= quadtree[0].size())
-							continue;
-
-						math::AABB box(glm::vec3(quadtree[qqx][qqy].range[0].x, -999999, quadtree[qqx][qqy].range[0].y), glm::vec3(quadtree[qqx][qqy].range[1].x, 999999, quadtree[qqx][qqy].range[1].y));
-				
-						if (!box.hasRayCollision(ray, -999999, 9999999))
-							continue;
-
-						qx = qqx;
-						qy = qqy;
-						break;
-					}
-				
-					if (j == 3)
-						break;
-				}
-
-				// Check if the ray collides with the model
-				for(auto n : quadtree_models) {
-					if (collides && shadowStrength >= 1)
-						break;
-
-					if (n.collider->collidesTexture(ray, 0, distance - rswLight->minShadowDistance))
-					{
-						collides = true;
-						shadowStrength += n.rswModel->shadowStrength;
-					}
-				}
+			// Can happen on large maps with a high amount of lights
+			if (++currentStamp == 0) {
+				std::fill(visitedStamp.begin(), visitedStamp.end(), 0);
+				currentStamp = 1;
 			}
+
+			util::traverseGridDDA(ray, (int)quadtree.size(), (int)quadtree[0].size(), distance, [&](int qx, int qy, float t) {
+				auto& cell = quadtree[qx][qy];
+
+				for (auto model : cell.models) {
+					int id = model->id;
+
+					if (visitedStamp[id] == currentStamp)
+						continue;
+
+					visitedStamp[id] = currentStamp;
+
+					if (shadowStrength >= 1.0f)
+						return true;
+
+					if (model->collider->collidesTexture(ray, 0, distance - rswLight->minShadowDistance)) {
+						collides = true;
+						shadowStrength += model->rswModel->shadowStrength;
+
+						if (shadowStrength >= 1.0f)
+							return true;
+					}
+				}
+
+				return false;
+			});
+
 			// Check if the ray collides with the ground
 			if (!collides && shadowStrength < 1 && rswLight->shadowTerrain && collidesMap(math::Ray(groundPos, lightDirection2), cx, cy, distance))
 			{
@@ -489,10 +499,16 @@ void Lightmapper::calcPos(int direction, int tileId, int x, int y)
 	const float sx = 10.0f / (gnd->lightmapWidth - 2);
 	const float sy = 10.0f / (gnd->lightmapHeight - 2);
 
-
 	Gnd::Tile* tile = gnd->tiles[tileId];
 	assert(tile && tile->lightmapIndex != -1);
 	Gnd::Lightmap* lightmap = gnd->lightmaps[tile->lightmapIndex];
+
+	if (ignoredTextureIdx[tile->textureIndex]) {
+		int stride = gnd->lightmapWidth * gnd->lightmapHeight;
+		memset(lightmap->data + stride, 0, stride * 3);
+		memset(lightmap->data, 255, stride);
+		return;
+	}
 
 	Gnd::Cube* cube = gnd->cubes[x][y];
 
@@ -612,6 +628,7 @@ void Lightmapper::onDone()
 	gnd->makeLightmapBorders(browEdit);
 	gnd->cleanLightmaps();
 	gnd->cleanTiles();
+	gnd->makeLightmapBorders(browEdit);
 	lightmapChangeAction->setCurrentData(gnd->lightmaps, gnd->tiles);
 	map->doAction(lightmapChangeAction, browEdit);
 	map->rootNode->getComponent<GndRenderer>()->gndShadowDirty = true;

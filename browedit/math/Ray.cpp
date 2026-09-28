@@ -37,7 +37,7 @@ namespace math
 		return true;
 	}
 
-	bool Ray::LineIntersectPolygon(const std::span<glm::vec3> &vertices, float &t, const float epsilon) const
+	bool Ray::LineIntersectPolygon(const std::span<glm::vec3>& vertices, float& t, const float epsilon, float* out_u, float* out_v) const
 	{
 		// Möller–Trumbore intersection algorithm
 		glm::vec3 edge1 = vertices[1] - vertices[0];
@@ -65,6 +65,8 @@ namespace math
 
 		if (tt > epsilon) {
 			t = tt;
+			if (out_u) *out_u = u;
+			if (out_v) *out_v = v;
 			return true;
 		}
 
