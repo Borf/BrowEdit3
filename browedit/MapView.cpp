@@ -454,7 +454,7 @@ void MapView::render(BrowEdit* browEdit)
 	else
 	{
 		if (browEdit->config.cameraSmoothing) {
-			if (deltaCameraMove.lastTime <= 0.0f)
+			if (deltaCameraMove.lastTime <= 0.0f || glm::abs(deltaCameraMove.lastTime - nodeRenderContext.time) > 2.0f)
 				deltaCameraMove.lastTime = nodeRenderContext.time;
 
 			float deltaTime = nodeRenderContext.time - deltaCameraMove.lastTime;
