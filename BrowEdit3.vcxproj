@@ -41,6 +41,7 @@
     <ClCompile Include="browedit\BrowEdit.glfw.cpp" />
     <ClCompile Include="browedit\BrowEdit.imgui.cpp" />
     <ClCompile Include="browedit\components\BillboardRenderer.cpp" />
+    <ClCompile Include="browedit\components\Collider.cpp" />
     <ClCompile Include="browedit\components\Component.cpp" />
     <ClCompile Include="browedit\components\Gat.cpp" />
     <ClCompile Include="browedit\components\GatRenderer.cpp" />

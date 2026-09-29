@@ -10,7 +10,6 @@ ModelChangeAction::ModelChangeAction(Node* node, const std::string& newFileName)
 {
 	auto rswModel = node->getComponent<RswModel>();
 	oldFileName = "data\\model\\" + util::utf8_to_iso_8859_1(rswModel->fileName);
-
 }
 
 void ModelChangeAction::perform(Map* map, BrowEdit* browEdit)

@@ -11,9 +11,7 @@ AddComponentAction::AddComponentAction(Node* node, Component* newComponent) : no
 AddComponentAction::~AddComponentAction()
 {
 	//if the component is not used anymore, delete it
-	if(newComponent && 
-		(newComponent->node == nullptr || 
-		 std::find(newComponent->node->components.begin(), newComponent->node->components.end(), newComponent) == newComponent->node->components.end()))
+	if (newComponent && (newComponent->node == nullptr || !newComponent->node->exists(newComponent)))
 		delete newComponent;
 	newComponent = nullptr;
 }

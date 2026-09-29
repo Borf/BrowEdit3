@@ -41,7 +41,13 @@ void Node::addComponent(Component* component)
 {
 	component->node = this;
 	components.push_back(component);
+	lookupCache.clear();
 	root->dirty = true;
+}
+
+bool Node::exists(Component* component)
+{
+	return std::find(components.begin(), components.end(), component) != components.end();
 }
 
 void Node::makeNameUnique(Node* rootNode)
@@ -284,7 +290,6 @@ void Node::traverse(const std::function<void(Node*)>& callBack)
 	for (auto n : children)
 		n->traverse(callBack);
 }
-
 
 std::vector<std::pair<Node*, std::vector<glm::vec3>>> Node::getCollisions(const math::Ray& ray)
 {

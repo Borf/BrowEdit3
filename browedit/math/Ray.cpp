@@ -73,9 +73,6 @@ namespace math
 		return false;
 	}
 
-
-
-
 	Ray Ray::operator*(const glm::mat4 &matrix) const
 	{
 		glm::vec3 p1 = glm::vec3(matrix * glm::vec4(origin, 1));

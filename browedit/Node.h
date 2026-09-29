@@ -4,6 +4,8 @@
 #include <vector>
 #include <string>
 #include <functional>
+#include <unordered_map>
+#include <typeindex>
 #include <glm/glm.hpp>
 
 namespace math { class Ray; }
@@ -20,10 +22,15 @@ public:
 	Node* root = this;
 	std::string name;
 
-
 	Node(const std::string& name = "", Node* parent = nullptr);
 	~Node();
+
+private:
+	// Magical cache to speed up searches to O(1) instead of O(n)
+	mutable std::unordered_map<std::type_index, std::vector<Component*>> lookupCache;
+public:
 	void addComponent(Component* component);
+	bool exists(Component* component);
 	void setParent(Node* newParent);
 	void removeChild(Node* child);
 
@@ -35,13 +42,29 @@ public:
 	template<class T>
 	T* getComponent()
 	{
-		for (auto c : components)
-		{
-			T* cc = dynamic_cast<T*>(c);
-			if (cc)
-				return cc;
+		const auto& vec = getComponents<T>();
+		return vec.empty() ? nullptr : vec.front();
+	}
+
+	template<class T>
+	const std::vector<T*>& getComponents() {
+		std::type_index typeKey = std::type_index(typeid(T));
+
+		// If already exists, skip search
+		auto it = lookupCache.find(typeKey);
+		if (it != lookupCache.end()) {
+			return reinterpret_cast<const std::vector<T*>&>(it->second);
 		}
-		return nullptr;
+
+		// If not found, cache the result
+		std::vector<Component*>& cachedVec = lookupCache[typeKey];
+		for (auto* c : components) {
+			if (auto* casted = dynamic_cast<T*>(c)) {
+				cachedVec.push_back(c);
+			}
+		}
+
+		return reinterpret_cast<const std::vector<T*>&>(cachedVec);
 	}
 
 	template<class T>
@@ -66,6 +89,7 @@ public:
 			else
 				it++;
 		}
+		lookupCache.clear();
 		return ret;
 	}
 
@@ -78,8 +102,8 @@ public:
 			else
 				it++;
 		}
+		lookupCache.clear();
 	}
-
 
 	void traverse(const std::function<void(Node*)>& callBack);
 
