@@ -710,7 +710,7 @@ glm::vec3 Gnd::rayCast(const math::Ray& ray, bool emptyTiles, int xMin, int yMin
 									collisions.push_back(ray.origin + f * ray.dir);
 						}
 						{
-							std::array<glm::vec3, 3> v{ v4, v2, v1 };
+							std::array<glm::vec3, 3> v{ v4, v1, v3 };
 							if (ray.LineIntersectPolygon(v, f))
 								if (f >= rayOffset)
 									collisions.push_back(ray.origin + f * ray.dir);
@@ -730,7 +730,7 @@ glm::vec3 Gnd::rayCast(const math::Ray& ray, bool emptyTiles, int xMin, int yMin
 									collisions.push_back(ray.origin + f * ray.dir);
 						}
 						{
-							std::array<glm::vec3, 3> v{ v4, v2, v1 };
+							std::array<glm::vec3, 3> v{ v4, v1, v3 };
 							if (ray.LineIntersectPolygon(v, f))
 								if (f >= rayOffset)
 									collisions.push_back(ray.origin + f * ray.dir);
@@ -750,7 +750,7 @@ glm::vec3 Gnd::rayCast(const math::Ray& ray, bool emptyTiles, int xMin, int yMin
 									collisions.push_back(ray.origin + f * ray.dir);
 						}
 						{
-							std::array<glm::vec3, 3> v{ v4, v2, v1 };
+							std::array<glm::vec3, 3> v{ v4, v1, v3 };
 							if (ray.LineIntersectPolygon(v, f))
 								if (f >= rayOffset)
 									collisions.push_back(ray.origin + f * ray.dir);
