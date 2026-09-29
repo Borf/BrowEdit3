@@ -691,7 +691,7 @@ void Rsw::save(const std::string& fileName, BrowEdit* browEdit)
 				SAVEPROPS("texture", util::utf8_to_iso_8859_1(util::replace(util::replace(e->texture, "\\\\", "\\"), "\\", "\\\\"))) << std::endl;
 
 				lubFile << "\t}";
-				if (i < strEffects.size() - 1)
+				if (i < lubWindEffects.size() - 1)
 					lubFile << ",";
 				lubFile << std::endl;
 			}
