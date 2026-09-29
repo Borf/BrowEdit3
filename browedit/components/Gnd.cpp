@@ -318,9 +318,9 @@ Gnd::Gnd(int width, int height)
 				cube->heights[i] = 0;
 			for (int i = 0; i < 3; i++)
 				cube->tileIds[i] = -1;
-			cube->normal = glm::vec3(0, 1, 0);
+			cube->normal = glm::vec3(0, -1, 0);
 			for(int i = 0; i < 4; i++)
-				cube->normals[i] = glm::vec3(0, 1, 0);
+				cube->normals[i] = glm::vec3(0, -1, 0);
 			cubes[x][y] = cube;
 		}
 	}
@@ -577,19 +577,14 @@ glm::vec3 Gnd::rayCastLightmap(const math::Ray& ray, int cx, int cy, int xMin, i
 				glm::vec3 v2(10 * cx + 10, -cube->h4, 10 * height - 10 * cy);
 				glm::vec3 v3(10 * cx, -cube->h1, 10 * height - 10 * cy + 10);
 				glm::vec3 v4(10 * cx + 10, -cube->h2, 10 * height - 10 * cy + 10);
-			
-				{
-					std::vector<glm::vec3> v{ v4, v2, v1 };
-					if (ray.LineIntersectPolygon(v, f))
-						if (f >= rayOffset)
-							return ray.origin + f * ray.dir;
-				}
-				{
-					std::vector<glm::vec3> v{ v4, v1, v3 };
-					if (ray.LineIntersectPolygon(v, f))
-						if (f >= rayOffset)
-							return ray.origin + f * ray.dir;
-				}
+
+				if (ray.LineIntersectPolygon(v4, v2, v1, f))
+					if (f >= rayOffset)
+						return ray.origin + f * ray.dir;
+
+				if (ray.LineIntersectPolygon(v4, v1, v3, f))
+					if (f >= rayOffset)
+						return ray.origin + f * ray.dir;
 			}
 			if (cube->tileSide != -1 && cx < width - 1 && (ray.dir.y <= 0 || (y > glm::min(cube->h2, glm::min(cube->h4, glm::min(cubes[cx + 1][cy]->h1, cubes[cx + 1][cy]->h3))))))
 			{
@@ -598,18 +593,13 @@ glm::vec3 Gnd::rayCastLightmap(const math::Ray& ray, int cx, int cy, int xMin, i
 				glm::vec3 v3(10 * cx + 10, -cubes[cx + 1][cy]->h1, 10 * height - 10 * cy + 10);
 				glm::vec3 v4(10 * cx + 10, -cubes[cx + 1][cy]->h3, 10 * height - 10 * cy);
 			
-				{
-					std::vector<glm::vec3> v{ v4, v2, v1 };
-					if (ray.LineIntersectPolygon(v, f))
-						if (f >= rayOffset)
-							return ray.origin + f * ray.dir;
-				}
-				{
-					std::vector<glm::vec3> v{ v4, v1, v3 };
-					if (ray.LineIntersectPolygon(v, f))
-						if (f >= rayOffset)
-							return ray.origin + f * ray.dir;
-				}
+				if (ray.LineIntersectPolygon(v4, v2, v1, f))
+					if (f >= rayOffset)
+						return ray.origin + f * ray.dir;
+
+				if (ray.LineIntersectPolygon(v4, v1, v3, f))
+					if (f >= rayOffset)
+						return ray.origin + f * ray.dir;
 			}
 			if (cube->tileFront != -1 && cy < height - 1 && (ray.dir.y <= 0 || (y > glm::min(cube->h3, glm::min(cube->h4, glm::min(cubes[cx][cy + 1]->h2, cubes[cx][cy + 1]->h1))))))
 			{
@@ -618,18 +608,13 @@ glm::vec3 Gnd::rayCastLightmap(const math::Ray& ray, int cx, int cy, int xMin, i
 				glm::vec3 v4(10 * cx + 10, -cubes[cx][cy + 1]->h2, 10 * height - 10 * cy);
 				glm::vec3 v3(10 * cx, -cubes[cx][cy + 1]->h1, 10 * height - 10 * cy);
 			
-				{
-					std::vector<glm::vec3> v{ v4, v2, v1 };
-					if (ray.LineIntersectPolygon(v, f))
-						if (f >= rayOffset)
-							return ray.origin + f * ray.dir;
-				}
-				{
-					std::vector<glm::vec3> v{ v4, v1, v3 };
-					if (ray.LineIntersectPolygon(v, f))
-						if (f >= rayOffset)
-							return ray.origin + f * ray.dir;
-				}
+				if (ray.LineIntersectPolygon(v4, v2, v1, f))
+					if (f >= rayOffset)
+						return ray.origin + f * ray.dir;
+
+				if (ray.LineIntersectPolygon(v4, v1, v3, f))
+					if (f >= rayOffset)
+						return ray.origin + f * ray.dir;
 			}
 		}
 
@@ -704,18 +689,13 @@ glm::vec3 Gnd::rayCast(const math::Ray& ray, bool emptyTiles, int xMin, int yMin
 						glm::vec3 v3(10 * x, -cube->h1, 10 * height - 10 * y + 10);
 						glm::vec3 v4(10 * x + 10, -cube->h2, 10 * height - 10 * y + 10);
 
-						{
-							std::vector<glm::vec3> v{ v4, v2, v1 };
-							if (ray.LineIntersectPolygon(v, f))
-								if(f >= rayOffset)
-									collisions.push_back(ray.origin + f * ray.dir);
-						}
-						{
-							std::vector<glm::vec3> v{ v4, v1, v3 };
-							if (ray.LineIntersectPolygon(v, f))
-								if (f >= rayOffset)
-									collisions.push_back(ray.origin + f * ray.dir);
-						}
+						if (ray.LineIntersectPolygon(v4, v2, v1, f))
+							if(f >= rayOffset)
+								collisions.push_back(ray.origin + f * ray.dir);
+
+						if (ray.LineIntersectPolygon(v4, v1, v3, f))
+							if (f >= rayOffset)
+								collisions.push_back(ray.origin + f * ray.dir);
 					}
 					if (cube->tileSide != -1 && x < width - 1)
 					{
@@ -724,18 +704,13 @@ glm::vec3 Gnd::rayCast(const math::Ray& ray, bool emptyTiles, int xMin, int yMin
 						glm::vec3 v3(10 * x + 10, -cubes[x + 1][y]->h1, 10 * height - 10 * y + 10);
 						glm::vec3 v4(10 * x + 10, -cubes[x + 1][y]->h3, 10 * height - 10 * y);
 
-						{
-							std::vector<glm::vec3> v{ v4, v2, v1 };
-							if (ray.LineIntersectPolygon(v, f))
-								if (f >= rayOffset)
-									collisions.push_back(ray.origin + f * ray.dir);
-						}
-						{
-							std::vector<glm::vec3> v{ v4, v1, v3 };
-							if (ray.LineIntersectPolygon(v, f))
-								if (f >= rayOffset)
-									collisions.push_back(ray.origin + f * ray.dir);
-						}
+						if (ray.LineIntersectPolygon(v4, v2, v1, f))
+							if (f >= rayOffset)
+								collisions.push_back(ray.origin + f * ray.dir);
+
+						if (ray.LineIntersectPolygon(v4, v1, v3, f))
+							if (f >= rayOffset)
+								collisions.push_back(ray.origin + f * ray.dir);
 					}
 					if (cube->tileFront != -1 && y < height - 1)
 					{
@@ -744,18 +719,13 @@ glm::vec3 Gnd::rayCast(const math::Ray& ray, bool emptyTiles, int xMin, int yMin
 						glm::vec3 v4(10 * x + 10, -cubes[x][y + 1]->h2, 10 * height - 10 * y);
 						glm::vec3 v3(10 * x, -cubes[x][y + 1]->h1, 10 * height - 10 * y);
 
-						{
-							std::vector<glm::vec3> v{ v4, v2, v1 };
-							if (ray.LineIntersectPolygon(v, f))
-								if (f >= rayOffset)
-									collisions.push_back(ray.origin + f * ray.dir);
-						}
-						{
-							std::vector<glm::vec3> v{ v4, v1, v3 };
-							if (ray.LineIntersectPolygon(v, f))
-								if (f >= rayOffset)
-									collisions.push_back(ray.origin + f * ray.dir);
-						}
+						if (ray.LineIntersectPolygon(v4, v2, v1, f))
+							if (f >= rayOffset)
+								collisions.push_back(ray.origin + f * ray.dir);
+
+						if (ray.LineIntersectPolygon(v4, v1, v3, f))
+							if (f >= rayOffset)
+								collisions.push_back(ray.origin + f * ray.dir);
 					}
 
 				}
