@@ -2161,6 +2161,54 @@ namespace util
 			}
 		}
 	}
+
+	void traverseGridDDA(const math::Ray& ray, int width, int height, float maxDistance, std::function<bool(int, int, float)> visitCell) {
+		const float cellSize = 10.0f;
+
+		glm::vec3 origin = ray.origin;
+		glm::vec3 dir = ray.dir;
+
+		// Starting position
+		int cx = (int)floor(origin.x / 10.0f);
+		int cy = (int)floor(origin.z / 10.0f);
+
+		int stepX = (dir.x > 0) ? 1 : (dir.x < 0 ? -1 : 0);
+		int stepY = (dir.z > 0) ? 1 : (dir.z < 0 ? -1 : 0);
+
+		float tDeltaX = (stepX != 0) ? (10.0f / abs(dir.x)) : FLT_MAX;
+		float tDeltaZ = (stepY != 0) ? (10.0f / abs(dir.z)) : FLT_MAX;
+
+		float nextBoundaryX = (stepX > 0) ? ((cx + 1) * 10.0f) : (cx * 10.0f);
+		float nextBoundaryZ = (stepY > 0) ? ((cy + 1) * 10.0f) : (cy * 10.0f);
+		float tMaxX = (stepX != 0) ? (nextBoundaryX - origin.x) / dir.x : FLT_MAX;
+		float tMaxZ = (stepY != 0) ? (nextBoundaryZ - origin.z) / dir.z : FLT_MAX;
+
+		if (tMaxX < 0) tMaxX = 0;
+		if (tMaxZ < 0) tMaxZ = 0;
+
+		float t = 0.0f;
+
+		while (t <= maxDistance) {
+			// Out of bounds
+			if (cx < 0 || cx >= width || cy < 0 || cy >= height)
+				return;
+
+			if (visitCell(cx, cy, t))
+				return;
+
+			// Fetch next cell
+			if (tMaxX < tMaxZ) {
+				cx += stepX;
+				t = tMaxX;
+				tMaxX += tDeltaX;
+			}
+			else {
+				cy += stepY;
+				t = tMaxZ;
+				tMaxZ += tDeltaZ;
+			}
+		}
+	}
 }
 
 

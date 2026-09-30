@@ -169,13 +169,13 @@ void MapView::postRenderWallMode(BrowEdit* browEdit)
 
 							{
 								float f;
-								std::vector<glm::vec3> v{ v4, v2, v1 };
+								std::array<glm::vec3, 3> v{ v4, v2, v1 };
 								if (mouseRay.LineIntersectPolygon(v, f))
 									collision = true;
 							}
 							{
 								float f;
-								std::vector<glm::vec3> v{ v4, v1, v3 };
+								std::array<glm::vec3, 3> v{ v4, v1, v3 };
 								if (mouseRay.LineIntersectPolygon(v, f))
 									collision = true;
 							}

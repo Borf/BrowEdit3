@@ -24,22 +24,11 @@ public:
 		Node* node;
 		RswModel* rswModel;
 		RswModelCollider* collider;
-	};
-
-	struct light_modelHash {
-		std::size_t operator()(const light_model& s) const noexcept {
-			return std::hash<Node*>()(s.node);
-		}
-	};
-
-	struct light_modelEqual {
-		bool operator()(const light_model& a, const light_model& b) const noexcept {
-			return a.node == b.node;
-		}
+		int id;
 	};
 
 	struct light_quad_node {
-		std::vector<light_model> models;
+		std::vector<light_model*> models;
 		glm::vec2 range[2];
 	};
 
@@ -57,6 +46,7 @@ private:
 	std::vector<std::vector<struct Lightmapper::light_quad_node>> quadtree;
 	std::vector<struct Lightmapper::light_data> lights;
 	std::vector<struct Lightmapper::light_model> models;
+	std::vector<bool> ignoredTextureIdx;
 	glm::vec3 lightDirection;
 
 	std::thread mainThread;

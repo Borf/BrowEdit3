@@ -18,6 +18,7 @@ namespace gl
 		GLint oldFBO;
 		GLuint depthTexture;
 		GLuint depthBuffer;
+		int samples = 1;
 		enum Type
 		{
 			Color,
@@ -28,7 +29,7 @@ namespace gl
 			None,
 		};
 
-		FBO(int width, int height, bool depth = false, int textureCount = 1, bool hasDepthTexture = false);
+		FBO(int width, int height, bool depth = false, int textureCount = 1, bool hasDepthTexture = false, int samples = 1);
 		FBO(int width, int height, bool hasDepthTexture, Type buf1, Type buf2 = None, Type buf3 = None, Type buf4 = None);
 
 		~FBO();

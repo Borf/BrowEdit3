@@ -85,7 +85,7 @@ namespace gl
 				glBindTexture(GL_TEXTURE_2D, ids[frame]);
 				glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data+(width*height*4)*frame);
 				glGenerateMipmap(GL_TEXTURE_2D);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, defaultEnableMipmap ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
@@ -143,7 +143,7 @@ namespace gl
 			stbi_image_free(data);
 			//std::cout << "Texture: loaded " << fileName << std::endl;;
 			glGenerateMipmap(GL_TEXTURE_2D);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, defaultEnableMipmap ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
@@ -158,6 +158,12 @@ namespace gl
 		bind();
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, mode);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, mode);
+	}
+
+	void Texture::setMipmap(bool value)
+	{
+		bind();
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, value ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR);
 	}
 
 	void Texture::setSubImage(char* data, int x, int y, int width, int height)

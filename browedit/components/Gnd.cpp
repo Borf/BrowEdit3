@@ -318,9 +318,9 @@ Gnd::Gnd(int width, int height)
 				cube->heights[i] = 0;
 			for (int i = 0; i < 3; i++)
 				cube->tileIds[i] = -1;
-			cube->normal = glm::vec3(0, 1, 0);
+			cube->normal = glm::vec3(0, -1, 0);
 			for(int i = 0; i < 4; i++)
-				cube->normals[i] = glm::vec3(0, 1, 0);
+				cube->normals[i] = glm::vec3(0, -1, 0);
 			cubes[x][y] = cube;
 		}
 	}
@@ -577,15 +577,15 @@ glm::vec3 Gnd::rayCastLightmap(const math::Ray& ray, int cx, int cy, int xMin, i
 				glm::vec3 v2(10 * cx + 10, -cube->h4, 10 * height - 10 * cy);
 				glm::vec3 v3(10 * cx, -cube->h1, 10 * height - 10 * cy + 10);
 				glm::vec3 v4(10 * cx + 10, -cube->h2, 10 * height - 10 * cy + 10);
-			
+
 				{
-					std::vector<glm::vec3> v{ v4, v2, v1 };
+					std::array<glm::vec3, 3> v{ v4, v2, v1 };
 					if (ray.LineIntersectPolygon(v, f))
 						if (f >= rayOffset)
 							return ray.origin + f * ray.dir;
 				}
 				{
-					std::vector<glm::vec3> v{ v4, v1, v3 };
+					std::array<glm::vec3, 3> v{ v4, v1, v3 };
 					if (ray.LineIntersectPolygon(v, f))
 						if (f >= rayOffset)
 							return ray.origin + f * ray.dir;
@@ -597,15 +597,15 @@ glm::vec3 Gnd::rayCastLightmap(const math::Ray& ray, int cx, int cy, int xMin, i
 				glm::vec3 v2(10 * cx + 10, -cube->h4, 10 * height - 10 * cy);
 				glm::vec3 v3(10 * cx + 10, -cubes[cx + 1][cy]->h1, 10 * height - 10 * cy + 10);
 				glm::vec3 v4(10 * cx + 10, -cubes[cx + 1][cy]->h3, 10 * height - 10 * cy);
-			
+
 				{
-					std::vector<glm::vec3> v{ v4, v2, v1 };
+					std::array<glm::vec3, 3> v{ v4, v2, v1 };
 					if (ray.LineIntersectPolygon(v, f))
 						if (f >= rayOffset)
 							return ray.origin + f * ray.dir;
 				}
 				{
-					std::vector<glm::vec3> v{ v4, v1, v3 };
+					std::array<glm::vec3, 3> v{ v4, v1, v3 };
 					if (ray.LineIntersectPolygon(v, f))
 						if (f >= rayOffset)
 							return ray.origin + f * ray.dir;
@@ -617,15 +617,15 @@ glm::vec3 Gnd::rayCastLightmap(const math::Ray& ray, int cx, int cy, int xMin, i
 				glm::vec3 v2(10 * cx + 10, -cube->h4, 10 * height - 10 * cy);
 				glm::vec3 v4(10 * cx + 10, -cubes[cx][cy + 1]->h2, 10 * height - 10 * cy);
 				glm::vec3 v3(10 * cx, -cubes[cx][cy + 1]->h1, 10 * height - 10 * cy);
-			
+
 				{
-					std::vector<glm::vec3> v{ v4, v2, v1 };
+					std::array<glm::vec3, 3> v{ v4, v2, v1 };
 					if (ray.LineIntersectPolygon(v, f))
 						if (f >= rayOffset)
 							return ray.origin + f * ray.dir;
 				}
 				{
-					std::vector<glm::vec3> v{ v4, v1, v3 };
+					std::array<glm::vec3, 3> v{ v4, v1, v3 };
 					if (ray.LineIntersectPolygon(v, f))
 						if (f >= rayOffset)
 							return ray.origin + f * ray.dir;
@@ -681,14 +681,13 @@ glm::vec3 Gnd::rayCast(const math::Ray& ray, bool emptyTiles, int xMin, int yMin
 
 	const int chunkSize = 10;
 
-
 	std::vector<glm::vec3> collisions;
 	float f = 0;
-	for (auto xx = xMin; xx < xMax; xx+= chunkSize)
+	for (auto xx = xMin; xx < xMax; xx += chunkSize)
 	{
-		for (auto yy = yMin; yy < yMax; yy+= chunkSize)
+		for (auto yy = yMin; yy < yMax; yy += chunkSize)
 		{
-			math::AABB box(glm::vec3(10*(xx-1), -999999, 10*height - 10*((yy+chunkSize+1))), glm::vec3(10*(xx + chunkSize+1), 999999, 10*height - (10 * (yy-1))));
+			math::AABB box(glm::vec3(10 * (xx - 1), -999999, 10 * height - 10 * ((yy + chunkSize + 1))), glm::vec3(10 * (xx + chunkSize + 1), 999999, 10 * height - (10 * (yy - 1))));
 			if (!box.hasRayCollision(ray, -999999, 9999999))
 				continue;
 			for (int x = xx; x < glm::min(width, xx + chunkSize); x++)
@@ -705,13 +704,13 @@ glm::vec3 Gnd::rayCast(const math::Ray& ray, bool emptyTiles, int xMin, int yMin
 						glm::vec3 v4(10 * x + 10, -cube->h2, 10 * height - 10 * y + 10);
 
 						{
-							std::vector<glm::vec3> v{ v4, v2, v1 };
+							std::array<glm::vec3, 3> v{ v4, v2, v1 };
 							if (ray.LineIntersectPolygon(v, f))
-								if(f >= rayOffset)
+								if (f >= rayOffset)
 									collisions.push_back(ray.origin + f * ray.dir);
 						}
 						{
-							std::vector<glm::vec3> v{ v4, v1, v3 };
+							std::array<glm::vec3, 3> v{ v4, v1, v3 };
 							if (ray.LineIntersectPolygon(v, f))
 								if (f >= rayOffset)
 									collisions.push_back(ray.origin + f * ray.dir);
@@ -725,13 +724,13 @@ glm::vec3 Gnd::rayCast(const math::Ray& ray, bool emptyTiles, int xMin, int yMin
 						glm::vec3 v4(10 * x + 10, -cubes[x + 1][y]->h3, 10 * height - 10 * y);
 
 						{
-							std::vector<glm::vec3> v{ v4, v2, v1 };
+							std::array<glm::vec3, 3> v{ v4, v2, v1 };
 							if (ray.LineIntersectPolygon(v, f))
 								if (f >= rayOffset)
 									collisions.push_back(ray.origin + f * ray.dir);
 						}
 						{
-							std::vector<glm::vec3> v{ v4, v1, v3 };
+							std::array<glm::vec3, 3> v{ v4, v1, v3 };
 							if (ray.LineIntersectPolygon(v, f))
 								if (f >= rayOffset)
 									collisions.push_back(ray.origin + f * ray.dir);
@@ -745,24 +744,23 @@ glm::vec3 Gnd::rayCast(const math::Ray& ray, bool emptyTiles, int xMin, int yMin
 						glm::vec3 v3(10 * x, -cubes[x][y + 1]->h1, 10 * height - 10 * y);
 
 						{
-							std::vector<glm::vec3> v{ v4, v2, v1 };
+							std::array<glm::vec3, 3> v{ v4, v2, v1 };
 							if (ray.LineIntersectPolygon(v, f))
 								if (f >= rayOffset)
 									collisions.push_back(ray.origin + f * ray.dir);
 						}
 						{
-							std::vector<glm::vec3> v{ v4, v1, v3 };
+							std::array<glm::vec3, 3> v{ v4, v1, v3 };
 							if (ray.LineIntersectPolygon(v, f))
 								if (f >= rayOffset)
 									collisions.push_back(ray.origin + f * ray.dir);
 						}
 					}
-
 				}
 			}
-
 		}
 	}
+
 	if(collisions.size() == 0)
 		return glm::vec3(std::numeric_limits<float>::max());
 

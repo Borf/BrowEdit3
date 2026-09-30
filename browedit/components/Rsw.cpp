@@ -691,7 +691,7 @@ void Rsw::save(const std::string& fileName, BrowEdit* browEdit)
 				SAVEPROPS("texture", util::utf8_to_iso_8859_1(util::replace(util::replace(e->texture, "\\\\", "\\"), "\\", "\\\\"))) << std::endl;
 
 				lubFile << "\t}";
-				if (i < strEffects.size() - 1)
+				if (i < lubWindEffects.size() - 1)
 					lubFile << ",";
 				lubFile << std::endl;
 			}
@@ -715,6 +715,7 @@ void Rsw::newMap(const std::string& fileName, int width, int height, Map* map, B
 	water.splitWidth = 1;
 	water.splitHeight = 1;
 	water.zones.resize(water.splitWidth, std::vector<Rsw::Water>(water.splitHeight));
+	water.zones[0][0].height = 10.0f;
 	gndFile = fileName;
 	if (gndFile.find("\\"))
 		gndFile = gndFile.substr(gndFile.rfind("\\") + 1);
@@ -1029,10 +1030,8 @@ void RswModelCollider::begin()
 	rsmRenderer = nullptr;
 }
 
-std::vector<glm::vec3> RswModelCollider::getCollisions(const math::Ray& ray)
+bool RswModelCollider::isColliding(const math::Ray& ray, std::vector<glm::vec3>& ret)
 {
-	std::vector<glm::vec3> ret;
-
 	if (!rswModel)
 		rswModel = node->getComponent<RswModel>();
 	if (!rsm)
@@ -1040,20 +1039,20 @@ std::vector<glm::vec3> RswModelCollider::getCollisions(const math::Ray& ray)
 	if (!rsmRenderer)
 		rsmRenderer = node->getComponent<RsmRenderer>();
 	if (!rswModel || !rsm || !rsmRenderer)
-		return std::vector<glm::vec3>();
+		return false;
 
 	if (!rsm->loaded)
 		rsm = RsmRenderer::errorModel;
 
 	if (!rswModel->aabb.hasRayCollision(ray, 0, 10000000))
-		return std::vector<glm::vec3>();
-	return getCollisions(rsm->rootMesh, ray, rsmRenderer->matrixCache);
+		return false;
+
+	getCollisionsSub(rsm->rootMesh, ray, rsmRenderer->matrixCache, ret);
+	return ret.size() > 0;
 }
 
-std::vector<glm::vec3> RswModelCollider::getCollisions(Rsm::Mesh* mesh, const math::Ray& ray, const glm::mat4& matrix)
+void RswModelCollider::getCollisionsSub(Rsm::Mesh* mesh, const math::Ray& ray, const glm::mat4& matrix, std::vector<glm::vec3>& ret)
 {
-	std::vector<glm::vec3> ret;
-
 	glm::mat4 newMatrix = matrix * rsmRenderer->renderInfo[mesh->index].matrix;
 	newMatrix = glm::inverse(newMatrix);
 	math::Ray newRay(ray * newMatrix);
@@ -1072,15 +1071,76 @@ std::vector<glm::vec3> RswModelCollider::getCollisions(Rsm::Mesh* mesh, const ma
 
 	for (size_t i = 0; i < mesh->children.size(); i++)
 	{
-		std::vector<glm::vec3> other = getCollisions(mesh->children[i], ray, matrix);
-		if (!other.empty())
-			ret.insert(ret.end(), other.begin(), other.end());
+		getCollisionsSub(mesh->children[i], ray, matrix, ret);
 	}
-	return ret;
 }
 
-double debug5_start[20];
-double debug5_stop[20];
+int Bvh::buildNode(uint32_t first, uint32_t count)
+{
+	BvhNode node;
+
+	glm::vec3 min(FLT_MAX);
+	glm::vec3 max(-FLT_MAX);
+
+	for (uint32_t i = 0; i < count; i++)
+	{
+		const Triangle& triangle = triangles[triangleIndices[first + i]];
+
+		min = glm::min(min, glm::min(triangle.vertices[0], glm::min(triangle.vertices[1], triangle.vertices[2])));
+		max = glm::max(max, glm::max(triangle.vertices[0], glm::max(triangle.vertices[1], triangle.vertices[2])));
+	}
+
+	node.aabb.bounds[0] = min;
+	node.aabb.bounds[1] = max;
+
+	int nodeIndex = (int)nodes.size();
+	nodes.push_back(node);
+
+	if (count <= 8)
+	{
+		nodes[nodeIndex].firstTriangle = first;
+		nodes[nodeIndex].triangleCount = count;
+		return nodeIndex;
+	}
+
+	glm::vec3 extent = max - min;
+
+	int axis = 0;
+
+	if (extent.y > extent.x)
+		axis = 1;
+
+	if (extent.z > extent[axis])
+		axis = 2;
+
+	uint32_t middle = first + count / 2;
+
+	std::nth_element(
+		triangleIndices.begin() + first,
+		triangleIndices.begin() + middle,
+		triangleIndices.begin() + first + count,
+		[&](uint32_t a, uint32_t b)
+		{
+			const Triangle& ta = triangles[a];
+			const Triangle& tb = triangles[b];
+
+			glm::vec3 ca = (ta.vertices[0] + ta.vertices[1] + ta.vertices[2]) / 3.0f;
+			glm::vec3 cb = (tb.vertices[0] + tb.vertices[1] + tb.vertices[2]) / 3.0f;
+
+			return ca[axis] < cb[axis];
+		});
+
+	uint32_t leftCount = middle - first;
+	uint32_t rightCount = count - leftCount;
+
+	int left = buildNode(first, leftCount);
+	int right = buildNode(middle, rightCount);
+
+	nodes[nodeIndex].left = left;
+	nodes[nodeIndex].right = right;
+
+	return nodeIndex;
+}
 
 bool RswModelCollider::collidesTexture(const math::Ray& ray, float minDistance, float maxDistance)
 {
@@ -1106,8 +1166,8 @@ bool RswModelCollider::collidesTexture(const math::Ray& ray, float minDistance, 
 // Buffers all the face coordinates to their rendered position
 void RswModelCollider::calculateWorldFaces()
 {
-	buffered_faces.clear();
-	
+	bvh.triangles.clear();
+
 	if (!rswModel)
 		rswModel = node->getComponent<RswModel>();
 	if (!rsm)
@@ -1119,6 +1179,15 @@ void RswModelCollider::calculateWorldFaces()
 		return;
 
 	calculateWorldFaces(rsm->rootMesh, rsmRenderer->matrixCache);
+
+	bvh.triangleIndices.resize(bvh.triangles.size());
+
+	for (uint32_t i = 0; i < bvh.triangles.size(); i++)
+		bvh.triangleIndices[i] = i;
+
+	bvh.nodes.reserve(bvh.triangles.size() * 2);
+
+	bvh.buildNode(0, (uint32_t)bvh.triangles.size());
 }
 
 void RswModelCollider::calculateWorldFaces(Rsm::Mesh* mesh, const glm::mat4& matrix) {
@@ -1127,23 +1196,109 @@ void RswModelCollider::calculateWorldFaces(Rsm::Mesh* mesh, const glm::mat4& mat
 
 	glm::mat4 newMatrix = matrix * rsmRenderer->renderInfo[mesh->index].matrix;
 
-	if (buffered_faces.size() < rsmRenderer->renderInfo.size())
-		buffered_faces.resize(rsmRenderer->renderInfo.size());
-
-	std::vector<std::vector<glm::vec3>>* faces = &buffered_faces[mesh->index];
-
-	if (buffered_faces[mesh->index].size() == 0 && mesh->faces.size() > 0) {
-		(*faces).resize(mesh->faces.size());
+	if (mesh->faces.size() > 0) {
+		int base = (int)bvh.triangles.size();
+		bvh.triangles.resize(base + mesh->faces.size());
 
 		for (size_t i = 0; i < mesh->faces.size(); i++)
 		{
-			for (size_t ii = 0; ii < 3; ii++)
-				(*faces)[i].push_back(newMatrix * glm::vec4(mesh->vertices[mesh->faces[i].vertexIds[ii]], 1.0f));
+			auto& triangle = bvh.triangles[base + i];
+
+			for (size_t ii = 0; ii < 3; ii++) {
+				triangle.vertices[ii] = newMatrix * glm::vec4(mesh->vertices[mesh->faces[i].vertexIds[ii]], 1.0f);
+				triangle.uvs[ii] = mesh->texCoords[mesh->faces[i].texCoordIds[ii]];
+			}
+			
+			if (mesh->faces[i].texId < rsm->textures.size())
+				triangle.texId = mesh->textures[mesh->faces[i].texId];
+			else
+				triangle.texId = -1;
 		}
 	}
 
 	for (size_t i = 0; i < mesh->children.size(); i++)
 		calculateWorldFaces(mesh->children[i], matrix);
+}
+
+bool RswModelCollider::traverseBvh(Bvh& bvh, const math::Ray& ray, float minDistance, float maxDistance)
+{
+	if (bvh.nodes.empty()) return false;
+
+	// Stack implementation of the BVH traversal, to avoid recursion entirely.
+	// More than 64 depth would be absolute madness, so that's a reasonable assumption.
+	int stack[64];
+	int stackPtr = 0;
+
+	stack[stackPtr++] = 0;
+
+	while (stackPtr > 0)
+	{
+		// Pop the next node index to process
+		int currentNodeIdx = stack[--stackPtr];
+		const BvhNode& node = bvh.nodes[currentNodeIdx];
+
+		if (!node.aabb.hasRayCollision(ray, minDistance, maxDistance))
+			continue;
+
+		if (node.isLeaf())
+		{
+			for (int i = 0; i < node.triangleCount; ++i)
+			{
+				uint32_t triangleIdx = bvh.triangleIndices[node.firstTriangle + i];
+				Triangle& triangle = bvh.triangles[triangleIdx];
+
+				std::span<glm::vec3> verts = triangle.vertices;
+				float u, v, t;
+
+				if (ray.LineIntersectPolygon(verts, t, 0.001f, &u, &v) && t > 0)
+				{
+					if (t < minDistance || t > maxDistance)
+						continue;
+
+					Image* img = nullptr;
+
+					if (rsm && triangle.texId < rsm->textures.size()) {
+						img = util::ResourceManager<Image>::load("data/texture/" + rsm->textures[triangle.texId]);
+					}
+
+					if (img && img->hasAlpha)
+					{
+						glm::vec2 uv1 = triangle.uvs[0];
+						glm::vec2 uv2 = triangle.uvs[1];
+						glm::vec2 uv3 = triangle.uvs[2];
+
+						glm::vec2 uv = uv1 * (1 - u - v) + uv2 * u + uv3 * v;
+
+						if (uv.x > 1 || uv.x < 0)
+							uv.x -= glm::floor(uv.x);
+						if (uv.y > 1 || uv.y < 0)
+							uv.y -= glm::floor(uv.y);
+
+						if (std::isnan(uv.x))
+						{
+							std::cerr << "Error calculating lightmap for model " << rswModel->fileName << std::endl;
+							return false;
+						}
+
+						if (img && img->get(uv) > 0.01)
+							return true;
+					}
+					else {
+						return true;
+					}
+				}
+			}
+			continue;
+		}
+
+		// Push new nodes to the stack
+		if (node.right != -1)
+			stack[stackPtr++] = node.right;
+		if (node.left != -1)
+			stack[stackPtr++] = node.left;
+	}
+
+	return false;
 }
 
 bool RswModelCollider::collidesTexture(Rsm::Mesh* mesh, const math::Ray& ray, const glm::mat4& matrix, float minDistance, float maxDistance)
@@ -1153,83 +1308,7 @@ bool RswModelCollider::collidesTexture(Rsm::Mesh* mesh, const math::Ray& ray, co
 
 	glm::mat4 newMatrix = matrix * rsmRenderer->renderInfo[mesh->index].matrix;
 
-	if (buffered_faces.size() < rsmRenderer->renderInfo.size())
-		buffered_faces.resize(rsmRenderer->renderInfo.size());
-
-	std::vector<std::vector<glm::vec3>> *faces = &buffered_faces[mesh->index];
-
-	if (buffered_faces[mesh->index].size() == 0 && mesh->faces.size() > 0) {
-		(*faces).resize(mesh->faces.size());
-
-		for (size_t i = 0; i < mesh->faces.size(); i++)
-		{
-			for (size_t ii = 0; ii < 3; ii++)
-				(*faces)[i].push_back(newMatrix * glm::vec4(mesh->vertices[mesh->faces[i].vertexIds[ii]], 1.0f));
-		}
-	}
-
-	float t;
-
-	std::vector<glm::vec3>* verts;
-
-	for (size_t i = 0; i < mesh->faces.size(); i++)
-	{
-		verts = &(*faces)[i];
-		
-		if (ray.LineIntersectPolygon(*verts, t) && t > 0)
-		{
-			Image* img = nullptr;
-			auto rsmMesh = dynamic_cast<Rsm::Mesh*>(mesh);
-			if (rsmMesh)
-			{
-				auto rsm = dynamic_cast<Rsm*>(rsmMesh->model);
-				if (rsm && mesh->faces[i].texId < rsm->textures.size() && mesh->textures[mesh->faces[i].texId] < rsm->textures.size())
-					img = util::ResourceManager<Image>::load("data/texture/" + rsm->textures[mesh->textures[mesh->faces[i].texId]]);
-			}
-			glm::vec3 hitPoint = ray.origin + ray.dir * t;
-			if (img && img->hasAlpha)
-			{
-				if (glm::distance(hitPoint, ray.origin) >= minDistance && maxDistance - t > 0)
-				{
-					auto f1 = (*verts)[0] - hitPoint;
-					auto f2 = (*verts)[1] - hitPoint;
-					auto f3 = (*verts)[2] - hitPoint;
-
-					float a = glm::length(glm::cross((*verts)[0] - (*verts)[1], (*verts)[0] - (*verts)[2]));
-					float a1 = glm::length(glm::cross(f2, f3)) / a;
-					float a2 = glm::length(glm::cross(f3, f1)) / a;
-					float a3 = glm::length(glm::cross(f1, f2)) / a;
-
-					glm::vec2 uv1 = mesh->texCoords[mesh->faces[i].texCoordIds[0]];
-					glm::vec2 uv2 = mesh->texCoords[mesh->faces[i].texCoordIds[1]];
-					glm::vec2 uv3 = mesh->texCoords[mesh->faces[i].texCoordIds[2]];
-
-					glm::vec2 uv = uv1 * a1 + uv2 * a2 + uv3 * a3;
-
-					if (uv.x > 1 || uv.x < 0)
-						uv.x -= glm::floor(uv.x);
-					if (uv.y > 1 || uv.y < 0)
-						uv.y -= glm::floor(uv.y);
-
-					if (std::isnan(uv.x))
-					{
-						std::cerr << "Error calculating lightmap for model " << node->name << ", " << rswModel->fileName << std::endl;
-						return false;
-					}
-
-					if (img && img->get(uv) > 0.01)
-						return true;
-				}
-			}
-			else if (glm::distance(hitPoint, ray.origin) >= minDistance && maxDistance - t > 0) //remove the if condition here????
-				return true;
-		}
-	}
-
-	for (size_t i = 0; i < mesh->children.size(); i++)
-		if(collidesTexture(mesh->children[i], ray, matrix, minDistance, maxDistance))
-			return true;
-	return false;
+	return traverseBvh(bvh, ray, minDistance, maxDistance);
 }
 
 std::vector<glm::vec3> RswModelCollider::getVerticesWorldSpace(Rsm::Mesh* mesh, const glm::mat4& matrix)
@@ -1314,14 +1393,14 @@ void CubeCollider::begin()
 	gnd = nullptr;
 }
 
-std::vector<glm::vec3> CubeCollider::getCollisions(const math::Ray& ray)
+bool CubeCollider::isColliding(const math::Ray& ray, std::vector<glm::vec3>& ret)
 {
 	if (!rswObject)
 		rswObject = node->getComponent<RswObject>();
 	if (!gnd)
 		gnd = node->root->getComponent<Gnd>();
 	if (!rswObject || !gnd)
-		return std::vector<glm::vec3>();
+		false;
 
 	glm::mat4 modelMatrix(1.0f);
 	modelMatrix = glm::scale(modelMatrix, glm::vec3(1, 1, -1));
@@ -1330,10 +1409,9 @@ std::vector<glm::vec3> CubeCollider::getCollisions(const math::Ray& ray)
 	modelMatrix = glm::inverse(modelMatrix);
 	math::Ray newRay(ray * modelMatrix);
 
-	std::vector<glm::vec3> ret;
 	if (aabb.hasRayCollision(newRay, 0, 100000))
-		ret.push_back(glm::vec3(5 * gnd->width + rswObject->position.x, -rswObject->position.y, -(- 10 - 5 * gnd->height + rswObject->position.z)));
-	return ret;
+		ret.push_back(glm::vec3(5 * gnd->width + rswObject->position.x, -rswObject->position.y, -(-10 - 5 * gnd->height + rswObject->position.z)));
+	return ret.size() > 0;
 }
 
 
@@ -1582,13 +1660,13 @@ glm::vec3 Rsw::rayCastWater(const math::Ray& ray, Gnd* gnd, bool emptyTiles, int
 					glm::vec3 v4(10 * xmax1, waveHeight, 10 * height - 10 * ymax1);
 					
 					{
-						std::vector<glm::vec3> v{ v4, v2, v1 };
+						std::array<glm::vec3, 3> v{ v4, v2, v1 };
 						if (ray.LineIntersectPolygon(v, f, 1e-6f))
 							if (f >= rayOffset)
 								collisions.push_back(ray.origin + f * ray.dir);
 					}
 					{
-						std::vector<glm::vec3> v{ v4, v1, v3 };
+						std::array<glm::vec3, 3> v{ v4, v1, v3 };
 						if (ray.LineIntersectPolygon(v, f, 1e-6f))
 							if (f >= rayOffset)
 								collisions.push_back(ray.origin + f * ray.dir);

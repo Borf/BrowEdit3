@@ -56,7 +56,9 @@ public:
 	int lightmapperThreadCount = 4;
 	int lightmapperRefreshTimer = 2;
 	bool additiveShadow = true;
+	bool ignoreBacksideTexture = true;
 	bool viewEmptyTiles = true;
+	bool enableMipmaping = true;
 	std::string isValid() const;
 	bool showWindow(BrowEdit* browEdit);
 	void setupFileIO();
@@ -97,6 +99,8 @@ public:
 		lightmapperThreadCount,
 		lightmapperRefreshTimer,
 		additiveShadow,
+		ignoreBacksideTexture,
 		viewEmptyTiles,
+		enableMipmaping,
 		startMaximizedWindow);
 };
