@@ -55,6 +55,7 @@ private:
 	gl::TexturePoT* texture = nullptr;
 	std::vector<std::vector<gl::TexturePoT*>> animatedTextures;
 
+	float time;
 	float lastTime;
 	float nextEmitTime = 0;
 	class Particle
@@ -88,6 +89,7 @@ public:
 
 	LubRenderer();
 	~LubRenderer();
+	void emitParticle();
 	virtual void render(NodeRenderContext& context);
 	bool selected = false;
 	void setDirty() { this->dirty = true; }

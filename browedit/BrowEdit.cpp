@@ -250,6 +250,7 @@ void BrowEdit::run()
 		if (windowData.undoVisible)
 			showUndoWindow();
 		if (windowData.objectWindowVisible && editMode == EditMode::Object) {
+			showLubEffectPickerWindow();
 			showStrPickerWindow();
 			showObjectWindow();
 		}

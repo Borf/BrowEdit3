@@ -89,14 +89,40 @@ void LubRenderer::render(NodeRenderContext& context)
 		if (lubEffect)
 			lubEffect->dirty = false;
 	}
-	if (!rswObject || !lubEffect || !gnd)
+	if (!lubEffect)
 		return;
+
+	float currentTime = context.time;
+	time += currentTime - lastTime;
+	lastTime = currentTime;
 
 	auto shader = dynamic_cast<LubRenderContext*>(renderContext)->shader;//TODO: don't cast
 
 	glm::mat4 modelMatrix(1.0f);
-	modelMatrix = glm::scale(modelMatrix, glm::vec3(1, 1, -1));
-	modelMatrix = glm::translate(modelMatrix, glm::vec3(5 * gnd->width + rswObject->position.x, -rswObject->position.y + 10, -10 - 5 * gnd->height + rswObject->position.z));
+
+	if (rswObject && gnd) {
+		modelMatrix = glm::scale(modelMatrix, glm::vec3(1, 1, -1));
+		modelMatrix = glm::translate(modelMatrix, glm::vec3(5 * gnd->width + rswObject->position.x, -rswObject->position.y + 10, -10 - 5 * gnd->height + rswObject->position.z));
+	}
+	else if (nextEmitTime == 0.0f) { // Nothing was created yet, this is from the lub picker
+		float emitTime = 0;
+		int start = (int)particles.size();
+
+		for (int i = start; i < lubEffect->maxcount; i++) {
+			emitParticle();
+
+			particles[i].tickStart = time - emitTime;
+
+			emitTime = emitTime + 1.0f / (lubEffect->rate.x + (rand() / (float)RAND_MAX) * (lubEffect->rate.y - lubEffect->rate.x));
+		}
+
+		if (start < lubEffect->maxcount) {
+			float initialParticleAge = particles[start].duration / 2.0f;
+		
+			for (int i = start; i < lubEffect->maxcount; i++)
+				particles[i].tickStart -= initialParticleAge;
+		}
+	}
 
 	if (lubEffect->billboard_off) {
 		modelMatrix = glm::rotate(modelMatrix, -glm::radians(lubEffect->rotate_angle.z), glm::vec3(0, 0, 1));
@@ -116,10 +142,9 @@ void LubRenderer::render(NodeRenderContext& context)
 		texture->bind();
 	else
 		glBindTexture(GL_TEXTURE_2D, 0);
+	if (texture && !texture->loaded)
+		glBindTexture(GL_TEXTURE_2D, 0);
 
-	float time = (float)glfwGetTime();
-	float elapsedTime = time - lastTime;
-	lastTime = time;
 	for (int i = 0; i < particles.size(); i++) {
 		auto p = &particles[i];
 		float t = time - p->tickStart;
@@ -148,30 +173,7 @@ void LubRenderer::render(NodeRenderContext& context)
 	
 	if (time >= nextEmitTime && particles.size() < lubEffect->maxcount)
 	{
-		Particle p;
-		p.position = p.startPosition = glm::vec3(
-			-lubEffect->radius.x + (rand() / (float)RAND_MAX) * (-lubEffect->radius.x + 2 * abs(lubEffect->radius.x) + lubEffect->radius.x),
-			-lubEffect->radius.y + (rand() / (float)RAND_MAX) * (-lubEffect->radius.y + 2 * abs(lubEffect->radius.y) + lubEffect->radius.y),
-			-lubEffect->radius.z + (rand() / (float)RAND_MAX) * (-lubEffect->radius.z + 2 * abs(lubEffect->radius.z) + lubEffect->radius.z)
-		);
-		p.speed = glm::vec3(0);
-		p.dir = glm::vec3(
-			lubEffect->dir1.x + (rand() / (float)RAND_MAX) * (lubEffect->dir2.x - lubEffect->dir1.x),
-			-lubEffect->dir1.y + (rand() / (float)RAND_MAX) * (-lubEffect->dir2.y + lubEffect->dir1.y),
-			lubEffect->dir1.z + (rand() / (float)RAND_MAX) * (lubEffect->dir2.z - lubEffect->dir1.z)
-		);
-		p.duration = lubEffect->life.x + (rand() / (float)RAND_MAX) * (lubEffect->life.y - lubEffect->life.x);
-		p.tickStart = time;
-		p.size = lubEffect->size.x + (rand() / (float)RAND_MAX) * (lubEffect->size.y - lubEffect->size.x);
-		p.alpha = 0;
-		p.toDelete = false;
-
-		if (lubEffect->animatedTexture) {
-			p.animatedTexture = ((int)((rand() / (float)RAND_MAX) * 2)) % animatedTextures.size();
-			p.uvDelayStart = (rand() / (float)RAND_MAX);
-		}
-
-		particles.push_back(p);
+		emitParticle();
 		nextEmitTime = time + 1.0f / (lubEffect->rate.x + (rand() / (float)RAND_MAX) * (lubEffect->rate.y - lubEffect->rate.x));
 	}
 
@@ -240,6 +242,33 @@ void LubRenderer::render(NodeRenderContext& context)
 	}
 }
 
+void LubRenderer::emitParticle()
+{
+	Particle p;
+	p.position = p.startPosition = glm::vec3(
+		-lubEffect->radius.x + (rand() / (float)RAND_MAX) * (-lubEffect->radius.x + 2 * abs(lubEffect->radius.x) + lubEffect->radius.x),
+		-lubEffect->radius.y + (rand() / (float)RAND_MAX) * (-lubEffect->radius.y + 2 * abs(lubEffect->radius.y) + lubEffect->radius.y),
+		-lubEffect->radius.z + (rand() / (float)RAND_MAX) * (-lubEffect->radius.z + 2 * abs(lubEffect->radius.z) + lubEffect->radius.z)
+	);
+	p.speed = glm::vec3(0);
+	p.dir = glm::vec3(
+		lubEffect->dir1.x + (rand() / (float)RAND_MAX) * (lubEffect->dir2.x - lubEffect->dir1.x),
+		-lubEffect->dir1.y + (rand() / (float)RAND_MAX) * (-lubEffect->dir2.y + lubEffect->dir1.y),
+		lubEffect->dir1.z + (rand() / (float)RAND_MAX) * (lubEffect->dir2.z - lubEffect->dir1.z)
+	);
+	p.duration = lubEffect->life.x + (rand() / (float)RAND_MAX) * (lubEffect->life.y - lubEffect->life.x);
+	p.tickStart = time;
+	p.size = lubEffect->size.x + (rand() / (float)RAND_MAX) * (lubEffect->size.y - lubEffect->size.x);
+	p.alpha = 0;
+	p.toDelete = false;
+
+	if (lubEffect->animatedTexture) {
+		p.animatedTexture = ((int)((rand() / (float)RAND_MAX) * 2)) % animatedTextures.size();
+		p.uvDelayStart = (rand() / (float)RAND_MAX);
+	}
+
+	particles.push_back(p);
+}
 
 LubRenderer::LubRenderContext::LubRenderContext() : shader(util::ResourceManager<gl::Shader>::load<LubShader>())
 {

@@ -344,6 +344,7 @@ public:
 	void showUndoWindow();
 	void showObjectWindow();
 	void showStrPickerWindow();
+	void showLubEffectPickerWindow();
 	void showHeightWindow();
 	void showGatWindow();
 	void showWallWindow();
