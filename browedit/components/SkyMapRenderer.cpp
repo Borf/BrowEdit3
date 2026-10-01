@@ -1,6 +1,6 @@
 #include "SkyMapRenderer.h"
-#include <browedit/util/FileIO.h>
 #include <browedit/util/Util.h>
+#include <browedit/util/FileIO.h>
 #include <browedit/util/ResourceManager.h>
 #include <browedit/Node.h>
 #include <browedit/components/Rsw.h>
@@ -43,59 +43,6 @@ SkyMapRenderer::~SkyMapRenderer()
 
 	if (ubo)
 		delete ubo;
-}
-
-gl::Texture* SkyMapRenderer::createTextureAtlas(std::initializer_list<std::string> textures)
-{
-	gl::Texture* tex = new gl::Texture(256, 256 * (int)textures.size());
-	int index = 0;
-	
-	for (const auto& texture_i : textures) {
-		std::string texture = "data\\texture\\effect\\" + texture_i;
-
-		std::istream* is = util::FileIO::open(texture);
-		if (!is)
-		{
-			std::cerr << "Texture: Could not open " << texture << std::endl;
-			continue;
-		}
-		is->seekg(0, std::ios_base::end);
-		std::size_t len = is->tellg();
-		if (len <= 0 || len > 100 * 1024 * 1024)
-		{
-			std::cerr << "Texture: Error opening texture " << texture << ", file is either empty or too large" << std::endl;
-			delete is;
-			continue;
-		}
-	
-		char* buffer = new char[len];
-		is->seekg(0, std::ios_base::beg);
-		is->read(buffer, len);
-		delete is;
-	
-		int width, height, comp;
-		unsigned char* data = stbi_load_from_memory((stbi_uc*)buffer, (int)len, &width, &height, &comp, 4);
-		if (!data)
-		{
-			std::cerr << "Texture: " << texture << " could not load; error: " << stbi_failure_reason() << std::endl;
-			continue;
-		}
-	
-		if (width != 256 || height != 256)
-		{
-			std::cerr << "Texture: " << texture << " has invalid dimensions. Expected 256x256, found " << width << ", " << height << std::endl;
-			continue;
-		}
-
-		util::imageDitherAndPinkRemove(texture_i, data, width, height);
-	
-		tex->setSubImage((char*)data, 0, 256 * index, 256, 256);
-		stbi_image_free(data);
-
-		index++;
-	}
-
-	return tex;
 }
 
 void SkyMapRenderer::reload()
@@ -174,9 +121,9 @@ void SkyMapRenderer::render(NodeRenderContext& context)
 
 	// Ensure atlas are created
 	if (!atlasLoaded) {
-		this->cloudAtlas = createTextureAtlas({ "cloud1.tga", "cloud2.tga", "cloud3.tga", "cloud4.tga" });
-		this->starAtlas = createTextureAtlas({ "star01.bmp", "star02.bmp", "star03.bmp", "star04.bmp", "star05.bmp", "star06.bmp" });
-		this->fogAtlas = createTextureAtlas({ "fog1.tga", "fog2.tga", "fog3.tga" });
+		this->cloudAtlas = util::createTextureAtlas({ "cloud1.tga", "cloud2.tga", "cloud3.tga", "cloud4.tga" });
+		this->starAtlas = util::createTextureAtlas({ "star01.bmp", "star02.bmp", "star03.bmp", "star04.bmp", "star05.bmp", "star06.bmp" });
+		this->fogAtlas = util::createTextureAtlas({ "fog1.tga", "fog2.tga", "fog3.tga" });
 		atlasLoaded = true;
 	}
 

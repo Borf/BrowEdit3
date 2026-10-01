@@ -10,7 +10,7 @@
 #include <browedit/util/Singleton.h>
 #include "LubSkyMap.h"
 
-namespace gl { class Texture; }
+namespace gl { class TexturePoT; }
 class RswObject;
 class Gnd;
 class Rsw;
@@ -94,7 +94,7 @@ public:
 		const LubSkyMap::CloudEffect* source;
 
 		ParticleParams params;
-		gl::Texture* textureAtlas;
+		gl::TexturePoT* textureAtlas;
 		RenderInfo* renderInfo = nullptr;
 		std::vector<Particle> particles;
 	};
@@ -119,9 +119,9 @@ public:
 	Rsw* rsw = nullptr;
 	LubSkyMap* lubSkyMap = nullptr;
 
-	gl::Texture* cloudAtlas = nullptr;
-	gl::Texture* starAtlas = nullptr;
-	gl::Texture* fogAtlas = nullptr;
+	gl::TexturePoT* cloudAtlas = nullptr;
+	gl::TexturePoT* starAtlas = nullptr;
+	gl::TexturePoT* fogAtlas = nullptr;
 	bool atlasLoaded = false;
 	bool enabled = true;
 	float time = 0.0f;
@@ -132,7 +132,6 @@ public:
 	bool selected = false;
 	void setDirty() { this->dirty = true; }
 
-	gl::Texture* createTextureAtlas(std::initializer_list<std::string> textures);
 	void updateParticle(SkyMapRenderer::CloudInstance& cloudInstance, SkyMapRenderer::Particle& particle, int i);
 	void reload();
 };

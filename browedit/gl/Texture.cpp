@@ -9,6 +9,9 @@
 
 namespace gl
 {
+	Texture::Texture() {
+	}
+
 	Texture::Texture(const std::string& fileName, bool flipSelection, bool powerOfTwo) : fileName(fileName), flipSelection(flipSelection), powerOfTwo(powerOfTwo)
 	{
 		ids = nullptr;
@@ -17,7 +20,6 @@ namespace gl
 		if (fileName.find(".gif") != fileName.length() - 4)
 			reload();
 	}
-
 
 	Texture::Texture(int width, int height) : width(width), height(height), fileName("")
 	{
@@ -32,7 +34,6 @@ namespace gl
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		loaded = true;
 	}
-
 
 	Texture::~Texture()
 	{
@@ -156,23 +157,29 @@ namespace gl
 	void Texture::setWrapMode(GLuint mode)
 	{
 		bind();
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, mode);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, mode);
+		glTexParameteri(textureArray ? GL_TEXTURE_2D_ARRAY : GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, mode);
+		glTexParameteri(textureArray ? GL_TEXTURE_2D_ARRAY : GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, mode);
 	}
 
 	void Texture::setMipmap(bool value)
 	{
 		bind();
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, value ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR);
+		glTexParameteri(textureArray ? GL_TEXTURE_2D_ARRAY : GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, value ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR);
 	}
 
 	void Texture::setSubImage(char* data, int x, int y, int width, int height)
 	{
+		if (textureArray)
+			return;
+
 		bind();
 		glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, width, height, GL_RGBA, GL_UNSIGNED_BYTE, data);
 	}
 	void Texture::resize(int width, int height)
 	{
+		if (textureArray)
+			return;
+
 		bind();
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
 	}
@@ -193,7 +200,9 @@ namespace gl
 			reload();
 		if (loaded)
 		{
-			if (frameCount > 1)
+			if (textureArray)
+				glBindTexture(GL_TEXTURE_2D_ARRAY, ids[0]);
+			else if (frameCount > 1)
 				glBindTexture(GL_TEXTURE_2D, ids[(int)(glfwGetTime() * 10) % frameCount]);
 			else
 				glBindTexture(GL_TEXTURE_2D, ids[0]);
@@ -202,5 +211,31 @@ namespace gl
 
 	TexturePoT::TexturePoT(const std::string& fileName, bool flipSelection) : Texture(fileName, flipSelection, true)
 	{
+	}
+
+	TexturePoT::TexturePoT(int width, int height) : Texture(width, height)
+	{
+		powerOfTwo = true;
+	}
+
+	TextureArray::TextureArray(int width, int height, int depth) : Texture()
+	{
+		ids = new GLuint[1];
+		glGenTextures(1, &ids[0]);
+		glBindTexture(GL_TEXTURE_2D_ARRAY, ids[0]);
+		glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_RGBA, width, height, depth, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+
+		glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		textureArray = true;
+		loaded = true;
+	}
+
+	void TextureArray::setSubImage(char* data, int x, int y, int z, int width, int height)
+	{
+		bind();
+		glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, x, y, z, width, height, 1, GL_RGBA, GL_UNSIGNED_BYTE, data);
 	}
 }

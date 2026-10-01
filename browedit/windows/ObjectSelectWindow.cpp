@@ -13,6 +13,7 @@
 #include <browedit/components/Str.h>
 #include <browedit/components/Rsw.h>
 #include <browedit/components/LubRenderer.h>
+#include <browedit/shaders/SimpleShader.h>
 #include <browedit/gl/FBO.h>
 #include <browedit/gl/Texture.h>
 #include <browedit/util/Util.h>
@@ -21,6 +22,7 @@
 #include <browedit/actions/GroupAction.h>
 #include <browedit/actions/SelectAction.h>
 #include <browedit/actions/ModelChangeAction.h>
+#include <sol.hpp>
 
 #include <imgui_internal.h>
 #include <misc/cpp/imgui_stdlib.h>
@@ -42,6 +44,10 @@ public:
 	Node* node;
 	gl::FBO* fbo;
 	NodeRenderContext nodeRenderContext;
+	static inline gl::Texture* texture;
+	static inline SimpleShader* simpleShader;
+	float time = 0.0f;
+	float offsetTime = 0.0f;
 	float rotation = 0;
 	BrowEdit* browEdit;
 
@@ -72,6 +78,34 @@ public:
 		}
 	}
 
+	ObjectWindowObject(const sol::table& table, BrowEdit* browEdit) : browEdit(browEdit)
+	{
+		fbo = new gl::FBO((int)browEdit->config.thumbnailSize.x, (int)browEdit->config.thumbnailSize.y, true); //TODO: resolution?
+		node = new Node();
+
+		objectType = ObjectType::Object_Lub;
+		auto lubEffect = new LubEffect();
+		lubEffect->load(table);
+
+		// For proper preview, always display with billboard and boost the alpha value a bit.
+		lubEffect->billboard_off = 0;
+		float r = lubEffect->color.r;
+		float g = lubEffect->color.g;
+		float b = lubEffect->color.b;
+		float a = lubEffect->color.a;
+
+		if (a < 0.5f)
+			a *= 2;
+		if (a < 0.5f)
+			a += 0.5f;
+
+		a = glm::min(1.0f, a);
+
+		lubEffect->color = glm::vec4(r, g, b, a);
+		node->addComponent(lubEffect);
+		node->addComponent(new LubRenderer());
+	}
+
 	void draw()
 	{
 		fbo->bind();
@@ -95,8 +129,6 @@ public:
 			float ratio = fbo->getWidth() / (float)fbo->getHeight();
 			nodeRenderContext.projectionMatrix = glm::perspective(glm::radians(45.0f), ratio, 0.1f, 5000.0f);
 			nodeRenderContext.viewMatrix = glm::lookAt(glm::vec3(-distance * glm::sin(glm::radians(rotation)), -distance, -distance * glm::cos(glm::radians(rotation))), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-			nodeRenderContext.time = (float)glfwGetTime();
-			nodeRenderContext.fbo = fbo;
 			RsmRenderer::RsmRenderContext::getInstance()->viewLighting = false;
 			glm::mat4 mat = glm::mat4(1.0f);
 			if (rsm->version >= 0x202) {
@@ -106,12 +138,10 @@ public:
 			mat = glm::translate(mat, glm::vec3(-rsm->realbbrange.x, rsm->realbbrange.y, -rsm->realbbrange.z));
 			node->getComponent<RsmRenderer>()->matrixCache = mat;
 			node->getComponent<RsmRenderer>()->matrixCached = true;
-			NodeRenderer::render(node, nodeRenderContext);
+			nodeRenderContext.time = (float)glfwGetTime();
 		}
 			break;
 		case ObjectType::Object_Str: {
-			auto str = node->getComponent<Str>();
-			
 			// Str coordinates are scaled to the world coordinates system (so divided by 5).
 			// There's also... the weirdo 0.7f constant that seems to be what Gravity does for some reason.
 			const float strScaling = 0.2f * 0.7f;
@@ -123,14 +153,78 @@ public:
 
 			nodeRenderContext.projectionMatrix = glm::ortho(-distance / 2 * ratio, distance / 2 * ratio, distance / 2, -distance / 2, -100.0f, 100.0f);
 			nodeRenderContext.viewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0, -60 * strScaling, 0));
-
 			nodeRenderContext.time = (float)glfwGetTime();
-			nodeRenderContext.fbo = fbo;
-
-			NodeRenderer::render(node, nodeRenderContext);
 		}
 			break;
+		case ObjectType::Object_Lub: {
+			auto lubEffect = node->getComponent<LubEffect>();
+			float distance = glm::max(lubEffect->size.x, lubEffect->size.y) * glm::max(lubEffect->scale.x, lubEffect->scale.y) * 2 + glm::max(lubEffect->radius.x, lubEffect->radius.y);
+			float ratio = fbo->getWidth() / (float)fbo->getHeight();
+
+			// Draw a dummy texture on the background
+			if (texture == nullptr)
+				texture = util::ResourceManager<gl::Texture>::load("data\\texture\\lubeffect_background.bmp");
+			
+			if (simpleShader == nullptr)
+				simpleShader = util::ResourceManager<gl::Shader>::load<SimpleShader>();
+
+			nodeRenderContext.projectionMatrix = glm::ortho(-distance / 2 * ratio, distance / 2 * ratio, distance / 2, -distance / 2, -100.0f, 100.0f);
+			nodeRenderContext.viewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0));
+
+			if (texture) {
+				texture->bind();
+				simpleShader->use();
+				simpleShader->setUniform(SimpleShader::Uniforms::modelMatrix, glm::mat4(1.0f));
+				simpleShader->setUniform(SimpleShader::Uniforms::textureFac, 1.0f);
+				simpleShader->setUniform(SimpleShader::Uniforms::shadeType, 1);
+				simpleShader->setUniform(SimpleShader::Uniforms::color, glm::vec4(0));
+				simpleShader->setUniform(SimpleShader::Uniforms::colorMult, glm::vec4(0.8f, 0.8f, 0.8f, 1));
+				simpleShader->setUniform(SimpleShader::Uniforms::projectionMatrix, nodeRenderContext.projectionMatrix);
+				simpleShader->setUniform(SimpleShader::Uniforms::viewMatrix, nodeRenderContext.viewMatrix);
+			
+				float size = distance;
+				std::vector<VertexP3T2> verts;
+				verts.push_back(VertexP3T2(glm::vec3(-size, -size, 0), glm::vec2(0, 0)));
+				verts.push_back(VertexP3T2(glm::vec3(-size, size, 0), glm::vec2(0, 1)));
+				verts.push_back(VertexP3T2(glm::vec3(size, size, 0), glm::vec2(1, 1)));
+				verts.push_back(VertexP3T2(glm::vec3(size, -size, 0), glm::vec2(1, 0)));
+			
+				glDisable(GL_DEPTH_TEST);
+				glBindBuffer(GL_ARRAY_BUFFER, 0);
+				glDepthMask(0);
+				glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+				glEnableVertexAttribArray(0);
+				glEnableVertexAttribArray(1);
+				glDisableVertexAttribArray(2);
+				glDisableVertexAttribArray(3);
+				glDisableVertexAttribArray(4);
+			
+				glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(VertexP3T2), verts[0].data);
+				glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(VertexP3T2), verts[0].data + 3);
+			
+				glDrawArrays(GL_QUADS, 0, 4);
+				glEnable(GL_DEPTH_TEST);
+			
+				simpleShader->setUniform(SimpleShader::Uniforms::shadeType, 0);
+				simpleShader->setUniform(SimpleShader::Uniforms::textureFac, 0.0f);
+				simpleShader->setUniform(SimpleShader::Uniforms::colorMult, glm::vec4(1));
+			
+				float currentTime = (float)glfwGetTime();
+			
+				if (currentTime - time > 2.0f) {
+					offsetTime += currentTime - time;
+				}
+			
+				nodeRenderContext.time = currentTime - offsetTime;
+				time = currentTime;
+			}
+
+			break;
 		}
+		}
+
+		nodeRenderContext.fbo = fbo;
+		NodeRenderer::render(node, nodeRenderContext);
 		
 		fbo->unbind();
 	}
@@ -750,7 +844,7 @@ void BrowEdit::showStrPickerWindow()
 	ImGui::SetNextItemWidth(ImGui::GetWindowSize().x * 0.65f - 50);
 	ImGui::InputText("Filter", &filter);
 	ImGui::SameLine();
-	ImGui::Checkbox("##vertical", &verticalLayout);
+	ImGui::Checkbox("##verticalStrPicker", &verticalLayout);
 
 	std::function<void(util::FileIO::Node*, std::string parent)> buildTreeNodes;
 	buildTreeNodes = [&](util::FileIO::Node* node, std::string parent)
@@ -854,7 +948,7 @@ void BrowEdit::showStrPickerWindow()
 							auto strEffect = new StrEffect();
 							strEffect->str = util::iso_8859_1_to_utf8(name + ".str");
 							auto e = new RswEffect();
-							e->id = 1412;
+							e->id = RswEffect::EffectType::Ez2Str;
 							newNode->addComponent(strEffect);
 							newNode->addComponent(new StrRenderer());
 							newNode->addComponent(new RswObject());
@@ -1002,6 +1096,152 @@ void BrowEdit::showStrPickerWindow()
 				buildBox(file, true);
 			}
 
+		}
+	}
+	ImGui::EndChild();
+	ImGui::End();
+}
+
+
+void BrowEdit::showLubEffectPickerWindow()
+{
+	if (!ImGui::Begin("Lub Picker", &windowData.objectWindowVisible))
+	{
+		ImGui::End();
+		return;
+	}
+	static bool verticalLayout = ImGui::GetContentRegionAvail().x < 300;
+
+	static std::string filter;
+	ImGui::SetNextItemWidth(ImGui::GetWindowSize().x * 0.65f - 50);
+	ImGui::InputText("Filter", &filter);
+	ImGui::SameLine();
+	ImGui::Checkbox("##verticalLubPicker", &verticalLayout);
+
+	std::function<void(util::FileIO::Node*, std::string parent)> buildTreeNodes;
+	buildTreeNodes = [&](util::FileIO::Node* node, std::string parent)
+		{
+			for (auto f : node->directories)
+			{
+				int flags = ImGuiTreeNodeFlags_OpenOnDoubleClick;
+				if (f.second->directories.size() == 0)
+					flags |= ImGuiTreeNodeFlags_Bullet;
+				if (f.second == windowData.objectWindowSelectedTreeNode)
+					flags |= ImGuiTreeNodeFlags_Selected;
+
+				bool open = ImGui::TreeNodeEx((f.second->name + "##" + parent + f.second->name).c_str(), flags);
+
+				if (ImGui::IsItemClicked())
+					windowData.objectWindowSelectedTreeNode = f.second;
+
+				if (open) {
+					buildTreeNodes(f.second, parent + f.second->name + "\\");
+					ImGui::TreePop();
+				}
+			}
+		};
+
+	ImGuiStyle& style = ImGui::GetStyle();
+	float window_visible_x2 = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
+
+	static bool lubLoaded = false;
+	static sol::state lua;
+	static std::map<int, sol::table> emitters;
+
+	if (!lubLoaded) {
+		lua.open_libraries(sol::lib::base);
+
+		auto lub = util::FileIO::open("data\\lubEffects.lua");
+		std::string data = util::loadLubFileToString(lub);
+		delete lub;
+
+		try {
+			auto load_result = lua.load(data);
+			auto run_result = load_result();
+			sol::object obj = lua["emitterInfo"];
+			if (obj.is<sol::table>()) {
+				for (auto const& [key, value] : obj.as<sol::table>()) {
+					emitters[key.as<int>()] = value.as<sol::table>();
+				}
+			}
+		}
+		catch (const std::exception& e)
+		{
+			std::cerr << "Error loading lub effect data: " << e.what() << std::endl;
+			std::cout << data << std::endl;
+		}
+
+		lubLoaded = true;
+	}
+
+	auto buildBox = [&](int idx, bool fullPath) {
+		if (ImGui::BeginChild(("lubeffect_" + std::to_string(idx)).c_str(), ImVec2(config.thumbnailSize.x, config.thumbnailSize.y + 50), true, ImGuiWindowFlags_NoScrollbar))
+		{
+			std::string path = "lubeffect_" + std::to_string(idx) + ".lub";
+			auto g = ImGui::GetCurrentContext();
+			if (g->CurrentWindow->ParentWindow->ClipRect.Overlaps(g->CurrentWindow->ClipRect))
+			{
+				ImTextureID texture = 0;
+				gl::Texture* textureOrigin = nullptr;
+				auto it = objectWindowObjects.find(path);
+				if (it == objectWindowObjects.end())
+				{
+					objectWindowObjects[path] = new ObjectWindowObject(emitters[idx], this);
+					it = objectWindowObjects.find(path);
+					it->second->draw();
+				}
+				texture = (ImTextureID)(long long)it->second->fbo->texid[0];
+
+				if (ImGui::ImageButtonEx(ImGui::GetID(path.c_str()), texture, config.thumbnailSize, ImVec2(0, 0), ImVec2(1, 1), ImVec2(0, 0), ImVec4(0, 0, 0, 0), ImVec4(1, 1, 1, 1)))
+				{
+					// A new item is selected, clear the clipboard
+					for (auto n : newNodes)
+						delete n.first;
+					newNodes.clear();
+
+					if (activeMapView && newNodes.size() == 0)
+					{
+						Node* newNode = new Node(util::iso_8859_1_to_utf8(path));
+						auto lubEffect = new LubEffect();
+						lubEffect->load(emitters[idx]);
+						auto e = new RswEffect();
+						e->id = RswEffect::EffectType::Emitter;
+						newNode->addComponent(lubEffect);
+						newNode->addComponent(new LubRenderer());
+						newNode->addComponent(new RswObject());
+						newNode->addComponent(e);
+						newNode->addComponent(new BillboardRenderer("data\\effect.png", "data\\effect_selected.png"));
+						newNode->addComponent(new CubeCollider(5));
+						newNodes.push_back(std::pair<Node*, glm::vec3>(newNode, glm::vec3(0, 0, 0)));
+						newNodesCenter = glm::vec3(0, 0, 0);
+						newNodePlacement = BrowEdit::Ground;
+					}
+				}
+				//else if (ImGui::IsItemHovered())
+				{
+					if (textureOrigin && !textureOrigin->tryLoaded)
+						textureOrigin->reload();
+					auto it = objectWindowObjects.find(path);
+					if (it != objectWindowObjects.end())
+					{
+						it->second->draw();
+					}
+				}
+				ImGui::Text(path.c_str());
+			}
+		}
+		ImGui::EndChild();
+
+		float last_button_x2 = ImGui::GetItemRectMax().x;
+		float next_button_x2 = last_button_x2 + style.ItemSpacing.x + config.thumbnailSize.x; // Expected position if next button was on same line
+		if (next_button_x2 < window_visible_x2)
+			ImGui::SameLine();
+		};
+	if (ImGui::BeginChild("right pane", ImVec2(verticalLayout ? 0 : ImGui::GetContentRegionAvail().x, 0), true))
+	{
+		window_visible_x2 = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
+		for (int i = 0; i < emitters.size(); i++) {
+			buildBox(i, false);
 		}
 	}
 	ImGui::EndChild();

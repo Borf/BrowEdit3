@@ -12,15 +12,18 @@ namespace gl
 		GLuint ubo;
 
 		T* element;
+		GLuint bindingIndex;
+
 		UBO(const UBO& other)
 		{
 			throw "do not copy!";
 		}
 
 	public:
-		UBO()
+		UBO(GLuint bindingIndex = 0)
 		{
 			element = NULL;
+			this->bindingIndex = bindingIndex;
 			glGenBuffers(1, &ubo);
 
 			bind();
@@ -40,7 +43,7 @@ namespace gl
 		void bind()
 		{
 			glBindBuffer(GL_UNIFORM_BUFFER, ubo);
-			glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo);
+			glBindBufferBase(GL_UNIFORM_BUFFER, bindingIndex, ubo);
 		}
 
 		void unBind()

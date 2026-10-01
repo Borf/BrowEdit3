@@ -5,6 +5,7 @@
 #include <browedit/util/Singleton.h>
 
 namespace gl { class TexturePoT; }
+namespace gl { class Texture; }
 class RswObject;
 class Gnd;
 class LubEffect;
@@ -49,9 +50,12 @@ private:
 	RswObject* rswObject = nullptr;
 	LubEffect* lubEffect = nullptr;
 	BillboardRenderer* billboardRenderer = nullptr;
+	int effectId = 0;
 
 	gl::TexturePoT* texture = nullptr;
+	std::vector<std::vector<gl::TexturePoT*>> animatedTextures;
 
+	float time;
 	float lastTime;
 	float nextEmitTime = 0;
 	class Particle
@@ -66,6 +70,8 @@ private:
 		float duration;
 		float tickStart;
 		bool toDelete;
+		int animatedTexture;
+		float uvDelayStart;
 	};
 	std::vector<Particle> particles;
 
@@ -83,6 +89,7 @@ public:
 
 	LubRenderer();
 	~LubRenderer();
+	void emitParticle();
 	virtual void render(NodeRenderContext& context);
 	bool selected = false;
 	void setDirty() { this->dirty = true; }

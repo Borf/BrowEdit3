@@ -10,7 +10,9 @@ class Node;
 #include <vector>
 #include <imgui.h>
 #include <sol.hpp>
+
 namespace math { class Ray; }
+namespace gl { class TexturePoT; }
 
 constexpr uint64_t operator""_KB(uint64_t x)
 {
@@ -141,6 +143,7 @@ namespace util
 	int d3dToOpenGlDstBlend(int d3d);
 	std::string loadLubFileToString(std::istream* lub);
 	void imageDitherAndPinkRemove(std::string fileName, unsigned char* data, int width, int height);
+	gl::TexturePoT* createTextureAtlas(std::initializer_list<std::string> textures, int maxWidth = 0, int maxHeight = 0);
 
 	// Uses grid DDA (Digital Differential Analyzer) traversal algorithm and avoids checking for ray collision with the AABB box entirely.
 	void traverseGridDDA(const math::Ray& ray, int width, int height, float maxDistance, std::function<bool(int, int, float)> visitCell);

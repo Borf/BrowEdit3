@@ -5,6 +5,7 @@
 #include "components/LubRenderer.h"
 #include "components/LubWindRenderer.h"
 #include "components/StrRenderer.h"
+#include "components/EvilsPawRenderer.h"
 #include "components/Rsm.h"
 #include "components/Str.h"
 #include <browedit/util/Util.h>
@@ -246,6 +247,13 @@ void Node::addComponentsFromJson(const nlohmann::json& data)
 			from_json(c, *lubEffect);
 			this->addComponent(lubEffect);
 			this->addComponent(new LubWindRenderer());
+		}
+		if (c["type"] == "evilspaweffect")
+		{
+			auto evilsPawEffect = new EvilsPawEffect();
+			from_json(c, *evilsPawEffect);
+			this->addComponent(evilsPawEffect);
+			this->addComponent(new EvilsPawRenderer());
 		}
 		if (c["type"] == "rswsound")
 		{

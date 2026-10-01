@@ -90,6 +90,7 @@ public:
 				it++;
 		}
 		lookupCache.clear();
+		root->dirty = true;
 		return ret;
 	}
 
@@ -103,6 +104,7 @@ public:
 				it++;
 		}
 		lookupCache.clear();
+		root->dirty = true;
 	}
 
 	void traverse(const std::function<void(Node*)>& callBack);
