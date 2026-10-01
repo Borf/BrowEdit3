@@ -9,6 +9,7 @@ namespace gl
 	class Texture
 	{
 	protected:
+		Texture();
 		Texture(const std::string& fileName, bool flipSelection = false, bool powerOfTwo = false);
 		GLuint* ids = nullptr;
 	public:
@@ -25,6 +26,7 @@ namespace gl
 		bool semiTransparent = false;
 
 		bool powerOfTwo = false;
+		bool textureArray = false;
 		int potWidth = -1;
 		int potHeight = -1;
 
@@ -52,6 +54,14 @@ namespace gl
 	protected:
 		TexturePoT(const std::string& fileName, bool flipSelection = false);
 	public:
+		TexturePoT(int width, int height);
 		friend class util::ResourceManager<gl::TexturePoT>;
+	};
+
+	class TextureArray : public Texture
+	{
+	public:
+		TextureArray(int width, int height, int depth);
+		void setSubImage(char* data, int x, int y, int z, int width, int height);
 	};
 }

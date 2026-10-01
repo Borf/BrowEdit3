@@ -43,6 +43,7 @@
     <ClCompile Include="browedit\components\BillboardRenderer.cpp" />
     <ClCompile Include="browedit\components\Collider.cpp" />
     <ClCompile Include="browedit\components\Component.cpp" />
+    <ClCompile Include="browedit\components\EvilsPawRenderer.cpp" />
     <ClCompile Include="browedit\components\Gat.cpp" />
     <ClCompile Include="browedit\components\GatRenderer.cpp" />
     <ClCompile Include="browedit\components\Gnd.cpp" />
@@ -217,6 +218,7 @@
     <ClInclude Include="browedit\components\BillboardRenderer.h" />
     <ClInclude Include="browedit\components\Collider.h" />
     <ClInclude Include="browedit\components\Component.h" />
+    <ClInclude Include="browedit\components\EvilsPawRenderer.h" />
     <ClInclude Include="browedit\components\Gat.h" />
     <ClInclude Include="browedit\components\GatRenderer.h" />
     <ClInclude Include="browedit\components\Gnd.h" />

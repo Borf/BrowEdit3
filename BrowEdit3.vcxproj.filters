@@ -607,6 +607,9 @@
     <ClCompile Include="browedit\components\Collider.cpp">
       <Filter>browedit\components</Filter>
     </ClCompile>
+    <ClCompile Include="browedit\components\EvilsPawRenderer.cpp">
+      <Filter>browedit\components</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="lib\imgui\imgui.h">
@@ -1396,6 +1399,9 @@
       <Filter>browedit\actions</Filter>
     </ClInclude>
     <ClInclude Include="browedit\components\LubWindRenderer.h">
+      <Filter>browedit\components</Filter>
+    </ClInclude>
+    <ClInclude Include="browedit\components\EvilsPawRenderer.h">
       <Filter>browedit\components</Filter>
     </ClInclude>
   </ItemGroup>

@@ -18,6 +18,7 @@
 #include "components/WaterRenderer.h"
 #include "components/BillboardRenderer.h"
 #include "components/SkyMapRenderer.h"
+#include "components/EvilsPawRenderer.h"
 
 #include "shaders/GndShader.h"
 #include "shaders/WaterShader.h"
@@ -681,6 +682,9 @@ void MapView::render(BrowEdit* browEdit)
 				auto lubRenderer = newNode.first->getComponent<LubRenderer>();
 				if (lubRenderer)
 					lubRenderer->gnd = gnd;
+				auto evilsPawRenderer = newNode.first->getComponent<EvilsPawRenderer>();
+				if (evilsPawRenderer)
+					evilsPawRenderer->gnd = gnd;
 				if (newNode.first->getComponent<BillboardRenderer>())
 					newNode.first->getComponent<BillboardRenderer>()->gnd = gnd;
 

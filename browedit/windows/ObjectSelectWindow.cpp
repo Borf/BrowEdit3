@@ -854,7 +854,7 @@ void BrowEdit::showStrPickerWindow()
 							auto strEffect = new StrEffect();
 							strEffect->str = util::iso_8859_1_to_utf8(name + ".str");
 							auto e = new RswEffect();
-							e->id = 1412;
+							e->id = RswEffect::EffectType::Ez2Str;
 							newNode->addComponent(strEffect);
 							newNode->addComponent(new StrRenderer());
 							newNode->addComponent(new RswObject());

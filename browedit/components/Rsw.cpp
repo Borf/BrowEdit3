@@ -251,9 +251,8 @@ void Rsw::load(const std::string& fileName, Map* map, BrowEdit* browEdit, bool l
 		for (const json& l : extraProperties["light"])
 			lightLookup[l["id"]] = l;
 
-	int lubIndex = 0;
-	int lubWindIndex = 0;
-	int strIndex = 0;
+	std::unordered_map<int, int> effectIndex;
+
 	for (int i = 0; i < objectCount; i++)
 	{
 		Node* object = new Node("");
@@ -279,24 +278,30 @@ void Rsw::load(const std::string& fileName, Map* map, BrowEdit* browEdit, bool l
 			if (rswEffect->isLubEffect())
 				rswEffect->setEffectNode(nullptr, object);
 
-			if (rswEffect->id == 974) {
-				auto effect = object->getComponent<LubEffect>();
-				if (lubTables.emitters.find(lubIndex) != lubTables.emitters.end())
-					effect->load(lubTables.emitters[lubIndex]);
-				lubIndex++;
+			switch (rswEffect->id) {
+			case RswEffect::EffectType::Emitter:
+				if (lubTables.emitters.find(effectIndex[rswEffect->id]) != lubTables.emitters.end())
+					object->getComponent<LubEffect>()->load(lubTables.emitters[effectIndex[rswEffect->id]]);
+				break;
+			case RswEffect::EffectType::WindEffect:
+				if (lubTables.winds.find(effectIndex[rswEffect->id]) != lubTables.winds.end())
+					object->getComponent<LubWindEffect>()->load(lubTables.winds[effectIndex[rswEffect->id]]);
+				break;
+			case RswEffect::EffectType::Ez2Str:
+				if (lubTables.ez2str.find(effectIndex[rswEffect->id]) != lubTables.ez2str.end())
+					object->getComponent<StrEffect>()->load(lubTables.ez2str[effectIndex[rswEffect->id]]);
+				break;
+			case RswEffect::EffectType::AnimatedEmitter:
+				if (lubTables.animatedEmitters.find(effectIndex[rswEffect->id]) != lubTables.animatedEmitters.end())
+					object->getComponent<LubEffect>()->load(lubTables.animatedEmitters[effectIndex[rswEffect->id]]);
+				break;
+			case RswEffect::EffectType::EvilsPaw:
+				if (lubTables.evilsPaws.find(effectIndex[rswEffect->id]) != lubTables.evilsPaws.end())
+					object->getComponent<EvilsPawEffect>()->load(lubTables.evilsPaws[effectIndex[rswEffect->id]]);
+				break;
 			}
-			else if (rswEffect->id == 2343) {
-				auto effect = object->getComponent<LubWindEffect>();
-				if (lubTables.winds.find(lubWindIndex) != lubTables.winds.end())
-					effect->load(lubTables.winds[lubWindIndex]);
-				lubWindIndex++;
-			}
-			else if (rswEffect->id == 1412) {
-				auto effect = object->getComponent<StrEffect>();
-				if (lubTables.ez2str.find(strIndex) != lubTables.ez2str.end())
-					effect->load(lubTables.ez2str[strIndex]);
-				strIndex++;
-			}
+
+			effectIndex[rswEffect->id]++;
 		}
 
 		std::string objPath = object->name;
@@ -405,6 +410,20 @@ bool Rsw::loadLubEffectFile(const std::string& mapName, BrowEdit* browEdit, sol:
 		if (obj.is<sol::table>()) {
 			for (auto const& [key, value] : obj.as<sol::table>()) {
 				outData.winds[key.as<int>()] = value.as<sol::table>();
+			}
+		}
+
+		obj = lua["_" + luaMapName + "_animatedEmitterInfo"];
+		if (obj.is<sol::table>()) {
+			for (auto const& [key, value] : obj.as<sol::table>()) {
+				outData.animatedEmitters[key.as<int>()] = value.as<sol::table>();
+			}
+		}
+
+		obj = lua["_" + luaMapName + "_evilsPawInfo"];
+		if (obj.is<sol::table>()) {
+			for (auto const& [key, value] : obj.as<sol::table>()) {
+				outData.evilsPaws[key.as<int>()] = value.as<sol::table>();
 			}
 		}
 
@@ -536,6 +555,8 @@ void Rsw::save(const std::string& fileName, BrowEdit* browEdit)
 	std::vector<RswLubEffectPair> lubEffects;
 	std::vector<RswLubEffectPair> strEffects;
 	std::vector<RswLubEffectPair> lubWindEffects;
+	std::vector<RswLubEffectPair> lubAnimatedEffects;
+	std::vector<RswLubEffectPair> lubEffectsEffects;
 	for (auto i = 0; i < objects.size(); i++)
 	{
 		auto rswObject = objects[i]->getComponent<RswObject>();
@@ -555,14 +576,21 @@ void Rsw::save(const std::string& fileName, BrowEdit* browEdit)
 			extraProperties["model"].push_back(j);
 		}
 		auto lubEffect = objects[i]->getComponent<LubEffect>();
-		if (lubEffect)
-			lubEffects.push_back(RswLubEffectPair(rswObject, lubEffect));
+		if (lubEffect) {
+			if (lubEffect->animatedTexture)
+				lubAnimatedEffects.push_back(RswLubEffectPair(rswObject, lubEffect));
+			else
+				lubEffects.push_back(RswLubEffectPair(rswObject, lubEffect));
+		}
 		auto strEffect = objects[i]->getComponent<StrEffect>();
 		if (strEffect)
 			strEffects.push_back(RswLubEffectPair(rswObject, strEffect));
 		auto lubWindEffect = objects[i]->getComponent<LubWindEffect>();
 		if (lubWindEffect)
 			lubWindEffects.push_back(RswLubEffectPair(rswObject, lubWindEffect));
+		auto lubEvilsPaw = objects[i]->getComponent<EvilsPawEffect>();
+		if (lubEvilsPaw)
+			lubEffectsEffects.push_back(RswLubEffectPair(rswObject, lubEvilsPaw));
 	}
 	quadtree->foreach([&file](QuadTreeNode* n)
 	{
@@ -576,7 +604,11 @@ void Rsw::save(const std::string& fileName, BrowEdit* browEdit)
 	extraFile << std::setw(2)<<extraProperties;
 	extraFile.close();
 
-	if (lubEffects.size() > 0 || strEffects.size() > 0 || lubWindEffects.size() > 0)
+	if (lubEffects.size() > 0 || 
+		strEffects.size() > 0 || 
+		lubWindEffects.size() > 0 || 
+		lubAnimatedEffects.size() > 0 || 
+		lubEffectsEffects.size() > 0)
 	{
 		std::string mapName = fileName;
 		if (mapName.find(".rsw") != std::string::npos)
@@ -600,15 +632,15 @@ void Rsw::save(const std::string& fileName, BrowEdit* browEdit)
 		std::ofstream lubFile(lubPath.c_str(), std::ios_base::out | std::ios_base::binary);
 		lubFile << "_" << luaMapName << "_effect_version = "<<lubVersion<<".0" << std::endl;
 
-		if (lubEffects.size() > 0) {
-			lubFile << "_" << luaMapName << "_emitterInfo = {" << std::endl;
-
 #define SAVEPROP0(x,y) lubFile<<"\t\t"<<x<<" = { "<<y<<" }"
 #define SAVEPROP2(x,y) lubFile<<"\t\t"<<x<<" = { "<<y[0]<<", "<<y[1]<<" }"
 #define SAVEPROP3(x,y) lubFile<<"\t\t"<<x<<" = { "<<y[0]<<", "<<y[1]<<", "<<y[2]<<" }"
 #define SAVEPROP4(x,y) lubFile<<"\t\t"<<x<<" = { "<<y[0]<<", "<<y[1]<<", "<<y[2]<<", "<<y[3]<<" }"
 #define SAVEPROPS(x,y) lubFile<<"\t\t"<<x<<" = \""<<y<<"\""
 #define SAVEPROPN(x,y) lubFile<<"\t\t"<<x<<" = "<<y<<""
+
+		if (lubEffects.size() > 0) {
+			lubFile << "_" << luaMapName << "_emitterInfo = {" << std::endl;
 
 			for (auto i = 0; i < lubEffects.size(); i++)
 			{
@@ -692,6 +724,65 @@ void Rsw::save(const std::string& fileName, BrowEdit* browEdit)
 
 				lubFile << "\t}";
 				if (i < lubWindEffects.size() - 1)
+					lubFile << ",";
+				lubFile << std::endl;
+			}
+			lubFile << "}" << std::endl;
+		}
+		
+		if (lubAnimatedEffects.size() > 0) {
+			lubFile << "_" << luaMapName << "_animatedEmitterInfo = {" << std::endl;
+
+			for (auto i = 0; i < lubAnimatedEffects.size(); i++)
+			{
+				auto rswObject = lubAnimatedEffects[i].rswObject;
+				auto e = dynamic_cast<LubEffect*>(lubAnimatedEffects[i].effect);
+
+				lubFile << "\t[" << i << "] = {" << std::endl;
+				SAVEPROP3("dir1", e->dir1) << "," << std::endl;
+				SAVEPROP3("dir2", e->dir2) << "," << std::endl;
+				SAVEPROP3("gravity", e->gravity) << "," << std::endl;
+				SAVEPROP3("pos", rswObject->position) << "," << std::endl;
+				SAVEPROP3("radius", e->radius) << "," << std::endl;
+				SAVEPROP4("color", glm::round(e->color * 255.0f)) << "," << std::endl;
+				SAVEPROP2("rate", e->rate) << "," << std::endl;
+				SAVEPROP2("size", e->size) << "," << std::endl;
+				SAVEPROP2("scale", e->scale) << "," << std::endl;
+				SAVEPROP2("life", e->life) << "," << std::endl;
+				SAVEPROPS("texture", util::utf8_to_iso_8859_1(util::replace(util::replace(e->texture, "\\\\", "\\"), "\\", "\\\\"))) << "," << std::endl;
+				SAVEPROP0("speed", e->speed) << "," << std::endl;
+				SAVEPROP0("srcmode", e->srcmode) << "," << std::endl;
+				SAVEPROP0("destmode", e->destmode) << "," << std::endl;
+				SAVEPROP0("maxcount", e->maxcount) << "," << std::endl;
+				SAVEPROP0("zenable", e->zenable) << "," << std::endl;
+				SAVEPROP0("billboard_off", e->billboard_off) << "," << std::endl;
+				SAVEPROP3("rotate_angle", e->rotate_angle) << "," << std::endl;
+				SAVEPROP0("eternity", e->eternity) << std::endl;
+
+				lubFile << "\t}";
+				if (i < lubAnimatedEffects.size() - 1)
+					lubFile << ",";
+				lubFile << std::endl;
+			}
+			lubFile << "}" << std::endl;
+		}
+		
+		if (lubEffectsEffects.size() > 0) {
+			lubFile << "_" << luaMapName << "_evilsPawInfo = {" << std::endl;
+
+			for (auto i = 0; i < lubEffectsEffects.size(); i++)
+			{
+				auto rswObject = lubEffectsEffects[i].rswObject;
+				auto e = dynamic_cast<EvilsPawEffect*>(lubEffectsEffects[i].effect);
+
+				lubFile << "\t[" << i << "] = {" << std::endl;
+				SAVEPROP3("pos", rswObject->position) << "," << std::endl;
+				SAVEPROP3("offsetPos", e->offsetPos) << "," << std::endl;
+				SAVEPROP0("Size", e->size) << "," << std::endl;
+				SAVEPROP0("Speed", e->speed) << std::endl;
+
+				lubFile << "\t}";
+				if (i < lubEffectsEffects.size() - 1)
 					lubFile << ",";
 				lubFile << std::endl;
 			}

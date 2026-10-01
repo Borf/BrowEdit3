@@ -157,7 +157,7 @@ void BrowEdit::menuBar()
 	{
 		if (ImGui::MenuItem("Add new lub effect")) {
 			auto e = new RswEffect();
-			e->id = 974;
+			e->id = RswEffect::EffectType::Emitter;
 			e->loop = 1.0f;
 			Node* newNode = new Node("effect");
 			newNode->addComponent(new RswObject());
@@ -166,22 +166,6 @@ void BrowEdit::menuBar()
 			newNode->addComponent(new CubeCollider(5));
 
 			e->setEffectNode(nullptr, newNode);
-			auto lubEffect = newNode->getComponent<LubEffect>();
-			// Add dummy data to show something
-			lubEffect->texture = "smoke2.bmp";
-			lubEffect->gravity = glm::vec3(0, -5, 0);
-			lubEffect->color = glm::vec4(1);
-			lubEffect->rate = glm::vec2(5, 15);
-			lubEffect->size = glm::vec2(3, 8);
-			lubEffect->life = glm::vec2(1, 5);
-			lubEffect->scale = glm::vec2(1, 1);
-			lubEffect->speed = 0.5f;
-			lubEffect->srcmode = 10;
-			lubEffect->destmode = 2;
-			lubEffect->maxcount = 30;
-			lubEffect->zenable = 1;
-			lubEffect->eternity = 0;
-
 			newNodes.push_back(std::pair<Node*, glm::vec3>(newNode, glm::vec3(0, 0, 0)));
 			newNodesCenter = glm::vec3(0, 0, 0);
 			newNodePlacement = BrowEdit::Ground;
@@ -189,7 +173,7 @@ void BrowEdit::menuBar()
 
 		if (ImGui::MenuItem("Add new wind effect")) {
 			auto e = new RswEffect();
-			e->id = 2343;
+			e->id = RswEffect::EffectType::WindEffect;
 			e->loop = 1.0f;
 			Node* newNode = new Node("effect");
 			newNode->addComponent(new RswObject());
@@ -205,13 +189,56 @@ void BrowEdit::menuBar()
 
 		if (ImGui::MenuItem("Add new str effect")) {
 			auto e = new RswEffect();
-			e->id = 1412;
+			e->id = RswEffect::EffectType::Ez2Str;
 			e->loop = 1.0f;
 			Node* newNode = new Node("effect");
 			newNode->addComponent(new RswObject());
 			newNode->addComponent(e);
 			newNode->addComponent(new BillboardRenderer("data\\effect.png", "data\\effect_selected.png"));
 			newNode->addComponent(new CubeCollider(5));
+			e->setEffectNode(nullptr, newNode);
+
+			newNodes.push_back(std::pair<Node*, glm::vec3>(newNode, glm::vec3(0, 0, 0)));
+			newNodesCenter = glm::vec3(0, 0, 0);
+			newNodePlacement = BrowEdit::Ground;
+		}
+
+		if (ImGui::MenuItem("Add new animated effect")) {
+			auto e = new RswEffect();
+			e->id = RswEffect::EffectType::AnimatedEmitter;
+			e->loop = 1.0f;
+			Node* newNode = new Node("effect");
+			newNode->addComponent(new RswObject());
+			newNode->addComponent(e);
+			newNode->addComponent(new BillboardRenderer("data\\effect.png", "data\\effect_selected.png"));
+			newNode->addComponent(new CubeCollider(5));
+
+			e->setEffectNode(nullptr, newNode);
+			auto lubEffect = newNode->getComponent<LubEffect>();
+			lubEffect->dir1 = glm::vec3(-3, -1, -3);
+			lubEffect->dir2 = glm::vec3(3, 1, 3);
+			lubEffect->gravity = glm::vec3(0);
+			lubEffect->rate = glm::vec2(1, 3);
+			lubEffect->speed = 1.0f;
+			lubEffect->srcmode = 5;
+			lubEffect->destmode = 2;
+			lubEffect->maxcount = 4;
+
+			newNodes.push_back(std::pair<Node*, glm::vec3>(newNode, glm::vec3(0, 0, 0)));
+			newNodesCenter = glm::vec3(0, 0, 0);
+			newNodePlacement = BrowEdit::Ground;
+		}
+
+		if (ImGui::MenuItem("Add evils paw effect")) {
+			auto e = new RswEffect();
+			e->id = RswEffect::EffectType::EvilsPaw;
+			e->loop = 1.0f;
+			Node* newNode = new Node("effect");
+			newNode->addComponent(new RswObject());
+			newNode->addComponent(e);
+			newNode->addComponent(new BillboardRenderer("data\\effect.png", "data\\effect_selected.png"));
+			newNode->addComponent(new CubeCollider(5));
+
 			e->setEffectNode(nullptr, newNode);
 
 			newNodes.push_back(std::pair<Node*, glm::vec3>(newNode, glm::vec3(0, 0, 0)));

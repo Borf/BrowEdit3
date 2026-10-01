@@ -12,6 +12,7 @@
 #include <browedit/components/LubRenderer.h>
 #include <browedit/components/LubWindRenderer.h>
 #include <browedit/components/StrRenderer.h>
+#include <browedit/components/EvilsPawRenderer.h>
 #include <browedit/actions/AddComponentAction.h>
 #include <browedit/actions/RemoveComponentAction.h>
 #include <browedit/actions/LubChangeTextureAction.h>
@@ -54,23 +55,38 @@ void RswEffect::save(std::ofstream& file)
 
 bool RswEffect::isLubEffect()
 {
-	return id == 974 || id == 2343 || id == 1412;
+	switch (id) {
+	case RswEffect::EffectType::Emitter:
+	case RswEffect::EffectType::AnimatedEmitter:
+	case RswEffect::EffectType::EvilsPaw:
+	case RswEffect::EffectType::WindEffect:
+	case RswEffect::EffectType::MagicFloor:
+	case RswEffect::EffectType::Ez2Str:
+		return true;
+	}
+
+	return false;
 }
 
 void RswEffect::setEffectNode(BrowEdit* browEdit, Node* node)
 {
 	switch (id) {
-	case 974:
+	case RswEffect::EffectType::Emitter:
+	case RswEffect::EffectType::AnimatedEmitter:
 		safeAddComponent<LubEffect>(browEdit, node);
 		safeAddComponent<LubRenderer>(browEdit, node);
 		break;
-	case 2343:
+	case RswEffect::EffectType::WindEffect:
 		safeAddComponent<LubWindEffect>(browEdit, node);
 		safeAddComponent<LubWindRenderer>(browEdit, node);
 		break;
-	case 1412:
+	case RswEffect::EffectType::Ez2Str:
 		safeAddComponent<StrEffect>(browEdit, node);
 		safeAddComponent<StrRenderer>(browEdit, node);
+		break;
+	case RswEffect::EffectType::EvilsPaw:
+		safeAddComponent<EvilsPawEffect>(browEdit, node);
+		safeAddComponent<EvilsPawRenderer>(browEdit, node);
 		break;
 	}
 
@@ -91,17 +107,21 @@ void RswEffect::safeAddComponent(BrowEdit* browEdit, Node* node)
 
 void RswEffect::clearEffectNode(BrowEdit* browEdit, Node* node)
 {
-	if (id != 974) {
+	if (id != RswEffect::EffectType::Emitter && id != RswEffect::EffectType::AnimatedEmitter) {
 		safeRemoveComponent<LubEffect>(browEdit, node);
 		safeRemoveComponent<LubRenderer>(browEdit, node);
 	}
-	if (id != 2343) {
+	if (id != RswEffect::EffectType::WindEffect) {
 		safeRemoveComponent<LubWindEffect>(browEdit, node);
 		safeRemoveComponent<LubWindRenderer>(browEdit, node);
 	}
-	if (id != 1412) {
+	if (id != RswEffect::EffectType::Ez2Str) {
 		safeRemoveComponent<StrEffect>(browEdit, node);
 		safeRemoveComponent<StrRenderer>(browEdit, node);
+	}
+	if (id != RswEffect::EffectType::EvilsPaw) {
+		safeRemoveComponent<EvilsPawEffect>(browEdit, node);
+		safeRemoveComponent<EvilsPawRenderer>(browEdit, node);
 	}
 }
 
@@ -436,5 +456,71 @@ void StrEffect::buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>& no
 		ImGui::Text("Use 37 to draw above the character, 45 to draw below.");
 		util::DragFloatMulti<StrEffect>(browEdit, browEdit->activeMapView->map, strEffects, "scaleratio", [](StrEffect* e) { return &e->scaleratio; }, 0.1f, 0, 5.0f);
 		util::DragFloatMulti<StrEffect>(browEdit, browEdit->activeMapView->map, strEffects, "alpharatio", [](StrEffect* e) { return &e->alpharatio; }, 0.1f, 0, 1.0f);
+	}
+}
+
+void EvilsPawEffect::load(const sol::table& data)
+{
+	try {
+		if (!data.valid())
+			return;
+		from_lua(data["offsetPos"], offsetPos);
+		size = data["Size"][1];
+		speed = data["Speed"][1];
+	}
+	catch (const std::exception& e)
+	{
+		std::cerr << "Error loading str effect data: " << e.what() << std::endl;
+	}
+}
+
+void EvilsPawEffect::buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>& nodes)
+{
+	std::vector<EvilsPawEffect*> lubEffects;
+	std::ranges::copy(nodes | std::ranges::views::transform([](Node* n) { return n->getComponent<EvilsPawEffect>(); }) | std::ranges::views::filter([](EvilsPawEffect* r) { return r != nullptr; }), std::back_inserter(lubEffects));
+
+	if (lubEffects.size() == 0)
+		return;
+
+	ImGui::Text("EvilsPaw Effect");
+	if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0))
+	{
+		json clipboard;
+		to_json(clipboard, *lubEffects[0]);
+		ImGui::SetClipboardText(clipboard.dump(1).c_str());
+	}
+
+	ImGui::PushID("EvilsPawEffect");
+	if (ImGui::BeginPopupContextItem("CopyPaste"))
+	{
+		try {
+			if (ImGui::MenuItem("Copy"))
+			{
+				json clipboard;
+				to_json(clipboard, *lubEffects[0]);
+				ImGui::SetClipboardText(clipboard.dump(1).c_str());
+			}
+			if (ImGui::MenuItem("Paste (no undo)"))
+			{
+				auto cb = ImGui::GetClipboardText();
+				if (cb)
+					for (auto strEffect : lubEffects)
+					{
+						from_json(json::parse(std::string(cb)), *strEffect);
+					}
+			}
+		}
+		catch (...) {}
+		ImGui::EndPopup();
+	}
+	ImGui::PopID();
+
+	if (browEdit->config.grfEditorPath == "")
+		ImGui::Text("Please set up grf editor to edit str effects, then reload the map");
+	else
+	{
+		util::DragFloat3Multi<EvilsPawEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "offsetPos", [](EvilsPawEffect* e) {return &e->offsetPos; }, 0.1f, 0, 0);
+		util::DragFloatMulti<EvilsPawEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "size", [](EvilsPawEffect* e) {return &e->size; }, 0.1f, 0, 0);
+		util::DragFloatMulti<EvilsPawEffect>(browEdit, browEdit->activeMapView->map, lubEffects, "speed", [](EvilsPawEffect* e) {return &e->speed; }, 0.1f, 0, 0);
 	}
 }

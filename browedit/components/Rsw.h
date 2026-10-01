@@ -23,6 +23,8 @@ struct LubEffectTableData {
 	std::map<int, sol::table> emitters;
 	std::map<int, sol::table> ez2str;
 	std::map<int, sol::table> winds;
+	std::map<int, sol::table> animatedEmitters;
+	std::map<int, sol::table> evilsPaws;
 };
 
 struct RswLubEffectPair {
@@ -292,28 +294,29 @@ class LubEffect : public Component
 public:
 	glm::vec3 dir1;
 	glm::vec3 dir2;
-	glm::vec3 gravity;
+	glm::vec3 gravity = glm::vec3(0, -5, 0);
 	glm::vec3 pos;
 	glm::vec3 radius;
-	glm::vec4 color;
-	glm::vec2 rate;
-	glm::vec2 size;
-	glm::vec2 life;
+	glm::vec4 color = glm::vec4(1);
+	glm::vec2 rate = glm::vec2(5, 15);
+	glm::vec2 size = glm::vec2(3, 8);
+	glm::vec2 life = glm::vec2(1, 5);
 	glm::vec2 scale = glm::vec2(1, 1);
-	std::string texture;
-	float speed;
-	int srcmode;
-	int destmode;
-	int maxcount;
-	int zenable;
-	int billboard_off;
-	int eternity;
+	std::string texture = "smoke2.bmp";
+	float speed = 0.5f;
+	int srcmode = 10;
+	int destmode = 2;
+	int maxcount= 30;
+	int zenable= 1;
+	int billboard_off = 0;
+	int eternity = 0;
 	glm::vec3 rotate_angle; // v3
-	bool dirty;
+	bool animatedTexture = false;
+	bool dirty = false;
 
 	void load(const sol::table& data);
 	static void buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>&);
-	NLOHMANN_DEFINE_TYPE_INTRUSIVE(LubEffect, dir1, dir2, gravity, pos, radius, color, rate, size, life, scale, texture, speed, srcmode, destmode, maxcount, zenable, billboard_off, eternity, rotate_angle);
+	NLOHMANN_DEFINE_TYPE_INTRUSIVE(LubEffect, dir1, dir2, gravity, pos, radius, color, rate, size, life, scale, texture, speed, srcmode, destmode, maxcount, zenable, billboard_off, eternity, rotate_angle, animatedTexture);
 };
 
 class LubWindEffect : public Component
@@ -352,9 +355,31 @@ public:
 	NLOHMANN_DEFINE_TYPE_INTRUSIVE(StrEffect, str, renderflag, scaleratio, alpharatio);
 };
 
+class EvilsPawEffect : public Component
+{
+public:
+	glm::vec3 offsetPos = glm::vec3(0, -20, 0);
+	float size = 20;
+	float speed = 5;
+	bool dirty = true;
+
+	void load(const sol::table& data);
+	static void buildImGuiMulti(BrowEdit* browEdit, const std::vector<Node*>&);
+	NLOHMANN_DEFINE_TYPE_INTRUSIVE(EvilsPawEffect, offsetPos, size, speed);
+};
+
 class RswEffect : public Component
 {
 public:
+	enum EffectType {
+		Emitter = 974,
+		AnimatedEmitter = 1073,
+		EvilsPaw = 1039,
+		WindEffect = 2343,
+		MagicFloor = 99999,
+		Ez2Str = 1412,
+	};
+
 	int	id = 0;
 	float loop = 0;
 	float param1 = 0;

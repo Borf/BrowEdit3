@@ -18,8 +18,11 @@ LubRenderer::LubRenderer()
 
 LubRenderer::~LubRenderer()
 {
-	if(texture)
+	if (texture)
 		util::ResourceManager<gl::TexturePoT>::unload(texture);
+	for (auto& group : animatedTextures)
+		for (auto tex : group)
+			util::ResourceManager<gl::TexturePoT>::unload(tex);
 }
 
 void LubRenderer::render(NodeRenderContext& context)
@@ -30,6 +33,15 @@ void LubRenderer::render(NodeRenderContext& context)
 		gnd = node->root->getComponent<Gnd>();
 	if (!billboardRenderer)
 		billboardRenderer = node->getComponent<BillboardRenderer>();
+	
+	auto rswEffect = node->getComponent<RswEffect>();
+	bool typeChanged = false;
+
+	if (rswEffect && rswEffect->id != effectId) {
+		typeChanged = true;
+		dirty = true;
+	}
+
 	if (!lubEffect || dirty || lubEffect->dirty)
 	{
 		lubEffect = node->getComponent<LubEffect>();
@@ -40,12 +52,39 @@ void LubRenderer::render(NodeRenderContext& context)
 			texture = nullptr;
 		}
 
-		if (lubEffect && lubEffect->texture != "")
+		for (auto& group : animatedTextures)
+			for (auto tex : group)
+				util::ResourceManager<gl::TexturePoT>::unload(tex);
+
+		animatedTextures.clear();
+		effectId = RswEffect::EffectType::Emitter;
+		lubEffect->animatedTexture = false;
+
+		if (lubEffect && rswEffect && rswEffect->id == RswEffect::EffectType::AnimatedEmitter) {
+			animatedTextures.resize(2);
+			effectId = RswEffect::EffectType::AnimatedEmitter;
+			lubEffect->animatedTexture = true;
+
+			// TODO: Should probably use GL_TEXTURE_2D_ARRAY instead of this...
+			animatedTextures[0].push_back(util::ResourceManager<gl::TexturePoT>::load("data\\texture\\effect\\shockwave_b.bmp"));
+			animatedTextures[0].push_back(util::ResourceManager<gl::TexturePoT>::load("data\\texture\\effect\\shockwave_c.bmp"));
+			animatedTextures[0].push_back(util::ResourceManager<gl::TexturePoT>::load("data\\texture\\effect\\shockwave_d.bmp"));
+			animatedTextures[0].push_back(util::ResourceManager<gl::TexturePoT>::load("data\\texture\\effect\\shockwave_e.bmp"));
+
+			animatedTextures[1].push_back(util::ResourceManager<gl::TexturePoT>::load("data\\texture\\effect\\plazma_a.bmp"));
+			animatedTextures[1].push_back(util::ResourceManager<gl::TexturePoT>::load("data\\texture\\effect\\plazma_b.bmp"));
+			animatedTextures[1].push_back(util::ResourceManager<gl::TexturePoT>::load("data\\texture\\effect\\plazma_c.bmp"));
+		}
+		else if (lubEffect && lubEffect->texture != "")
 		{
 			texture = util::ResourceManager<gl::TexturePoT>::load("data\\texture\\" + util::utf8_to_iso_8859_1(util::replace(lubEffect->texture, "\\\\", "\\")));
 		}
-		else
+		else {
 			texture = nullptr;
+		}
+
+		if (typeChanged)
+			particles.clear();
 
 		if (lubEffect)
 			lubEffect->dirty = false;
@@ -127,6 +166,11 @@ void LubRenderer::render(NodeRenderContext& context)
 		p.alpha = 0;
 		p.toDelete = false;
 
+		if (lubEffect->animatedTexture) {
+			p.animatedTexture = ((int)((rand() / (float)RAND_MAX) * 2)) % animatedTextures.size();
+			p.uvDelayStart = (rand() / (float)RAND_MAX);
+		}
+
 		particles.push_back(p);
 		nextEmitTime = time + 1.0f / (lubEffect->rate.x + (rand() / (float)RAND_MAX) * (lubEffect->rate.y - lubEffect->rate.x));
 	}
@@ -163,6 +207,12 @@ void LubRenderer::render(NodeRenderContext& context)
 		Particle p = particles[i];
 		glm::mat4 modelMatrixSub = modelMatrix;
 		modelMatrixSub[3] += glm::vec4(p.position.x, p.position.y, -p.position.z, 0.0f);
+
+		if (lubEffect->animatedTexture) {
+			int texId = (int)((time - p.tickStart + p.uvDelayStart) / 0.13f) % (int)animatedTextures[p.animatedTexture].size();
+			animatedTextures[p.animatedTexture][texId]->bind();
+		}
+
 		shader->setUniform(LubShader::Uniforms::modelMatrix, modelMatrixSub);
 		glDrawArrays(GL_QUADS, 4 * i, 4);
 	}

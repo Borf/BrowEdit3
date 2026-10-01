@@ -197,7 +197,9 @@ void MapView::postRenderObjectMode(BrowEdit* browEdit)
 				first = true;
 			}
 			map->doAction(ga, browEdit);
-			browEdit->newNodes.clear();
+
+			if (!ImGui::GetIO().KeyShift)
+				browEdit->newNodes.clear();
 		}
 	}
 	else if (map->selectedNodes.size() > 0)
