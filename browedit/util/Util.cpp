@@ -2135,12 +2135,16 @@ namespace util
 		int ditherDivider = 8;
 		int ditherDividerShift = 3;
 		float ditherMultiplier = 8.25f;
+		
+		if (fileName.size() >= 4) {
+			std::string ext = fileName.substr(fileName.size() - 4);
 
-		if (fileName.find(".tga") == fileName.length() - 4 ||
-			fileName.find(".png") == fileName.length() - 4) {
-			ditherDividerShift = 4;
-			ditherDivider = 16;
-			ditherMultiplier = 17;
+			if (_stricmp(ext.c_str(), ".tga") == 0 ||
+				_stricmp(ext.c_str(), ".png") == 0) {
+				ditherDividerShift = 4;
+				ditherDivider = 16;
+				ditherMultiplier = 17;
+			}
 		}
 
 		unsigned char rT = (unsigned char)(glm::ceil(ditherDivider / ditherMultiplier * 255) - 1);

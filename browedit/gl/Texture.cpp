@@ -15,10 +15,14 @@ namespace gl
 	Texture::Texture(const std::string& fileName, bool flipSelection, bool powerOfTwo) : fileName(fileName), flipSelection(flipSelection), powerOfTwo(powerOfTwo)
 	{
 		ids = nullptr;
-		if (fileName.find(".tga") == fileName.length() - 4)
-			semiTransparent = true;
-		if (fileName.find(".gif") != fileName.length() - 4)
-			reload();
+		if (fileName.size() >= 4) {
+			std::string ext = fileName.substr(fileName.size() - 4);
+
+			if (_stricmp(ext.c_str(), ".tga") == 0)
+				semiTransparent = true;
+			if (_stricmp(ext.c_str(), ".gif") != 0)
+				reload();
+		}
 	}
 
 	Texture::Texture(int width, int height) : width(width), height(height), fileName("")
