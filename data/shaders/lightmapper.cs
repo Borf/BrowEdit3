@@ -269,7 +269,7 @@ float traceShadow(vec3 origin, vec3 direction, float minDistance, float maxDista
 						if (tColor.r > 0.968 && tColor.g < 0.0313 && tColor.b > 0.968)
 							continue;
 						
-						shadowStrength += tColor.a;
+						shadowStrength += tColor.a * triangle.shadowStrength;
 						
 						if (shadowStrength >= 1.0)
 							return 1.0;
@@ -380,9 +380,6 @@ void main()
 		for (int qy = 0; qy < quality; qy++) {
 			float xxx = (float(qx) + 0.5) * invQuality;
 			float yyy = (float(qy) + 0.5) * invQuality;
-			
-			//float xxx = float(qx) * invQuality + invQuality * 0.5;
-			//float yyy = float(qy) * invQuality + invQuality * 0.5;
 			
 			if (direction == 0) {
 				vec2 p = vec2(10 * x + sx * ((xx + xxx) - 1), 10 * gndHeight + 10 - 10 * y - sy * ((yy + yyy) - 1));
