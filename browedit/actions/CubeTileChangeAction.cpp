@@ -7,19 +7,21 @@
 #include <browedit/components/GndRenderer.h>
 #include <browedit/components/WaterRenderer.h>
 
+#define TILEIDX(tile) (tile.y << 16 | tile.x)
+
 CubeTileChangeAction::CubeTileChangeAction(glm::ivec2 tile, Gnd::Cube* cube, int tileUp, int tileFront, int tileSide)
 {
 	this->selection.push_back(tile);
-	this->oldValues[cube][0] = cube->tileUp;
-	this->oldValues[cube][1] = cube->tileFront;
-	this->oldValues[cube][2] = cube->tileSide;
+	this->oldValues[TILEIDX(tile)][0] = cube->tileUp;
+	this->oldValues[TILEIDX(tile)][1] = cube->tileFront;
+	this->oldValues[TILEIDX(tile)][2] = cube->tileSide;
 
-	this->newValues[cube][0] = tileUp;
-	this->newValues[cube][1] = tileFront;
-	this->newValues[cube][2] = tileSide;
+	this->newValues[TILEIDX(tile)][0] = tileUp;
+	this->newValues[TILEIDX(tile)][1] = tileFront;
+	this->newValues[TILEIDX(tile)][2] = tileSide;
 }
 
-CubeTileChangeAction::CubeTileChangeAction(const std::vector<glm::ivec2>& selection, const std::map<Gnd::Cube*, int[3]>& oldValues, const std::map<Gnd::Cube*, int[3]>& newValues)
+CubeTileChangeAction::CubeTileChangeAction(const std::vector<glm::ivec2>& selection, const std::map<uint32_t, int[3]>& oldValues, const std::map<uint32_t, int[3]>& newValues)
 {
 	this->selection = selection;
 	this->oldValues = oldValues;
@@ -30,7 +32,7 @@ CubeTileChangeAction::CubeTileChangeAction(Gnd* gnd, const std::vector<glm::ivec
 {
 	for (auto t : startSelection)
 		for (int i = 0; i < 4; i++)
-			oldValues[gnd->cubes[t.x][t.y]][i] = gnd->cubes[t.x][t.y]->tileIds[i];
+			oldValues[TILEIDX(t)][i] = gnd->cubes[t.x][t.y]->tileIds[i];
 }
 
 void CubeTileChangeAction::setNewTiles(Gnd* gnd, const std::vector<glm::ivec2>& endSelection)
@@ -39,14 +41,16 @@ void CubeTileChangeAction::setNewTiles(Gnd* gnd, const std::vector<glm::ivec2>& 
 	this->shadowDirty = true;
 	for (auto t : endSelection)
 		for (int i = 0; i < 4; i++)
-			newValues[gnd->cubes[t.x][t.y]][i] = gnd->cubes[t.x][t.y]->tileIds[i];
+			newValues[TILEIDX(t)][i] = gnd->cubes[t.x][t.y]->tileIds[i];
 }
 
 void CubeTileChangeAction::perform(Map* map, BrowEdit* browEdit)
 {
+	Gnd* gnd = map->rootNode->getComponent<Gnd>();
+
 	for (auto kv : newValues)
 		for (int i = 0; i < 3; i++)
-			kv.first->tileIds[i] = kv.second[i];
+			gnd->cubes[kv.first & 0xFFFF][kv.first >> 16]->tileIds[i] = kv.second[i];
 	auto gndRenderer = map->rootNode->getComponent<GndRenderer>();
 	if (gndRenderer)
 	{
@@ -69,9 +73,11 @@ void CubeTileChangeAction::perform(Map* map, BrowEdit* browEdit)
 
 void CubeTileChangeAction::undo(Map* map, BrowEdit* browEdit)
 {
+	Gnd* gnd = map->rootNode->getComponent<Gnd>();
+
 	for (auto kv : oldValues)
 		for (int i = 0; i < 3; i++)
-			kv.first->tileIds[i] = kv.second[i];
+			gnd->cubes[kv.first & 0xFFFF][kv.first >> 16]->tileIds[i] = kv.second[i];
 	auto gndRenderer = map->rootNode->getComponent<GndRenderer>();
 	if (gndRenderer)
 	{

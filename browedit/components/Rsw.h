@@ -9,6 +9,7 @@
 #include <browedit/util/Util.h>
 #include <browedit/util/Tree.h>
 #include <browedit/math/AABB.h>
+#include <browedit/BVH.h>
 #include <json.hpp>
 #include <sol.hpp>
 
@@ -154,10 +155,11 @@ public:
 		bool heightSelectionOnly = false;
 		bool additiveShadow = true;
 		bool ignoreBacksideTexture = true;
+		bool runOnGpu = true;
 		glm::ivec2 rangeX;
 		glm::ivec2 rangeY;
 
-		NLOHMANN_DEFINE_TYPE_INTRUSIVE(LightmapSettings, quality, shadows, heightSelectionOnly, additiveShadow, ignoreBacksideTexture, rangeX, rangeY);
+		NLOHMANN_DEFINE_TYPE_INTRUSIVE(LightmapSettings, quality, shadows, heightSelectionOnly, additiveShadow, ignoreBacksideTexture, runOnGpu, rangeX, rangeY);
 	} lightmapSettings;
 
 	class CropSettings
@@ -427,51 +429,19 @@ public:
 	NLOHMANN_DEFINE_TYPE_INTRUSIVE(RswSound, fileName, vol, width, height, range, cycle);
 };
 
-struct Triangle {
-	glm::vec3 vertices[3];
-	glm::vec2 uvs[3];
-	int texId;
-};
-
-struct BvhNode
-{
-	int left = -1;
-	int right = -1;
-
-	uint32_t firstTriangle = -1;
-	int triangleCount = 0;
-
-	bool isLeaf() const
-	{
-		return triangleCount != 0;
-	}
-
-	math::AABB aabb = math::AABB(glm::vec3(0), glm::vec3(0));
-};
-
-class Bvh
-{
-public:
-	std::vector<Triangle> triangles;
-	std::vector<uint32_t> triangleIndices;
-	std::vector<BvhNode> nodes;
-
-	int buildNode(uint32_t first, uint32_t count);
-};
-
 class RswModelCollider : public Collider
 {
-	Bvh bvh;
-
 	RswModel* rswModel = nullptr;
 	Rsm* rsm = nullptr;
 	RsmRenderer* rsmRenderer = nullptr;
 public:
+	Bvh bvh;
+
 	void begin();
 	bool collidesTexture(const math::Ray& ray, float minDistance = 0.0f, float maxDistance = 9999999.0f);
 	bool collidesTexture(Rsm::Mesh* mesh, const math::Ray& ray, const glm::mat4& matrix, float minDistance, float maxDistance);
 	void calculateWorldFaces(Rsm::Mesh* mesh, const glm::mat4& matrix);
-	void calculateWorldFaces();
+	void calculateWorldFaces(bool buildNode = true);
 	bool traverseBvh(Bvh& bvh, const math::Ray& ray, float minDistance, float maxDistance);
 
 	std::vector<glm::vec3> getVerticesWorldSpace(Rsm::Mesh* mesh = nullptr, const glm::mat4& matrix = glm::mat4(1.0f));

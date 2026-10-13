@@ -125,13 +125,21 @@ nlohmann::json RswLight::saveExtra()
 
 float RswLight::realRange()
 {
-	//formula from http://ogldev.atspace.co.uk/www/tutorial36/tutorial36.html and https://imdoingitwrong.wordpress.com/2011/01/31/light-attenuation/
-	float kC = 1;
-	float kL = 2.0f / range;
-	float kQ = 1.0f / (range * range);
-	float maxChannel = glm::max(glm::max(color.r, color.g), color.b);
-	float adjustedRange = (-kL + glm::sqrt(kL * kL - 4 * kQ * (kC - 128.0f * maxChannel * intensity))) / (2 * kQ);
-	return adjustedRange;
+	if (lightType == Type::Sun)
+		return 99999;
+
+	if (falloffStyle == FalloffStyle::Magic) {
+		//formula from http://ogldev.atspace.co.uk/www/tutorial36/tutorial36.html and https://imdoingitwrong.wordpress.com/2011/01/31/light-attenuation/
+		float kC = 1;
+		float kL = 2.0f / range;
+		float kQ = 1.0f / (range * range);
+		float maxChannel = glm::max(glm::max(color.r, color.g), color.b);
+		float adjustedRange = (-kL + glm::sqrt(kL * kL - 4 * kQ * (kC - 128.0f * maxChannel * intensity))) / (2 * kQ);
+		return adjustedRange;
+	}
+	else {
+		return range;
+	}
 }
 
 

@@ -10,11 +10,12 @@ namespace gl
 	class Shader
 	{
 		std::string file;
+		std::string header;
 		int* uniforms;
 	public:
 		GLuint programId;
 
-		Shader(const std::string& file, int end);
+		Shader(const std::string& file, int end, std::string header = "");
 		~Shader();
 		void setUniform(int name, bool value);
 		void setUniform(int name, int value);
@@ -27,11 +28,10 @@ namespace gl
 
 		void use();
 
+		void bindUniform(int enumValue, const std::string& name);
 	private:
 		void addShader(GLuint type, const std::string& fileName);
 	protected:
 		virtual void bindUniforms() = 0;
-		void bindUniform(int enumValue, const std::string& name);
 	};
-
 }

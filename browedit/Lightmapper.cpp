@@ -7,19 +7,23 @@
 #include <browedit/components/Gnd.h>
 #include <browedit/components/GndRenderer.h>
 #include <browedit/components/Rsw.h>
+#include <browedit/components/RsmRenderer.h>
 #include <browedit/math/Ray.h>
 #include <browedit/util/ResourceManager.h>
 #include <browedit/actions/LightmapChangeAction.h>
+#include <browedit/shaders/LightmapperShader.h>
+#include <browedit/LightmapperGpu.h>
+#include <browedit/gl/SSBO.h>
+#include <browedit/gl/Texture.h>
 
 #include <glm/glm.hpp>
 #include <iostream>
 #include <imgui_internal.h>
 
-extern std::mutex debugPointMutex;
-extern std::vector<std::vector<glm::vec3>> debugPoints;
-double startTime;
+std::chrono::steady_clock::time_point startTime;
 
-LightmapChangeAction* lightmapChangeAction;
+void TriangleBarycentricCoords(const glm::vec2& a, const glm::vec2& b, const glm::vec2& c, const glm::vec2& p, float& out_u, float& out_v, float& out_w);
+bool TriangleContainsPoint(const glm::vec2& a, const glm::vec2& b, const glm::vec2& c, const glm::vec2& p);
 
 Lightmapper::Lightmapper(Map* map, BrowEdit* browEdit) : map(map), browEdit(browEdit)
 {
@@ -32,12 +36,7 @@ Lightmapper::Lightmapper(Map* map, BrowEdit* browEdit) : map(map), browEdit(brow
 
 void Lightmapper::begin()
 {
-	startTime = ImGui::GetTime();
-	if (buildDebugPoints)
-	{
-		debugPoints.clear();
-		debugPoints.resize(2);
-	}
+	startTime = std::chrono::steady_clock::now();
 	if (browEdit->windowData.progressWindowVisible)
 		return;
 
@@ -45,7 +44,7 @@ void Lightmapper::begin()
 	rsw = map->rootNode->getComponent<Rsw>();
 
 	setProgressText("Cleaning tiles");
-	gnd->cleanTiles();
+	gnd->cleanTiles(true);
 	setProgressText("Making lightmaps unique");
 	std::cout << "Before:\t" << gnd->tiles.size() << " tiles, " << gnd->lightmaps.size() << " lightmaps" << std::endl;
 	gnd->makeLightmapsUnique();
@@ -55,29 +54,38 @@ void Lightmapper::begin()
 	lightmapChangeAction->setPreviousData(gnd->lightmaps, gnd->tiles);
 
 	map->rootNode->getComponent<GndRenderer>()->setChunksDirty();
-
 	map->rootNode->getComponent<GndRenderer>()->gndShadowDirty = true;
+
 	for (auto& cc : map->rootNode->getComponent<GndRenderer>()->chunks)
 		for (auto c : cc)
 			c->dirty = true;
 
-	browEdit->windowData.progressWindowVisible = true;
-	browEdit->windowData.progressWindowProgres = 0;
-	browEdit->windowData.progressWindowText = "Calculating lightmaps";
-	browEdit->windowData.progressCancel = [this]()
-	{
-		running = false;
-	};
-	mainThread = std::thread(&Lightmapper::run, this);
-	browEdit->windowData.progressWindowOnDone = [&]()
-	{
+	auto& settings = rsw->lightmapSettings;
+	bool runOnGpu = settings.runOnGpu && LightmapperGpu::canRunGpu();
+	
+	if (runOnGpu) {
+		// Can't really run on its own thread since it requires gl commands.
+		// That also means it cannot be canceled, which is a tad annoying.
+		LightmapperGpu lGpu(map, browEdit);
+		lGpu.run();
 		onDone();
-		auto be = browEdit;
-		be->lightmapper->mainThread.join();
-		delete be->lightmapper;
-		be->lightmapper = nullptr;
-		std::cout << "Lightmapper: took " + std::to_string(ImGui::GetTime() - startTime) + " seconds" << std::endl;
-	};
+	}
+	else {
+		browEdit->windowData.progressWindowVisible = true;
+		browEdit->windowData.progressWindowProgres = 0;
+		browEdit->windowData.progressWindowText = "Calculating lightmaps";
+		browEdit->windowData.progressCancel = [this]()
+		{
+			running = false;
+		};
+		mainThread = std::thread(&Lightmapper::run, this);
+		browEdit->windowData.progressWindowOnDone = [this]()
+		{
+			auto be = browEdit;
+			be->lightmapper->mainThread.join();
+			onDone();
+		};
+	}
 }
 
 void Lightmapper::setProgressText(const std::string& text)
@@ -162,8 +170,8 @@ void Lightmapper::run()
 
 	auto& settings = rsw->lightmapSettings;
 	
-	ignoredTextureIdx.resize(gnd->textures.size());
 	ignoredTextureIdx.clear();
+	ignoredTextureIdx.resize(gnd->textures.size());
 
 	if (settings.ignoreBacksideTexture) {
 		for (int i = 0; i < gnd->textures.size(); i++)
@@ -175,34 +183,6 @@ void Lightmapper::run()
 	rot = glm::rotate(rot, glm::radians(-(float)rsw->light.latitude), glm::vec3(1, 0, 0));
 	rot = glm::rotate(rot, glm::radians((float)rsw->light.longitude), glm::vec3(0, 1, 0));
 	lightDirection = glm::vec3(0.0f, 1.0f, 0.0f) * glm::mat3(rot);
-
-	//setProgressText("Calculating map quads");
-	//mapQuads = gnd->getMapQuads();
-
-	/*if (buildDebugPoints)
-	{
-		debugPointMutex.lock();
-		for (auto i = 0; i < mapQuads.size(); i += 4)
-		{
-			glm::vec3 v1 = mapQuads[i];
-			glm::vec3 v2 = mapQuads[i + 1];
-			glm::vec3 v3 = mapQuads[i + 2];
-			glm::vec3 v4 = mapQuads[i + 3];
-
-			for (float x = 0; x < 1; x += 0.05f)
-			{
-				for (float y = 0; y < 1; y += 0.05f)
-				{
-					glm::vec3 p1 = glm::mix(v1, v2, x);
-					glm::vec3 p2 = glm::mix(v4, v3, x);
-					debugPoints[0].push_back(glm::mix(p1, p2, y));
-				}
-			}
-
-		}
-		debugPointMutex.unlock();
-	}*/
-
 
 	setProgressText("Calculating lightmaps");
 	std::vector<std::thread> threads;
@@ -309,7 +289,7 @@ std::pair<glm::vec3, int> Lightmapper::calculateLight(const glm::vec3& groundPos
 	thread_local uint32_t currentStamp = 0;
 	thread_local std::vector<uint32_t> visitedStamp;
 
-	if (models.size() > 0 && visitedStamp.size() == 0) {
+	if (models.size() > 0 && visitedStamp.empty()) {
 		visitedStamp.resize(models.size());
 	}
 
@@ -488,13 +468,13 @@ bool TriangleContainsPoint(const glm::vec2 &a, const glm::vec2& b, const glm::ve
 	return ((b1 == b2) && (b2 == b3));
 }
 
-
 void Lightmapper::calcPos(int direction, int tileId, int x, int y)
 {
 	auto rsw = map->rootNode->getComponent<Rsw>();
 	auto& settings = rsw->lightmapSettings;
 
 	float qualityStep = 1.0f / settings.quality;
+	float halfQualityStep = qualityStep * 0.5f;
 	int height = gnd->height;
 	const float sx = 10.0f / (gnd->lightmapWidth - 2);
 	const float sy = 10.0f / (gnd->lightmapHeight - 2);
@@ -519,9 +499,9 @@ void Lightmapper::calcPos(int direction, int tileId, int x, int y)
 			glm::vec3 totalColor(0.0f);
 			int totalIntensity = 0;
 			int count = 0;
-			for (float xxx = 0; xxx < 1; xxx += qualityStep)
+			for (float xxx = halfQualityStep; xxx < 1; xxx += qualityStep)
 			{
-				for (float yyy = 0; yyy < 1; yyy += qualityStep)
+				for (float yyy = halfQualityStep; yyy < 1; yyy += qualityStep)
 				{
 					if (!running)
 						return;
@@ -536,7 +516,7 @@ void Lightmapper::calcPos(int direction, int tileId, int x, int y)
 						glm::vec2 v4((x + 1) * 10, 10 * height - (y + 1) * 10 + 10);//4 , -cube->heights[3]
 						glm::vec2 p(10 * x + sx * ((xx + xxx) - 1), 10 * height + 10 - 10 * y - sy * ((yy + yyy) - 1));
 
-						float h = (v1.y + v2.y + v3.y + v4.y) / 4.0f;
+						float h = 0.0f;
 
 						if (TriangleContainsPoint(v1, v2, v3, p))
 						{
@@ -590,12 +570,6 @@ void Lightmapper::calcPos(int direction, int tileId, int x, int y)
 					}
 					else
 						std::cerr << "You have a wall on the edge of tile " << x << "," << y << " ...this won't work" << std::endl;
-					if (buildDebugPoints)
-					{
-						debugPointMutex.lock();
-						debugPoints[1].push_back(groundPos);
-						debugPointMutex.unlock();
-					}
 
 					auto light = calculateLight(groundPos, normal, x, y);
 					totalIntensity += glm::min(255, light.second);
@@ -620,18 +594,29 @@ void Lightmapper::calcPos(int direction, int tileId, int x, int y)
 	}
 };
 
-
-
 void Lightmapper::onDone()
 {
-	std::cout << "Done!" << std::endl;
-	gnd->makeLightmapBorders(browEdit);
-	gnd->cleanLightmaps();
-	gnd->cleanTiles();
-	gnd->makeLightmapBorders(browEdit);
+	// Dirty fix...
+	// Call it twice because processing a lightmap border (and corner to be specific) requires the value of the previous calculation, which hasn't happened yet.
+	gnd->makeLightmapBorders(browEdit, true);
+	gnd->makeLightmapBorders(browEdit, true);
+
 	lightmapChangeAction->setCurrentData(gnd->lightmaps, gnd->tiles);
 	map->doAction(lightmapChangeAction, browEdit);
+
+	gnd->cleanTiles(true);
+	gnd->cleanLightmaps(false);
+
 	map->rootNode->getComponent<GndRenderer>()->gndShadowDirty = true;
 	map->rootNode->getComponent<GndRenderer>()->setChunksDirty();
 	util::ResourceManager<Image>::clear();
+
+	auto end = std::chrono::steady_clock::now();
+	auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - startTime);
+
+	std::cout << "Lightmapper: took " + std::to_string(duration.count() / 1000.0f) + " seconds" << std::endl;
+
+	auto be = browEdit;
+	delete be->lightmapper;
+	be->lightmapper = nullptr;
 }

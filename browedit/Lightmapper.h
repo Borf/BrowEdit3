@@ -15,6 +15,7 @@ class RswModel;
 class RswModelCollider;
 class RswObject;
 class RswLight;
+class LightmapChangeAction;
 namespace math { class Ray; }
 class Lightmapper
 {
@@ -48,11 +49,11 @@ private:
 	std::vector<struct Lightmapper::light_model> models;
 	std::vector<bool> ignoredTextureIdx;
 	glm::vec3 lightDirection;
+	LightmapChangeAction* lightmapChangeAction;
 
 	std::thread mainThread;
 public:
 	Map* map;
-	bool buildDebugPoints = false;
 	bool running = true;
 
 	Lightmapper(Map* map, BrowEdit* browEdit);

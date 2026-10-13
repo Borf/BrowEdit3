@@ -17,6 +17,12 @@ public:
 		time = std::format("{:%H:%M:%OS}", now);
 	}
 
+	// Required for classes that inherit from Action.
+	// Otherwise "delete subActionType;" will not trigger the deconstructor.
+	virtual ~Action() {
+
+	}
+
 	virtual void perform(Map* map, BrowEdit* browEdit) = 0;
 	virtual void undo(Map* map, BrowEdit* browEdit) = 0;
 	virtual std::string str() = 0;
