@@ -7,6 +7,9 @@ NewObjectAction::NewObjectAction(Node* node) : node(node)
 
 NewObjectAction::~NewObjectAction()
 {
+	if (node)
+		node->setParent(nullptr);
+
 	delete node;
 	node = nullptr;
 }

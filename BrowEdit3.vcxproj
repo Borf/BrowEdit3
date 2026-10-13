@@ -40,6 +40,7 @@
     <ClCompile Include="browedit\BrowEdit.cpp" />
     <ClCompile Include="browedit\BrowEdit.glfw.cpp" />
     <ClCompile Include="browedit\BrowEdit.imgui.cpp" />
+    <ClCompile Include="browedit\BVH.cpp" />
     <ClCompile Include="browedit\components\BillboardRenderer.cpp" />
     <ClCompile Include="browedit\components\Collider.cpp" />
     <ClCompile Include="browedit\components\Component.cpp" />
@@ -73,6 +74,7 @@
     <ClCompile Include="browedit\HotkeyRegistry.cpp" />
     <ClCompile Include="browedit\Image.cpp" />
     <ClCompile Include="browedit\Lightmapper.cpp" />
+    <ClCompile Include="browedit\LightmapperGpu.cpp" />
     <ClCompile Include="browedit\Map.cpp" />
     <ClCompile Include="browedit\MapView.Cinematicmode.cpp" />
     <ClCompile Include="browedit\MapView.Colormode.cpp" />
@@ -215,6 +217,7 @@
     <ClInclude Include="browedit\actions\WaterHeightChangeAction.h" />
     <ClInclude Include="browedit\actions\WaterSplitChangeAction.h" />
     <ClInclude Include="browedit\BrowEdit.h" />
+    <ClInclude Include="browedit\BVH.h" />
     <ClInclude Include="browedit\components\BillboardRenderer.h" />
     <ClInclude Include="browedit\components\Collider.h" />
     <ClInclude Include="browedit\components\Component.h" />
@@ -240,6 +243,7 @@
     <ClInclude Include="browedit\gl\EBO.h" />
     <ClInclude Include="browedit\gl\FBO.h" />
     <ClInclude Include="browedit\gl\Shader.h" />
+    <ClInclude Include="browedit\gl\SSBO.h" />
     <ClInclude Include="browedit\gl\Texture.h" />
     <ClInclude Include="browedit\gl\UBO.h" />
     <ClInclude Include="browedit\gl\VAO.h" />
@@ -251,6 +255,7 @@
     <ClInclude Include="browedit\Icons.h" />
     <ClInclude Include="browedit\Image.h" />
     <ClInclude Include="browedit\Lightmapper.h" />
+    <ClInclude Include="browedit\LightmapperGpu.h" />
     <ClInclude Include="browedit\Map.h" />
     <ClInclude Include="browedit\MapView.h" />
     <ClInclude Include="browedit\math\AABB.h" />
@@ -263,6 +268,7 @@
     <ClInclude Include="browedit\Node.h" />
     <ClInclude Include="browedit\NodeRenderer.h" />
     <ClInclude Include="browedit\shaders\GndShader.h" />
+    <ClInclude Include="browedit\shaders\LightmapperShader.h" />
     <ClInclude Include="browedit\shaders\OutlineShader.h" />
     <ClInclude Include="browedit\shaders\RsmShader.h" />
     <ClInclude Include="browedit\shaders\SimpleShader.h" />

@@ -7,7 +7,7 @@
 namespace gl
 {
 
-	Shader::Shader(const std::string& file, int end) : file(file)
+	Shader::Shader(const std::string& file, int end, std::string header) : file(file), header(header)
 	{
 		uniforms = new int[end];
 		this->programId = glCreateProgram();
@@ -15,6 +15,8 @@ namespace gl
 			addShader(GL_VERTEX_SHADER, file + ".vs");
 		if (util::FileIO::exists(file + ".fs"))
 			addShader(GL_FRAGMENT_SHADER, file + ".fs");
+		if (util::FileIO::exists(file + ".cs"))
+			addShader(GL_COMPUTE_SHADER, file + ".cs");
 
 		glLinkProgram(programId);
 		GLint status;
@@ -59,6 +61,9 @@ namespace gl
 		std::istream* is = util::FileIO::open(fileName);
 		std::string contents((std::istreambuf_iterator<char>(*is)), std::istreambuf_iterator<char>());
 		delete is;
+
+		if (header.size() > 0)
+			contents = header + contents;
 
 		GLuint shaderId = glCreateShader(shaderType);
 		const char* shaderSource = contents.c_str();

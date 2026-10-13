@@ -771,10 +771,10 @@ glm::vec3 Gnd::rayCast(const math::Ray& ray, bool emptyTiles, int xMin, int yMin
 }
 
 
-void Gnd::makeLightmapsUnique()
+void Gnd::makeLightmapsUnique(bool silent)
 {
 	makeTilesUnique();
-	cleanLightmaps();
+	cleanLightmaps(silent);
 	std::set<int> taken;
 	for (Tile* t : tiles)
 	{
@@ -1030,10 +1030,12 @@ void Gnd::buildImGui(BrowEdit* browEdit)
 }
 
 
-void Gnd::makeLightmapBorders(BrowEdit* browEdit)
+void Gnd::makeLightmapBorders(BrowEdit* browEdit, bool silent)
 {
-	makeLightmapsUnique();
-	std::cout<< "Fixing borders" << std::endl;
+	makeLightmapsUnique(silent);
+
+	if (!silent)
+		std::cout<< "Fixing borders" << std::endl;
 
 	for (int x = 0; x < width; x++)
 	{
@@ -1098,9 +1100,10 @@ void Gnd::makeLightmapBorders(BrowEdit* browEdit)
 	node->getComponent<GndRenderer>()->gndShadowDirty = true;
 }
 
-void Gnd::cleanLightmaps()
+void Gnd::cleanLightmaps(bool silent)
 {
-	std::cout << "Lightmap cleanup, starting with " << lightmaps.size() << " lightmaps" << std::endl;
+	if (!silent)
+		std::cout << "Lightmap cleanup, starting with " << lightmaps.size() << " lightmaps" << std::endl;
 	
 	std::map<unsigned int, std::vector<int>> light2lightmapIndex;
 	std::map<int, unsigned short> oldIndex2newIndex;
@@ -1141,7 +1144,9 @@ void Gnd::cleanLightmaps()
 		tile->lightmapIndex = oldIndex2newIndex[tile->lightmapIndex];
 	}
 
-	std::cout<< "Lightmap cleanup, ending with " << lightmaps.size() << " lightmaps" << std::endl;
+	if (!silent)
+		std::cout<< "Lightmap cleanup, ending with " << lightmaps.size() << " lightmaps" << std::endl;
+
 	node->getComponent<GndRenderer>()->setChunksDirty();
 	node->getComponent<GndRenderer>()->gndShadowDirty = true;
 }
@@ -1188,23 +1193,27 @@ void Gnd::makeLightmapsSmooth(BrowEdit* browEdit)
 
 //TODO: this method only removes unused tiles
 //test to see if duplicate tiles can also be removed
-void Gnd::cleanTiles()
+void Gnd::cleanTiles(bool silent)
 {
-	std::cout << "Tiles cleanup, starting with " << tiles.size() << " tiles" << std::endl;
+	if (!silent)
+		std::cout << "Tiles cleanup, starting with " << tiles.size() << " tiles" << std::endl;
 	std::set<int> used;
 	for (int y = 0; y < height; y++)
 		for (int x = 0; x < width; x++)
 			for(int i = 0; i < 3; i++)
 				if(cubes[x][y]->tileIds[i] != -1)
 					used.insert(cubes[x][y]->tileIds[i]);
-	std::cout << "Made list of used tiles..." <<used.size()<< std::endl;
+	if (!silent)
+		std::cout << "Made list of used tiles..." <<used.size()<< std::endl;
 
 	std::list<std::size_t> toRemove;
 	for (std::size_t i = 0; i < tiles.size(); i++)
 		if (used.find((int)i) == used.end())
 			toRemove.push_back(i);
 	toRemove.reverse();
-	std::cout << "Made list of unused tiles..." << toRemove.size()<<std::endl;
+	
+	if (!silent)
+		std::cout << "Made list of unused tiles..." << toRemove.size()<<std::endl;
 
 	//TODO: make an array of tiles.size() long, initialize at 0. loop through toRemove, and increase values in array to be the amount to lower. Then use as lookup
 
@@ -1217,7 +1226,9 @@ void Gnd::cleanTiles()
 					if (cubes[x][y]->tileIds[ii] > (int)i)
 						cubes[x][y]->tileIds[ii]--;
 	}
-	std::cout<< "Tiles cleanup, ending with " << tiles.size() << " tiles" << std::endl;
+
+	if (!silent)
+		std::cout<< "Tiles cleanup, ending with " << tiles.size() << " tiles" << std::endl;
 }
 
 void Gnd::removeUnusedTextures(BrowEdit* browEdit)

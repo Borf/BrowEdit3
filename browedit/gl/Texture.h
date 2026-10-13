@@ -40,6 +40,7 @@ namespace gl
 		void resize(int width, int height);
 		void setWrapMode(GLuint mode);
 		void setMipmap(bool value);
+		GLuint getId(int index = 0);
 		GLuint getAnimatedTextureId();
 
 		friend class util::ResourceManager<gl::Texture>;

@@ -1166,73 +1166,6 @@ void RswModelCollider::getCollisionsSub(Rsm::Mesh* mesh, const math::Ray& ray, c
 	}
 }
 
-int Bvh::buildNode(uint32_t first, uint32_t count)
-{
-	BvhNode node;
-
-	glm::vec3 min(FLT_MAX);
-	glm::vec3 max(-FLT_MAX);
-
-	for (uint32_t i = 0; i < count; i++)
-	{
-		const Triangle& triangle = triangles[triangleIndices[first + i]];
-
-		min = glm::min(min, glm::min(triangle.vertices[0], glm::min(triangle.vertices[1], triangle.vertices[2])));
-		max = glm::max(max, glm::max(triangle.vertices[0], glm::max(triangle.vertices[1], triangle.vertices[2])));
-	}
-
-	node.aabb.bounds[0] = min;
-	node.aabb.bounds[1] = max;
-
-	int nodeIndex = (int)nodes.size();
-	nodes.push_back(node);
-
-	if (count <= 8)
-	{
-		nodes[nodeIndex].firstTriangle = first;
-		nodes[nodeIndex].triangleCount = count;
-		return nodeIndex;
-	}
-
-	glm::vec3 extent = max - min;
-
-	int axis = 0;
-
-	if (extent.y > extent.x)
-		axis = 1;
-
-	if (extent.z > extent[axis])
-		axis = 2;
-
-	uint32_t middle = first + count / 2;
-
-	std::nth_element(
-		triangleIndices.begin() + first,
-		triangleIndices.begin() + middle,
-		triangleIndices.begin() + first + count,
-		[&](uint32_t a, uint32_t b)
-		{
-			const Triangle& ta = triangles[a];
-			const Triangle& tb = triangles[b];
-
-			glm::vec3 ca = (ta.vertices[0] + ta.vertices[1] + ta.vertices[2]) / 3.0f;
-			glm::vec3 cb = (tb.vertices[0] + tb.vertices[1] + tb.vertices[2]) / 3.0f;
-
-			return ca[axis] < cb[axis];
-		});
-
-	uint32_t leftCount = middle - first;
-	uint32_t rightCount = count - leftCount;
-
-	int left = buildNode(first, leftCount);
-	int right = buildNode(middle, rightCount);
-
-	nodes[nodeIndex].left = left;
-	nodes[nodeIndex].right = right;
-
-	return nodeIndex;
-}
-
 bool RswModelCollider::collidesTexture(const math::Ray& ray, float minDistance, float maxDistance)
 {
 	std::vector<glm::vec3> ret;
@@ -1250,12 +1183,11 @@ bool RswModelCollider::collidesTexture(const math::Ray& ray, float minDistance, 
 	if (!rswModel->aabb.hasRayCollision(ray, 0, 10000000))
 		return false;
 
-	auto res = collidesTexture(rsm->rootMesh, ray, rsmRenderer->matrixCache, minDistance, maxDistance);
-	return res;
+	return collidesTexture(rsm->rootMesh, ray, rsmRenderer->matrixCache, minDistance, maxDistance);
 }
 
 // Buffers all the face coordinates to their rendered position
-void RswModelCollider::calculateWorldFaces()
+void RswModelCollider::calculateWorldFaces(bool buildNode)
 {
 	bvh.triangles.clear();
 
@@ -1271,14 +1203,9 @@ void RswModelCollider::calculateWorldFaces()
 
 	calculateWorldFaces(rsm->rootMesh, rsmRenderer->matrixCache);
 
-	bvh.triangleIndices.resize(bvh.triangles.size());
-
-	for (uint32_t i = 0; i < bvh.triangles.size(); i++)
-		bvh.triangleIndices[i] = i;
-
-	bvh.nodes.reserve(bvh.triangles.size() * 2);
-
-	bvh.buildNode(0, (uint32_t)bvh.triangles.size());
+	if (buildNode) {
+		bvh.buildTree();
+	}
 }
 
 void RswModelCollider::calculateWorldFaces(Rsm::Mesh* mesh, const glm::mat4& matrix) {
@@ -1294,16 +1221,19 @@ void RswModelCollider::calculateWorldFaces(Rsm::Mesh* mesh, const glm::mat4& mat
 		for (size_t i = 0; i < mesh->faces.size(); i++)
 		{
 			auto& triangle = bvh.triangles[base + i];
+			auto& face = mesh->faces[i];
 
 			for (size_t ii = 0; ii < 3; ii++) {
-				triangle.vertices[ii] = newMatrix * glm::vec4(mesh->vertices[mesh->faces[i].vertexIds[ii]], 1.0f);
-				triangle.uvs[ii] = mesh->texCoords[mesh->faces[i].texCoordIds[ii]];
+				triangle.vertices[ii] = newMatrix * glm::vec4(mesh->vertices[face.vertexIds[ii]], 1.0f);
+				triangle.uvs[ii] = mesh->texCoords[face.texCoordIds[ii]];
 			}
 			
-			if (mesh->faces[i].texId < rsm->textures.size())
-				triangle.texId = mesh->textures[mesh->faces[i].texId];
+			if (face.texId < rsm->textures.size())
+				triangle.texId = mesh->textures[face.texId];
 			else
 				triangle.texId = -1;
+
+			triangle.normal = face.normal;
 		}
 	}
 

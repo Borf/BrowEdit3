@@ -610,6 +610,12 @@
     <ClCompile Include="browedit\components\EvilsPawRenderer.cpp">
       <Filter>browedit\components</Filter>
     </ClCompile>
+    <ClCompile Include="browedit\BVH.cpp">
+      <Filter>browedit</Filter>
+    </ClCompile>
+    <ClCompile Include="browedit\LightmapperGpu.cpp">
+      <Filter>browedit</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="lib\imgui\imgui.h">
@@ -1403,6 +1409,18 @@
     </ClInclude>
     <ClInclude Include="browedit\components\EvilsPawRenderer.h">
       <Filter>browedit\components</Filter>
+    </ClInclude>
+    <ClInclude Include="browedit\shaders\LightmapperShader.h">
+      <Filter>browedit\shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="browedit\gl\SSBO.h">
+      <Filter>browedit\gl</Filter>
+    </ClInclude>
+    <ClInclude Include="browedit\BVH.h">
+      <Filter>browedit</Filter>
+    </ClInclude>
+    <ClInclude Include="browedit\LightmapperGpu.h">
+      <Filter>browedit</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

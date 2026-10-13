@@ -92,8 +92,8 @@ namespace gl
 				glGenerateMipmap(GL_TEXTURE_2D);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, defaultEnableMipmap ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 			}
 			stbi_image_free(data);
 		}
@@ -150,8 +150,12 @@ namespace gl
 			glGenerateMipmap(GL_TEXTURE_2D);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, defaultEnableMipmap ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+
+			// RSM2 animated textures use GL_REPEAT
+			// Default textures use GL_CLAMP_TO_EDGE
+			// So either option defined is incorrect, but it's easier to just use GL_REPEAT. Normally, textures don't get past the [0..1] range.
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 		}
 
 		loaded = true;
@@ -169,6 +173,14 @@ namespace gl
 	{
 		bind();
 		glTexParameteri(textureArray ? GL_TEXTURE_2D_ARRAY : GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, value ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR);
+	}
+
+	GLuint Texture::getId(int index)
+	{
+		if (!tryLoaded)
+			reload();
+
+		return ids[index];
 	}
 
 	void Texture::setSubImage(char* data, int x, int y, int width, int height)

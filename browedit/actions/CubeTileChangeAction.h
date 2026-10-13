@@ -6,13 +6,13 @@
 
 class CubeTileChangeAction : public Action
 {
-	std::map<Gnd::Cube*, int[3]> oldValues;
-	std::map<Gnd::Cube*, int[3]> newValues;
+	std::map<uint32_t, int[3]> oldValues;
+	std::map<uint32_t, int[3]> newValues;
 	std::vector<glm::ivec2> selection;
 	bool shadowDirty;
 public:
 	CubeTileChangeAction(glm::ivec2 tile, Gnd::Cube*, int tileUp, int tileFront, int tileSide);
-	CubeTileChangeAction(const std::vector<glm::ivec2>& selection, const std::map<Gnd::Cube*, int[3]>& oldValues, const std::map<Gnd::Cube*, int[3]>& newValues);
+	CubeTileChangeAction(const std::vector<glm::ivec2>& selection, const std::map<uint32_t, int[3]>& oldValues, const std::map<uint32_t, int[3]>& newValues);
 	CubeTileChangeAction(Gnd* gnd, const std::vector<glm::ivec2>& startSelection);
 	void setNewTiles(Gnd* gnd, const std::vector<glm::ivec2>& endSelection);
 

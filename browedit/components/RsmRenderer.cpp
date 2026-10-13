@@ -278,8 +278,6 @@ void RsmRenderer::renderMeshSub(Rsm::Mesh* mesh, bool selectionPhase)
 
 		for (const VboIndex& it : *indices)
 		{
-			bool isRepeat = false;
-
 			if (mesh->model->version >= 0x203) {
 				glm::vec2 texTranslate(0.0f);
 				glm::vec3 texScale(1.0f);
@@ -291,7 +289,6 @@ void RsmRenderer::renderMeshSub(Rsm::Mesh* mesh, bool selectionPhase)
 				texMat = glm::translate(texMat, centerOffset);
 
 				if (mesh->getTextureAnimation(it.texture, tick, texTranslate, texScale, texRot)) {
-					isRepeat = true;
 					texMat = glm::scale(texMat, texScale);
 					texMat = glm::rotate(texMat, texRot, glm::vec3(0, 0, 1));
 					texMat[3][0] += texTranslate.x;
@@ -302,18 +299,7 @@ void RsmRenderer::renderMeshSub(Rsm::Mesh* mesh, bool selectionPhase)
 			}
 
 			textures[mesh->textures[it.texture]]->bind();
-
-			if (isRepeat) {
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-			}
-
 			glDrawArrays(GL_TRIANGLES, (int)it.begin, (int)it.count);
-
-			if (isRepeat) {
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
-			}
 		}
 		if (ri.selected)
 			glEnable(GL_DEPTH_TEST);

@@ -26,15 +26,15 @@ public:
 	void save(const std::string &fileName, Rsw* rsw);
 	glm::vec3 rayCast(const math::Ray& ray, bool emptyTiles = false, int xMin = 0, int yMin = 0, int xMax = -1, int yMax = -1, float offset = 0.0f);
 	glm::vec3 rayCastLightmap(const math::Ray& ray, int cx, int cy, int xMin = 0, int yMin = 0, int xMax = -1, int yMax = -1, float offset = 0.0f);
-	void makeLightmapsUnique();
+	void makeLightmapsUnique(bool silent = false);
 	void makeLightmapsClear();
-	void makeLightmapBorders(BrowEdit* browEdit);
+	void makeLightmapBorders(BrowEdit* browEdit, bool silent = false);
 	void makeLightmapsSmooth(BrowEdit* browEdit);
 	void makeTilesUnique();
-	void cleanLightmaps();
+	void cleanLightmaps(bool silent = false);
 	void makeLightmapsDiffRes(int rx, int ry);
 	void removeZeroHeightWalls();
-	void cleanTiles();
+	void cleanTiles(bool silent = false);
 	void removeUnusedTextures(BrowEdit* browEdit);
 	void recalculateNormals();
 
