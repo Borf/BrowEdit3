@@ -60,7 +60,7 @@ void MapView::postRenderTextureMode(BrowEdit* browEdit)
 		textureGridVbo->unBind();
 	}
 
-	auto mouse3D = gnd->rayCast(mouseRay, browEdit->config.viewEmptyTiles);
+	auto mouse3D = gnd->rayCast(mouseRay, true);
 	glm::vec2 uvSize = textureEditUv2 - textureEditUv1;
 	glm::vec2 uv1(0,0);
 	glm::vec2 uv4(1,1);
