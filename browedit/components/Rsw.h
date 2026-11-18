@@ -156,10 +156,11 @@ public:
 		bool additiveShadow = true;
 		bool ignoreBacksideTexture = true;
 		bool runOnGpu = true;
+		bool addWallOcclusion = false;
 		glm::ivec2 rangeX;
 		glm::ivec2 rangeY;
 
-		NLOHMANN_DEFINE_TYPE_INTRUSIVE(LightmapSettings, quality, shadows, heightSelectionOnly, additiveShadow, ignoreBacksideTexture, runOnGpu, rangeX, rangeY);
+		NLOHMANN_DEFINE_TYPE_INTRUSIVE(LightmapSettings, quality, shadows, heightSelectionOnly, additiveShadow, ignoreBacksideTexture, runOnGpu, addWallOcclusion, rangeX, rangeY);
 	} lightmapSettings;
 
 	class CropSettings

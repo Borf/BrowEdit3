@@ -530,7 +530,8 @@ void LightmapperGpu::initIgnoreTextures()
 
 	if (settings->ignoreBacksideTexture) {
 		for (int i = 0; i < gnd->textures.size(); i++)
-			if (_stricmp(gnd->textures[i]->file.c_str(), "backside.bmp") == 0)
+			if (_stricmp(gnd->textures[i]->file.c_str(), "backside.bmp") == 0 ||
+				_stricmp(gnd->textures[i]->file.c_str(), "black.bmp") == 0)
 				ignoredTextureIdx[i] = true;
 	}
 }

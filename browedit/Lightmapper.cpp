@@ -175,7 +175,8 @@ void Lightmapper::run()
 
 	if (settings.ignoreBacksideTexture) {
 		for (int i = 0; i < gnd->textures.size(); i++)
-			if (_stricmp(gnd->textures[i]->file.c_str(), "backside.bmp") == 0)
+			if (_stricmp(gnd->textures[i]->file.c_str(), "backside.bmp") == 0 ||
+				_stricmp(gnd->textures[i]->file.c_str(), "black.bmp") == 0)
 				ignoredTextureIdx[i] = true;
 	}
 
@@ -594,12 +595,170 @@ void Lightmapper::calcPos(int direction, int tileId, int x, int y)
 	}
 };
 
+void Lightmapper::addWallOcclusion()
+{
+	std::vector<Gnd::Tile*> tiles;
+
+	auto processWall = [&](int x, int y, bool horizontal) -> int {
+		Gnd::Cube* cube = gnd->cubes[x][y];
+		int tileIndex = horizontal ? cube->tileFront : cube->tileSide;
+
+		if (tileIndex < 0)
+			return 0;
+
+		Gnd::Cube* adjacent = horizontal ? gnd->cubes[x][y + 1] : gnd->cubes[x + 1][y];
+
+		tiles.clear();
+		tiles.push_back(gnd->tiles[tileIndex]);
+
+		int i = horizontal ? x + 1 : y + 1;
+		int end = horizontal ? gnd->width : gnd->height - 1;
+
+		for (; i < end; i++) {
+			Gnd::Cube* other = horizontal ? gnd->cubes[i][y] : gnd->cubes[x][i];
+			Gnd::Cube* otherAdjacent = horizontal ? gnd->cubes[i][y + 1] : gnd->cubes[x + 1][i];
+
+			bool connected = horizontal
+				? other->tileFront > -1 && adjacent->h2 == otherAdjacent->h1 && cube->h4 == other->h3
+				: other->tileSide > -1 && adjacent->h3 == otherAdjacent->h1 && cube->h4 == other->h2;
+
+			if (!connected)
+				break;
+
+			tiles.push_back(gnd->tiles[horizontal ? other->tileFront : other->tileSide]);
+		}
+
+		auto lightmapFirst = gnd->lightmaps[tiles.front()->lightmapIndex];
+		auto lightmapLast = gnd->lightmaps[tiles.back()->lightmapIndex];
+
+		for (int yy = 0; yy < gnd->lightmapHeight; yy++) {
+			lightmapFirst->data[yy * gnd->lightmapWidth] = 0;
+			lightmapLast->data[(yy + 1) * gnd->lightmapWidth - 1] = 0;
+		}
+
+		for (auto& tile : tiles) {
+			auto lightmap = gnd->lightmaps[tile->lightmapIndex];
+			memset(lightmap->data, 0, gnd->lightmapWidth);
+			memset(lightmap->data + gnd->lightmapWidth * (gnd->lightmapHeight - 1), 0, gnd->lightmapWidth);
+		}
+
+		return (int)tiles.size() - 1;
+	};
+
+	for (int y = 0; y < gnd->height - 1; y++) {
+		for (int x = 0; x < gnd->width; x++) {
+			x += processWall(x, y, true);
+		}
+	}
+
+	for (int x = 0; x < gnd->width - 1; x++) {
+		for (int y = 0; y < gnd->height; y++) {
+			y += processWall(x, y, false);
+		}
+	}
+
+
+	//std::vector<Gnd::Tile*> tiles;
+	//
+	//for (int y = 0; y < gnd->height - 1; y++) {
+	//	for (int x = 0; x < gnd->width; x++) {
+	//		Gnd::Cube* cube = gnd->cubes[x][y];
+	//
+	//		if (cube->tileFront > -1) {
+	//			Gnd::Cube* cubeUp = gnd->cubes[x][y + 1];
+	//
+	//			tiles.clear();
+	//			tiles.push_back(gnd->tiles[cube->tileFront]);
+	//
+	//			for (int xx = x + 1; xx < gnd->width; xx++) {
+	//				Gnd::Cube* otherCube = gnd->cubes[xx][y];
+	//				Gnd::Cube* otherCubeUp = gnd->cubes[xx][y + 1];
+	//
+	//				if (otherCube->tileFront > -1 && cubeUp->h2 == otherCubeUp->h1 && cube->h4 == otherCube->h3) {
+	//					tiles.push_back(gnd->tiles[otherCube->tileFront]);
+	//					continue;
+	//				}
+	//
+	//				break;
+	//			}
+	//
+	//			auto lightmapFirst = gnd->lightmaps[tiles[0]->lightmapIndex];
+	//			auto lightmapLast = gnd->lightmaps[tiles[tiles.size() - 1]->lightmapIndex];
+	//			
+	//			int xxx = 0;
+	//			for (int yy = 0; yy < gnd->lightmapHeight; yy++) {
+	//				lightmapFirst->data[xxx] = 0;
+	//				xxx += gnd->lightmapWidth;
+	//				lightmapLast->data[xxx - 1] = 0;
+	//			}
+	//
+	//			for (auto& tile : tiles) {
+	//				auto lightmap = gnd->lightmaps[tile->lightmapIndex];
+	//				memset(lightmap->data, 0, gnd->lightmapWidth);
+	//				memset(lightmap->data + gnd->lightmapWidth * (gnd->lightmapHeight - 1), 0, gnd->lightmapWidth);
+	//			}
+	//
+	//			x += tiles.size() - 1;
+	//		}
+	//	}
+	//}
+	//
+	//for (int x = 0; x < gnd->width - 1; x++) {
+	//	for (int y = 0; y < gnd->height; y++) {
+	//		Gnd::Cube* cube = gnd->cubes[x][y];
+	//
+	//		if (cube->tileSide > -1) {
+	//			Gnd::Cube* cubeRight = gnd->cubes[x + 1][y];
+	//
+	//			tiles.clear();
+	//			tiles.push_back(gnd->tiles[cube->tileSide]);
+	//
+	//			for (int yy = y + 1; yy < gnd->height - 1; yy++) {
+	//				Gnd::Cube* otherCube = gnd->cubes[x][yy];
+	//				Gnd::Cube* otherCubeRight = gnd->cubes[x + 1][yy];
+	//
+	//				if (otherCube->tileSide > -1 && cubeRight->h3 == otherCubeRight->h1 && cube->h4 == otherCube->h2) {
+	//					tiles.push_back(gnd->tiles[otherCube->tileSide]);
+	//					continue;
+	//				}
+	//
+	//				break;
+	//			}
+	//
+	//			auto lightmapFirst = gnd->lightmaps[tiles[0]->lightmapIndex];
+	//			auto lightmapLast = gnd->lightmaps[tiles[tiles.size() - 1]->lightmapIndex];
+	//
+	//			int xxx = 0;
+	//			for (int yy = 0; yy < gnd->lightmapHeight; yy++) {
+	//				lightmapFirst->data[xxx] = 0;
+	//				xxx += gnd->lightmapWidth;
+	//				lightmapLast->data[xxx - 1] = 0;
+	//			}
+	//
+	//			for (auto& tile : tiles) {
+	//				auto lightmap = gnd->lightmaps[tile->lightmapIndex];
+	//				memset(lightmap->data, 0, gnd->lightmapWidth);
+	//				memset(lightmap->data + gnd->lightmapWidth * (gnd->lightmapHeight - 1), 0, gnd->lightmapWidth);
+	//			}
+	//
+	//			y += tiles.size() - 1;
+	//		}
+	//	}
+	//}
+}
+
 void Lightmapper::onDone()
 {
+	auto& settings = rsw->lightmapSettings;
+
 	// Dirty fix...
 	// Call it twice because processing a lightmap border (and corner to be specific) requires the value of the previous calculation, which hasn't happened yet.
 	gnd->makeLightmapBorders(browEdit, true);
 	gnd->makeLightmapBorders(browEdit, true);
+
+	if (settings.addWallOcclusion) {
+		addWallOcclusion();
+	}
 
 	lightmapChangeAction->setCurrentData(gnd->lightmaps, gnd->tiles);
 	map->doAction(lightmapChangeAction, browEdit);

@@ -62,6 +62,7 @@ private:
 	void run();
 	void onDone();
 
+	void addWallOcclusion();
 	bool collidesMap(const math::Ray& ray, int cx, int cy, float maxDistance);
 	std::pair<glm::vec3, int> calculateLight(const glm::vec3& groundPos, const glm::vec3& normal, int cx, int cy);
 	void calcPos(int direction, int tileId, int x, int y);
