@@ -56,6 +56,7 @@ public:
 	int lightmapperThreadCount = 4;
 	int lightmapperRefreshTimer = 2;
 	bool additiveShadow = true;
+	bool runOnGpu = true;
 	bool ignoreBacksideTexture = true;
 	bool viewEmptyTiles = true;
 	bool enableMipmaping = true;
@@ -99,6 +100,7 @@ public:
 		lightmapperThreadCount,
 		lightmapperRefreshTimer,
 		additiveShadow,
+		runOnGpu,
 		ignoreBacksideTexture,
 		viewEmptyTiles,
 		enableMipmaping,

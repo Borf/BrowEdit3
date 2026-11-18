@@ -60,7 +60,7 @@ void MapView::postRenderTextureMode(BrowEdit* browEdit)
 		textureGridVbo->unBind();
 	}
 
-	auto mouse3D = gnd->rayCast(mouseRay, browEdit->config.viewEmptyTiles);
+	auto mouse3D = gnd->rayCast(mouseRay, true);
 	glm::vec2 uvSize = textureEditUv2 - textureEditUv1;
 	glm::vec2 uv1(0,0);
 	glm::vec2 uv4(1,1);
@@ -1216,4 +1216,7 @@ void MapView::buildTextureGrid()
 		}
 	}
 	textureGridVbo->setData(verts, GL_STATIC_DRAW);
+
+	// Needs to be unbound because if its size is 0 (no verts), all related code is skipped (but it remains bound because of setData).
+	textureGridVbo->unBind();
 }

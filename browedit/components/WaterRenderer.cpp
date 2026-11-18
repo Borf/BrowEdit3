@@ -158,6 +158,7 @@ void WaterRenderer::render(NodeRenderContext& context)
 	}
 
 	glDepthMask(1);
+	vbo->unBind();
 }
 
 

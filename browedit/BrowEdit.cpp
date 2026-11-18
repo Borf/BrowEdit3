@@ -282,8 +282,6 @@ void BrowEdit::run()
 			showCinematicModeWindow();
 		if (editMode == EditMode::Water)
 			showWaterEditWindow();
-		if (editMode == EditMode::Shadow)
-			showShadowEditWindow();
 		if (editMode == EditMode::SkyMap)
 			showSkyMapEditWindow();
 

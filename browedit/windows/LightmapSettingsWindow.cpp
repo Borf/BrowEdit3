@@ -25,8 +25,9 @@ void BrowEdit::showLightmapSettingsWindow()
 		ImGui::Checkbox("Shadows", &settings.shadows);
 		ImGui::Checkbox("Height Edit Mode Selection Only", &settings.heightSelectionOnly);
 		ImGui::Checkbox("Old shadow formula (v3.561 and below)", &config.additiveShadow);
-		ImGui::Checkbox("Run on GPU", &settings.runOnGpu);
-		ImGui::Checkbox("Skip 'backside.bmp' texture", &config.ignoreBacksideTexture);
+		ImGui::Checkbox("Run on GPU", &config.runOnGpu);
+		ImGui::Checkbox("Add wall occlusion", &settings.addWallOcclusion);
+		ImGui::Checkbox("Skip back.bmp and backside.bmp textures", &config.ignoreBacksideTexture);
 		ImGui::DragInt2("Generate Range X", glm::value_ptr(settings.rangeX), 1, 0, gnd->width);
 		ImGui::DragInt2("Generate Range Y", glm::value_ptr(settings.rangeY), 1, 0, gnd->height);
 		ImGui::DragInt("Thread Count", &config.lightmapperThreadCount, 1, 1, 32);
@@ -36,6 +37,7 @@ void BrowEdit::showLightmapSettingsWindow()
 		{
 			settings.additiveShadow = config.additiveShadow;
 			settings.ignoreBacksideTexture = config.ignoreBacksideTexture;
+			settings.runOnGpu = config.runOnGpu;
 			config.save();
 			lightmapper->begin();
 			ImGui::CloseCurrentPopup();
