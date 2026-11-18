@@ -1216,4 +1216,7 @@ void MapView::buildTextureGrid()
 		}
 	}
 	textureGridVbo->setData(verts, GL_STATIC_DRAW);
+
+	// Needs to be unbound because if its size is 0 (no verts), all related code is skipped (but it remains bound because of setData).
+	textureGridVbo->unBind();
 }
